@@ -1,0 +1,32 @@
+packages:
+  - workflow
+  - model
+  - ui
+  - .
+  - test
+
+catalog:
+  "@milaboratory/tengo-template-builder": ^1.9.1
+  "@milaboratory/pl-block-tools": ^2.1.2
+  "@milaboratory/block-builder": ^1.2.3
+
+  "@milaboratory/sdk-ui": ^0.12.7
+  "@milaboratory/sdk-test": ^1.4.0
+
+  "@milaboratory/platforma-uikit": ^1.0.2
+  "@milaboratory/sdk-vue": ^1.0.4
+  "@milaboratory/helpers": ^1.4.3
+
+  "vue": ^3.4.34
+  "vue-tsc": ^2.0.29
+
+  "zod": ^3.23.8
+
+  "typescript": ^5.5.4
+  "tsup": ~8.1.2
+
+  "vite": ^5.3.5
+  "vitest": ^2.0.4
+  "@vitejs/plugin-vue": ^5.1.1
+
+  "@changesets/cli": ^2.27.7

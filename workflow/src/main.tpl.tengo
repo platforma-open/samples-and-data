@@ -1,0 +1,432 @@
+json := import("json")
+tx := import("tx")
+plapi := import("plapi")
+text := import("text")
+
+mi := import("@milaboratory/tengo-milib:milib")
+mistd := import("@milaboratory/tengo-mistd:mistd")
+
+domain := "samples" // used in domains in specs
+
+// valueTypeMapping is a mapping of types received by a client
+// to types that need to appear in metadata PColumns.
+valueTypeMapping := {
+	"float": "Double",
+	"long": "Long",
+	"string": "String",
+	"integer": "Integer"
+}
+
+metadataAnnotations := func(column, isLabel, blockID) {
+	mi.validateJSON(column, {
+		"valueType": "string",
+		"label": "string",
+		"id": "string"
+	})
+
+	annotations := {}
+	annotations["pl7.app/label"] = column.label
+	annotations["pl7.app/styleSettingsId"] = column.id
+	if mi.hasElem(["String", "Long", "Integer"], valueTypeMapping[column.valueType]) {
+		annotations["pl7.app/columnAsAxis/preferLightKey"] = "true"
+		annotations["pl7.app/columnAsAxis/name"] = mi.toCamelCase(column.label)
+		annotations["pl7.app/columnAsAxis/domain/pl7.app/samples/blockId"] = blockID
+	}
+
+	if isLabel {
+		annotations["pl7.app/isLabel"] = "true"
+	} else {
+		annotations["pl7.app/isMetadata"] = "true"
+	}
+
+	return annotations
+}
+
+// createMetadata creates spec and data parts of metadata.{*} outputs.
+createMetadata := func(tplID, blockID, args, ctxNameToOutput) {
+	if is_undefined(args.metadata) {
+		args.metadata = []
+	}
+	allCols := append(args.metadata, args.sampleLabels)
+
+	// spec part
+	baseName := "metadata." + args.sampleLabels.id + ".spec"
+	specID := mistd.createPColumnSpec(
+		valueTypeMapping[args.sampleLabels.valueType],
+		[mistd.axisSampleID(domain, blockID)],
+		{} /* domain */,
+		metadataAnnotations(args.sampleLabels, true, blockID)
+	)
+
+	ctxNameToOutput[baseName] = specID
+
+	for _, c in args.metadata {
+		baseName := "metadata." + c.id + ".spec"
+		specID := mistd.createPColumnSpec(
+			valueTypeMapping[c.valueType],
+		    [mistd.axisSampleID(domain, blockID)],
+			{} /* domain */,
+			metadataAnnotations(c, false, blockID)
+	    )
+
+		ctxNameToOutput[baseName] = specID
+	}
+
+	// data part
+	columns := {}
+	for i, id in args.sampleIds {
+		key := mi.pColumnKey(id)
+		for _, c in allCols {
+			if is_undefined(columns[c.id]) {
+				columns[c.id] = {}
+			}
+			columns[c.id][key] = c.data[i]
+		}
+	}
+
+	for _, c in allCols {
+		baseName := "metadata."+c.id+".data"
+		column := mi.createPColumnData(
+			mi.pColumnDataJSON, "1",
+			columns[c.id],
+			undefined /* partitionKeyLength */
+		)
+
+		ctxNameToOutput[baseName] = column.ID
+	}
+
+	return ctxNameToOutput
+}
+
+// createFileMappings creates spec and data for {*}.fileMappings
+createFileMappings := func(tplID, blockID, args, isProd, ctxNameToOutput) {
+	for _, c in args.datasets {
+		fileMappingSpecID := mistd.createPColumnSpec(
+			"json",
+			[
+				mistd.axisSampleID(domain, blockID),
+				mistd.axisFileGroupID(domain, c.id)
+			],
+			undefined /* domain */,
+			{
+				"pl7.app/label": c.label
+			}
+		)
+		baseName := c.id + ".fileMappings.spec"
+		ctxNameToOutput[baseName] = fileMappingSpecID
+	}
+
+	if !isProd {
+		return ctxNameToOutput
+	}
+
+	for _, c in args.datasets {
+		// ContentMap of "[SampleId, FileGroupId]" -> [](map of tag -> tagValue)
+		fileMapping := {}
+
+		tags := c.sampleSheet.tags
+		rows := c.sampleSheet.rows
+		for _, row in rows {
+			key := mi.pColumnKey(row.sampleId, row.fileGroupId)
+
+			tagToVals := {}
+			for i, val in row.tagValues {
+				tagToVals[tags[i]] = val
+			}
+
+			if is_undefined(fileMapping[key]) {
+				fileMapping[key] = []
+			}
+			if len(tagToVals) > 0 {
+				fileMapping[key] = append(fileMapping[key], tagToVals)
+			}
+		}
+
+		fileMappingData := mi.createPColumnData(
+			mi.pColumnDataJSON, "1", fileMapping,
+			undefined /* partitionKeyLength */
+		)
+		baseName := c.id + ".fileMappings.data"
+		ctxNameToOutput[baseName] = fileMappingData.ID
+	}
+
+	return ctxNameToOutput
+}
+
+// createS3Uploader := func(data) {
+// 	uploaderRID := tx.createStruct("BlobUpload", "1")
+
+// 	// TODO: when resources will change to a new scheme,
+// 	// change this to just data.
+// 	descriptor := {
+// 		"hash": {
+// 			"alg": data.checksum.algorithm,
+// 			"value": data.checksum.value
+// 		},
+// 		"size": string(data.sizeBytes),
+// 		"localPath": data.localPath,
+// 		"pathSignature": data.pathSignature,
+// 		"modificationTimeUnix": data.modificationTimeUnix
+// 	}
+// 	descRID := mi.createValueJSON("json/object", "1", descriptor)
+// 	inputFID := mi.createAndSetField(uploaderRID, "blobDescriptor", "input", descRID)
+// 	outputFID := mi.createNewFieldID(uploaderRID, "blob", "output")
+// 	mi.lock(uploaderRID)
+
+// 	return {
+// 		"ID": uploaderRID,
+// 		"OutputFID": outputFID
+// 	}
+// }
+
+// createUploads iterates through rawData and creates AddFile
+// for every upload.
+createUploads := func(tplID, args, isProd, uiNameToOutput) {
+	if !isProd {
+		return {}
+	}
+
+	uploadKeyToBlob := {}
+	idToUploader := {}
+	for _, c in args.datasets {
+		for fgName, fg in c.sampleSheet.fileGroups {
+            for rName, read in fg {
+				key := mi.pColumnKey(fgName, rName)
+
+				uploader := undefined
+				settings := read.source.settings
+
+				if read.source.type == "BlobUpload" {
+					mi.panic("BlobUpload uploading isn't implemented yet.")
+				} else if read.source.type == "BlobImportInternal" {
+					if !is_undefined(args.templateConfig) {
+						speed := args.templateConfig.maxIndexingSpeedBytesPerSecond
+						if !is_undefined(speed) {
+							settings.maxSpeedBytes = string(speed)
+						}
+					}
+
+					uploader = mi.createBlobImportInternalV1(settings)
+				} else {
+					mi.panic("cannot create uploader, wrong read.type "+read.source.type)
+				}
+
+				idToUploader[read.sourceId] = uploader.HandleFID
+				uploadKeyToBlob[key] = uploader.BlobFID
+			}
+		}
+	}
+
+	uploadsID := mi.createStdMap(idToUploader)
+	uiNameToOutput["uploads"] = uploadsID
+
+	return uploadKeyToBlob
+}
+
+// createFiles creates spec and data for {*}.files
+createFiles := func(tplID, blockID, args, isProd, uploadKeyToBlob, ctxNameToOutput) {
+	// spec part
+	for _, c in args.datasets {
+		filesSpecID := mistd.createPColumnSpec(
+			"File",
+			[
+				mistd.axisFileGroupID(domain, c.id),
+				mistd.axisReadIndex()
+			], undefined /* domain */, undefined /* annotations */
+		)
+
+		baseName := c.id + ".files.spec"
+		ctxNameToOutput[baseName] = filesSpecID
+	}
+
+	if !isProd {
+		return ctxNameToOutput
+	}
+
+	// data part
+	for _, c in args.datasets {
+		// ContentMap of [Group, Read] to File
+		keyToFile := {}
+		for fgName, fg in c.sampleSheet.fileGroups {
+            for rName, read in fg {
+				key := mi.pColumnKey(fgName, rName)
+				blobFID := uploadKeyToBlob[key]
+				file := mi.createFile(read.extension, blobFID)
+				keyToFile[key] = file.ID
+			}
+		}
+
+		filesData := mi.createPColumnData(mi.pColumnDataDirect, "1", keyToFile, undefined)
+		baseName := c.id + ".files.data"
+		ctxNameToOutput[baseName] = filesData.ID
+	}
+
+	return ctxNameToOutput
+}
+
+validateSampleIDsAreDeclared := func(args) {
+	if !args.datasets {
+		return
+	}
+
+	for _, data in args.datasets {
+		for _, row in data.sampleSheet.rows {
+			mi.assert(
+				mi.findElem(args.sampleIds, row.sampleId) != -1,
+				"cannot find sample id %q in args.SampleIds",
+				row.sampleId
+			)
+		}
+	}
+}
+
+validateFileGroupIDsAreDeclared := func(args) {
+	if !args.datasets {
+		return
+	}
+
+	for _, data in args.datasets {
+		for _, row in data.sampleSheet.rows {
+			mi.assert(
+				data.sampleSheet.fileGroups[row.fileGroupId],
+				"cannot find file group id %q in fileGroups %v",
+				row.fileGroupId,
+				data.sampleSheet.fileGroups
+			)
+		}
+	}
+}
+
+
+typeAsValueTypeSaid := func(elem, prevElems) {
+	if len(prevElems) == 1 {
+		mi.panic("validateJSON: assertion error, no prev elems. %q, %#v", elem, prevElems)
+	}
+
+	// we need to traverse json a bit back:
+	// elem1 -> [elem1, elem2] -> {valueType: "string", data: [elem1, elem2]}
+	// Thus we take the 2nd prev element.
+	column := prevElems[1]
+	t := column.valueType
+	if !t {
+		mi.panic("validateJSON: no value type in a column, %#v, %q", column, elem)
+	}
+
+    if t == "string" {
+		return mi.validateJSON(elem, "string|null", prevElems...)
+	} else if t == "float" || t == "integer" {
+		return mi.validateJSON(elem, "number|null", prevElems...)
+	}
+
+	mi.panic("validateJSON: valueType has bad type %q", t)
+}
+
+hasSeqFileExtension := func(elem, prevElems) {
+	mi.assert(
+		text.re_match(`\.(fastq|fq|fastq\.gz|fq\.gz|fasta|fa|bam|sam)$`, elem),
+		"validateJSON: path %q must end to sequencing extensions: fastq|fq|fastq.gz|fq.gz|fasta|fa|bam|sam",
+		elem
+	)
+
+	return mi.validateJSON(elem, "string")
+}
+
+blockSamplesAndData := func() {
+	tplID := plapi.getTemplate().ID
+
+	inp := mistd.getBlockArgs()
+
+	columnScheme := {
+		"__options__,closed": "",
+		"id": "string",
+		"label": "string",
+		"valueType": "string",
+		"data": [typeAsValueTypeSaid]
+	}
+
+	readScheme := {
+		"extension": "string",
+		"userData,omitempty": "any",
+		"sourceId": "string",
+		"source": func(elem, prevElems) {
+			scheme := {"type": "string"}
+
+			if elem.type == "BlobUpload" {
+				scheme["settings"] = {
+					"__options__,closed": "",
+					"modificationTimeUnix": "number",
+					"localPath": hasSeqFileExtension,
+					"pathSignature": "string",
+					"sizeBytes": "number",
+					"checksum": {
+						"algorithm": "string",
+						"value": "string"
+					}
+				}
+			} else if elem.type == "BlobImportInternal" {
+				scheme["settings"] = {
+					// "__options__,closed": "",
+					// "type": "string",
+					"storageId": "string",
+					"path": hasSeqFileExtension
+				}
+			} else {
+				mi.panic("validateJSON: unknown type of AddFileRequest: %q, supported: %v", elem.type, ["BlobImportInternal", "BlobUpload"])
+			}
+
+			return mi.validateJSON(elem, scheme, prevElems...)
+		}
+	}
+
+	// TODO Gleb: add if rawData -> datasets is defined but empty, then do nothing.
+	mi.validateJSON(inp.Args, {
+		"__options__,closed": "",
+        "templateConfig,omitempty": {",any": "any"},
+		"sampleIds": ["string"],
+		"sampleLabels": columnScheme,
+		"metadata": [columnScheme],
+		"datasets,omitempty": [{
+			"__options__,closed": "",
+			"id": "string",
+			"label": "string",
+			"sampleSheet": {
+				"__options__,closed": "",
+				"tags": ["alphanumeric"],
+				"rows": [{
+					"__options__,closed": "",
+					"sampleId": "string",
+					"tagValues": ["alphanumeric"],
+					"fileGroupId": "string"
+				}],
+				"fileGroups": {
+					",any": {
+						"__options__,closed": "",
+						"R1": readScheme,
+						"R2,omitempty": readScheme,
+						"I1,omitempty": readScheme,
+						"I2,omitempty": readScheme
+					}
+				}
+			}
+		}]
+	})
+	validateSampleIDsAreDeclared(inp.Args)
+	validateFileGroupIDsAreDeclared(inp.Args)
+
+	uiNameToOutput := {"dependsOnBlocks": mi.createValueJSON("json/array", "1", [])}
+	ctxNameToOutput := {} // they are going to bContext.
+
+	createMetadata(tplID, inp.BlockID, inp.Args, ctxNameToOutput)
+	if !is_undefined(inp.Args.datasets) {
+		createFileMappings(tplID, inp.BlockID, inp.Args, inp.IsProd, ctxNameToOutput)
+		uploadKeyToBlob := createUploads(tplID, inp.Args, inp.IsProd, uiNameToOutput)
+		createFiles(tplID, inp.BlockID, inp.Args, inp.IsProd, uploadKeyToBlob, ctxNameToOutput)
+	}
+
+	mistd.setBlockOutputs(
+		tplID, true /* shouldLockMap */,
+		inp.BlockField.ID, inp.CtxField.ID,
+	    uiNameToOutput, ctxNameToOutput)
+}
+
+mi.ephemeralTemplateRouter(blockSamplesAndData)

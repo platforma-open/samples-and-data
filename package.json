@@ -1,0 +1,43 @@
+{
+  "name": "@milaboratory/milaboratories.samples-and-data",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rm -rf ./block-pack && block-tools pack"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {
+    "@milaboratory/milaboratories.samples-and-data.workflow": "workspace:*",
+    "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
+    "@milaboratory/milaboratories.samples-and-data.ui": "workspace:*"
+  },
+  "block": {
+    "components": {
+      "workflow": "@milaboratory/milaboratories.samples-and-data.workflow/dist/tengo/tpl/main.plj.gz",
+      "model": "@milaboratory/milaboratories.samples-and-data.model/dist/model.json",
+      "ui": "@milaboratory/milaboratories.samples-and-data.ui/dist"
+    },
+    "meta": {
+      "title": "Samples & Data",
+      "logo": "file:logos/block-logo.png",
+      "url": "https://github.com/milaboratory/block-samples-and-data",
+      "docs": "https://github.com/milaboratory/block-samples-and-data/docs",
+      "support": "mailto:support@milaboratories.com",
+      "description": "Allows to create samples, specify sample meta information and link samples to sequencing data",
+      "longDescription": "file:./docs/description.md",
+      "changelog": "file:CHANGELOG.md",
+      "tags": [],
+      "organization": {
+        "name": "MiLaboratories Inc",
+        "url": "https://milaboratories.com/",
+        "logo": "file:logos/organization-logo.png"
+      }
+    }
+  },
+  "devDependencies": {
+    "@milaboratory/pl-block-tools": "catalog:",
+    "@changesets/cli": "catalog:"
+  }
+}

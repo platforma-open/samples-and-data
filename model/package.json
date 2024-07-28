@@ -1,0 +1,36 @@
+{
+  "name": "@milaboratory/milaboratories.samples-and-data.model",
+  "version": "1.0.0",
+  "description": "Block model",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup && vite build && block-tools build-model"
+  },
+  "dependencies": {
+    "@milaboratory/sdk-ui": "catalog:"
+  },
+  "devDependencies": {
+    "@milaboratory/pl-block-tools": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "tsup": "catalog:"
+  },
+  "tsup": {
+    "entry": [
+      "src/index.ts"
+    ],
+    "splitting": false,
+    "treeshake": true,
+    "clean": true,
+    "format": [
+      "cjs",
+      "esm"
+    ],
+    "dts": true,
+    "minify": false,
+    "sourcemap": true
+  }
+}

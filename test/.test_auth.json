@@ -1,0 +1,1 @@
+{"conf":{"address":"http://127.0.0.1:6345?tx-delay=5&force-sync=true","test_user":"test_user","test_password":"test_password"},"authInformation":{"jwtToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdF91c2VyIn0sImV4cCI6MTcyMjc4NTE4MSwiaWF0IjoxNzIyMTgwMzgxfQ.4oxUDpIra_twlLrS3YaCmglUfHDAvDTO0WMp8Zsj6PM"},"expiration":1722266781000}
