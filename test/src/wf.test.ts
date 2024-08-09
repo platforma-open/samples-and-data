@@ -1,35 +1,65 @@
-import { blockTest } from "@milaboratory/sdk-test";
-import { test } from "vitest";
-import { blockSpec } from "this-block";
+import { BlockArgs, uniquePlId } from '@milaboratory/milaboratories.samples-and-data.model';
+import { blockTest } from '@milaboratory/sdk-test';
+import { blockSpec } from 'this-block';
 
-blockTest(
-  "Run template",
-  async ({ rawPrj: project, ml, helpers }) => {
-    const blockId = await project.addBlock("Block", blockSpec);
+blockTest('empty imputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
 
-    console.log("test");
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+  expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} } });
+});
 
-    const overview = await project.overview.getValue();
+blockTest('simple imput', async ({ rawPrj: project, ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const metaColumn1Id = uniquePlId();
+  const dataset1Id = uniquePlId();
 
-    // console.dir(overview, {depth: 5});
+  const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
+  const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-    const blockOverview = overview?.blocks.find((b) => b.id === blockId)!;
+  project.setBlockArgs(blockId, {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'MetaColumn1',
+        global: false,
+        valueType: 'Long',
+        data: {
+          [sample1Id]: 2345
+        }
+      }
+    ],
+    sampleIds: [sample1Id],
+    sampleLabelColumnLabel: "Sample Name",
+    sampleLabels: { [sample1Id]: 'Sample 1' },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'Fastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          data: {
+            [sample1Id]: {
+              R1: r1Handle,
+              R2: r2Handle
+            }
+          }
+        }
+      }
+    ]
+  } satisfies BlockArgs);
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
 
-    if (blockOverview.updatedBlockPack) {
-      console.log("updated block");
-
-      console.dir(blockOverview.updatedBlockPack, { depth: 5 });
-      await project.updateBlockPack(blockId, blockOverview.updatedBlockPack!);
-    }
-
-    const f = await helpers.getLocalFileHandle("./assets/test_file.json");
-
-    await project.setBlockArgs(blockId, { fileHandle: f });
-    await project.runBlock(blockId);
-    await helpers.awaitBlockDone(blockId);
-
-    const blockState = await project.getBlockState(blockId);
-
-    console.dir(await blockState.awaitStableValue(), { depth: 5 });
-  }
-);
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [r1Handle]: {done: true}, [r2Handle]: {done: true} } }
+  });
+});

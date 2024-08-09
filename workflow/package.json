@@ -4,11 +4,11 @@
   "type": "module",
   "description": "Tengo-based template",
   "scripts": {
-    "build": "rm -rf dist && pl-tengo check && pl-tengo build"
+    "build": "rm -rf dist && pl-tengo check && pl-tengo build",
+    "format": "/usr/bin/env emacs --script ./format.el"
   },
   "devDependencies": {
     "@milaboratory/tengo-template-builder": "catalog:",
-    "@milaboratory/tengo-milib": "1.1.1",
-    "@milaboratory/tengo-mistd": "1.2.0"
+    "@milaboratory/tengo-sdk": "catalog:"
   }
 }

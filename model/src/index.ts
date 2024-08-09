@@ -1,30 +1,46 @@
 import {
   MainOutputs,
-  PlatformaConfiguration,
-  getBlobContentAsString,
-  getImmediate,
+  BlockModel,
   getResourceField,
   getImportProgress,
   type InferOutputsType,
-} from "@milaboratory/sdk-ui";
+  mapResourceFields,
+  It
+} from '@milaboratory/sdk-ui';
+import { BlockArgs } from './args';
 
-export type BlockArgs = {
-  fileHandle?: string;
-};
+export const platforma = BlockModel.create<BlockArgs>('Heavy')
 
-export const platforma = PlatformaConfiguration.create<BlockArgs>("Heavy")
-
-  .initialArgs({})
-
-  .output("file", getBlobContentAsString(getResourceField(MainOutputs, "file")))
+  .initialArgs({
+    sampleIds: [],
+    metadata: [],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {},
+    datasets: []
+  })
 
   .output(
-    "progress",
-    getImportProgress(getResourceField(MainOutputs, "progress"))
+    'fileImports',
+    mapResourceFields(getResourceField(MainOutputs, 'fileImports'), getImportProgress(It))
   )
 
-  .sections(getImmediate([{ type: "link", href: "/main", label: "Main" }]))
+  .sections((ctx) => {
+    return [
+      { type: 'link', href: '/', label: 'Samples & Metadata' },
+      ...ctx.args.datasets.map(
+        (ds) =>
+          ({
+            type: 'link',
+            href: `/dataset/${ds.id}`,
+            label: ds.label
+          } as const)
+      ),
+      { type: 'link', href: `/add-dataset`, label: '+ add dataset' }
+    ];
+  })
 
   .done();
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
+export { BlockArgs };
+export * from './helpers';

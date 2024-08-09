@@ -2,6 +2,7 @@
   "name": "@milaboratory/milaboratories.samples-and-data",
   "version": "1.0.0",
   "scripts": {
+    "pretty": "prettier --write \"./src/**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
     "build": "rm -rf ./block-pack && block-tools pack"
   },
   "files": [
