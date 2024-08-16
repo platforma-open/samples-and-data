@@ -2,7 +2,7 @@
   "name": "@milaboratory/milaboratories.samples-and-data",
   "version": "1.0.0",
   "scripts": {
-    "pretty": "prettier --write \"./src/**/*.{js,jsx,mjs,cjs,ts,tsx,json}\"",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "rm -rf ./block-pack && block-tools pack"
   },
   "files": [
@@ -10,6 +10,7 @@
     "index.js"
   ],
   "dependencies": {
+    "@milaboratory/sdk-ui": "catalog:",
     "@milaboratory/milaboratories.samples-and-data.workflow": "workspace:*",
     "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
     "@milaboratory/milaboratories.samples-and-data.ui": "workspace:*"

@@ -9,13 +9,19 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
-    "@milaboratory/sdk-ui": "catalog:",
+    "@ag-grid-community/client-side-row-model": "catalog:",
+    "@ag-grid-community/core": "catalog:",
+    "@ag-grid-community/styles": "catalog:",
+    "@ag-grid-community/vue3": "catalog:",
     "@milaboratory/helpers": "catalog:",
+    "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
     "@milaboratory/platforma-uikit": "catalog:",
+    "@milaboratory/sdk-ui": "catalog:",
     "@milaboratory/sdk-vue": "catalog:",
-    "zod": "catalog:",
-    "vue": "catalog:"
+    "@vueuse/core": "catalog:",
+    "utility-types": "catalog:",
+    "vue": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",

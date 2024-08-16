@@ -1,1 +1,11 @@
-{"conf":{"address":"http://127.0.0.1:6345?tx-delay=5&force-sync=true","test_user":"test_user","test_password":"test_password"},"authInformation":{"jwtToken":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdF91c2VyIn0sImV4cCI6MTcyMzgwMzgzNiwiaWF0IjoxNzIzMTk5MDM2fQ.tFUar8aj7fkZN8Tn0xHjOs6H9qHA7z654_IldolNnsc"},"expiration":1723285436000}
+{
+  "conf": {
+    "address": "http://127.0.0.1:6345?tx-delay=5&force-sync=true",
+    "test_user": "test_user",
+    "test_password": "test_password"
+  },
+  "authInformation": {
+    "jwtToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImxvZ2luIjoidGVzdF91c2VyIn0sImV4cCI6MTcyMzgwMzgzNiwiaWF0IjoxNzIzMTk5MDM2fQ.tFUar8aj7fkZN8Tn0xHjOs6H9qHA7z654_IldolNnsc"
+  },
+  "expiration": 1723285436000
+}

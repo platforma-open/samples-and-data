@@ -34,7 +34,7 @@ blockTest('simple imput', async ({ rawPrj: project, ml, helpers, expect }) => {
       }
     ],
     sampleIds: [sample1Id],
-    sampleLabelColumnLabel: "Sample Name",
+    sampleLabelColumnLabel: 'Sample Name',
     sampleLabels: { [sample1Id]: 'Sample 1' },
     datasets: [
       {
@@ -60,6 +60,6 @@ blockTest('simple imput', async ({ rawPrj: project, ml, helpers, expect }) => {
   const stableState = await blockState.awaitStableValue();
 
   expect(stableState.outputs).toMatchObject({
-    fileImports: { ok: true, value: { [r1Handle]: {done: true}, [r2Handle]: {done: true} } }
+    fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } }
   });
 });

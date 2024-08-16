@@ -1,5 +1,5 @@
 import { ImportFileHandle, ValueType } from '@milaboratory/sdk-ui';
-import { ZodSchema, z } from 'zod';
+import { ZodAnyDef, ZodSchema, z } from 'zod';
 import { PlId } from './helpers';
 
 export const MetadataValueTypeLong = z.literal('Long') satisfies ZodSchema<ValueType>;
@@ -55,6 +55,7 @@ export const MetadataColumn = z
   .discriminatedUnion('valueType', [MetadataDataDouble, MetadataDataLong, MetadataDataString])
   .and(MetadataColumnMeta);
 export type MetadataColumn = z.infer<typeof MetadataColumn>;
+export type MetadataColumnValueType = MetadataColumn['valueType'];
 
 export const ImportFileHandleSchema = z
   .string()
@@ -72,6 +73,7 @@ export type ReadIndex = z.infer<typeof ReadIndex>;
 export const ReadIndices = ReadIndexSchemas.map((s) => s.value);
 
 export const FastqFileGroup = z.record(ReadIndex, ImportFileHandleSchema);
+export type FastqFileGroup = z.infer<typeof FastqFileGroup>;
 
 export const DatasetContentFastq = z
   .object({
@@ -104,12 +106,22 @@ export const DatasetContent = z.discriminatedUnion('type', [
 ]);
 export type DatasetContent = z.infer<typeof DatasetContent>;
 
-export const Dataset = z.object({
-  id: PlId,
-  label: z.string(),
-  content: DatasetContent
-});
-export type Dataset = z.infer<typeof Dataset>;
+export function Dataset<const ContentType extends z.ZodTypeAny>(content: ContentType) {
+  return z.object({
+    id: PlId,
+    label: z.string(),
+    content
+  });
+}
+
+export const DatasetAny = Dataset(DatasetContent);
+export const DatasetFastq = Dataset(DatasetContentFastq);
+export type DatasetFastq = z.infer<typeof DatasetFastq>;
+export const DatasetMultilaneFastq = Dataset(DatasetContentMultilaneFastq);
+export type DatasetMultilaneFastq = z.infer<typeof DatasetMultilaneFastq>;
+
+export type DatasetAny = z.infer<typeof DatasetAny>;
+export type DatasetType = DatasetAny['content']['type'];
 
 export const BlockArgs = z
   .object({
@@ -117,7 +129,7 @@ export const BlockArgs = z
     sampleLabelColumnLabel: z.string(),
     sampleLabels: z.record(PlId, z.string()),
     metadata: z.array(MetadataColumn),
-    datasets: z.array(Dataset)
+    datasets: z.array(DatasetAny)
   })
   .strict();
 export type BlockArgs = z.infer<typeof BlockArgs>;
