@@ -1,6 +1,5 @@
-import { BlockArgs, platforma } from '@milaboratory/milaboratories.samples-and-data.model';
-import { watchIgnorable } from '@vueuse/core';
-import { Ref, onUnmounted, ref } from 'vue';
+import { BlockArgs } from '@milaboratory/milaboratories.samples-and-data.model';
+import { Ref } from 'vue';
 
 export type BlockArgsModel = {
   ready: boolean;

@@ -2,7 +2,7 @@
 import { ICellRendererParams } from '@ag-grid-community/core';
 import { ImportFileHandle } from '@milaboratory/sdk-ui';
 import { FileInput } from '@milaboratory/sdk-vue';
-import { computed, watch } from 'vue';
+import { computed } from 'vue';
 import { injectProgresses } from './injects';
 
 const props = defineProps<{
