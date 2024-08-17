@@ -11,7 +11,7 @@ catalog:
   '@milaboratory/block-builder': ^1.2.3
 
   '@milaboratory/sdk-ui': ^0.12.13
-  '@milaboratory/sdk-test': ^1.4.3
+  '@milaboratory/sdk-test': ^1.4.4
 
   '@milaboratory/tengo-sdk': ^1.0.8
 
@@ -20,7 +20,6 @@ catalog:
   '@milaboratory/helpers': ^1.5.2
 
   'vue': ^3.4.38
-  '@vueuse/core': ^10.11.1
   'vue-tsc': ^2.0.29
 
   'zod': ^3.23.8

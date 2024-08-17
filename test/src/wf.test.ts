@@ -4,10 +4,10 @@ import { blockSpec } from 'this-block';
 
 blockTest('empty imputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
-
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
+  console.dir(await blockState.getValue(), { depth: 5 });
   const stableState = await blockState.awaitStableValue();
   expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} } });
 });

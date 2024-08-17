@@ -18,7 +18,6 @@
     "@milaboratory/platforma-uikit": "catalog:",
     "@milaboratory/sdk-ui": "catalog:",
     "@milaboratory/sdk-vue": "catalog:",
-    "@vueuse/core": "catalog:",
     "utility-types": "catalog:",
     "vue": "catalog:",
     "zod": "catalog:"
