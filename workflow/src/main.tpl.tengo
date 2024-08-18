@@ -67,6 +67,7 @@ wf.body(func(args) {
 	for _, column in args.metadata {
 		exports["metadata." + column.id] = {
 			spec: {
+				kind: "PColumn",
 				name: "pl7.app/metadata",
 				valueType: column.valueType,
 				annotations: {
@@ -87,6 +88,7 @@ wf.body(func(args) {
 
 	exports["metadata.sampleId"] = {
 		spec: {
+			kind: "PColumn",
 			name: "pl7.app/label",
 			valueType: "String",
 			annotations: {
@@ -135,6 +137,7 @@ wf.body(func(args) {
 
 		if dataset.content.type == "Fastq" {
 			spec := {
+				kind: "PColumn",
 				name: "pl7.app/data/sequencing",
 				domain: {
 					"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq",
