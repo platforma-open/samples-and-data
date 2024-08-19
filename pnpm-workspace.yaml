@@ -13,7 +13,7 @@ catalog:
   '@milaboratory/sdk-ui': ^0.12.13
   '@milaboratory/sdk-test': ^1.4.4
 
-  '@milaboratory/tengo-sdk': ^1.0.8
+  '@milaboratory/tengo-sdk': ^1.0.10
 
   '@milaboratory/platforma-uikit': ^1.0.24
   '@milaboratory/sdk-vue': ^1.0.33

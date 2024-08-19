@@ -40,8 +40,8 @@ catalogs:
       specifier: ^1.0.33
       version: 1.0.33
     '@milaboratory/tengo-sdk':
-      specifier: ^1.0.8
-      version: 1.0.8
+      specifier: ^1.0.10
+      version: 1.0.10
     '@milaboratory/tengo-template-builder':
       specifier: ^1.10.0
       version: 1.10.0
@@ -191,7 +191,7 @@ importers:
     devDependencies:
       '@milaboratory/tengo-sdk':
         specifier: 'catalog:'
-        version: 1.0.8
+        version: 1.0.10
       '@milaboratory/tengo-template-builder':
         specifier: 'catalog:'
         version: 1.10.0
@@ -869,8 +869,8 @@ packages:
       '@milaboratory/sdk-ui': ^0.12.10
       vue: ^3.4.31
 
-  '@milaboratory/tengo-sdk@1.0.8':
-    resolution: {integrity: sha512-oqr9bX3DIeFt5QMbj5jvRROLvgAYjA6zpqT2DDuzrWnXyV+uSN/DJ/sSrge8RhWhaElSMX/qc/tOkkVBTQWxnA==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-sdk/1.0.8/7a2ab7351d62cc6244e902520c91c37ce0817aa1}
+  '@milaboratory/tengo-sdk@1.0.10':
+    resolution: {integrity: sha512-wgTQ4I2Az9JtSjTYavQqVqhnhATsAJlfv+FmPdkMcUBgM8VfeNfQgPFA+Ap5f3r6SQb0LBncblozWlif5A2NTw==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-sdk/1.0.10/369ebdd88a966d3cd1a69e7613dec61ed60d92b9}
 
   '@milaboratory/tengo-template-builder@1.10.0':
     resolution: {integrity: sha512-JnI4IyG89fvGFNyJBX6HnUINPPceaGEeGP8XrWSrJvsHIQJSdbMJtM1924IdMHuV7ouVIn/88uGrAm/CcijYRw==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-template-builder/1.10.0/fbbbb026c68121680aa18b9fe470389a622a4403}
@@ -3979,7 +3979,7 @@ snapshots:
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.9.5
 
-  '@milaboratory/tengo-sdk@1.0.8': {}
+  '@milaboratory/tengo-sdk@1.0.10': {}
 
   '@milaboratory/tengo-template-builder@1.10.0':
     dependencies:
