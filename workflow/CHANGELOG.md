@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.3.0
+
+### Minor Changes
+
+- 35b5cf6: sdk upgrade
+
 ## 1.2.0
 
 ### Minor Changes
