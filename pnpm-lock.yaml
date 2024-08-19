@@ -31,11 +31,11 @@ catalogs:
       specifier: ^1.0.24
       version: 1.0.24
     '@milaboratory/sdk-test':
-      specifier: ^1.4.4
-      version: 1.4.4
+      specifier: ^1.4.11
+      version: 1.4.11
     '@milaboratory/sdk-ui':
-      specifier: ^0.12.13
-      version: 0.12.13
+      specifier: ^0.12.18
+      version: 0.12.18
     '@milaboratory/sdk-vue':
       specifier: ^1.0.33
       version: 1.0.33
@@ -88,7 +88,7 @@ importers:
         version: link:workflow
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.13
+        version: 0.12.18
     devDependencies:
       '@changesets/cli':
         specifier: 'catalog:'
@@ -101,7 +101,7 @@ importers:
     dependencies:
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.13
+        version: 0.12.18
       zod:
         specifier: 'catalog:'
         version: 3.23.8
@@ -127,7 +127,7 @@ importers:
     devDependencies:
       '@milaboratory/sdk-test':
         specifier: 'catalog:'
-        version: 1.4.4(@milaboratory/sdk-model@1.3.8)(@types/node@22.0.0)(encoding@0.1.13)
+        version: 1.4.11(@milaboratory/sdk-model@1.3.9)(@types/node@22.0.0)(encoding@0.1.13)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -160,10 +160,10 @@ importers:
         version: 1.0.24(typescript@5.5.4)
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.13
+        version: 0.12.18
       '@milaboratory/sdk-vue':
         specifier: 'catalog:'
-        version: 1.0.33(@milaboratory/helpers@1.5.2)(@milaboratory/platforma-uikit@1.0.24(typescript@5.5.4))(@milaboratory/sdk-ui@0.12.13)(vue@3.4.38(typescript@5.5.4))
+        version: 1.0.33(@milaboratory/helpers@1.5.2)(@milaboratory/platforma-uikit@1.0.24(typescript@5.5.4))(@milaboratory/sdk-ui@0.12.18)(vue@3.4.38(typescript@5.5.4))
       utility-types:
         specifier: 'catalog:'
         version: 3.11.0
@@ -805,8 +805,8 @@ packages:
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
 
-  '@milaboratory/computable@2.1.1':
-    resolution: {integrity: sha512-nvxoPHnC7K45XsYxV4FwR8vPwi1AgPzMgsEvqP93KY/PLpPtVhX2U86/tNxTgO4TVACvAQhmkTVRIXuldBZX6A==, tarball: https://npm.pkg.github.com/download/@milaboratory/computable/2.1.1/9c906e34cf6c54d6021493f07d66a011851a5857}
+  '@milaboratory/computable@2.1.2':
+    resolution: {integrity: sha512-TfL5KiRqm2G7BpzVUo3nVCWZvbLCNxqmK++4HPACmvgkj/agH6a2AB/2yBbUfhceTxLYZO7GC3UrN7KtXsCC8Q==, tarball: https://npm.pkg.github.com/download/@milaboratory/computable/2.1.2/5bfbcbe117a2b7517d4081c62a49b0804d233d69}
 
   '@milaboratory/helpers@1.5.2':
     resolution: {integrity: sha512-9UUACVZsUHeI4IJiRXNBgzq/3yFRXChJmr4dU8fco92jMd5tp2UziIwh/OzVrmbSMlm7dWWHXJ6dg3EYmD+qdg==, tarball: https://npm.pkg.github.com/download/@milaboratory/helpers/1.5.2/470283b6fc0544519e4c687e9b1aea6fe464300a}
@@ -820,9 +820,6 @@ packages:
     resolution: {integrity: sha512-8F28MkHQO0u9YHsmTmocWd6tQH9yyCBpoGNQh3vCHkxsQXKoj9H1zjyxyK4b/eHRFKxH4lcTRk7EgzfUFRqwKQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-block-tools/2.1.5/a0c97d8f6dbd01d724330e8ccd1c80d2e00cc39a}
     hasBin: true
 
-  '@milaboratory/pl-client-v2@2.4.7':
-    resolution: {integrity: sha512-RL2DTrFAWbYPR+rDXdPrV2n8t9nEOsmziTa2mdmgJ08OgWkrKOPuvKasyH6Fo1Y/b8PNgzjMTk4V6gjnID0fAQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-client-v2/2.4.7/027c4da2ebdd532fe75137f3927302494cf4da61}
-
   '@milaboratory/pl-client-v2@2.4.8':
     resolution: {integrity: sha512-JKUbh0Qcn5ucuMrcnAUY+kx0O+FEwiXh/YhznmZqTwh9NF/ybyirOkYPnR6VKadLU1l6l+9fb5vrVzqPbCPgIA==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-client-v2/2.4.8/7e136ebcb0b906b4ad813f1a765e5a4e17654eb3}
 
@@ -835,12 +832,12 @@ packages:
   '@milaboratory/pl-middle-layer-model@1.2.15':
     resolution: {integrity: sha512-70uluwiMeb9/dSEuxZXA5WGvIvJ9Yon9idhY78PUrfM40v7lSMYR+awbKE4jsUnYfTzwIz5YfQARr0loq47dbA==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-middle-layer-model/1.2.15/0c706941cfe9d5c107c424c6456844f4896eac41}
 
-  '@milaboratory/pl-middle-layer@1.9.25':
-    resolution: {integrity: sha512-+WPHhtaAUKF5/0E561lnj6vCz6m353IlfDW6KwBPY44WluOGVG9t14wgVYuTuBSxufzAe4NDns1Ay+5r3LkdPA==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-middle-layer/1.9.25/222c58dde22b975b257c0fcced758ae8a2acd73c}
+  '@milaboratory/pl-middle-layer@1.9.29':
+    resolution: {integrity: sha512-BlZa7AmfOffZXcjiN1h+OVnOSnDtY3wVONOY5sf1NgqNOfVes8Eni7pdVJEL61W888+E1VHF7i3bkzHn+oeyWg==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-middle-layer/1.9.29/232f248431cd19189c82d0393de36075c4ad8b83}
     hasBin: true
 
-  '@milaboratory/pl-tree@1.3.3':
-    resolution: {integrity: sha512-KQBglW/vWZwCVAg8TzquFgiCXblroE3j5Dcw9WeZGbZJSsne53ZshZuLIm0vSy2aA4RXO5SDnnzUX/6RIBBfXw==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-tree/1.3.3/cb87c80fafd4b7b7d91ddbac4df50a86c14a79e3}
+  '@milaboratory/pl-tree@1.3.5':
+    resolution: {integrity: sha512-0mo/8M4oeDYvACOnSVP65uITnifFJL5P0xuQ5jofidWj/N8GnNdlCVYyRl/z6Vi/Q6I6EQAef1kLCgjIZoHG9A==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-tree/1.3.5/3b10f56779c83f7b04737ad1443589dc80291932}
 
   '@milaboratory/platforma-core@0.1.5':
     resolution: {integrity: sha512-h9BW6SnX7zcNMrc3fl70DJuVUPTm+pn6/buKMZJypp/bV51DwT50FiAhCBklCkttwtngZqKXE0i//1H00V0qNg==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-core/0.1.5/cc46c20f983d2c291aec707200e5ff46e082c1a6}
@@ -855,11 +852,14 @@ packages:
   '@milaboratory/sdk-model@1.3.8':
     resolution: {integrity: sha512-7+4Hvmsu3sqWMBCyxzCs/ShdhINKIK0yUf0Qe2Br5Fw9vfKOLBz/qED9ohSUrbm3VzJYgWgtWaVl2ipBC0IjcA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-model/1.3.8/ad3538e61e7a109f553b0821d08ae0bffe4f302d}
 
-  '@milaboratory/sdk-test@1.4.4':
-    resolution: {integrity: sha512-8mjELi4uPRwi3z/d9EpGxPoBvCniIZne9dp7UO6ZW8mN29Dva4I9YQl8r3vphHor+DFYDHKvDlM9OfvfhrdaqA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-test/1.4.4/16d2f40e49a88a66ad742d07c23514f2a7b85c73}
+  '@milaboratory/sdk-model@1.3.9':
+    resolution: {integrity: sha512-ZuJYcbNpbpNEjqBrpp7iY+QpwSIeQcfgP+28MiSctb0PrhHgascC2QvetetFczo6tKJlT2ZvmZ5spdgz0lvgYg==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-model/1.3.9/4e3091eb6014b20b67d7609a54c6014a3ad261ea}
 
-  '@milaboratory/sdk-ui@0.12.13':
-    resolution: {integrity: sha512-v5BUvRomqzgmeuIWt9OsSWV1rVtpa/m3Au5Ov0iiBZN1M0iUmPb6Y21QOXShGmhTCL3z1i/QRwm4+Fha97YDPA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-ui/0.12.13/f7b92e89adb837770673f8c1713363a0976f2c08}
+  '@milaboratory/sdk-test@1.4.11':
+    resolution: {integrity: sha512-2yMToa7lPFDEMEBfBr+AwNk8okeyToo1MmR4U3RNx5/kK2LasrPbG9JbjZEtuZUO6eWFDgUH/6DEYm4ffInbqw==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-test/1.4.11/57a0b26efa450e91b122f9a2836b1adecab99a86}
+
+  '@milaboratory/sdk-ui@0.12.18':
+    resolution: {integrity: sha512-351SLm7CD3q0KRVxgIkhnVlznuxBC5/K7GpMyx3ApNJJNZmGcZ2n6IZFZNoJK5kb7bsd3d8VcOoGDz9zvEGeFg==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-ui/0.12.18/c422a087ce100ad14ee180164aaff560f5ee8c12}
 
   '@milaboratory/sdk-vue@1.0.33':
     resolution: {integrity: sha512-uR12SH1kheVz1s8K7gvRcE2FBO+ukRE4N67XEkThAjnHvkw1EmcPmgnU3aRSW/h6uHsq1C5QHXnr77rHe/tTOg==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-vue/1.0.33/36106e29855131fa72f4c26c4a40c6e7714bf581}
@@ -2629,10 +2629,6 @@ packages:
   undici-types@6.11.1:
     resolution: {integrity: sha512-mIDEX2ek50x0OlRgxryxsenE5XaQD4on5U2inY7RApK3SOJpofyw7uW2AyfMKkhAxXIceo2DeWGVGwyvng1GNQ==}
 
-  undici@6.19.4:
-    resolution: {integrity: sha512-i3uaEUwNdkRq2qtTRRJb13moW5HWqviu7Vl7oYRYz++uPtGHJj+x7TGjcEuwS5Mt2P4nA0U9dhIX3DdB6JGY0g==}
-    engines: {node: '>=18.17'}
-
   undici@6.19.7:
     resolution: {integrity: sha512-HR3W/bMGPSr90i8AAp2C4DM3wChFdJPLrWYpIS++LxS8K+W535qftjt+4MyjNYHeWabMj1nvtmLIi7l++iq91A==}
     engines: {node: '>=18.17'}
@@ -3792,7 +3788,7 @@ snapshots:
       - encoding
       - supports-color
 
-  '@milaboratory/computable@2.1.1':
+  '@milaboratory/computable@2.1.2':
     dependencies:
       '@milaboratory/ts-helpers': 1.0.19
       serialize-error: 11.0.3
@@ -3800,11 +3796,11 @@ snapshots:
 
   '@milaboratory/helpers@1.5.2': {}
 
-  '@milaboratory/pframes-node@0.4.13(@milaboratory/sdk-model@1.3.8)(encoding@0.1.13)':
+  '@milaboratory/pframes-node@0.4.13(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)':
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11(encoding@0.1.13)
       '@milaboratory/pl-middle-layer-model': 1.2.15
-      '@milaboratory/sdk-model': 1.3.8
+      '@milaboratory/sdk-model': 1.3.9
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -3825,21 +3821,6 @@ snapshots:
     transitivePeerDependencies:
       - aws-crt
 
-  '@milaboratory/pl-client-v2@2.4.7':
-    dependencies:
-      '@grpc/grpc-js': 1.11.1
-      '@milaboratory/ts-helpers': 1.0.19
-      '@protobuf-ts/grpc-transport': 2.9.4(@grpc/grpc-js@1.11.1)
-      canonicalize: 2.0.0
-      denque: 2.1.0
-      https-proxy-agent: 7.0.5
-      long: 5.2.3
-      undici: 6.19.4
-      utility-types: 3.11.0
-      yaml: 2.5.0
-    transitivePeerDependencies:
-      - supports-color
-
   '@milaboratory/pl-client-v2@2.4.8':
     dependencies:
       '@grpc/grpc-js': 1.11.1
@@ -3858,9 +3839,9 @@ snapshots:
   '@milaboratory/pl-drivers@1.2.10':
     dependencies:
       '@grpc/grpc-js': 1.11.1
-      '@milaboratory/computable': 2.1.1
+      '@milaboratory/computable': 2.1.2
       '@milaboratory/pl-client-v2': 2.4.8
-      '@milaboratory/pl-tree': 1.3.3
+      '@milaboratory/pl-tree': 1.3.5
       '@milaboratory/sdk-model': 1.3.8
       '@milaboratory/ts-helpers': 1.0.19
       '@protobuf-ts/grpc-transport': 2.9.4(@grpc/grpc-js@1.11.1)
@@ -3884,16 +3865,16 @@ snapshots:
       utility-types: 3.11.0
       zod: 3.23.8
 
-  '@milaboratory/pl-middle-layer@1.9.25(@milaboratory/sdk-model@1.3.8)(encoding@0.1.13)':
+  '@milaboratory/pl-middle-layer@1.9.29(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)':
     dependencies:
-      '@milaboratory/computable': 2.1.1
-      '@milaboratory/pframes-node': 0.4.13(@milaboratory/sdk-model@1.3.8)(encoding@0.1.13)
+      '@milaboratory/computable': 2.1.2
+      '@milaboratory/pframes-node': 0.4.13(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)
       '@milaboratory/pl-block-tools': 2.1.5
       '@milaboratory/pl-client-v2': 2.4.8
       '@milaboratory/pl-drivers': 1.2.10
       '@milaboratory/pl-middle-layer-model': 1.2.15
-      '@milaboratory/pl-tree': 1.3.3
-      '@milaboratory/sdk-ui': 0.12.13
+      '@milaboratory/pl-tree': 1.3.5
+      '@milaboratory/sdk-ui': 0.12.18
       '@milaboratory/ts-helpers': 1.0.19
       canonicalize: 2.0.0
       denque: 2.1.0
@@ -3908,10 +3889,10 @@ snapshots:
       - encoding
       - supports-color
 
-  '@milaboratory/pl-tree@1.3.3':
+  '@milaboratory/pl-tree@1.3.5':
     dependencies:
-      '@milaboratory/computable': 2.1.1
-      '@milaboratory/pl-client-v2': 2.4.7
+      '@milaboratory/computable': 2.1.2
+      '@milaboratory/pl-client-v2': 2.4.8
       '@milaboratory/ts-helpers': 1.0.19
       denque: 2.1.0
       utility-types: 3.11.0
@@ -3939,11 +3920,17 @@ snapshots:
 
   '@milaboratory/sdk-model@1.3.8': {}
 
-  '@milaboratory/sdk-test@1.4.4(@milaboratory/sdk-model@1.3.8)(@types/node@22.0.0)(encoding@0.1.13)':
+  '@milaboratory/sdk-model@1.3.9':
     dependencies:
-      '@milaboratory/computable': 2.1.1
-      '@milaboratory/pl-middle-layer': 1.9.25(@milaboratory/sdk-model@1.3.8)(encoding@0.1.13)
-      '@milaboratory/pl-tree': 1.3.3
+      zod: 3.23.8
+
+  '@milaboratory/sdk-test@1.4.11(@milaboratory/sdk-model@1.3.9)(@types/node@22.0.0)(encoding@0.1.13)':
+    dependencies:
+      '@milaboratory/computable': 2.1.2
+      '@milaboratory/pl-client-v2': 2.4.8
+      '@milaboratory/pl-middle-layer': 1.9.29(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)
+      '@milaboratory/pl-tree': 1.3.5
+      '@milaboratory/sdk-ui': 0.12.18
       '@milaboratory/ts-helpers': 1.0.19
       vitest: 2.0.5(@types/node@22.0.0)
     transitivePeerDependencies:
@@ -3965,16 +3952,17 @@ snapshots:
       - supports-color
       - terser
 
-  '@milaboratory/sdk-ui@0.12.13':
+  '@milaboratory/sdk-ui@0.12.18':
     dependencies:
-      '@milaboratory/sdk-model': 1.3.8
+      '@milaboratory/sdk-model': 1.3.9
       utility-types: 3.11.0
+      zod: 3.23.8
 
-  '@milaboratory/sdk-vue@1.0.33(@milaboratory/helpers@1.5.2)(@milaboratory/platforma-uikit@1.0.24(typescript@5.5.4))(@milaboratory/sdk-ui@0.12.13)(vue@3.4.38(typescript@5.5.4))':
+  '@milaboratory/sdk-vue@1.0.33(@milaboratory/helpers@1.5.2)(@milaboratory/platforma-uikit@1.0.24(typescript@5.5.4))(@milaboratory/sdk-ui@0.12.18)(vue@3.4.38(typescript@5.5.4))':
     dependencies:
       '@milaboratory/helpers': 1.5.2
       '@milaboratory/platforma-uikit': 1.0.24(typescript@5.5.4)
-      '@milaboratory/sdk-ui': 0.12.13
+      '@milaboratory/sdk-ui': 0.12.18
       vue: 3.4.38(typescript@5.5.4)
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.9.5
@@ -5905,8 +5893,6 @@ snapshots:
   typescript@5.5.4: {}
 
   undici-types@6.11.1: {}
-
-  undici@6.19.4: {}
 
   undici@6.19.7: {}
 

@@ -10,8 +10,8 @@ catalog:
   '@milaboratory/pl-block-tools': ^2.1.5
   '@milaboratory/block-builder': ^1.2.3
 
-  '@milaboratory/sdk-ui': ^0.12.13
-  '@milaboratory/sdk-test': ^1.4.4
+  '@milaboratory/sdk-ui': ^0.12.18
+  '@milaboratory/sdk-test': ^1.4.11
 
   '@milaboratory/tengo-sdk': ^1.0.10
 
