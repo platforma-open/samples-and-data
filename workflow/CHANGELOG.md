@@ -1,5 +1,12 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.4.0
+
+### Minor Changes
+
+- 6ca9efb: multilate fastq support
+- bc952ca: propper resource data for PColumnData/ResourceMap resources
+
 ## 1.3.0
 
 ### Minor Changes
