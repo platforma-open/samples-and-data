@@ -135,20 +135,23 @@ wf.body(func(args) {
 		if dataset.content.type == "Fastq" {
 			fastqDataSpec.axesSpec = [sampleIdAxisSpec, readIndexAxisSpec]
 
-			data := {}
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: 2
+			}))
+
 			for sampleId, fileGroup in dataset.content.data {
 				for _, readIndex in dataset.content.readIndices {
 					importHandle := fileGroup[readIndex]
 					if !importHandle {
 						ll.panic("File handle not set for %v in sample %v", readIndex, sampleId)
 					}
-					data[json.encode([sampleId, readIndex])] = importFile(importHandle)
+					data.createInputField(json.encode([sampleId, readIndex])).set(importFile(importHandle))
 				}
 			}
 
 			exports[exportKey] = {
 				spec: fastqDataSpec,
-				data: smart.createMapResourceWithType(_P_COLUMN_DATA_RESOURCE_MAP, data)
+				data: data.lockAndBuild()
 			}
 		} else if dataset.content.type == "MultilaneFastq" {
 			laneAxisSpec := {
@@ -160,7 +163,10 @@ wf.body(func(args) {
 			}
 			fastqDataSpec.axesSpec = [sampleIdAxisSpec, laneAxisSpec, readIndexAxisSpec]
 
-			data := {}
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: 3
+			}))
+
 			for sampleId, laneData in dataset.content.data {
 				for laneId, fileGroup in laneData {
 					for _, readIndex in dataset.content.readIndices {
@@ -168,14 +174,14 @@ wf.body(func(args) {
 						if !importHandle {
 							ll.panic("File handle not set for %v, lane %v in sample %v", readIndex, laneId, sampleId)
 						}
-						data[json.encode([sampleId, laneId, readIndex])] = importFile(importHandle)
+						data.createInputField(json.encode([sampleId, laneId, readIndex])).set(importFile(importHandle))
 					}
 				}
 			}
 
 			exports[exportKey] = {
 				spec: fastqDataSpec,
-				data: smart.createMapResourceWithType(_P_COLUMN_DATA_RESOURCE_MAP, data)
+				data: data.lockAndBuild()
 			}
 		} else {
 			ll.panic("Unknow dataset type %v", dataset.content.type)
