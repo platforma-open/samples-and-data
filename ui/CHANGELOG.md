@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.ui
 
+## 1.3.1
+
+### Patch Changes
+
+- 98a5578: Added space in UI.
+
 ## 1.3.0
 
 ### Minor Changes

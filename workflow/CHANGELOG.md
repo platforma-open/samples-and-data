@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.4.1
+
+### Patch Changes
+
+- 98a5578: Added space in UI.
+
 ## 1.4.0
 
 ### Minor Changes
