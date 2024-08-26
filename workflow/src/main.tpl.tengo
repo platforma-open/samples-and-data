@@ -126,7 +126,7 @@ wf.body(func(args) {
 				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq",
 				"pl7.app/blockId": blockId
 			},
-			valueType: "blob",
+			valueType: "file",
 			annotations: {
 				"pl7.app/label": dataset.label
 			}
