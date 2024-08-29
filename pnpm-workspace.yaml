@@ -6,21 +6,21 @@ packages:
   - test
 
 catalog:
-  '@milaboratory/tengo-template-builder': ^1.10.1
+  '@milaboratory/tengo-template-builder': ^1.13.0
   '@milaboratory/pl-block-tools': ^2.1.5
   '@milaboratory/block-builder': ^1.2.3
 
   '@milaboratory/sdk-ui': ^0.12.18
-  '@milaboratory/sdk-test': ^1.4.11
+  '@milaboratory/sdk-test': ^1.5.0
 
-  '@milaboratory/tengo-sdk': ^1.0.11
+  '@milaboratory/tengo-sdk': ^1.1.2
 
-  '@milaboratory/platforma-uikit': ^1.0.24
-  '@milaboratory/sdk-vue': ^1.0.33
+  '@milaboratory/platforma-uikit': ^1.0.29
+  '@milaboratory/sdk-vue': ^1.0.40
   '@milaboratory/helpers': ^1.5.2
 
   'vue': ^3.4.38
-  'vue-tsc': ^2.0.29
+  'vue-tsc': ^2.1.2
 
   'zod': ^3.23.8
   'utility-types': ^3.11.0
