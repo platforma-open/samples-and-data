@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.model
 
+## 1.1.1
+
+### Patch Changes
+
+- aacaa26: SDK Upgrade
+
 ## 1.1.0
 
 ### Minor Changes

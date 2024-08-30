@@ -1,5 +1,12 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.4.2
+
+### Patch Changes
+
+- 16806b1: Fix for export spec & SDK upgrades
+- aacaa26: SDK Upgrade
+
 ## 1.4.1
 
 ### Patch Changes
