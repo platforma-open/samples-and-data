@@ -1,5 +1,13 @@
 # @milaboratory/milaboratories.samples-and-data.ui
 
+## 1.3.2
+
+### Patch Changes
+
+- aacaa26: SDK Upgrade
+- Updated dependencies [aacaa26]
+  - @milaboratory/milaboratories.samples-and-data.model@1.1.1
+
 ## 1.3.1
 
 ### Patch Changes
