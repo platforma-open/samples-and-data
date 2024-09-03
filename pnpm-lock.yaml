@@ -22,26 +22,26 @@ catalogs:
       specifier: ^2.27.7
       version: 2.27.7
     '@milaboratory/helpers':
-      specifier: ^1.5.2
-      version: 1.5.2
+      specifier: ^1.5.3
+      version: 1.5.3
     '@milaboratory/pl-block-tools':
       specifier: ^2.1.5
       version: 2.1.5
     '@milaboratory/platforma-uikit':
-      specifier: ^1.0.29
-      version: 1.0.29
+      specifier: ^1.1.0
+      version: 1.1.0
     '@milaboratory/sdk-test':
-      specifier: ^1.5.1
-      version: 1.5.1
+      specifier: ^1.5.4
+      version: 1.5.4
     '@milaboratory/sdk-ui':
-      specifier: ^0.12.20
-      version: 0.12.20
+      specifier: ^0.12.21
+      version: 0.12.21
     '@milaboratory/sdk-vue':
-      specifier: ^1.0.40
-      version: 1.0.40
+      specifier: ^1.0.44
+      version: 1.0.44
     '@milaboratory/tengo-sdk':
-      specifier: ^1.1.4
-      version: 1.1.4
+      specifier: ^1.1.8
+      version: 1.1.8
     '@milaboratory/tengo-template-builder':
       specifier: ^1.13.0
       version: 1.13.0
@@ -58,8 +58,8 @@ catalogs:
       specifier: ^3.11.0
       version: 3.11.0
     vite:
-      specifier: ^5.4.2
-      version: 5.4.2
+      specifier: ^5.4.3
+      version: 5.4.3
     vitest:
       specifier: ^2.0.5
       version: 2.0.5
@@ -67,8 +67,8 @@ catalogs:
       specifier: ^3.4.38
       version: 3.4.38
     vue-tsc:
-      specifier: ^2.1.2
-      version: 2.1.2
+      specifier: ^2.1.4
+      version: 2.1.4
     zod:
       specifier: ^3.23.8
       version: 3.23.8
@@ -88,7 +88,7 @@ importers:
         version: link:workflow
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.20
+        version: 0.12.21
     devDependencies:
       '@changesets/cli':
         specifier: 'catalog:'
@@ -101,7 +101,7 @@ importers:
     dependencies:
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.20
+        version: 0.12.21
       zod:
         specifier: 'catalog:'
         version: 3.23.8
@@ -111,13 +111,13 @@ importers:
         version: 2.1.5
       tsup:
         specifier: 'catalog:'
-        version: 8.1.2(postcss@8.4.41)(typescript@5.5.4)(yaml@2.5.0)
+        version: 8.1.2(postcss@8.4.44)(typescript@5.5.4)(yaml@2.5.0)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
       vite:
         specifier: 'catalog:'
-        version: 5.4.2(@types/node@22.0.0)
+        version: 5.4.3(@types/node@22.0.0)
 
   test:
     dependencies:
@@ -127,7 +127,7 @@ importers:
     devDependencies:
       '@milaboratory/sdk-test':
         specifier: 'catalog:'
-        version: 1.5.1(@milaboratory/sdk-model@1.3.9)(@types/node@22.0.0)(encoding@0.1.13)
+        version: 1.5.4(@milaboratory/sdk-model@1.3.9)(@types/node@22.0.0)(encoding@0.1.13)
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -151,19 +151,19 @@ importers:
         version: 32.1.0(typescript@5.5.4)
       '@milaboratory/helpers':
         specifier: 'catalog:'
-        version: 1.5.2
+        version: 1.5.3
       '@milaboratory/milaboratories.samples-and-data.model':
         specifier: workspace:*
         version: link:../model
       '@milaboratory/platforma-uikit':
         specifier: 'catalog:'
-        version: 1.0.29(typescript@5.5.4)
+        version: 1.1.0(typescript@5.5.4)
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.20
+        version: 0.12.21
       '@milaboratory/sdk-vue':
         specifier: 'catalog:'
-        version: 1.0.40(@milaboratory/helpers@1.5.2)(@milaboratory/sdk-ui@0.12.20)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))
+        version: 1.0.44(@milaboratory/helpers@1.5.3)(@milaboratory/sdk-ui@0.12.21)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))
       utility-types:
         specifier: 'catalog:'
         version: 3.11.0
@@ -176,22 +176,22 @@ importers:
     devDependencies:
       '@vitejs/plugin-vue':
         specifier: 'catalog:'
-        version: 5.1.3(vite@5.4.2(@types/node@22.0.0))(vue@3.4.38(typescript@5.5.4))
+        version: 5.1.3(vite@5.4.3(@types/node@22.0.0))(vue@3.4.38(typescript@5.5.4))
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
       vite:
         specifier: 'catalog:'
-        version: 5.4.2(@types/node@22.0.0)
+        version: 5.4.3(@types/node@22.0.0)
       vue-tsc:
         specifier: 'catalog:'
-        version: 2.1.2(typescript@5.5.4)
+        version: 2.1.4(typescript@5.5.4)
 
   workflow:
     devDependencies:
       '@milaboratory/tengo-sdk':
         specifier: 'catalog:'
-        version: 1.1.4
+        version: 1.1.8
       '@milaboratory/tengo-template-builder':
         specifier: 'catalog:'
         version: 1.13.0
@@ -759,20 +759,20 @@ packages:
     resolution: {integrity: sha512-wgm9Ehl2jpeqP3zw/7mo3kRHFp5MEDhqAdwy1fTGkHAwnkGOVsgpvQhL8B5n1qlb01jV3n/bI0ZfZp5lWA1k4w==}
     engines: {node: '>=18.0.0'}
 
-  '@jitl/quickjs-ffi-types@0.29.2':
-    resolution: {integrity: sha512-069uQTiEla2PphXg6UpyyJ4QXHkTj3S9TeXgaMCd8NDYz3ODBw5U/rkg6fhuU8SMpoDrWjEzybmV5Mi2Pafb5w==}
+  '@jitl/quickjs-ffi-types@0.30.0':
+    resolution: {integrity: sha512-rx+dgOnzVodDd/uAERk+Lz2oL3RGQPHGno99n0Il8x+C7nWvHyfwygBQWiD+zz1yEkbS7kfiGRg8U+i94WkJZw==}
 
-  '@jitl/quickjs-wasmfile-debug-asyncify@0.29.2':
-    resolution: {integrity: sha512-YdRw2414pFkxzyyoJGv81Grbo9THp/5athDMKipaSBNNQvFE9FGRrgE9tt2DT2mhNnBx1kamtOGj0dX84Yy9bg==}
+  '@jitl/quickjs-wasmfile-debug-asyncify@0.30.0':
+    resolution: {integrity: sha512-jJ/DWm0OD3FUemSw2ztWKtIvHgRhwEuzMNJbMhbBq8oPoYa0oub3PXByE/f2GMpEPw3wMZtNjdvBvFUpFH+i8g==}
 
-  '@jitl/quickjs-wasmfile-debug-sync@0.29.2':
-    resolution: {integrity: sha512-VgisubjyPMWEr44g+OU0QWGyIxu7VkApkLHMxdORX351cw22aLTJ+Z79DJ8IVrTWc7jh4CBPsaK71RBQDuVB7w==}
+  '@jitl/quickjs-wasmfile-debug-sync@0.30.0':
+    resolution: {integrity: sha512-Si2eTUbypqXKoFtOVHPLHtXInVe5XS21/0dgrHE9lhiECvWWc9ecT1xkDbiWoqbX89DnIx504+EXjT75DbCSAA==}
 
-  '@jitl/quickjs-wasmfile-release-asyncify@0.29.2':
-    resolution: {integrity: sha512-sf3luCPr8wBVmGV6UV8Set+ie8wcO6mz5wMvDVO0b90UVCKfgnx65A1JfeA+zaSGoaFyTZ3sEpXSGJU+6qJmLw==}
+  '@jitl/quickjs-wasmfile-release-asyncify@0.30.0':
+    resolution: {integrity: sha512-dvWCdyLIiWS4iHMCMd3zQWu6nexw9z1pdRQhmgUqT0n9XNv1UEOIXC0EcM/CDZ6QXHDeLOiymFZ/R6x7pdA/lw==}
 
-  '@jitl/quickjs-wasmfile-release-sync@0.29.2':
-    resolution: {integrity: sha512-UFIcbY3LxBRUjEqCHq3Oa6bgX5znt51V5NQck8L2US4u989ErasiMLUjmhq6UPC837Sjqu37letEK/ZpqlJ7aA==}
+  '@jitl/quickjs-wasmfile-release-sync@0.30.0':
+    resolution: {integrity: sha512-ry3N8vu462aIYJW7aywtRhvX9jxRgecNooticOOuU2QScj3es8VbN8ASjWoSLZP+Tv1lABNHIHLY+TdDJZkrvQ==}
 
   '@jridgewell/gen-mapping@0.3.5':
     resolution: {integrity: sha512-IzL8ZoEDIBRWEzlCcRhOaCupYyN5gdIK+Q6fbFdPDg6HqX6jpkItn7DFIpW9LQzXG6Df9sA7+OKnq0qlz/GaQg==}
@@ -808,11 +808,11 @@ packages:
   '@milaboratory/computable@2.1.2':
     resolution: {integrity: sha512-TfL5KiRqm2G7BpzVUo3nVCWZvbLCNxqmK++4HPACmvgkj/agH6a2AB/2yBbUfhceTxLYZO7GC3UrN7KtXsCC8Q==, tarball: https://npm.pkg.github.com/download/@milaboratory/computable/2.1.2/5bfbcbe117a2b7517d4081c62a49b0804d233d69}
 
-  '@milaboratory/helpers@1.5.2':
-    resolution: {integrity: sha512-9UUACVZsUHeI4IJiRXNBgzq/3yFRXChJmr4dU8fco92jMd5tp2UziIwh/OzVrmbSMlm7dWWHXJ6dg3EYmD+qdg==, tarball: https://npm.pkg.github.com/download/@milaboratory/helpers/1.5.2/470283b6fc0544519e4c687e9b1aea6fe464300a}
+  '@milaboratory/helpers@1.5.3':
+    resolution: {integrity: sha512-NYxQidKlohXtlV/SkPe7TE2VMw21h+vouRjj6133fQMD/ttowVLQOVmQU9hC8Xx4wrby5dSPBKh/s1tgbuIB6w==, tarball: https://npm.pkg.github.com/download/@milaboratory/helpers/1.5.3/901706849014c6e7508aa8a9beea07cd5c208925}
 
-  '@milaboratory/pframes-node@0.4.21':
-    resolution: {integrity: sha512-JEh73e2m2e5ZRGIN6zu/YcRmjmqarrlQU2oHHBR11UHWbyIR2Cf+hRq3rz2mYKEIkB7KF5QJYrL0cqXcm3Gnnw==, tarball: https://npm.pkg.github.com/download/@milaboratory/pframes-node/0.4.21/8c0c5aaee88751cbf4b8faff86a9c2b09402b611}
+  '@milaboratory/pframes-node@0.4.22':
+    resolution: {integrity: sha512-AKCnP/j5GNSiN/wutuMBidSm37Q6s50fSzvcgkRMUvSKaBOI5icpjcJsgSCsQIJtWHM57dnUwv4DKWJ6cNP8FQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/pframes-node/0.4.22/c5e0ccd8e04f3a0e154f164b9fd173b3298d8827}
     peerDependencies:
       '@milaboratory/sdk-model': '*'
 
@@ -832,8 +832,8 @@ packages:
   '@milaboratory/pl-middle-layer-model@1.2.16':
     resolution: {integrity: sha512-WT5TKDSOQ/iLUDFF3QW1En/YnbR/J5TZlHY0endrYpxVR40qfLpoOkCrHJki0EXG0j9AWcyTyFSrpxYX7OIkeQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-middle-layer-model/1.2.16/900734158fde8d99b72533ed6b82c3a9b66f4b8c}
 
-  '@milaboratory/pl-middle-layer@1.10.1':
-    resolution: {integrity: sha512-DavPhgGOAbCpVKPMtTo2ZCUxHEplsYoDnIAqfmVmYu9J/ifrmmy651EAhFOPTjQDMqQrpYoBiN5V7ZVzhgdptQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-middle-layer/1.10.1/5dc179cef63533c05f7466e574a5eb08766ef30b}
+  '@milaboratory/pl-middle-layer@1.10.2':
+    resolution: {integrity: sha512-FmJFm26RV5UefRSHJx1miqumMBA46Ms6rcLsSao0hstPwga8SJ8e6Ys6bhbSp+oQqi6kPKSlYFtWH8l/5aD9Ig==, tarball: https://npm.pkg.github.com/download/@milaboratory/pl-middle-layer/1.10.2/d0b1677253d88332f0dd44a2ec3afe11563b6abb}
     hasBin: true
 
   '@milaboratory/pl-tree@1.3.5':
@@ -842,8 +842,8 @@ packages:
   '@milaboratory/platforma-core@0.1.5':
     resolution: {integrity: sha512-h9BW6SnX7zcNMrc3fl70DJuVUPTm+pn6/buKMZJypp/bV51DwT50FiAhCBklCkttwtngZqKXE0i//1H00V0qNg==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-core/0.1.5/cc46c20f983d2c291aec707200e5ff46e082c1a6}
 
-  '@milaboratory/platforma-uikit@1.0.29':
-    resolution: {integrity: sha512-/804A08lL58MhoeqK3EdBS020BOKdANPsFvYQLvgSNvDu1L/4ooNyiMAuiCnuoxiOU4TQYJ8GCfvGIV0JAo5vg==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-uikit/1.0.29/051a588e6e40fa089d0ce6425bee2efd59f17cac}
+  '@milaboratory/platforma-uikit@1.1.0':
+    resolution: {integrity: sha512-GZfaJd1zdLyizGtXVzEWzzsdeJ9U5bS0DIOTMnJnzh/Vu5KzopjajiX4+13zYUI51Dc4QM9eeQBSY1pvo2UVhw==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-uikit/1.1.0/4d09eeeebc8dd63f659b522ccebc21d3b2387561}
     engines: {node: ^20.12.2, npm: ^10.5.2}
 
   '@milaboratory/sdk-model@1.3.7':
@@ -852,21 +852,21 @@ packages:
   '@milaboratory/sdk-model@1.3.9':
     resolution: {integrity: sha512-ZuJYcbNpbpNEjqBrpp7iY+QpwSIeQcfgP+28MiSctb0PrhHgascC2QvetetFczo6tKJlT2ZvmZ5spdgz0lvgYg==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-model/1.3.9/4e3091eb6014b20b67d7609a54c6014a3ad261ea}
 
-  '@milaboratory/sdk-test@1.5.1':
-    resolution: {integrity: sha512-brsi01p2qYte7wXmEHIDbou7acN+YX8enEqq6T6JEJQLL7iA7vi5ch33hPnfKtQs3PlPk0wRYXLfBe9Knn3+BQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-test/1.5.1/0f9c5e98b75423472b0e3aae7b6fb7e031d4f84c}
+  '@milaboratory/sdk-test@1.5.4':
+    resolution: {integrity: sha512-ouoOIDaquFEa8WcOHIe4dxMwWkcITjfK5GUhGfTN0PC3tScw9iKNDaAByjiTlxcyPFNEIoL2YFeF4yAJSxsGLQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-test/1.5.4/a0d262170ef393f9ea9d6be2629247faf5e9817a}
 
-  '@milaboratory/sdk-ui@0.12.20':
-    resolution: {integrity: sha512-EBLIOoa+Q8I0n+Soz7OG4uMfCJ74wFlhIR9qduS2O3IF6/s3vHcFiwVf2o3XKyk06oErkyU8XibHuDcaE4rUdA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-ui/0.12.20/5ede7c4f70d9862ca262230d763ac281b0e35e94}
+  '@milaboratory/sdk-ui@0.12.21':
+    resolution: {integrity: sha512-wQnaHRIUcV3IWnMDUiRVRBPIFDzoyZvIQLBMD6hYZdMK0uj4+Q1rPyq+E+8ZEgNv84uvI8F18pEpNt6EXpZihA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-ui/0.12.21/e3a89013847aa6039ddee63d8d0656f8acf601ae}
 
-  '@milaboratory/sdk-vue@1.0.40':
-    resolution: {integrity: sha512-oyqhg1fQ+9zWuBYUJQ8Z/wUYA4koYd2uWuyfQW0tgR39EKQLbZLkx+D26g6qCWsVixj9UYdZGhkvtE9ocWw0mw==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-vue/1.0.40/7bdb307473d7dc7a311b7d1f091b16500173e822}
+  '@milaboratory/sdk-vue@1.0.44':
+    resolution: {integrity: sha512-np+kYRDcPSxWML8PHAbzS0Bo3VR4tDn3JSHk3q+z/Q9gEzUhyNs/cKgE3nnUBDjW4rhIvUawpvycQYotcZzX0w==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-vue/1.0.44/4226dc56521b965cfce0631241dabf8825587113}
     peerDependencies:
-      '@milaboratory/helpers': ^1.5.1
+      '@milaboratory/helpers': ^1.5.3
       '@milaboratory/sdk-ui': ^0.12.10
       vue: ^3.4.31
 
-  '@milaboratory/tengo-sdk@1.1.4':
-    resolution: {integrity: sha512-6mNovzdROikjsFsaKlZzlZmtKlZW+cciYxk+Xccrtsij15PsMAbTg7vHA+pvN54crXUBo2ren+aeHCtrQdby9w==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-sdk/1.1.4/46ce47909dc7a70e8040f7c910f6a5642995b0c1}
+  '@milaboratory/tengo-sdk@1.1.8':
+    resolution: {integrity: sha512-wq3PU2snMVStIgkg7N60MvLikIX+awtrsp67DVwmlaA3AUiwzNckEQPHkK39TEMPv/4TsFFAevrCr4RL5+AQxw==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-sdk/1.1.8/cf2fa1d14db3110cf0cfc54de6389529def9e685}
 
   '@milaboratory/tengo-template-builder@1.13.0':
     resolution: {integrity: sha512-xokNWyp+IWC8JLIq6yUbLW1HA+qzLs+nEELv2LtHlUoKVH1JR5ju7fj5H4OeOgP9NIvKfjyzq4VpGjNSNa92Gw==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-template-builder/1.13.0/e866030cc9ec80cee031541aa27bfd05f10d5221}
@@ -1397,8 +1397,8 @@ packages:
   '@vue/devtools-api@6.6.3':
     resolution: {integrity: sha512-0MiMsFma/HqA6g3KLKn+AGpL1kgKhFWszC9U29NfpWK5LE7bjeXxySWJrOJ77hBz+TBrBQ7o4QJqbPbqbs8rJw==}
 
-  '@vue/language-core@2.1.2':
-    resolution: {integrity: sha512-tt2J7C+l0J/T5PaLhJ0jvCCi0JNwu3e8azWTYxW3jmAW5B/dac0g5UxmI7l59CQgCGFotqUqI3tXjfZgoWNtog==}
+  '@vue/language-core@2.1.4':
+    resolution: {integrity: sha512-i8pfAgNjTNjabBX1xRsuV6aRw2E8bdQXwd5H8m3cUkTVJju3QN5nfdoXET0uK+yXsuloNJPzo6PXFujRRPNmMA==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -2350,6 +2350,10 @@ packages:
     resolution: {integrity: sha512-TesUflQ0WKZqAvg52PWL6kHgLKP6xB6heTOdoYM0Wt2UHyxNa4K25EZZMgKns3BH1RLVbZCREPpLY0rhnNoHVQ==}
     engines: {node: ^10 || ^12 || >=14}
 
+  postcss@8.4.44:
+    resolution: {integrity: sha512-Aweb9unOEpQ3ezu4Q00DPvvM2ZTUitJdNKeP/+uQgr1IBIqu574IaZoURId7BKtWMREwzKa9OgzPzezWGPWFQw==}
+    engines: {node: ^10 || ^12 || >=14}
+
   preferred-pm@3.1.4:
     resolution: {integrity: sha512-lEHd+yEm22jXdCphDrkvIJQU66EuLojPPtvZkpKIkiD+l0DMThF/niqZKJSoU8Vl7iuvtmzyMhir9LdVy5WMnA==}
     engines: {node: '>=10'}
@@ -2379,11 +2383,11 @@ packages:
   queue-tick@1.0.1:
     resolution: {integrity: sha512-kJt5qhMxoszgU/62PLP1CJytzd2NKetjSRnyuj31fDd3Rlcz3fzlFdFLD1SItunPwyqEOkca6GbV612BWfaBag==}
 
-  quickjs-emscripten-core@0.29.2:
-    resolution: {integrity: sha512-jEAiURW4jGqwO/fW01VwlWqa2G0AJxnN5FBy1xnVu8VIVhVhiaxUfCe+bHqS6zWzfjFm86HoO40lzpteusvyJA==}
+  quickjs-emscripten-core@0.30.0:
+    resolution: {integrity: sha512-2F4zBYBpIzk6BlIzFRL8ctbXuYExvkxLDYc1klno0+GT0CAoGGdlCZ4KAoqs1qh0o1rPP4NNiM+arX95uRdURg==}
 
-  quickjs-emscripten@0.29.2:
-    resolution: {integrity: sha512-SlvkvyZgarReu2nr4rkf+xz1vN0YDUz7sx4WHz8LFtK6RNg4/vzAGcFjE7nfHYBEbKrzfIWvKnMnxZkctQ898w==}
+  quickjs-emscripten@0.30.0:
+    resolution: {integrity: sha512-LAQo30db1T/9EqZf4+M9Ce6O386oXAQiEYPUPzohV1ersWiRdAvhxjl3Cz85FGgrx+B1bJPZBybV5mS4PDB0dw==}
     engines: {node: '>=16.0.0'}
 
   read-yaml-file@1.1.0:
@@ -2787,6 +2791,37 @@ packages:
       terser:
         optional: true
 
+  vite@5.4.3:
+    resolution: {integrity: sha512-IH+nl64eq9lJjFqU+/yrRnrHPVTlgy42/+IzbOdaFDVlyLgI/wDlf+FCobXLX1cT0X5+7LMyH1mIy2xJdLfo8Q==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': ^18.0.0 || >=20.0.0
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      sass-embedded: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+
   vitest@2.0.5:
     resolution: {integrity: sha512-8GUxONfauuIdeSl5f9GTgVEpg5BTOlplET4WEDaeY2QBiN8wSm68vxN/tb5z405OwppfoCavnwXafiaYBC/xOA==}
     engines: {node: ^18.0.0 || >=20.0.0}
@@ -2820,8 +2855,8 @@ packages:
     peerDependencies:
       vue: ^3.2.0
 
-  vue-tsc@2.1.2:
-    resolution: {integrity: sha512-PH1BDxWT3eaPhl73elyZj6DV0nR3K4IFoUM1sGzMXXQneovVUwHQytdSyAHiED5MtEINGSHpL/Hs9ch+c/tDTw==}
+  vue-tsc@2.1.4:
+    resolution: {integrity: sha512-XTzMXQcsixAvNbpou/9qngEsZawaiJRZH3Ja+lfgRfv2A1TJv9vnZ/Kyv7XxPqv/TaZVFSnjGpM87VbWIg6yQg==}
     hasBin: true
     peerDependencies:
       typescript: '>=5.0.0'
@@ -3792,23 +3827,23 @@ snapshots:
     dependencies:
       minipass: 7.1.2
 
-  '@jitl/quickjs-ffi-types@0.29.2': {}
+  '@jitl/quickjs-ffi-types@0.30.0': {}
 
-  '@jitl/quickjs-wasmfile-debug-asyncify@0.29.2':
+  '@jitl/quickjs-wasmfile-debug-asyncify@0.30.0':
     dependencies:
-      '@jitl/quickjs-ffi-types': 0.29.2
+      '@jitl/quickjs-ffi-types': 0.30.0
 
-  '@jitl/quickjs-wasmfile-debug-sync@0.29.2':
+  '@jitl/quickjs-wasmfile-debug-sync@0.30.0':
     dependencies:
-      '@jitl/quickjs-ffi-types': 0.29.2
+      '@jitl/quickjs-ffi-types': 0.30.0
 
-  '@jitl/quickjs-wasmfile-release-asyncify@0.29.2':
+  '@jitl/quickjs-wasmfile-release-asyncify@0.30.0':
     dependencies:
-      '@jitl/quickjs-ffi-types': 0.29.2
+      '@jitl/quickjs-ffi-types': 0.30.0
 
-  '@jitl/quickjs-wasmfile-release-sync@0.29.2':
+  '@jitl/quickjs-wasmfile-release-sync@0.30.0':
     dependencies:
-      '@jitl/quickjs-ffi-types': 0.29.2
+      '@jitl/quickjs-ffi-types': 0.30.0
 
   '@jridgewell/gen-mapping@0.3.5':
     dependencies:
@@ -3866,9 +3901,9 @@ snapshots:
       serialize-error: 11.0.3
       utility-types: 3.11.0
 
-  '@milaboratory/helpers@1.5.2': {}
+  '@milaboratory/helpers@1.5.3': {}
 
-  '@milaboratory/pframes-node@0.4.21(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)':
+  '@milaboratory/pframes-node@0.4.22(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)':
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11(encoding@0.1.13)
       '@milaboratory/pl-middle-layer-model': 1.2.16
@@ -3937,21 +3972,21 @@ snapshots:
       utility-types: 3.11.0
       zod: 3.23.8
 
-  '@milaboratory/pl-middle-layer@1.10.1(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)':
+  '@milaboratory/pl-middle-layer@1.10.2(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)':
     dependencies:
       '@milaboratory/computable': 2.1.2
-      '@milaboratory/pframes-node': 0.4.21(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)
+      '@milaboratory/pframes-node': 0.4.22(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)
       '@milaboratory/pl-block-tools': 2.1.5
       '@milaboratory/pl-client-v2': 2.4.10
       '@milaboratory/pl-drivers': 1.2.10
       '@milaboratory/pl-middle-layer-model': 1.2.16
       '@milaboratory/pl-tree': 1.3.5
-      '@milaboratory/sdk-ui': 0.12.20
-      '@milaboratory/tengo-sdk': 1.1.4
+      '@milaboratory/sdk-ui': 0.12.21
+      '@milaboratory/tengo-sdk': 1.1.8
       '@milaboratory/ts-helpers': 1.0.19
       canonicalize: 2.0.0
       denque: 2.1.0
-      quickjs-emscripten: 0.29.2
+      quickjs-emscripten: 0.30.0
       undici: 6.19.8
       utility-types: 3.11.0
       yaml: 2.5.0
@@ -3977,9 +4012,9 @@ snapshots:
     dependencies:
       zod: 3.23.8
 
-  '@milaboratory/platforma-uikit@1.0.29(typescript@5.5.4)':
+  '@milaboratory/platforma-uikit@1.1.0(typescript@5.5.4)':
     dependencies:
-      '@milaboratory/helpers': 1.5.2
+      '@milaboratory/helpers': 1.5.3
       '@milaboratory/platforma-core': 0.1.5
       js-yaml: 4.1.0
       vue: 3.4.38(typescript@5.5.4)
@@ -3995,13 +4030,13 @@ snapshots:
     dependencies:
       zod: 3.23.8
 
-  '@milaboratory/sdk-test@1.5.1(@milaboratory/sdk-model@1.3.9)(@types/node@22.0.0)(encoding@0.1.13)':
+  '@milaboratory/sdk-test@1.5.4(@milaboratory/sdk-model@1.3.9)(@types/node@22.0.0)(encoding@0.1.13)':
     dependencies:
       '@milaboratory/computable': 2.1.2
       '@milaboratory/pl-client-v2': 2.4.10
-      '@milaboratory/pl-middle-layer': 1.10.1(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)
+      '@milaboratory/pl-middle-layer': 1.10.2(@milaboratory/sdk-model@1.3.9)(encoding@0.1.13)
       '@milaboratory/pl-tree': 1.3.5
-      '@milaboratory/sdk-ui': 0.12.20
+      '@milaboratory/sdk-ui': 0.12.21
       '@milaboratory/ts-helpers': 1.0.19
       vitest: 2.0.5(@types/node@22.0.0)
     transitivePeerDependencies:
@@ -4023,24 +4058,24 @@ snapshots:
       - supports-color
       - terser
 
-  '@milaboratory/sdk-ui@0.12.20':
+  '@milaboratory/sdk-ui@0.12.21':
     dependencies:
       '@milaboratory/sdk-model': 1.3.9
       utility-types: 3.11.0
       zod: 3.23.8
 
-  '@milaboratory/sdk-vue@1.0.40(@milaboratory/helpers@1.5.2)(@milaboratory/sdk-ui@0.12.20)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))':
+  '@milaboratory/sdk-vue@1.0.44(@milaboratory/helpers@1.5.3)(@milaboratory/sdk-ui@0.12.21)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))':
     dependencies:
-      '@milaboratory/helpers': 1.5.2
-      '@milaboratory/platforma-uikit': 1.0.29(typescript@5.5.4)
-      '@milaboratory/sdk-ui': 0.12.20
+      '@milaboratory/helpers': 1.5.3
+      '@milaboratory/platforma-uikit': 1.1.0(typescript@5.5.4)
+      '@milaboratory/sdk-ui': 0.12.21
       vue: 3.4.38(typescript@5.5.4)
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.9.5
     transitivePeerDependencies:
       - typescript
 
-  '@milaboratory/tengo-sdk@1.1.4': {}
+  '@milaboratory/tengo-sdk@1.1.8': {}
 
   '@milaboratory/tengo-template-builder@1.13.0':
     dependencies:
@@ -4620,9 +4655,9 @@ snapshots:
 
   '@types/triple-beam@1.3.5': {}
 
-  '@vitejs/plugin-vue@5.1.3(vite@5.4.2(@types/node@22.0.0))(vue@3.4.38(typescript@5.5.4))':
+  '@vitejs/plugin-vue@5.1.3(vite@5.4.3(@types/node@22.0.0))(vue@3.4.38(typescript@5.5.4))':
     dependencies:
-      vite: 5.4.2(@types/node@22.0.0)
+      vite: 5.4.3(@types/node@22.0.0)
       vue: 3.4.38(typescript@5.5.4)
 
   '@vitest/expect@2.0.5':
@@ -4707,7 +4742,7 @@ snapshots:
 
   '@vue/devtools-api@6.6.3': {}
 
-  '@vue/language-core@2.1.2(typescript@5.5.4)':
+  '@vue/language-core@2.1.4(typescript@5.5.4)':
     dependencies:
       '@volar/language-core': 2.4.1
       '@vue/compiler-dom': 3.4.38
@@ -5621,11 +5656,11 @@ snapshots:
     dependencies:
       find-up: 4.1.0
 
-  postcss-load-config@6.0.1(postcss@8.4.41)(yaml@2.5.0):
+  postcss-load-config@6.0.1(postcss@8.4.44)(yaml@2.5.0):
     dependencies:
       lilconfig: 3.1.2
     optionalDependencies:
-      postcss: 8.4.41
+      postcss: 8.4.44
       yaml: 2.5.0
 
   postcss@8.4.40:
@@ -5635,6 +5670,12 @@ snapshots:
       source-map-js: 1.2.0
 
   postcss@8.4.41:
+    dependencies:
+      nanoid: 3.3.7
+      picocolors: 1.0.1
+      source-map-js: 1.2.0
+
+  postcss@8.4.44:
     dependencies:
       nanoid: 3.3.7
       picocolors: 1.0.1
@@ -5677,17 +5718,17 @@ snapshots:
 
   queue-tick@1.0.1: {}
 
-  quickjs-emscripten-core@0.29.2:
+  quickjs-emscripten-core@0.30.0:
     dependencies:
-      '@jitl/quickjs-ffi-types': 0.29.2
+      '@jitl/quickjs-ffi-types': 0.30.0
 
-  quickjs-emscripten@0.29.2:
+  quickjs-emscripten@0.30.0:
     dependencies:
-      '@jitl/quickjs-wasmfile-debug-asyncify': 0.29.2
-      '@jitl/quickjs-wasmfile-debug-sync': 0.29.2
-      '@jitl/quickjs-wasmfile-release-asyncify': 0.29.2
-      '@jitl/quickjs-wasmfile-release-sync': 0.29.2
-      quickjs-emscripten-core: 0.29.2
+      '@jitl/quickjs-wasmfile-debug-asyncify': 0.30.0
+      '@jitl/quickjs-wasmfile-debug-sync': 0.30.0
+      '@jitl/quickjs-wasmfile-release-asyncify': 0.30.0
+      '@jitl/quickjs-wasmfile-release-sync': 0.30.0
+      quickjs-emscripten-core: 0.30.0
 
   read-yaml-file@1.1.0:
     dependencies:
@@ -5986,7 +6027,7 @@ snapshots:
 
   tslib@2.6.3: {}
 
-  tsup@8.1.2(postcss@8.4.41)(typescript@5.5.4)(yaml@2.5.0):
+  tsup@8.1.2(postcss@8.4.44)(typescript@5.5.4)(yaml@2.5.0):
     dependencies:
       bundle-require: 5.0.0(esbuild@0.23.0)
       cac: 6.7.14
@@ -5997,14 +6038,14 @@ snapshots:
       execa: 5.1.1
       globby: 11.1.0
       joycon: 3.1.1
-      postcss-load-config: 6.0.1(postcss@8.4.41)(yaml@2.5.0)
+      postcss-load-config: 6.0.1(postcss@8.4.44)(yaml@2.5.0)
       resolve-from: 5.0.0
       rollup: 4.19.1
       source-map: 0.8.0-beta.0
       sucrase: 3.35.0
       tree-kill: 1.2.2
     optionalDependencies:
-      postcss: 8.4.41
+      postcss: 8.4.44
       typescript: 5.5.4
     transitivePeerDependencies:
       - jiti
@@ -6038,7 +6079,7 @@ snapshots:
       debug: 4.3.6(supports-color@8.1.1)
       pathe: 1.1.2
       tinyrainbow: 1.2.0
-      vite: 5.4.1(@types/node@22.0.0)
+      vite: 5.4.2(@types/node@22.0.0)
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -6063,6 +6104,15 @@ snapshots:
     dependencies:
       esbuild: 0.21.5
       postcss: 8.4.41
+      rollup: 4.21.0
+    optionalDependencies:
+      '@types/node': 22.0.0
+      fsevents: 2.3.3
+
+  vite@5.4.3(@types/node@22.0.0):
+    dependencies:
+      esbuild: 0.21.5
+      postcss: 8.4.44
       rollup: 4.21.0
     optionalDependencies:
       '@types/node': 22.0.0
@@ -6108,10 +6158,10 @@ snapshots:
       '@vue/devtools-api': 6.6.3
       vue: 3.4.38(typescript@5.5.4)
 
-  vue-tsc@2.1.2(typescript@5.5.4):
+  vue-tsc@2.1.4(typescript@5.5.4):
     dependencies:
       '@volar/typescript': 2.4.1
-      '@vue/language-core': 2.1.2(typescript@5.5.4)
+      '@vue/language-core': 2.1.4(typescript@5.5.4)
       semver: 7.6.3
       typescript: 5.5.4
 
