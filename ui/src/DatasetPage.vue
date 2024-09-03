@@ -3,7 +3,7 @@
 // import '@milaboratory/graph-maker/dist/style.css';
 import { provide, ref, watch } from 'vue';
 import { useApp } from './app';
-import { BtnSecondary, TextField } from '@milaboratory/platforma-uikit';
+import { PlBtnSecondary, PlTextField } from '@milaboratory/platforma-uikit';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { Progresses } from './injects';
 import { ImportFileHandle, ImportProgress } from '@milaboratory/sdk-ui';
@@ -42,8 +42,9 @@ async function deleteTheDataset() {
 </script>
 
 <template>
-  <btn-secondary @click="deleteTheDataset">Delete</btn-secondary>
-  <text-field @update:model-value="v => dataset.update(ds => ds.label = v)" :model-value="dataset.value.label" />
+  <pl-btn-secondary @click="deleteTheDataset">Delete</pl-btn-secondary>
+  <pl-text-field @update:model-value="v => dataset.update(ds => ds.label = v ?? '')"
+    :model-value="dataset.value.label" />
   <div v-if="dataset.value.content.type === 'Fastq'">
     <FastqDatasetPage />
   </div>

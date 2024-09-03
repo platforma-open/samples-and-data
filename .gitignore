@@ -3,3 +3,4 @@ dist/
 block-pack/
 dev/
 work/
+.test_auth.json

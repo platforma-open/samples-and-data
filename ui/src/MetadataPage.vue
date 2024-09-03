@@ -19,7 +19,7 @@ import {
   PlId,
   uniquePlId
 } from '@milaboratory/milaboratories.samples-and-data.model';
-import { BtnSecondary } from '@milaboratory/platforma-uikit';
+import { PlBtnSecondary } from '@milaboratory/platforma-uikit';
 import { useApp } from './app';
 import { computed, ref, shallowRef } from 'vue';
 import { notEmpty, undef } from '@milaboratory/helpers';
@@ -168,23 +168,17 @@ const gridOptions: GridOptions<MetadataRow> = {
 <template>
   <div class="container">
     <div class="d-flex gap-4">
-      <btn-secondary @click="handleAddDatasetFasta">Add Dataset</btn-secondary>
-      <btn-secondary @click="addRow">Add Sample</btn-secondary>
-      <btn-secondary @click="() => addColumn('String')">Add String Column</btn-secondary>
-      <btn-secondary @click="() => addColumn('Double')">Add Numeric Column</btn-secondary>
-      <btn-secondary @click="() => addColumn('Long')">Add Integer Column</btn-secondary>
-      <btn-secondary v-if="toRemoveIdx >= 0" @click="() => deleteMetaColumn(toRemoveIdx)"
-        >Delete {{ app.args.metadata[toRemoveIdx].label }}</btn-secondary
-      >
+      <pl-btn-secondary @click="handleAddDatasetFasta">Add Dataset</pl-btn-secondary>
+      <pl-btn-secondary @click="addRow">Add Sample</pl-btn-secondary>
+      <pl-btn-secondary @click="() => addColumn('String')">Add String Column</pl-btn-secondary>
+      <pl-btn-secondary @click="() => addColumn('Double')">Add Numeric Column</pl-btn-secondary>
+      <pl-btn-secondary @click="() => addColumn('Long')">Add Integer Column</pl-btn-secondary>
+      <pl-btn-secondary v-if="toRemoveIdx >= 0" @click="() => deleteMetaColumn(toRemoveIdx)">Delete {{
+        app.args.metadata[toRemoveIdx].label }}</pl-btn-secondary>
     </div>
     <div class="ag-theme-quartz" :style="{ height: '300px' }">
-      <ag-grid-vue
-        :style="{ height: '100%' }"
-        @grid-ready="onGridReady"
-        :rowData="rowData"
-        :columnDefs="columnDefs"
-        :grid-options="gridOptions"
-      >
+      <ag-grid-vue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
+        :grid-options="gridOptions">
       </ag-grid-vue>
     </div>
     <!-- <add-graph
