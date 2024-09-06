@@ -1,5 +1,15 @@
 # @milaboratory/milaboratories.samples-and-data.ui
 
+## 1.4.0
+
+### Minor Changes
+
+- dcb139e: migration to newer SDK
+
+### Patch Changes
+
+- 50e7241: SDK upgrade
+
 ## 1.3.2
 
 ### Patch Changes
