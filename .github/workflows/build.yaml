@@ -31,11 +31,14 @@ jobs:
       always-auth: 'true'
 
       build-script-name: 'build'
-      
+
       test: true
       test-script-name: 'test'
 
 
     secrets:
+      env: |
+        { "PL_LICENSE": ${{ toJSON(secrets.MI_LICENSE) }} }
+
       TELEGRAM_NOTIFICATION_TARGET: ${{ secrets.TG_CHANNEL_MIBUILDS }}
       TELEGRAM_API_TOKEN: ${{ secrets.TG_CI_BOT_TOKEN }}
