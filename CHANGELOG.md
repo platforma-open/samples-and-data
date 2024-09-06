@@ -1,5 +1,15 @@
 # @milaboratory/milaboratories.samples-and-data
 
+## 1.1.6
+
+### Patch Changes
+
+- Updated dependencies [dcb139e]
+- Updated dependencies [50e7241]
+- Updated dependencies [50e7241]
+  - @milaboratory/milaboratories.samples-and-data.ui@1.4.0
+  - @milaboratory/milaboratories.samples-and-data.workflow@1.5.0
+
 ## 1.1.5
 
 ### Patch Changes
