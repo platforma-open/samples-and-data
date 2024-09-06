@@ -1,5 +1,12 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.5.0
+
+### Minor Changes
+
+- dcb139e: migration to newer SDK
+- 50e7241: Fix for PColumn key formatting
+
 ## 1.4.2
 
 ### Patch Changes
