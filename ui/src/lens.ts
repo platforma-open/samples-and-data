@@ -31,7 +31,6 @@ import { DeepReadonly, Ref, ref, watch } from 'vue';
 //   return { connected: true, value: c as ExtractFieldType<T, Path> };
 // }
 
-
 // function setValue<T, const Path extends string[]>(
 //   obj: T,
 //   path: Path,
@@ -107,15 +106,20 @@ export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T
     };
   }
   const r = ref<T>(initialValue) as Ref<T>;
-  watch(app.args, (args) => {
-    if (!connected.value) return;
-    const newValue = ops.get(args);
-    if (newValue === undefined) {
-      connected.value = false;
-      return;
+  watch(
+    () => app.args,
+    (args) => {
+      if (!connected.value) return;
+      const newValue = ops.get(args);
+      console.dir(newValue, { depth: 5 });
+      if (newValue === undefined) {
+        if (ops.onDisconnected) ops.onDisconnected();
+        connected.value = false;
+        return;
+      }
+      r.value = newValue;
     }
-    r.value = newValue;
-  });
+  );
   return {
     connected,
     get value() {
