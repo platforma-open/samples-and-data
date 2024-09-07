@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.ui
 
+## 1.4.1
+
+### Patch Changes
+
+- fe31ab8: fixes lens, so that onDisconnect() is called when target part of model desappears
+
 ## 1.4.0
 
 ### Minor Changes
