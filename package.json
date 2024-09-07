@@ -41,5 +41,12 @@
   "devDependencies": {
     "@milaboratory/pl-block-tools": "catalog:",
     "@changesets/cli": "catalog:"
+  },
+  "//": {
+    "pnpm": {
+      "overrides": {
+        "@milaboratory/sdk-vue": "file:/Volumes/Data/Projects/MiLaboratory/platforma/sdk-vue"
+      }
+    }
   }
 }

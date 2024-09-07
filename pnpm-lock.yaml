@@ -28,20 +28,20 @@ catalogs:
       specifier: ^2.1.5
       version: 2.1.5
     '@milaboratory/platforma-uikit':
-      specifier: ^1.1.2
-      version: 1.1.2
+      specifier: ^1.1.4
+      version: 1.1.4
     '@milaboratory/sdk-test':
       specifier: ^1.5.5
       version: 1.5.5
     '@milaboratory/sdk-ui':
-      specifier: ^0.12.21
-      version: 0.12.21
+      specifier: ^0.12.22
+      version: 0.12.22
     '@milaboratory/sdk-vue':
-      specifier: ^1.1.1
-      version: 1.1.1
+      specifier: ^1.1.2
+      version: 1.1.2
     '@milaboratory/tengo-sdk':
-      specifier: ~1.1.8
-      version: 1.1.8
+      specifier: ^1.2.1
+      version: 1.2.1
     '@milaboratory/tengo-template-builder':
       specifier: ^1.13.0
       version: 1.13.0
@@ -88,7 +88,7 @@ importers:
         version: link:workflow
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.21
+        version: 0.12.22
     devDependencies:
       '@changesets/cli':
         specifier: 'catalog:'
@@ -101,7 +101,7 @@ importers:
     dependencies:
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.21
+        version: 0.12.22
       zod:
         specifier: 'catalog:'
         version: 3.23.8
@@ -157,13 +157,13 @@ importers:
         version: link:../model
       '@milaboratory/platforma-uikit':
         specifier: 'catalog:'
-        version: 1.1.2(typescript@5.5.4)
+        version: 1.1.4(typescript@5.5.4)
       '@milaboratory/sdk-ui':
         specifier: 'catalog:'
-        version: 0.12.21
+        version: 0.12.22
       '@milaboratory/sdk-vue':
         specifier: 'catalog:'
-        version: 1.1.1(@milaboratory/helpers@1.5.3)(@milaboratory/sdk-ui@0.12.21)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))
+        version: 1.1.2(@milaboratory/helpers@1.5.3)(@milaboratory/sdk-ui@0.12.22)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))
       utility-types:
         specifier: 'catalog:'
         version: 3.11.0
@@ -191,7 +191,7 @@ importers:
     devDependencies:
       '@milaboratory/tengo-sdk':
         specifier: 'catalog:'
-        version: 1.1.8
+        version: 1.2.1
       '@milaboratory/tengo-template-builder':
         specifier: 'catalog:'
         version: 1.13.0
@@ -845,8 +845,8 @@ packages:
   '@milaboratory/platforma-core@0.1.5':
     resolution: {integrity: sha512-h9BW6SnX7zcNMrc3fl70DJuVUPTm+pn6/buKMZJypp/bV51DwT50FiAhCBklCkttwtngZqKXE0i//1H00V0qNg==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-core/0.1.5/cc46c20f983d2c291aec707200e5ff46e082c1a6}
 
-  '@milaboratory/platforma-uikit@1.1.2':
-    resolution: {integrity: sha512-rdL5AkKEy9O2OfC1omZLjqA3bwOfNrzZX+QEypMuRufM9T01I2362b/eDGWjhUJxHeb13W+T8Y75kMRxo8H1rw==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-uikit/1.1.2/eff4c6bb533d52a52ff1cebc384d72f0305aa154}
+  '@milaboratory/platforma-uikit@1.1.4':
+    resolution: {integrity: sha512-2TpatMB1gwE05DiPprXCFxHdZRt+QSjwFrm8n3Ag6UTkt58uYr9b0I8MRpn2B0FeHr622SQPUBHloXcDs/SQBg==, tarball: https://npm.pkg.github.com/download/@milaboratory/platforma-uikit/1.1.4/da44e1acca383c3cdf16aeacc4a54df0b2c83d7b}
     engines: {node: ^20.12.2, npm: ^10.5.2}
 
   '@milaboratory/sdk-model@1.3.7':
@@ -861,8 +861,11 @@ packages:
   '@milaboratory/sdk-ui@0.12.21':
     resolution: {integrity: sha512-wQnaHRIUcV3IWnMDUiRVRBPIFDzoyZvIQLBMD6hYZdMK0uj4+Q1rPyq+E+8ZEgNv84uvI8F18pEpNt6EXpZihA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-ui/0.12.21/e3a89013847aa6039ddee63d8d0656f8acf601ae}
 
-  '@milaboratory/sdk-vue@1.1.1':
-    resolution: {integrity: sha512-vkxFeKtheYrmLXfF28Ps/2obUrRZ48u/tjk1E5wmnfIMCvct/kOnrnRWMEpvmwfEuX82UrtPk1+vAVpLmD7mcg==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-vue/1.1.1/ffa2e4580441053880b44c6b6b8afd2561eeb6bc}
+  '@milaboratory/sdk-ui@0.12.22':
+    resolution: {integrity: sha512-VHNodNe7do0h7+lZbsCmpULcvta66dtjT3vggHPgfKucYWI1GjqaX43kEXTGe52IZ5VOi++RjXcHNwScwes0wQ==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-ui/0.12.22/158075e40b60bdb72832ceadd9ab64b88727b0cc}
+
+  '@milaboratory/sdk-vue@1.1.2':
+    resolution: {integrity: sha512-Sha1IcsTihS3AIoCWJfXTd559x7sEgJmvc++4W4qYmsyx2T6G6PyZBV/+S4eQ7OqfnWh9/UNFDs/8bcU/UBbkA==, tarball: https://npm.pkg.github.com/download/@milaboratory/sdk-vue/1.1.2/e7cf6fa2317dcbd25fdec1439feda6e517a145b6}
     peerDependencies:
       '@milaboratory/helpers': ^1.5.3
       '@milaboratory/sdk-ui': ^0.12.10
@@ -870,6 +873,9 @@ packages:
 
   '@milaboratory/tengo-sdk@1.1.8':
     resolution: {integrity: sha512-wq3PU2snMVStIgkg7N60MvLikIX+awtrsp67DVwmlaA3AUiwzNckEQPHkK39TEMPv/4TsFFAevrCr4RL5+AQxw==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-sdk/1.1.8/cf2fa1d14db3110cf0cfc54de6389529def9e685}
+
+  '@milaboratory/tengo-sdk@1.2.1':
+    resolution: {integrity: sha512-6AYoSyjgzW7xXQd8E4ur1Cxh5/1Y817gDZa1tS2ZB4bVRQUf6K+A0BPRDGOxoNSyEq0SZginMiX5CMPccAUwwA==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-sdk/1.2.1/e64e93dab69d543e23992f32017f7bbfb1a57c9b}
 
   '@milaboratory/tengo-template-builder@1.13.0':
     resolution: {integrity: sha512-xokNWyp+IWC8JLIq6yUbLW1HA+qzLs+nEELv2LtHlUoKVH1JR5ju7fj5H4OeOgP9NIvKfjyzq4VpGjNSNa92Gw==, tarball: https://npm.pkg.github.com/download/@milaboratory/tengo-template-builder/1.13.0/e866030cc9ec80cee031541aa27bfd05f10d5221}
@@ -3961,7 +3967,7 @@ snapshots:
     dependencies:
       zod: 3.23.8
 
-  '@milaboratory/platforma-uikit@1.1.2(typescript@5.5.4)':
+  '@milaboratory/platforma-uikit@1.1.4(typescript@5.5.4)':
     dependencies:
       '@milaboratory/helpers': 1.5.3
       '@milaboratory/platforma-core': 0.1.5
@@ -4013,11 +4019,17 @@ snapshots:
       utility-types: 3.11.0
       zod: 3.23.8
 
-  '@milaboratory/sdk-vue@1.1.1(@milaboratory/helpers@1.5.3)(@milaboratory/sdk-ui@0.12.21)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))':
+  '@milaboratory/sdk-ui@0.12.22':
+    dependencies:
+      '@milaboratory/sdk-model': 1.3.9
+      utility-types: 3.11.0
+      zod: 3.23.8
+
+  '@milaboratory/sdk-vue@1.1.2(@milaboratory/helpers@1.5.3)(@milaboratory/sdk-ui@0.12.22)(typescript@5.5.4)(vue@3.4.38(typescript@5.5.4))':
     dependencies:
       '@milaboratory/helpers': 1.5.3
-      '@milaboratory/platforma-uikit': 1.1.2(typescript@5.5.4)
-      '@milaboratory/sdk-ui': 0.12.21
+      '@milaboratory/platforma-uikit': 1.1.4(typescript@5.5.4)
+      '@milaboratory/sdk-ui': 0.12.22
       vue: 3.4.38(typescript@5.5.4)
     optionalDependencies:
       '@rollup/rollup-linux-x64-gnu': 4.9.5
@@ -4025,6 +4037,8 @@ snapshots:
       - typescript
 
   '@milaboratory/tengo-sdk@1.1.8': {}
+
+  '@milaboratory/tengo-sdk@1.2.1': {}
 
   '@milaboratory/tengo-template-builder@1.13.0':
     dependencies:
