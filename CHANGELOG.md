@@ -1,5 +1,13 @@
 # @milaboratory/milaboratories.samples-and-data
 
+## 1.1.7
+
+### Patch Changes
+
+- 0f0fbf2: SDK upgrade
+- Updated dependencies [fe31ab8]
+  - @milaboratory/milaboratories.samples-and-data.ui@1.4.1
+
 ## 1.1.6
 
 ### Patch Changes
