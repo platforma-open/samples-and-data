@@ -4,10 +4,18 @@ import '@ag-grid-community/styles/ag-theme-quartz.css';
 
 import {
   ColDef,
+  GridApi,
   GridOptions,
-  ISelectCellEditorParams,
+  IRichCellEditorParams,
+  IRowNode,
   ModuleRegistry
 } from '@ag-grid-community/core';
+import {
+  RichSelectModule
+} from '@ag-grid-enterprise/rich-select';
+import {
+  MenuModule
+} from '@ag-grid-enterprise/menu';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
 import { AgGridVue } from '@ag-grid-community/vue3';
@@ -18,19 +26,19 @@ import {
   PlId
 } from '@milaboratory/milaboratories.samples-and-data.model';
 import FileCell from './FileCell.vue';
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
-import { typeSafeEntries } from './util';
+import { isDefined } from '@milaboratory/sdk-vue';
 
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
 const app = useApp();
 const datasetId = app.queryParams.id;
 
 type FastaDatasetRow = {
   // undefined for an empty row at the end of the table
-  readonly sample: PlId | undefined;
+  readonly sample: PlId | "";
   readonly reads: FastqFileGroup;
 };
 
@@ -39,48 +47,69 @@ const dataset = argsModel(app, {
   onDisconnected: () => app.navigateTo('/')
 })
 
-const rowData = computed<FastaDatasetRow[]>(() => [
-  ...Object.entries(dataset.value.content.data).map(([sampleId, fastqs]) => ({
+const unusedIds = () => {
+  const usedIds = new Set(Object.keys(dataset.value.content.data));
+  return app.args.sampleIds.filter(id => !usedIds.has(id));
+}
+
+const rowData = computed(() => {
+  const result: FastaDatasetRow[] = Object.entries(dataset.value.content.data).map(([sampleId, fastqs]) => ({
     sample: sampleId as PlId,
     reads: fastqs!
-  })),
-  { sample: undefined, reads: {} }
-]);
+  }))
+  if (unusedIds().length > 0)
+    result.push({ sample: "", reads: {} })
+  return result;
+});
 
 const readIndices = computed(() => dataset.value.content.readIndices);
 
 const columnDefs = computed(() => {
+  const sampleLabels = app.args.sampleLabels;
   const res: ColDef<FastaDatasetRow>[] = [
     {
+      headerName: "Sample",
+      flex: 1,
       valueGetter: (params) => params.data?.sample,
       editable: (params) => {
         // only creating new records
-        return params.data?.sample === undefined;
+        return params.data?.sample === "";
       },
       valueSetter: (params) => {
-        if (params.oldValue !== undefined) throw new Error('Unexpected edit');
+        if (params.oldValue !== "") throw new Error('Unexpected edit');
+        if (!params.newValue)
+          return false;
         dataset.update(ds => ds.content.data[params.newValue] = {})
         return true;
       },
-      cellEditor: 'agSelectCellEditor',
+      cellEditor: 'agRichSelectCellEditor',
+      refData: { ...sampleLabels, "": "+ add sample" },
+      singleClickEdit: true,
       cellEditorParams: {
-        values: app.args.sampleIds,
-        valueListGap: 10
-      } satisfies ISelectCellEditorParams
+        values: unusedIds,
+      } satisfies IRichCellEditorParams<FastaDatasetRow>
     }
   ];
 
   for (const readIndex of readIndices.value)
     res.push({
       headerName: readIndex,
+      flex: 1,
       cellRendererSelector: (params) =>
-        params.data?.sample ? { component: 'FileCell' } : undefined,
+        params.data?.sample ? {
+          component: 'FileCell', params: {
+            extensions: dataset.value.content.gzipped ? ["fastq.gz"] : ["fastq"]
+          }
+        } : undefined,
       valueGetter: (params) =>
         params.data?.sample
           ? dataset.value.content.data[params.data.sample]![readIndex]
           : undefined,
       valueSetter: (params) => {
-        dataset.update(ds => ds.content.data[params.data.sample!]![readIndex] = params.newValue)
+        const sample = params.data.sample;
+        if (sample === "")
+          return false;
+        dataset.update(ds => ds.content.data[sample]![readIndex] = params.newValue)
         return true;
       }
     });
@@ -88,8 +117,40 @@ const columnDefs = computed(() => {
   return res;
 });
 
+function isPlId(v: PlId | ""): v is PlId {
+  return v !== "";
+}
+
+function getSelectedSamples(api: GridApi<FastaDatasetRow>, node: IRowNode<FastaDatasetRow> | null): PlId[] {
+  // @todo remove casting when AG-12581 will be resolved:
+  // https://www.ag-grid.com/pipeline/
+  // https://github.com/ag-grid/ag-grid/issues/8538
+  const samples = api.getSelectedRows().map(row => (row as FastaDatasetRow).sample).filter(isPlId);
+  if (samples.length !== 0)
+    return samples;
+  const sample = node?.data?.sample;
+  if (!sample)
+    return [];
+  return [sample];
+}
+
 const gridOptions: GridOptions<FastaDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
+  rowSelection: 'multiple',
+  getMainMenuItems: (params) => {
+    return [];
+  },
+  getContextMenuItems: (params) => {
+    if (getSelectedSamples(params.api, params.node).length === 0)
+      return [];
+    return [{
+      name: "Delete",
+      action: (params) => {
+        const samplesToDelete = getSelectedSamples(params.api, params.node);
+        dataset.update(ds => { for (const s of samplesToDelete) delete ds.content.data[s] })
+      }
+    }];
+  },
   components: {
     FileCell
   }
@@ -97,29 +158,9 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 </script>
 
 <template>
-  <div class="ag-theme-quartz" :style="{ height: '300px' }">
+  <!-- :style="{ height: '600px' }" -->
+  <div class="ag-theme-quartz" :style="{ height: '100%' }">
     <ag-grid-vue :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs" :gridOptions="gridOptions">
     </ag-grid-vue>
   </div>
 </template>
-
-<style lang="css">
-.alert-error {
-  background-color: red;
-  color: #fff;
-  padding: 12px;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  height: 1080px;
-}
-
-fieldset {
-  max-height: 300px;
-  max-width: 100%;
-  overflow: auto;
-}
-</style>

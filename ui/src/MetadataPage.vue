@@ -26,8 +26,6 @@ import { notEmpty, undef } from '@milaboratory/helpers';
 
 const app = useApp();
 
-app.createArgsModel();
-
 ModuleRegistry.registerModules([ClientSideRowModelModule]);
 
 async function handleAddDatasetFasta() {
