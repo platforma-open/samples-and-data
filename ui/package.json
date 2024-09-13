@@ -9,10 +9,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "catalog:",
     "@ag-grid-community/core": "catalog:",
+    "@ag-grid-community/client-side-row-model": "catalog:",
     "@ag-grid-community/styles": "catalog:",
     "@ag-grid-community/vue3": "catalog:",
+    "@ag-grid-enterprise/core": "catalog:",
+    "@ag-grid-enterprise/rich-select": "catalog:",
+    "@ag-grid-enterprise/menu": "catalog:",
+    "@ag-grid-enterprise/clipboard": "catalog:",
+    "@ag-grid-enterprise/range-selection": "catalog:",
     "@milaboratory/helpers": "catalog:",
     "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
     "@milaboratory/platforma-uikit": "catalog:",

@@ -8,7 +8,7 @@ import { injectProgresses } from './injects';
 const props = defineProps<{
   // this component is intended to be used in ag-grid, params are the main object
   // to communicate with the corresponding cell data
-  params: ICellRendererParams;
+  params: ICellRendererParams & { extensions: string[] };
 }>();
 
 // extracting cell value and casting it to the type we expect
@@ -31,12 +31,7 @@ const currentProgress = computed(() => {
 
 <template>
   <div>
-    <file-input
-      placeholder="The file"
-      file-dialog-title="Select any file"
-      :model-value="handle"
-      @update:model-value="onHandleUpdate"
-      clearable
-    />
+    <file-input placeholder="The file" file-dialog-title="Select any file" :extensions="params.extensions"
+      :model-value="handle" @update:model-value="onHandleUpdate" clearable />
   </div>
 </template>
