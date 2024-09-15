@@ -70,7 +70,9 @@ export const ReadIndexSchemas = [
 export const ReadIndex = z.union(ReadIndexSchemas);
 export type ReadIndex = z.infer<typeof ReadIndex>;
 
-export const ReadIndices = ReadIndexSchemas.map((s) => s.value);
+export const AllReadIndices = ReadIndexSchemas.map((s) => s.value);
+export const ReadIndices = z.array(ReadIndex);
+export type ReadIndices = z.infer<typeof ReadIndices>;
 
 export const FastqFileGroup = z.record(ReadIndex, ImportFileHandleSchema);
 export type FastqFileGroup = z.infer<typeof FastqFileGroup>;

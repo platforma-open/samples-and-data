@@ -33,7 +33,7 @@ export const platforma = BlockModel.create<BlockArgs>('Heavy')
 
   .sections((ctx) => {
     return [
-      { type: 'link', href: '/', label: 'Metadata' },
+      { type: 'link', href: '/', label: 'Samples & Metadata' },
       ...ctx.args.datasets.map(
         (ds) =>
           ({
@@ -41,8 +41,8 @@ export const platforma = BlockModel.create<BlockArgs>('Heavy')
             href: `/dataset?id=${ds.id}`,
             label: ds.label
           } as const)
-      )
-      // { type: 'link', href: `/add-dataset`, label: '+ add dataset' }
+      ),
+      { type: 'link', href: `/new-dataset`, label: '+ add dataset' }
     ];
   })
 

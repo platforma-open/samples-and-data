@@ -45,8 +45,11 @@
   "//": {
     "pnpm": {
       "overrides": {
-        "@milaboratory/sdk-vue": "file:/Volumes/Data/Projects/MiLaboratory/platforma/sdk-vue"
+        "@milaboratory/sdk-vue": "file:/Volumes/Data/Projects/MiLaboratory/platforma/sdk-vue/milaboratory-sdk-vue-1.1.5.tgz"
       }
     }
+  },
+  "pnpm": {
+    "overrides": {}
   }
 }
