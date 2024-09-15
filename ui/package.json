@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "test": "vitest",
     "watch": "vue-tsc && vite build --watch",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
@@ -31,6 +32,7 @@
     "@vitejs/plugin-vue": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vue-tsc": "catalog:"
+    "vue-tsc": "catalog:",
+    "vitest": "catalog:"
   }
 }

@@ -16,7 +16,7 @@ catalog:
   '@milaboratory/tengo-sdk': ^1.2.2
 
   '@milaboratory/platforma-uikit': ^1.1.16
-  '@milaboratory/sdk-vue': ^1.1.5
+  '@milaboratory/sdk-vue': ^1.1.6
   '@milaboratory/helpers': ^1.6.0
 
   'vue': ^3.5.5

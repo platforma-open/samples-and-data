@@ -94,7 +94,7 @@ const columnDefs = computed(() => {
   for (const readIndex of readIndices.value)
     res.push({
       headerName: readIndex,
-      flex: 1,
+      flex: 2,
       cellRendererSelector: (params) =>
         params.data?.sample ? {
           component: 'FileCell', params: {

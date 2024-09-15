@@ -11,6 +11,8 @@ const props = defineProps<{
   params: ICellRendererParams & { extensions: string[] };
 }>();
 
+const extensions = computed(() => props.params.extensions)
+
 // extracting cell value and casting it to the type we expect
 const handle = computed(() => props.params.value as ImportFileHandle | undefined);
 /**
@@ -31,7 +33,7 @@ const currentProgress = computed(() => {
 
 <template>
   <div>
-    <file-input placeholder="The file" file-dialog-title="Select any file" :extensions="params.extensions"
+    <FileInput file-dialog-title="Select any file" :placeholder="`file.${extensions[0]}`" :extensions="extensions"
       :model-value="handle" @update:model-value="onHandleUpdate" clearable />
   </div>
 </template>

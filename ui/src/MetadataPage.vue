@@ -7,6 +7,7 @@ import {
   GridApi,
   GridOptions,
   GridReadyEvent,
+  IRowNode,
   ModuleRegistry
 } from '@ag-grid-community/core';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
@@ -19,16 +20,17 @@ import {
   PlId,
   uniquePlId
 } from '@milaboratory/milaboratories.samples-and-data.model';
-import { PlBtnSecondary } from '@milaboratory/platforma-uikit';
+import { PlBlockPage, PlBtnSecondary } from '@milaboratory/platforma-uikit';
 import { useApp } from './app';
 import { computed, ref, shallowRef } from 'vue';
 import { notEmpty, undef } from '@milaboratory/helpers';
+import { MenuModule } from '@ag-grid-enterprise/menu';
 
 const app = useApp();
 
-ModuleRegistry.registerModules([ClientSideRowModelModule]);
+ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
 
-async function handleAddDatasetFasta() {
+async function addDatasetFasta() {
   const id = uniquePlId();
   await app.updateArgs((arg) => {
     arg.datasets.push({
@@ -45,7 +47,7 @@ async function handleAddDatasetFasta() {
   await app.navigateTo(`/dataset?id=${id}`);
 }
 
-const gridApi = shallowRef<GridApi<any>>();
+const gridApi = shallowRef<GridApi<MetadataRow>>();
 const onGridReady = (params: GridReadyEvent) => {
   gridApi.value = params.api;
 };
@@ -85,6 +87,32 @@ type MetadataRow = {
   label: string;
   meta: Record<PlId, string | number | undefined>;
 };
+
+function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
+  // @todo remove casting when AG-12581 will be resolved:
+  // https://www.ag-grid.com/pipeline/
+  // https://github.com/ag-grid/ag-grid/issues/8538
+  const samples = gridApi.value!.getSelectedRows().map(row => (row as MetadataRow).id);
+  if (samples.length !== 0)
+    return samples;
+  const sample = node?.data?.id;
+  if (!sample)
+    return [];
+  return [sample];
+}
+
+async function deleteSamples(sampleIds: PlId[]) {
+  await app.updateArgs((arg) => {
+    arg.sampleIds = arg.sampleIds.filter(s => !sampleIds.includes(s))
+    for (const s of sampleIds) {
+      delete arg.sampleLabels[s];
+      for (const m of arg.metadata)
+        delete m.data[s];
+      for (const ds of arg.datasets)
+        delete ds.content.data[s];
+    }
+  });
+}
 
 const columnDefs = computed<ColDef[]>(() => [
   {
@@ -133,8 +161,9 @@ const rowData = computed<MetadataRow[]>(() =>
 
 const gridOptions: GridOptions<MetadataRow> = {
   getRowId: (row) => row.data.id,
+
   rowSelection: 'multiple',
-  rowMultiSelectWithClick: true,
+
   onColumnHeaderClicked: (event) => {
     const columnId = event.column.getId();
     if (columnId.startsWith('meta.')) {
@@ -159,169 +188,39 @@ const gridOptions: GridOptions<MetadataRow> = {
         else delete metaColumn.data[sampleId];
       });
     } else throw new Error('Unexpected Column Id');
-  }
+  },
+
+  getMainMenuItems: (params) => {
+    return [];
+  },
+  getContextMenuItems: (params) => {
+    const targetSamples = getSelectedSamples(params.node);
+    if (getSelectedSamples(params.node).length === 0)
+      return [];
+    return [{
+      name: `Delete ${targetSamples.length > 1 ? `${targetSamples.length} samples` : app.args.sampleLabels[targetSamples[0]]}`,
+      action: (params) => {
+        const samplesToDelete = getSelectedSamples(params.node);
+        deleteSamples(targetSamples);
+      }
+    }];
+  },
 };
 </script>
 
 <template>
-  <div class="container">
+  <PlBlockPage>
+    <template #title>Samples & Metadata</template>
     <div class="d-flex gap-4">
-      <pl-btn-secondary @click="handleAddDatasetFasta">Add Dataset</pl-btn-secondary>
-      <pl-btn-secondary @click="addRow">Add Sample</pl-btn-secondary>
-      <pl-btn-secondary @click="() => addColumn('String')">Add String Column</pl-btn-secondary>
-      <pl-btn-secondary @click="() => addColumn('Double')">Add Numeric Column</pl-btn-secondary>
-      <pl-btn-secondary @click="() => addColumn('Long')">Add Integer Column</pl-btn-secondary>
-      <pl-btn-secondary v-if="toRemoveIdx >= 0" @click="() => deleteMetaColumn(toRemoveIdx)">Delete {{
-        app.args.metadata[toRemoveIdx].label }}</pl-btn-secondary>
+      <PlBtnSecondary @click="addDatasetFasta">Add Dataset</PlBtnSecondary>
+      <PlBtnSecondary @click="addRow">Add Sample</PlBtnSecondary>
+      <PlBtnSecondary @click="() => addColumn('String')">Add String Column</PlBtnSecondary>
+      <PlBtnSecondary @click="() => addColumn('Double')">Add Numeric Column</PlBtnSecondary>
+      <PlBtnSecondary @click="() => addColumn('Long')">Add Integer Column</PlBtnSecondary>
     </div>
-    <div class="ag-theme-quartz" :style="{ height: '300px' }">
-      <ag-grid-vue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
-        :grid-options="gridOptions">
-      </ag-grid-vue>
+    <div class="ag-theme-quartz" :style="{ flex: 1 }">
+      <AgGridVue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
+        :grid-options="gridOptions" />
     </div>
-    <!-- <add-graph
-      @selected="(v) => onSelect(v as GraphMakerSettings['chartType'])"
-      :items="CHART_TYPES"
-    /> -->
-  </div>
+  </PlBlockPage>
 </template>
-
-<style lang="css">
-button {
-  padding: 12px 0;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  max-width: 100%;
-  gap: 24px;
-}
-</style>
-
-<!-- <script setup lang="ts">
-
-// const app = useApp();
-
-// const data = reactive({
-//   modalOpen: false,
-//   storageHandle: undefined as StorageHandle | undefined,
-//   lsPath: '/Users/gramkin/Code' as string | undefined,
-//   storageList: [] as StorageEntry[],
-//   files: [] as LsEntry[],
-//   lsError: undefined as unknown
-// });
-
-// const fileHandle = createModel({
-//   get() {
-//     return app.args.fileHandle;
-//   },
-//   validate: z.string().optional().parse,
-//   autoSave: true,
-//   onSave(v) {
-//     console.log('save v', v);
-//     app.updateArgs(args => args.fileHandle = v);
-//   }
-// });
-
-// const fileOptions = computed(() => data.files.filter(it => it.type === 'file').map(it => ({
-//   text: it.fullPath,
-//   value: it.handle
-// })));
-
-// const file = computed(() => app.getOutputFieldOkOptional('file'));
-
-// const progress = computed(() => app.getOutputFieldOkOptional('progress'));
-
-// const loadFiles = debounce((handle: StorageHandle, lsPath: string) => {
-//   platforma.lsDriver.listFiles(handle, lsPath).then(result => {
-//     data.files = result.entries;
-//   }).catch(err => {
-//     console.log('error', err);
-//     data.lsError = err;
-//   });
-// }, 1000);
-
-// watch(() => [data.storageHandle, data.lsPath] as const, ([s, p]) => {
-//   data.files = [];
-//   data.lsError = undefined;
-//   if (s && p) {
-//     console.log('call load', s, p);
-//     loadFiles(s, p)
-//   }
-// });
-
-// const onImport = (v: ImportedFiles) => {
-//   if (v.files.length) {
-//     fileHandle.modelValue = v.files[0];
-//   }
-// };
-
-// onMounted(() => {
-//   platforma.lsDriver.getStorageList().then(lst => {
-//     data.storageList = lst ?? [];
-//   });
-// });
-</script>
-
-<template>
-  <div class="container">
-    <h3>Import file</h3>
-
-    <select-input label="Storage" v-model="data.storageHandle"
-      :options="data.storageList.map(it => ({ text: it.name, value: it.handle }))" />
-
-    <text-field v-if="data.storageHandle" label="LS Path" v-model="data.lsPath" />
-
-    <select-input label="File to upload" v-model="fileHandle.modelValue" :options="fileOptions" clearable />
-
-    <fieldset>
-      <legend>File content</legend>
-      <pre>{{ file }}</pre>
-    </fieldset>
-
-    <fieldset>
-      <legend>Progress</legend>
-      {{ progress }}
-    </fieldset>
-
-    <btn-primary @click="data.modalOpen = true">Or open file dialog</btn-primary>
-
-    <div v-if="data.lsError" class="alert-error">
-      Error: {{ data.lsError }}
-    </div>
-    <fieldset v-else>
-      <legend>{{ data.lsPath }}</legend>
-      <pre style="overflow: auto; max-height: 300px; max-width: 100%;">{{ data.files }}</pre>
-    </fieldset>
-
-    <file-dialog v-model="data.modalOpen" @import:files="onImport" />
-</div>
-</template>
-
-<style lang="css">
-.alert-error {
-  background-color: red;
-  color: #fff;
-  padding: 12px;
-}
-
-.container {
-  display: flex;
-  flex-direction: column;
-  max-width: 100%;
-  gap: 24px;
-}
-
-fieldset {
-  max-height: 300px;
-  max-width: 100%;
-  overflow: auto;
-}
-
-fieldset pre {
-  white-space: pre-wrap;
-  overflow-wrap: break-word;
-  max-width: 600px;
-}
-</style> -->
