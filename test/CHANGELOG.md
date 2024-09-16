@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.test
 
+## 1.3.0
+
+### Minor Changes
+
+- c77f269: bulk file add and many other improvements
+
 ## 1.2.0
 
 ### Minor Changes

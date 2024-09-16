@@ -1,5 +1,16 @@
 # @milaboratory/milaboratories.samples-and-data.ui
 
+## 1.5.0
+
+### Minor Changes
+
+- c77f269: bulk file add and many other improvements
+
+### Patch Changes
+
+- Updated dependencies [c77f269]
+  - @milaboratory/milaboratories.samples-and-data.model@1.2.0
+
 ## 1.4.1
 
 ### Patch Changes
