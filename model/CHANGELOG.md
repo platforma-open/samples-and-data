@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.model
 
+## 1.2.0
+
+### Minor Changes
+
+- c77f269: bulk file add and many other improvements
+
 ## 1.1.1
 
 ### Patch Changes
