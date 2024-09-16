@@ -16,9 +16,13 @@ normalizeString := func(str) {
 }
 
 mapToPValueData := func(map) {
-	result := {}
+	data := {}
 	for key, value in map {
-		result[json.encode([key])] = value
+		data[json.encode([key])] = value
+	}
+	result := {
+		keyLength: 1,
+		data: data
 	}
 	return result
 }
