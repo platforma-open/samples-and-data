@@ -1,5 +1,12 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.6.0
+
+### Minor Changes
+
+- c77f269: bulk file add and many other improvements
+- Json export fix
+
 ## 1.5.0
 
 ### Minor Changes
