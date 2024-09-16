@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ICellRendererParams } from '@ag-grid-community/core';
 import { ImportFileHandle } from '@milaboratory/sdk-ui';
-import { FileInput } from '@milaboratory/sdk-vue';
+import { PlFileInput } from '@milaboratory/sdk-vue';
 import { computed } from 'vue';
 import { injectProgresses } from './injects';
 
@@ -33,7 +33,7 @@ const currentProgress = computed(() => {
 
 <template>
   <div>
-    <FileInput file-dialog-title="Select any file" :placeholder="`file.${extensions[0]}`" :extensions="extensions"
-      :model-value="handle" @update:model-value="onHandleUpdate" clearable />
+    <PlFileInput show-filename-only file-dialog-title="Select any file" :placeholder="`file.${extensions[0]}`" :extensions="extensions"
+      :model-value="handle" @update:model-value="onHandleUpdate" clearable :progress="currentProgress" />
   </div>
 </template>
