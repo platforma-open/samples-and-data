@@ -3,8 +3,6 @@ import { computed, provide, reactive, ref, watch } from 'vue';
 import { useApp } from './app';
 import { PlBlockPage, PlBtnGhost, PlBtnSecondary, PlTextField, PlDialogModal, PlBtnPrimary, PlSlideModal, PlCheckbox, PlContainer, PlBtnGroup, ListOption } from '@milaboratory/sdk-vue';
 import FastqDatasetPage from './FastqDatasetPage.vue';
-import { Progresses } from './injects';
-import { ImportFileHandle, ImportProgress } from '@milaboratory/sdk-ui';
 import { argsModel } from './lens';
 import { AllReadIndices, ReadIndices } from '@milaboratory/milaboratories.samples-and-data.model';
 
@@ -19,21 +17,7 @@ const datasetId = app.queryParams.id;
 const dataset = argsModel(app, {
   get: args => args.datasets.find((ds) => ds.id === datasetId),
   onDisconnected: () => app.navigateTo('/')
-})
-
-const progresses = ref<Record<ImportFileHandle, ImportProgress>>({});
-watch(
-  () => app.outputs.fileImports,
-  (fileImports) => {
-    if (!fileImports?.ok) {
-      progresses.value = {};
-      return;
-    }
-    progresses.value = fileImports.value ?? {};
-  },
-  { immediate: true }
-);
-provide(Progresses, progresses);
+});
 
 const readIndicesOptions: ListOption<string>[] = [{
   value: JSON.stringify(["R1"]),
@@ -64,7 +48,6 @@ async function deleteTheDataset() {
     );
   });
 }
-
 </script>
 
 <template>
