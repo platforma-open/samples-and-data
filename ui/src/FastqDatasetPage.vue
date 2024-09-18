@@ -137,6 +137,7 @@ function getSelectedSamples(api: GridApi<FastaDatasetRow>, node: IRowNode<FastaD
 const gridOptions: GridOptions<FastaDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
   rowSelection: 'multiple',
+  rowHeight: 45,
   getMainMenuItems: (params) => {
     return [];
   },
