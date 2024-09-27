@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.workflow
 
+## 1.7.0
+
+### Minor Changes
+
+- baa9d03: migration to public SDK
+
 ## 1.6.0
 
 ### Minor Changes

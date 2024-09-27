@@ -1,5 +1,19 @@
 # @milaboratory/milaboratories.samples-and-data
 
+## 1.3.0
+
+### Minor Changes
+
+- baa9d03: migration to public SDK
+
+### Patch Changes
+
+- Updated dependencies [b944bf4]
+- Updated dependencies [baa9d03]
+  - @milaboratory/milaboratories.samples-and-data.ui@1.6.0
+  - @milaboratory/milaboratories.samples-and-data.workflow@1.7.0
+  - @milaboratory/milaboratories.samples-and-data.model@1.3.0
+
 ## 1.2.0
 
 ### Minor Changes

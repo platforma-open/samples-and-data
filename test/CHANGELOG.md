@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.test
 
+## 1.4.0
+
+### Minor Changes
+
+- baa9d03: migration to public SDK
+
 ## 1.3.0
 
 ### Minor Changes
