@@ -1,4 +1,4 @@
-# @milaboratory/milaboratories.samples-and-data.test
+# @platforma-open/milaboratories.samples-and-data.test
 
 ## 1.4.0
 

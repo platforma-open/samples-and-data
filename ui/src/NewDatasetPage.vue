@@ -6,7 +6,7 @@ import { buildWrappedString, FileNameFormattingOpts, FileNamePattern, FileNamePa
 import { PlFileDialog } from '@platforma-sdk/ui-vue';
 import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
 import { useCssModule } from 'vue'
-import { DatasetContentFastq, PlId, ReadIndices, uniquePlId } from '@milaboratory/milaboratories.samples-and-data.model';
+import { DatasetContentFastq, PlId, ReadIndices, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 
 const app = useApp();
 

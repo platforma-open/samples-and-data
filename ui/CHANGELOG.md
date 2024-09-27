@@ -1,4 +1,4 @@
-# @milaboratory/milaboratories.samples-and-data.ui
+# @platforma-open/milaboratories.samples-and-data.ui
 
 ## 1.6.0
 
@@ -10,7 +10,7 @@
 
 - b944bf4: integrate new file input component (with progress), fix multiple selection in file dialog
 - Updated dependencies [baa9d03]
-  - @milaboratory/milaboratories.samples-and-data.model@1.3.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.3.0
 
 ## 1.5.0
 
@@ -21,7 +21,7 @@
 ### Patch Changes
 
 - Updated dependencies [c77f269]
-  - @milaboratory/milaboratories.samples-and-data.model@1.2.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.2.0
 
 ## 1.4.1
 
@@ -45,7 +45,7 @@
 
 - aacaa26: SDK Upgrade
 - Updated dependencies [aacaa26]
-  - @milaboratory/milaboratories.samples-and-data.model@1.1.1
+  - @platforma-open/milaboratories.samples-and-data.model@1.1.1
 
 ## 1.3.1
 
@@ -62,4 +62,4 @@
 ### Patch Changes
 
 - Updated dependencies [01e65cb]
-  - @milaboratory/milaboratories.samples-and-data.model@1.1.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.1.0

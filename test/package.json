@@ -1,5 +1,5 @@
 {
-  "name": "@milaboratory/milaboratories.samples-and-data.test",
+  "name": "@platforma-open/milaboratories.samples-and-data.test",
   "private": true,
   "version": "1.4.0",
   "description": "Block tests",
@@ -10,7 +10,7 @@
   "files": [],
   "keywords": [],
   "dependencies": {
-    "this-block": "workspace:@milaboratory/milaboratories.samples-and-data@*"
+    "this-block": "workspace:@platforma-open/milaboratories.samples-and-data@*"
   },
   "devDependencies": {
     "@platforma-sdk/test": "catalog:",

@@ -24,7 +24,7 @@ import {
   DatasetFastq,
   FastqFileGroup,
   PlId
-} from '@milaboratory/milaboratories.samples-and-data.model';
+} from '@platforma-open/milaboratories.samples-and-data.model';
 import FileCell from './FileCell.vue';
 import { computed } from 'vue';
 import { useApp } from './app';
