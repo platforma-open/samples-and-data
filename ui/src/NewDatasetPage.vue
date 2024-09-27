@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ListOption, PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlContainer, PlTextField } from '@milaboratory/sdk-vue';
+import { ListOption, PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlContainer, PlTextField } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
 import { buildWrappedString, FileNameFormattingOpts, FileNamePattern, FileNamePatternMatch, getWellFormattedReadIndex, inferFileNamePattern } from './file_name_parser';
-import { FileDialog } from '@milaboratory/sdk-vue';
-import { getFilePathFromHandle, ImportFileHandle } from '@milaboratory/sdk-ui';
+import { PlFileDialog } from '@platforma-sdk/ui-vue';
+import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
 import { useCssModule } from 'vue'
 import { DatasetContentFastq, PlId, ReadIndices, uniquePlId } from '@milaboratory/milaboratories.samples-and-data.model';
 
@@ -162,7 +162,7 @@ async function create() {
       </PlBtnPrimary>
     </PlContainer>
   </PlBlockPage>
-  <FileDialog v-model="data.fileDialogOpened" :multi="true" @import:files="(e) => setFileList(e.files)" />
+  <PlFileDialog v-model="data.fileDialogOpened" :multi="true" @import:files="(e) => setFileList(e.files)" />
 </template>
 
 <style module>

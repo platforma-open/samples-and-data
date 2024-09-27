@@ -8,7 +8,7 @@
     "format": "/usr/bin/env emacs --script ./format.el"
   },
   "devDependencies": {
-    "@milaboratory/tengo-template-builder": "catalog:",
-    "@milaboratory/tengo-sdk": "catalog:"
+    "@platforma-sdk/tengo-builder": "catalog:",
+    "@platforma-sdk/workflow-tengo": "catalog:"
   }
 }

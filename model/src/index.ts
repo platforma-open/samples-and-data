@@ -7,7 +7,7 @@ import {
   mapResourceFields,
   It,
   InferHrefType
-} from '@milaboratory/sdk-ui';
+} from '@platforma-sdk/model';
 import { BlockArgs } from './args';
 
 export const platforma = BlockModel.create<BlockArgs>('Heavy')

@@ -1,9 +1,9 @@
-wf := import("@milaboratory/tengo-sdk:workflow")
+wf := import("@platforma-sdk/workflow-tengo:workflow")
 
-maps := import("@milaboratory/tengo-sdk:maps")
-ll := import("@milaboratory/tengo-sdk:ll")
-smart := import("@milaboratory/tengo-sdk:smart")
-file := import("@milaboratory/tengo-sdk:file")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+file := import("@platforma-sdk/workflow-tengo:file")
 
 json := import("json")
 

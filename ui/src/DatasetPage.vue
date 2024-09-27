@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, provide, reactive, ref, watch } from 'vue';
 import { useApp } from './app';
-import { PlBlockPage, PlBtnGhost, PlBtnSecondary, PlTextField, PlDialogModal, PlBtnPrimary, PlSlideModal, PlCheckbox, PlContainer, PlBtnGroup, ListOption } from '@milaboratory/sdk-vue';
+import { PlBlockPage, PlBtnGhost, PlBtnSecondary, PlTextField, PlDialogModal, PlBtnPrimary, PlSlideModal, PlCheckbox, PlContainer, PlBtnGroup, ListOption } from '@platforma-sdk/ui-vue';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
 import { AllReadIndices, ReadIndices } from '@milaboratory/milaboratories.samples-and-data.model';

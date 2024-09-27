@@ -1,4 +1,4 @@
-import { ImportFileHandle, ValueType } from '@milaboratory/sdk-ui';
+import { ImportFileHandle, ValueType } from '@platforma-sdk/model';
 import { ZodAnyDef, ZodSchema, z } from 'zod';
 import { PlId } from './helpers';
 

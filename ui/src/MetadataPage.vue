@@ -20,10 +20,10 @@ import {
   PlId,
   uniquePlId
 } from '@milaboratory/milaboratories.samples-and-data.model';
-import { PlBlockPage, PlBtnSecondary } from '@milaboratory/platforma-uikit';
+import { PlBlockPage, PlBtnSecondary } from '@milaboratories/uikit';
 import { useApp } from './app';
 import { computed, ref, shallowRef } from 'vue';
-import { notEmpty, undef } from '@milaboratory/helpers';
+import { notEmpty, undef } from '@milaboratories/helpers';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 
 const app = useApp();
