@@ -1,5 +1,5 @@
 {
-  "name": "@milaboratory/milaboratories.samples-and-data.ui",
+  "name": "@platforma-open/milaboratories.samples-and-data.ui",
   "version": "1.6.0",
   "type": "module",
   "scripts": {
@@ -20,7 +20,7 @@
     "@ag-grid-enterprise/clipboard": "catalog:",
     "@ag-grid-enterprise/range-selection": "catalog:",
     "@milaboratories/helpers": "catalog:",
-    "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
     "@milaboratories/uikit": "catalog:",
     "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/ui-vue": "catalog:",

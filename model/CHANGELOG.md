@@ -1,4 +1,4 @@
-# @milaboratory/milaboratories.samples-and-data.model
+# @platforma-open/milaboratories.samples-and-data.model
 
 ## 1.3.0
 

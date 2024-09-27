@@ -1,4 +1,4 @@
-# @milaboratory/milaboratories.samples-and-data.workflow
+# @platforma-open/milaboratories.samples-and-data.workflow
 
 ## 1.7.0
 

@@ -1,4 +1,4 @@
-import { platforma } from '@milaboratory/milaboratories.samples-and-data.model';
+import { platforma } from '@platforma-open/milaboratories.samples-and-data.model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import MetadataPage from './MetadataPage.vue';
 import DatasetPage from './DatasetPage.vue';

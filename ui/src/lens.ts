@@ -1,4 +1,4 @@
-import { BlockArgs } from '@milaboratory/milaboratories.samples-and-data.model';
+import { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import { useApp } from './app';
 import { DeepReadonly, Ref, ref, watch } from 'vue';
 

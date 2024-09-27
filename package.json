@@ -1,5 +1,5 @@
 {
-  "name": "@milaboratory/milaboratories.samples-and-data",
+  "name": "@platforma-open/milaboratories.samples-and-data",
   "version": "1.3.0",
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
@@ -12,15 +12,15 @@
   ],
   "dependencies": {
     "@platforma-sdk/model": "catalog:",
-    "@milaboratory/milaboratories.samples-and-data.workflow": "workspace:*",
-    "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
-    "@milaboratory/milaboratories.samples-and-data.ui": "workspace:*"
+    "@platforma-open/milaboratories.samples-and-data.workflow": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.ui": "workspace:*"
   },
   "block": {
     "components": {
-      "workflow": "@milaboratory/milaboratories.samples-and-data.workflow/dist/tengo/tpl/main.plj.gz",
-      "model": "@milaboratory/milaboratories.samples-and-data.model/dist/model.json",
-      "ui": "@milaboratory/milaboratories.samples-and-data.ui/dist"
+      "workflow": "@platforma-open/milaboratories.samples-and-data.workflow/dist/tengo/tpl/main.plj.gz",
+      "model": "@platforma-open/milaboratories.samples-and-data.model/dist/model.json",
+      "ui": "@platforma-open/milaboratories.samples-and-data.ui/dist"
     },
     "meta": {
       "title": "Samples & Data",

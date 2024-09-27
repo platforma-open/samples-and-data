@@ -19,7 +19,7 @@ import {
   MetadataColumnValueType,
   PlId,
   uniquePlId
-} from '@milaboratory/milaboratories.samples-and-data.model';
+} from '@platforma-open/milaboratories.samples-and-data.model';
 import { PlBlockPage, PlBtnSecondary } from '@milaboratories/uikit';
 import { useApp } from './app';
 import { computed, ref, shallowRef } from 'vue';

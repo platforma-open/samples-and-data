@@ -92,13 +92,13 @@ importers:
 
   .:
     dependencies:
-      '@milaboratory/milaboratories.samples-and-data.model':
+      '@platforma-open/milaboratories.samples-and-data.model':
         specifier: workspace:*
         version: link:model
-      '@milaboratory/milaboratories.samples-and-data.ui':
+      '@platforma-open/milaboratories.samples-and-data.ui':
         specifier: workspace:*
         version: link:ui
-      '@milaboratory/milaboratories.samples-and-data.workflow':
+      '@platforma-open/milaboratories.samples-and-data.workflow':
         specifier: workspace:*
         version: link:workflow
       '@platforma-sdk/model':
@@ -137,7 +137,7 @@ importers:
   test:
     dependencies:
       this-block:
-        specifier: workspace:@milaboratory/milaboratories.samples-and-data@*
+        specifier: workspace:@platforma-open/milaboratories.samples-and-data@*
         version: link:..
     devDependencies:
       '@platforma-sdk/test':
@@ -185,7 +185,7 @@ importers:
       '@milaboratories/uikit':
         specifier: 'catalog:'
         version: 1.2.4(typescript@5.5.4)
-      '@milaboratory/milaboratories.samples-and-data.model':
+      '@platforma-open/milaboratories.samples-and-data.model':
         specifier: workspace:*
         version: link:../model
       '@platforma-sdk/model':

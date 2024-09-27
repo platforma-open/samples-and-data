@@ -4,7 +4,7 @@ import { useApp } from './app';
 import { PlBlockPage, PlBtnGhost, PlBtnSecondary, PlTextField, PlDialogModal, PlBtnPrimary, PlSlideModal, PlCheckbox, PlContainer, PlBtnGroup, ListOption } from '@platforma-sdk/ui-vue';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
-import { AllReadIndices, ReadIndices } from '@milaboratory/milaboratories.samples-and-data.model';
+import { AllReadIndices, ReadIndices } from '@platforma-open/milaboratories.samples-and-data.model';
 
 const app = useApp();
 

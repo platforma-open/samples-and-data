@@ -1,4 +1,4 @@
-import { BlockArgs, uniquePlId } from '@milaboratory/milaboratories.samples-and-data.model';
+import { BlockArgs, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
 
