@@ -30,7 +30,7 @@ jobs:
       test-script-name: 'test'
       pnpm-recursive-build: true
       pnpm-recursive-tests: true
-      publish-to-public: false
+      publish-to-public: 'false'
       npmrc-config: |
         {
           "registries": {
