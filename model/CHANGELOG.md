@@ -1,5 +1,11 @@
 # @milaboratory/milaboratories.samples-and-data.model
 
+## 1.3.0
+
+### Minor Changes
+
+- baa9d03: migration to public SDK
+
 ## 1.2.0
 
 ### Minor Changes
