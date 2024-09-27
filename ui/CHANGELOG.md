@@ -1,5 +1,17 @@
 # @milaboratory/milaboratories.samples-and-data.ui
 
+## 1.6.0
+
+### Minor Changes
+
+- baa9d03: migration to public SDK
+
+### Patch Changes
+
+- b944bf4: integrate new file input component (with progress), fix multiple selection in file dialog
+- Updated dependencies [baa9d03]
+  - @milaboratory/milaboratories.samples-and-data.model@1.3.0
+
 ## 1.5.0
 
 ### Minor Changes
