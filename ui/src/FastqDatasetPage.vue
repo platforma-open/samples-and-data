@@ -29,7 +29,7 @@ import FileCell from './FileCell.vue';
 import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
-import { isDefined } from '@milaboratory/sdk-vue';
+import { isDefined } from '@platforma-sdk/ui-vue';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 

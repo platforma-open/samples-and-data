@@ -1,4 +1,4 @@
-import { BlockPackDescriptionAbsolute } from '@milaboratory/pl-block-tools';
+import { BlockPackDescriptionAbsolute } from '@platforma-sdk/block-tools';
 
 declare function loadBlockDescription(): BlockPackDescriptionAbsolute;
 declare const blockSpec: {

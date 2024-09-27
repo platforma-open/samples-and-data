@@ -1,5 +1,5 @@
 import { BlockArgs, uniquePlId } from '@milaboratory/milaboratories.samples-and-data.model';
-import { blockTest } from '@milaboratory/sdk-test';
+import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
 
 blockTest('empty imputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpers, expect }) => {

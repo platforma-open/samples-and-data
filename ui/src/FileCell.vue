@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ICellRendererParams } from '@ag-grid-community/core';
-import { ImportFileHandle } from '@milaboratory/sdk-ui';
-import { PlFileInput } from '@milaboratory/sdk-vue';
+import { ImportFileHandle } from '@platforma-sdk/model';
+import { PlFileInput } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from './app';
 

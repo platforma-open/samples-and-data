@@ -1,4 +1,4 @@
-const blockTools = require('@milaboratory/pl-block-tools');
+const blockTools = require('@platforma-sdk/block-tools');
 
 async function loadBlockDescription() {
   return await blockTools.loadPackDescriptionFromSource(__dirname);

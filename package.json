@@ -10,7 +10,7 @@
     "index.js"
   ],
   "dependencies": {
-    "@milaboratory/sdk-ui": "catalog:",
+    "@platforma-sdk/model": "catalog:",
     "@milaboratory/milaboratories.samples-and-data.workflow": "workspace:*",
     "@milaboratory/milaboratories.samples-and-data.model": "workspace:*",
     "@milaboratory/milaboratories.samples-and-data.ui": "workspace:*"
@@ -39,13 +39,13 @@
     }
   },
   "devDependencies": {
-    "@milaboratory/pl-block-tools": "catalog:",
+    "@platforma-sdk/block-tools": "catalog:",
     "@changesets/cli": "catalog:"
   },
   "//": {
     "pnpm": {
       "overrides": {
-        "@milaboratory/sdk-vue": "file:/Volumes/Data/Projects/MiLaboratory/platforma/sdk-vue/milaboratory-sdk-vue-1.1.5.tgz"
+        "@platforma-sdk/ui-vue": "file:/Volumes/Data/Projects/MiLaboratory/platforma/sdk-vue/milaboratory-sdk-vue-1.1.5.tgz"
       }
     }
   },

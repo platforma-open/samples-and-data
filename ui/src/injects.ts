@@ -1,4 +1,4 @@
-import { ImportFileHandle, ImportProgress } from '@milaboratory/sdk-ui';
+import { ImportFileHandle, ImportProgress } from '@platforma-sdk/model';
 import { InjectionKey, Ref, inject, ref } from 'vue';
 
 // export type Progresses = Record<ImportFileHandle, ImportProgress>;
