@@ -25,7 +25,6 @@ jobs:
       app-name-slug: 'block-samples-and-data'
       notify-telegram: true
       node-version: '20.x'
-      always-auth: 'true'
       build-script-name: 'build'
       test: true
       test-script-name: 'test'
