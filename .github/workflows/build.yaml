@@ -22,7 +22,7 @@ jobs:
     uses: milaboratory/github-ci/.github/workflows/node-docker-simple-fast-pnpm.yaml@v4-beta
     with:
       app-name: Samples & Data
-      app-name-slug: 'block-samples-and-data'
+      app-name-slug: 'samples-and-data'
       notify-telegram: true
       node-version: '20.x'
       build-script-name: 'build'
@@ -39,7 +39,7 @@ jobs:
               "tokenVar": "NPMJS_TOKEN"
             },
             "https://npm.pkg.github.com/": {
-              "scopes": ["milaboratory"],
+              "scopes": ["platforma-open"],
               "tokenVar": "NODE_AUTH_TOKEN"
             }
           }
