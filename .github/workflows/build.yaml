@@ -1,4 +1,4 @@
-name: Build and Test NPM packages
+name: Build, Test & Publish Block
 on:
   pull_request:
     types: [opened, reopened, synchronize]
@@ -34,10 +34,6 @@ jobs:
       npmrc-config: |
         {
           "registries": {
-            "https://registry.npmjs.org/": {
-              "scopes": ["milaboratories", "platforma-sdk"],
-              "tokenVar": "NPMJS_TOKEN"
-            },
             "https://npm.pkg.github.com/": {
               "scopes": ["platforma-open"],
               "tokenVar": "NODE_AUTH_TOKEN"
@@ -49,7 +45,6 @@ jobs:
         {
           "PL_LICENSE": ${{ toJSON(secrets.MI_LICENSE) }},
           "MI_LICENSE": ${{ toJSON(secrets.MI_LICENSE) }},
-          "NPMJS_TOKEN": ${{ toJSON(secrets.NPMJS_TOKEN) }},
           "PL_CI_TEST_USER": ${{ toJSON(secrets.PL_CI_TEST_USER) }},
           "PL_CI_TEST_PASSWORD": ${{ toJSON(secrets.PL_CI_TEST_PASSWORD) }},
           "AWS_CI_IAM_MONOREPO_SIMPLE_ROLE": ${{ toJSON(secrets.AWS_CI_IAM_MONOREPO_SIMPLE_ROLE) }}

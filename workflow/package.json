@@ -2,6 +2,9 @@
   "name": "@platforma-open/milaboratories.samples-and-data.workflow",
   "version": "1.7.0",
   "type": "module",
+  "files": [
+    "./dist/**/*"
+  ],
   "description": "Tengo-based template",
   "scripts": {
     "build": "rm -rf dist && pl-tengo check && pl-tengo build",
