@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.3.1
+
+### Patch Changes
+
+- f5a8f97: SDK upgrade
+- Updated dependencies [f5a8f97]
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.7.1
+
 ## 1.3.0
 
 ### Minor Changes
