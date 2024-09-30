@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.3.2
+
+### Patch Changes
+
+- 5c5ef29: change the organization logo image
+
 ## 1.3.1
 
 ### Patch Changes
