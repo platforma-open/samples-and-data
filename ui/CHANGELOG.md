@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.6.1
+
+### Patch Changes
+
+- 55bcb4d: SDK upgrade & AgGrid license
+- Updated dependencies [55bcb4d]
+  - @platforma-open/milaboratories.samples-and-data.model@1.3.1
+
 ## 1.6.0
 
 ### Minor Changes
