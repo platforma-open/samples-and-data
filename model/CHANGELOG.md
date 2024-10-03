@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.3.1
+
+### Patch Changes
+
+- 55bcb4d: SDK upgrade & AgGrid license
+
 ## 1.3.0
 
 ### Minor Changes

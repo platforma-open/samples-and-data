@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 1.4.1
+
+### Patch Changes
+
+- 55bcb4d: SDK upgrade & AgGrid license
+
 ## 1.4.0
 
 ### Minor Changes
