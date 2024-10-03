@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ListOption, PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlContainer, PlTextField } from '@platforma-sdk/ui-vue';
+import { ListOption, PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlContainer, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
 import { buildWrappedString, FileNameFormattingOpts, FileNamePattern, FileNamePatternMatch, getWellFormattedReadIndex, inferFileNamePattern } from './file_name_parser';
@@ -83,7 +83,7 @@ const formattedFilesHtml = computed(() => {
   }).join("")
 })
 
-const readIndicesOptions: ListOption<string>[] = [{
+const readIndicesOptions: SimpleOption<string>[] = [{
   value: JSON.stringify(["R1"]),
   text: "R1"
 }, {
