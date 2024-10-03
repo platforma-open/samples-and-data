@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.7.2
+
+### Patch Changes
+
+- 55bcb4d: SDK upgrade & AgGrid license
+
 ## 1.7.1
 
 ### Patch Changes
