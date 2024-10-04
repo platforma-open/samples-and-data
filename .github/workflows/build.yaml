@@ -28,8 +28,6 @@ jobs:
       build-script-name: 'build'
       test: true
       test-script-name: 'test'
-      pnpm-recursive-build: true
-      pnpm-recursive-tests: true
       publish-to-public: 'false'
       npmrc-config: |
         {

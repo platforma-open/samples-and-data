@@ -4,3 +4,5 @@ block-pack/
 dev/
 work/
 .test_auth.json
+.turbo
+vite.config.*.timestamp-*
