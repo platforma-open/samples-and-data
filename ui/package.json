@@ -21,7 +21,6 @@
     "@ag-grid-enterprise/range-selection": "catalog:",
     "@milaboratories/helpers": "catalog:",
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
-    "@milaboratories/uikit": "catalog:",
     "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/ui-vue": "catalog:",
     "utility-types": "catalog:",

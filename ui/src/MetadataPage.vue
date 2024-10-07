@@ -15,16 +15,18 @@ import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-mod
 import { AgGridVue } from '@ag-grid-community/vue3';
 
 import {
-  Dataset,
   MetadataColumnValueType,
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlBlockPage, PlBtnSecondary } from '@milaboratories/uikit';
+import { PlBlockPage } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
-import { computed, ref, shallowRef } from 'vue';
-import { notEmpty, undef } from '@milaboratories/helpers';
+import { computed, shallowRef } from 'vue';
+import { notEmpty } from '@milaboratories/helpers';
 import { MenuModule } from '@ag-grid-enterprise/menu';
+import { useCssModule } from 'vue'
+
+const styles = useCssModule()
 
 const app = useApp();
 
@@ -73,10 +75,8 @@ async function addColumn(valueType: MetadataColumnValueType) {
   });
 }
 
-const toRemoveIdx = ref<number>(-1);
-
-async function deleteMetaColumn(metaColumnIdx: number) {
-  toRemoveIdx.value = -1;
+async function deleteMetaColumn(metaColumnId: string) {
+  const metaColumnIdx = app.args.metadata.findIndex((mCol) => mCol.id === metaColumnId)
   await app.updateArgs((arg) => {
     arg.metadata.splice(metaColumnIdx, 1);
   });
@@ -89,10 +89,7 @@ type MetadataRow = {
 };
 
 function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
-  // @todo remove casting when AG-12581 will be resolved:
-  // https://www.ag-grid.com/pipeline/
-  // https://github.com/ag-grid/ag-grid/issues/8538
-  const samples = gridApi.value!.getSelectedRows().map(row => (row as MetadataRow).id);
+  const samples = gridApi.value!.getSelectedRows().map(row => row.id);
   if (samples.length !== 0)
     return samples;
   const sample = node?.data?.id;
@@ -119,14 +116,16 @@ const columnDefs = computed<ColDef[]>(() => [
     colId: 'label',
     field: 'label',
     editable: true,
-    headerName: app.args.sampleLabelColumnLabel
+    headerName: app.args.sampleLabelColumnLabel,
+    flex: 1
   },
   ...app.args.metadata.map((mCol): ColDef => {
     const common: ColDef = {
       colId: `meta.${mCol.id}`,
       field: `meta.${mCol.id}`,
       headerName: mCol.label,
-      editable: true
+      editable: true,
+      flex: 1
     };
     switch (mCol.valueType) {
       case 'String':
@@ -148,7 +147,17 @@ const columnDefs = computed<ColDef[]>(() => [
           }
         };
     }
-  })
+  }),
+  {
+    colId: 'add',
+    headerName: '+',
+    headerClass: styles.plusHeader,
+    suppressHeaderMenuButton: true,
+    minWidth: 45,
+    maxWidth: 45,
+    sortable: false,
+    resizable: false
+  },
 ]);
 
 const rowData = computed<MetadataRow[]>(() =>
@@ -164,13 +173,18 @@ const gridOptions: GridOptions<MetadataRow> = {
 
   rowSelection: 'multiple',
 
+  autoSizeStrategy: {
+    type: 'fitGridWidth'
+  },
+  stopEditingWhenCellsLoseFocus: true,
+
   onColumnHeaderClicked: (event) => {
     const columnId = event.column.getId();
-    if (columnId.startsWith('meta.')) {
-      const metaColumnId = columnId.slice(5);
-      toRemoveIdx.value = app.args.metadata.findIndex((mCol) => mCol.id === metaColumnId);
-    } else toRemoveIdx.value = -1;
+    if (columnId === 'add') {
+      event.api.showColumnMenu('add');
+    }
   },
+
   onCellValueChanged: (event) => {
     const columnId = event.column.getId();
     const sampleId = event.data.id;
@@ -191,9 +205,30 @@ const gridOptions: GridOptions<MetadataRow> = {
   },
 
   getMainMenuItems: (params) => {
-    return [];
+    const columnId = params.column.getId();
+    if (columnId === 'add') {
+      return [{
+        name: 'Add String Column',
+        action: (params) => addColumn('String')
+      }, {
+        name: 'Add Integer Column',
+        action: (params) => addColumn('Long')
+      }, {
+        name: 'Add Numerical Column',
+        action: (params) => addColumn('Double')
+      }];
+    } else if (columnId.startsWith('meta.')) {
+      const metaColumnId = columnId.slice(5);
+      return [{
+        name: `Delete ${params.column.getColDef().headerName}`,
+        action: (params) => deleteMetaColumn(metaColumnId)
+      }];
+    } else
+      return [];
   },
+
   getContextMenuItems: (params) => {
+    console.log("Ctx:", params);
     const targetSamples = getSelectedSamples(params.node);
     if (getSelectedSamples(params.node).length === 0)
       return [];
@@ -211,16 +246,25 @@ const gridOptions: GridOptions<MetadataRow> = {
 <template>
   <PlBlockPage>
     <template #title>Samples & Metadata</template>
-    <div class="d-flex gap-4">
-      <PlBtnSecondary @click="addDatasetFasta">Add Dataset</PlBtnSecondary>
-      <PlBtnSecondary @click="addRow">Add Sample</PlBtnSecondary>
-      <PlBtnSecondary @click="() => addColumn('String')">Add String Column</PlBtnSecondary>
-      <PlBtnSecondary @click="() => addColumn('Double')">Add Numeric Column</PlBtnSecondary>
-      <PlBtnSecondary @click="() => addColumn('Long')">Add Integer Column</PlBtnSecondary>
-    </div>
     <div class="ag-theme-quartz" :style="{ flex: 1 }">
       <AgGridVue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
         :grid-options="gridOptions" />
     </div>
   </PlBlockPage>
 </template>
+
+<style lang="css" module>
+.plusHeader {
+  padding-left: 0;
+  padding-right: 0;
+  text-align: center;
+}
+
+.plusHeader :global(.ag-header-cell-label) {
+  justify-content: center;
+}
+
+.plusHeader :global(.ag-sort-indicator-container) {
+  display: none;
+}
+</style>
