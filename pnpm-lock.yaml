@@ -51,6 +51,9 @@ catalogs:
     '@platforma-sdk/test':
       specifier: ^1.5.37
       version: 1.5.37
+    '@platforma-sdk/ui-vue':
+      specifier: ^1.4.9
+      version: 1.5.0
     '@platforma-sdk/workflow-tengo':
       specifier: ^1.2.11
       version: 1.2.11
@@ -84,9 +87,6 @@ catalogs:
     zod:
       specifier: ^3.23.8
       version: 3.23.8
-
-overrides:
-  '@platforma-sdk/ui-vue': file:/Users/dbolotin/milab/core/platforma/sdk/ui-vue/package.tgz
 
 importers:
 
@@ -192,8 +192,8 @@ importers:
         specifier: 'catalog:'
         version: 1.2.32
       '@platforma-sdk/ui-vue':
-        specifier: file:/Users/dbolotin/milab/core/platforma/sdk/ui-vue/package.tgz
-        version: file:../../core/platforma/sdk/ui-vue/package.tgz(typescript@5.5.4)
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@5.5.4)
       utility-types:
         specifier: 'catalog:'
         version: 3.11.0
@@ -957,9 +957,8 @@ packages:
   '@platforma-sdk/test@1.5.37':
     resolution: {integrity: sha512-aAm5TcoINHd5P0p+tXmd22slKB6tOCgzNSSu+P7TGzDitk/PiFXiEMU4V6x1ON1Klga24RQvIi8IEe++QfOnlA==}
 
-  '@platforma-sdk/ui-vue@file:../../core/platforma/sdk/ui-vue/package.tgz':
-    resolution: {integrity: sha512-qAbb05ErgxvMD3Sl+b+6YeZVkvXgNdZYOloQuwhGhMm+tZDSTGTlDZR+Qaw1Qh08seumDoQaPtrg5DyUOLcamA==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
-    version: 1.4.8
+  '@platforma-sdk/ui-vue@1.5.0':
+    resolution: {integrity: sha512-U7H4l/u8oPw7p5oXOe8vsZxRXG2M/i6jLZr7k3JmRiuwIFTlY+PpDcr8cMKMDbRhD0DbneUEmlz991a2S3HSOQ==}
 
   '@platforma-sdk/workflow-tengo@1.2.11':
     resolution: {integrity: sha512-jrogjfTH7CXN3gEv/XV2qEDZQEokGEENjUIgdMwgjafqJjUZ5x9Uvxkytdn3tGJoLWetsKLBfAS+lbr/dGzETw==}
@@ -4095,7 +4094,7 @@ snapshots:
       - supports-color
       - terser
 
-  '@platforma-sdk/ui-vue@file:../../core/platforma/sdk/ui-vue/package.tgz(typescript@5.5.4)':
+  '@platforma-sdk/ui-vue@1.5.0(typescript@5.5.4)':
     dependencies:
       '@milaboratories/uikit': 1.2.16(typescript@5.5.4)
       '@platforma-sdk/model': 1.2.32
