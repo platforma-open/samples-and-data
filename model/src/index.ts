@@ -10,7 +10,9 @@ import {
 } from '@platforma-sdk/model';
 import { BlockArgs } from './args';
 
-export const platforma = BlockModel.create<BlockArgs>('Heavy')
+export type BlockUiState = { suggestedImport: boolean };
+
+export const platforma = BlockModel.create<BlockArgs, BlockUiState>('Heavy')
 
   .initialArgs({
     sampleIds: [],
@@ -42,7 +44,7 @@ export const platforma = BlockModel.create<BlockArgs>('Heavy')
             label: ds.label
           } as const)
       ),
-      { type: 'link', href: `/new-dataset`, label: '+ add dataset' }
+      { type: 'link', href: `/import-files`, label: 'Import Files' }
     ];
   })
 

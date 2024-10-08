@@ -19,6 +19,7 @@
     "@ag-grid-enterprise/menu": "catalog:",
     "@ag-grid-enterprise/clipboard": "catalog:",
     "@ag-grid-enterprise/range-selection": "catalog:",
+    "@vueuse/core": "catalog:",
     "@milaboratories/helpers": "catalog:",
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
     "@platforma-sdk/model": "catalog:",

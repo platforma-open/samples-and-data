@@ -21,7 +21,7 @@ import {
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { PlBlockPage } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
-import { computed, shallowRef } from 'vue';
+import { computed, inject, shallowRef } from 'vue';
 import { notEmpty } from '@milaboratories/helpers';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { useCssModule } from 'vue'
@@ -29,6 +29,14 @@ import { useCssModule } from 'vue'
 const styles = useCssModule()
 
 const app = useApp();
+
+if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
+  if (app.model.ui === undefined)
+    app.model.ui = { suggestedImport: true }
+  else
+    app.model.ui.suggestedImport = true;
+  app.navigateTo('/import-files');
+}
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
 
