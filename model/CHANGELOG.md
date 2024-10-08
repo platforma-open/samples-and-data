@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.3.2
+
+### Patch Changes
+
+- 5d8ff43: Buttons moved to context menu in Metadata window; SDK upgrade
+
 ## 1.3.1
 
 ### Patch Changes
