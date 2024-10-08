@@ -2,7 +2,7 @@ import { platforma } from '@platforma-open/milaboratories.samples-and-data.model
 import { defineApp } from '@platforma-sdk/ui-vue';
 import MetadataPage from './MetadataPage.vue';
 import DatasetPage from './DatasetPage.vue';
-import NewDatasetPage from './NewDatasetPage.vue';
+import NewDatasetPage from './ImportFilesPage.vue';
 import { computed } from 'vue';
 
 export const sdkPlugin = defineApp(platforma, (app) => {
@@ -13,7 +13,7 @@ export const sdkPlugin = defineApp(platforma, (app) => {
     routes: {
       '/': MetadataPage,
       '/dataset': DatasetPage,
-      '/new-dataset': NewDatasetPage
+      '/import-files': NewDatasetPage
     }
   };
 });
