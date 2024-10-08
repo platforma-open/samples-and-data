@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.7.0
+
+### Minor Changes
+
+- f5b0ae2: Better file import mechanics.
+
+### Patch Changes
+
+- Updated dependencies [f5b0ae2]
+  - @platforma-open/milaboratories.samples-and-data.model@1.4.0
+
 ## 1.6.2
 
 ### Patch Changes
