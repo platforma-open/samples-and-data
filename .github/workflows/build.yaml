@@ -26,11 +26,11 @@ jobs:
       notify-telegram: true
       node-version: '20.x'
 
-      build-script-name: 'build'
+      build-script-name: 'build-block'
       pnpm-recursive-build: false
 
       test: true
-      test-script-name: 'test'
+      test-script-name: 'test-block'
       pnpm-recursive-tests: false
 
       publish-to-public: 'false'

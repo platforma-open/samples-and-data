@@ -3,6 +3,7 @@ packages:
   - model
   - ui
   - test
+  - .
 
 catalog:
   '@platforma-sdk/tengo-builder': ^1.14.13
