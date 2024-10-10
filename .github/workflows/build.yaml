@@ -33,14 +33,14 @@ jobs:
       test-script-name: 'test-block'
       pnpm-recursive-tests: false
 
-      publish-to-public: 'false'
+      publish-to-public: 'true'
 
       npmrc-config: |
         {
           "registries": {
-            "https://npm.pkg.github.com/": {
+            "https://registry.npmjs.org/": {
               "scopes": ["platforma-open"],
-              "tokenVar": "NODE_AUTH_TOKEN"
+              "tokenVar": "NPMJS_TOKEN"
             }
           }
         }
@@ -49,6 +49,7 @@ jobs:
         {
           "PL_LICENSE": ${{ toJSON(secrets.MI_LICENSE) }},
           "MI_LICENSE": ${{ toJSON(secrets.MI_LICENSE) }},
+          "NPMJS_TOKEN": ${{ toJSON(secrets.NPMJS_TOKEN) }},
           "PL_CI_TEST_USER": ${{ toJSON(secrets.PL_CI_TEST_USER) }},
           "PL_CI_TEST_PASSWORD": ${{ toJSON(secrets.PL_CI_TEST_PASSWORD) }},
           "AWS_CI_IAM_MONOREPO_SIMPLE_ROLE": ${{ toJSON(secrets.AWS_CI_IAM_MONOREPO_SIMPLE_ROLE) }}
