@@ -14,7 +14,7 @@ catalog:
 
   '@platforma-sdk/workflow-tengo': ^1.2.11
 
-  '@platforma-sdk/ui-vue': ^1.4.9
+  '@platforma-sdk/ui-vue': ^1.7.1
   '@milaboratories/helpers': ^1.6.5
 
   'vue': ^3.5.11
