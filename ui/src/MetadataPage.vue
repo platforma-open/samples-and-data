@@ -19,7 +19,7 @@ import {
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlBlockPage } from '@platforma-sdk/ui-vue';
+import { PlBlockPage, PlBtnGhost } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
 import { computed, inject, shallowRef } from 'vue';
 import { notEmpty } from '@milaboratories/helpers';
@@ -39,23 +39,6 @@ if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
 }
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
-
-async function addDatasetFasta() {
-  const id = uniquePlId();
-  await app.updateArgs((arg) => {
-    arg.datasets.push({
-      id: id,
-      label: 'The Dataset',
-      content: {
-        type: 'Fastq',
-        gzipped: true,
-        readIndices: ['R1', 'R2'],
-        data: {}
-      }
-    });
-  });
-  await app.navigateTo(`/dataset?id=${id}`);
-}
 
 const gridApi = shallowRef<GridApi<MetadataRow>>();
 const onGridReady = (params: GridReadyEvent) => {
@@ -104,6 +87,15 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
   if (!sample)
     return [];
   return [sample];
+}
+
+async function importMetadata() {
+  const files = await platforma!.lsDriver.showOpenSingleFileDialog({
+    title: "Import metadata table",
+    buttonLabel: "Import",
+    filters: [{ extensions: ["*"], name: "Any file" }, { extensions: ["csv"], name: "CSV File" }]
+  })
+  console.dir(files, { depth: 5 });
 }
 
 async function deleteSamples(sampleIds: PlId[]) {
@@ -254,6 +246,9 @@ const gridOptions: GridOptions<MetadataRow> = {
 <template>
   <PlBlockPage>
     <template #title>Samples & Metadata</template>
+    <template #append>
+      <PlBtnGhost :icon="'import'" @click.stop="importMetadata">Import meta table</PlBtnGhost>
+    </template>
     <div class="ag-theme-quartz" :style="{ flex: 1 }">
       <AgGridVue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
         :grid-options="gridOptions" />
