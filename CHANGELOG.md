@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.4.1
+
+### Patch Changes
+
+- 01ffba4: ui-vue@1.7.1 (includes fixes)
+
 ## 1.4.0
 
 ### Minor Changes
