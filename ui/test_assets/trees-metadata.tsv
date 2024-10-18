@@ -1,0 +1,25 @@
+Sample	Donor	Tissue	DayAfterVac	Dataset
+SRR11233621	321-11	PBMC	0	Bulk BCR-seq
+SRR11233641	321-05	PBMC	0	Bulk BCR-seq
+SRR11233630	321-11	Plasmablasts	6	Bulk BCR-seq
+SRR11233652	321-05	Plasmablasts	5	Bulk BCR-seq
+SRR11233663	321-04	PBMC	0	Bulk BCR-seq
+SRR11233664	321-04	Plasmablasts	5	Bulk BCR-seq
+SRR11233622	321-05	Lymph node	60	10x Single Cell BCR-seq
+SRR11233623	321-05	Lymph node	60	10x Single Cell BCR-seq
+SRR11233624	321-05	Lymph node	28	10x Single Cell BCR-seq
+SRR11233625	321-05	Lymph node	28	10x Single Cell BCR-seq
+SRR11233626	321-05	Lymph node	12	10x Single Cell BCR-seq
+SRR11233627	321-05	Lymph node	12	10x Single Cell BCR-seq
+SRR11233628	321-05	Lymph node	12	10x Single Cell BCR-seq
+SRR11233629	321-05	Lymph node	5	10x Single Cell BCR-seq
+SRR11233631	321-05	Lymph node	5	10x Single Cell BCR-seq
+SRR11233632	321-05	Lymph node	0	10x Single Cell BCR-seq
+SRR11233633	321-05	Lymph node	0	10x Single Cell BCR-seq
+SRR11233637	321-05	IgD low B cells	5	10x Single Cell BCR-seq
+SRR11233638	321-05	IgD low B cells	0	10x Single Cell BCR-seq
+SRR11233639	321-05	PBMC	60	10x Single Cell BCR-seq
+SRR11233640	321-05	PBMC	28	10x Single Cell BCR-seq
+SRR11233642	321-05	PBMC	12	10x Single Cell BCR-seq
+SRR11233643	321-05	PBMC	5	10x Single Cell BCR-seq
+SRR11233644	321-05	PBMC	0	10x Single Cell BCR-seq

@@ -19,16 +19,31 @@ import {
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlBlockPage } from '@platforma-sdk/ui-vue';
+import { PlBlockPage, PlBtnGhost, PlBtnPrimary, PlBtnSecondary, PlDialogModal } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
-import { computed, inject, shallowRef } from 'vue';
+import { computed, inject, reactive, shallowRef } from 'vue';
 import { notEmpty } from '@milaboratories/helpers';
 import { MenuModule } from '@ag-grid-enterprise/menu';
 import { useCssModule } from 'vue'
+import { ImportResult, readFileForImport } from './dataimport';
+import ImportModal from './ImportModal.vue';
 
 const styles = useCssModule()
 
 const app = useApp();
+
+type ErrorMessage = {
+  title: string,
+  message?: string
+}
+
+const data = reactive<{
+  importCandidate: ImportResult | undefined,
+  errorMessage: ErrorMessage | undefined
+}>({
+  importCandidate: undefined,
+  errorMessage: undefined
+})
 
 if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
   if (app.model.ui === undefined)
@@ -39,23 +54,6 @@ if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
 }
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
-
-async function addDatasetFasta() {
-  const id = uniquePlId();
-  await app.updateArgs((arg) => {
-    arg.datasets.push({
-      id: id,
-      label: 'The Dataset',
-      content: {
-        type: 'Fastq',
-        gzipped: true,
-        readIndices: ['R1', 'R2'],
-        data: {}
-      }
-    });
-  });
-  await app.navigateTo(`/dataset?id=${id}`);
-}
 
 const gridApi = shallowRef<GridApi<MetadataRow>>();
 const onGridReady = (params: GridReadyEvent) => {
@@ -104,6 +102,34 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
   if (!sample)
     return [];
   return [sample];
+}
+
+async function importMetadata() {
+  const result = await platforma!.lsDriver.showOpenSingleFileDialog({
+    title: "Import metadata table",
+    buttonLabel: "Import",
+    filters: [{ extensions: ["xlsx", "csv", "tsv", "txt"], name: "Table data" }]
+  })
+  const file = result.file;
+  if (!file)
+    return;
+  if (await platforma!.lsDriver.getLocalFileSize(file) > 5_000_000) {
+    data.errorMessage = { title: "File is too big" };
+    return;
+  }
+  const content = await platforma!.lsDriver.getLocalFileContent(file);
+  try {
+    const ic = readFileForImport(content);
+    if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
+      // TODO human readable parsing metrics
+      data.errorMessage = { title: "Table is empty", message: JSON.stringify(ic) };
+      return;
+    }
+    data.importCandidate = ic;
+  } catch (e: any) {
+    console.log(e);
+    data.errorMessage = { title: "Error reading table", message: e.msg };
+  }
 }
 
 async function deleteSamples(sampleIds: PlId[]) {
@@ -254,11 +280,22 @@ const gridOptions: GridOptions<MetadataRow> = {
 <template>
   <PlBlockPage>
     <template #title>Samples & Metadata</template>
+    <template #append>
+      <PlBtnGhost :icon="'import'" @click.stop="importMetadata">Import meta table</PlBtnGhost>
+    </template>
     <div class="ag-theme-quartz" :style="{ flex: 1 }">
       <AgGridVue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
         :grid-options="gridOptions" />
     </div>
   </PlBlockPage>
+  <ImportModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
+    @on-close="data.importCandidate = undefined" />
+  <PlDialogModal :model-value="data.errorMessage !== undefined" closable
+    @update:model-value="(v) => { if (!v) data.errorMessage = undefined }">
+    <div>{{ data.errorMessage?.title }}</div>
+    <pre v-if="data.errorMessage?.message">{{ data.errorMessage?.message }}</pre>
+    <PlBtnPrimary>Ok</PlBtnPrimary>
+  </PlDialogModal>
 </template>
 
 <style lang="css" module>
