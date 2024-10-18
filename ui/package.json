@@ -26,10 +26,12 @@
     "@platforma-sdk/ui-vue": "catalog:",
     "utility-types": "catalog:",
     "vue": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "xlsx": "../vendor/xlsx-0.20.3.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "catalog:",
+    "@types/node": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vue-tsc": "catalog:",

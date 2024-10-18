@@ -44,3 +44,5 @@ catalog:
   '@ag-grid-enterprise/range-selection': ^32.2.2
 
   '@changesets/cli': ^2.27.9
+
+  '@types/node': ~20.16.10
