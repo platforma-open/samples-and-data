@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.8.1
+
+### Patch Changes
+
+- 611c3bf: SDK Upgrade: fixes AGGrid watermark
+
 ## 1.8.0
 
 ### Minor Changes
