@@ -52,8 +52,8 @@ catalogs:
       specifier: ^1.7.5
       version: 1.7.5
     '@platforma-sdk/ui-vue':
-      specifier: ^1.7.3
-      version: 1.7.3
+      specifier: ^1.7.6
+      version: 1.7.6
     '@platforma-sdk/workflow-tengo':
       specifier: ^1.5.0
       version: 1.5.0
@@ -199,7 +199,7 @@ importers:
         version: 1.7.0
       '@platforma-sdk/ui-vue':
         specifier: 'catalog:'
-        version: 1.7.3(typescript@5.5.4)
+        version: 1.7.6(typescript@5.5.4)
       '@vueuse/core':
         specifier: 'catalog:'
         version: 11.1.0(vue@3.5.12(typescript@5.5.4))
@@ -255,6 +255,9 @@ packages:
   '@ag-grid-community/csv-export@32.2.2':
     resolution: {integrity: sha512-9ttdlJ7XOgK/qGC0QyXM1ep3f1GIjnyz1cQqIr9B2epe0fGFDt+lvK9EJBAQCG2GVJaFJ/xxBJfkQx65ganp+g==}
 
+  '@ag-grid-community/infinite-row-model@32.2.2':
+    resolution: {integrity: sha512-/K17BClH264UpXxtypRgY9Vy7mM3IWzlyCkAtoUF+TraYMwJqMSIjXCzZ/n/iXKQSKuTRiREqbq9ve5M/LtAaA==}
+
   '@ag-grid-community/styles@32.2.2':
     resolution: {integrity: sha512-YQm+Tb0yPUxxFmExrYtic+gMOU+00/brLZNVE8sB8/6SuxIKla6Vk7sC1aljtMtwaxO0H4gOL7vx4wYB4FtwBA==}
 
@@ -269,6 +272,9 @@ packages:
 
   '@ag-grid-enterprise/core@32.2.2':
     resolution: {integrity: sha512-0aUkBDIAGQAlNta13hX4ThgJ020LGN6Xfm5hUiRCSt1GC060H+GJVpfoc/VoFqa3VVr0BBdSZnXVTV5GX2UD2A==}
+
+  '@ag-grid-enterprise/excel-export@32.2.2':
+    resolution: {integrity: sha512-smCT8hmT8OIvHeR+0sKq5S8fEzBkX7v5mJo9l0wBQKC3mr1XcmDrkrdRBVTT6VOVlxs2+JJjdNa6mSbnL+BERg==}
 
   '@ag-grid-enterprise/menu@32.2.2':
     resolution: {integrity: sha512-+APS39cPLOc7oAjn28983qGLcrUIitUa5EgA85bhR9sydyniqgpfmw2HARw8qj2tXpuKuZaPAQ3WLF9ij4qHAw==}
@@ -940,8 +946,8 @@ packages:
   '@milaboratories/ts-helpers@1.1.0':
     resolution: {integrity: sha512-nbGUetdEc47wX/btCANxOggHC4xzrD1f9ibZLLTIYVVOokzdVOVbZ9Qv+78TF1G15Sq7lgvqXr/BjYxGSCCO3g==}
 
-  '@milaboratories/uikit@1.2.21':
-    resolution: {integrity: sha512-B1fy6B7wgeMMj/bryEfqH9WEsP2aCBLatdn8+fj3dqZnXqKG8In3ekGbDLX1+t0ty4H2feu410S/NO8YutpNXQ==}
+  '@milaboratories/uikit@1.2.22':
+    resolution: {integrity: sha512-5/N5wpcLZvMM0/mejT5n1EJkOzAQCPvSH27GM1Us05PeMVdN5BTO48yNgiJDgY6UB5xM+WXcZlJS+DJIxKBfdw==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -981,8 +987,8 @@ packages:
   '@platforma-sdk/test@1.7.5':
     resolution: {integrity: sha512-cQ9mrA7UDPoW88fP24iR9V7v0zzgB+O0rSppaQNkhCtaJF4MkDGzMRAu02r8b7kblBodbu3cZBfe+IoJO+Pvhg==}
 
-  '@platforma-sdk/ui-vue@1.7.3':
-    resolution: {integrity: sha512-jdoMtRK9JnI41xDZGW2ZfZnvgHYE0Cqbi6zHvWseWi1Dc65NJ8BJRFnPwOkNkmyvIuBc2/C3YwJrH+oQEK/CAw==}
+  '@platforma-sdk/ui-vue@1.7.6':
+    resolution: {integrity: sha512-Cpd3EBs7ANQgGBCTTYbAprbhR+do0NqIYOdSNbuJsCp2Z2Dw0qxC3u5PpVkxW7LYL3FQqV7KNyBatgnO9VpoUA==}
 
   '@platforma-sdk/workflow-tengo@1.5.0':
     resolution: {integrity: sha512-VI+WZfgxH6gjOR3+QnB+pvVJqcqDB670KcXd53WoPX4spCj22c26lvK8AfHonYakwI0SYvDmtoIw1PyXF1B/Sg==}
@@ -3122,6 +3128,11 @@ snapshots:
       '@ag-grid-community/core': 32.2.2
       tslib: 2.6.3
 
+  '@ag-grid-community/infinite-row-model@32.2.2':
+    dependencies:
+      '@ag-grid-community/core': 32.2.2
+      tslib: 2.6.3
+
   '@ag-grid-community/styles@32.2.2': {}
 
   '@ag-grid-community/vue3@32.2.2(typescript@5.5.4)':
@@ -3147,6 +3158,12 @@ snapshots:
   '@ag-grid-enterprise/core@32.2.2':
     dependencies:
       '@ag-grid-community/core': 32.2.2
+
+  '@ag-grid-enterprise/excel-export@32.2.2':
+    dependencies:
+      '@ag-grid-community/core': 32.2.2
+      '@ag-grid-community/csv-export': 32.2.2
+      '@ag-grid-enterprise/core': 32.2.2
 
   '@ag-grid-enterprise/menu@32.2.2':
     dependencies:
@@ -4229,7 +4246,7 @@ snapshots:
     dependencies:
       denque: 2.1.0
 
-  '@milaboratories/uikit@1.2.21(typescript@5.5.4)':
+  '@milaboratories/uikit@1.2.22(typescript@5.5.4)':
     dependencies:
       vue: 3.5.12(typescript@5.5.4)
     transitivePeerDependencies:
@@ -4351,9 +4368,21 @@ snapshots:
       - supports-color
       - terser
 
-  '@platforma-sdk/ui-vue@1.7.3(typescript@5.5.4)':
+  '@platforma-sdk/ui-vue@1.7.6(typescript@5.5.4)':
     dependencies:
-      '@milaboratories/uikit': 1.2.21(typescript@5.5.4)
+      '@ag-grid-community/client-side-row-model': 32.2.2
+      '@ag-grid-community/core': 32.2.2
+      '@ag-grid-community/csv-export': 32.2.2
+      '@ag-grid-community/infinite-row-model': 32.2.2
+      '@ag-grid-community/styles': 32.2.2
+      '@ag-grid-community/vue3': 32.2.2(typescript@5.5.4)
+      '@ag-grid-enterprise/clipboard': 32.2.2
+      '@ag-grid-enterprise/core': 32.2.2
+      '@ag-grid-enterprise/excel-export': 32.2.2
+      '@ag-grid-enterprise/menu': 32.2.2
+      '@ag-grid-enterprise/range-selection': 32.2.2
+      '@ag-grid-enterprise/rich-select': 32.2.2
+      '@milaboratories/uikit': 1.2.22(typescript@5.5.4)
       '@platforma-sdk/model': 1.7.0
       canonicalize: 2.0.0
       lru-cache: 11.0.1
