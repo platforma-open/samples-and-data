@@ -1,6 +1,4 @@
-function escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+import { escapeRegExp } from "./util";
 
 export type Range = {
   from: number;
