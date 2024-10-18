@@ -1,5 +1,20 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.5.0
+
+### Minor Changes
+
+- a0ebc60: Metadata import from table
+
+### Patch Changes
+
+- a0ebc60: SDK upgrade
+- Updated dependencies [a0ebc60]
+- Updated dependencies [a0ebc60]
+  - @platforma-open/milaboratories.samples-and-data.ui@1.8.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.4.1
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.7.4
+
 ## 1.4.1
 
 ### Patch Changes
