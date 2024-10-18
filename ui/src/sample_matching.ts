@@ -122,8 +122,6 @@ export function determineBestMatchingAlgorithm(
   existingSamples: string[],
   importSamples: string[]
 ): AlgorithmSearchResult {
-  console.dir(existingSamples);
-  console.dir(importSamples);
   if (existingSamples.length === 0)
     return { topAlgorithm: SampleMatchingAlgorithms[0], matches: 0 };
   let topAlgorithm: SampleMatchingAlgorithm = SampleMatchingAlgorithms[0];

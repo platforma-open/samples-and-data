@@ -108,7 +108,7 @@ async function importMetadata() {
   const result = await platforma!.lsDriver.showOpenSingleFileDialog({
     title: "Import metadata table",
     buttonLabel: "Import",
-    filters: [{ extensions: ["*"], name: "Any file" }, { extensions: ["csv"], name: "CSV File" }]
+    filters: [{ extensions: ["xlsx", "csv", "tsv", "txt"], name: "Table data" }]
   })
   const file = result.file;
   if (!file)
@@ -125,7 +125,6 @@ async function importMetadata() {
       data.errorMessage = { title: "Table is empty", message: JSON.stringify(ic) };
       return;
     }
-    console.dir(ic, { depth: 5 });
     data.importCandidate = ic;
   } catch (e: any) {
     console.log(e);

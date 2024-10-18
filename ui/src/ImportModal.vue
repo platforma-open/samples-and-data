@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { isDefined, ListOption, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown } from '@platforma-sdk/ui-vue';
+import { isDefined, ListOption, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown, PlLogView, PlTextArea } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
 import { ImportResult } from './dataimport';
 import { computed, reactive, watch } from 'vue';
-import { MetadataColumn, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import { MetadataColumn, PlId, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ar } from 'vitest/dist/chunks/reporters.C4ZHgdxQ.js';
 import { determineBestMatchingAlgorithm } from './sample_matching';
 
@@ -46,10 +46,10 @@ const colsMatchingExisting = computed(() => {
 const tableDataText = computed(() => {
     const ic = props.importCandidate;
     let result = ""
-    result += `  Columns: ${ic.data.columns.length} (match existing ${colsMatchingExisting.value})\n`
-    result += `  Rows: ${ic.data.rows.length}\n`
-    result += `  Matching algorithm: ${algo.value.topAlgorithm.name}\n`
-    result += `  Matching: ${algo.value.matches}`
+    result += `Matched samples: ${algo.value.matches} (out of ${app.model.args.sampleIds.length})\n`
+    result += `Unmatched rows: ${ic.data.rows.length - algo.value.matches}\n`
+    // result += `Matching algorithm: ${algo.value.topAlgorithm.name}\n`
+    result += `Import meta columns: ${ic.data.columns.length} (${colsMatchingExisting.value} match existing)`
     return result;
 })
 
@@ -58,11 +58,11 @@ const tableIssuesText = computed(() => {
     if (ic.emptyColumns > 0 || ic.emptyRowsRemoved > 0 || ic.missingHeaders > 0) {
         let result = ``
         if (ic.emptyColumns > 0)
-            result += `  Empty columns removed: ${ic.emptyColumns}\n`
+            result += `Empty columns removed: ${ic.emptyColumns}\n`
         if (ic.emptyRowsRemoved > 0)
-            result += `  Empty rows removed: ${ic.emptyRowsRemoved}\n`
+            result += `Empty rows removed: ${ic.emptyRowsRemoved}\n`
         if (ic.missingHeaders > 0)
-            result += `  Missing headers: ${ic.missingHeaders}\n`
+            result += `Missing headers: ${ic.missingHeaders}\n`
         return result;
     }
     return undefined;
@@ -98,12 +98,32 @@ function runImport() {
     }
 
     // Adding data
-    // for (const row of props.importCandidate.data.rows) {
-    //     const sampleIdx = 
-    //     for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; ++cIdx) {
+    const matcher = algo.value.topAlgorithm.matcher;
+    const existingSamples = Object.entries(args.sampleLabels);
+    for (const row of props.importCandidate.data.rows) {
+        let iSampleName = row[data.sampleNameColumnIdx];
+        if (!iSampleName)
+            continue;
+        if (typeof iSampleName === 'number')
+            // coerce to string
+            iSampleName = String(iSampleName);
+        let sampleId = existingSamples.find(([, sLabel]) => sLabel && matcher(sLabel, iSampleName))?.[0] as (PlId | undefined);
 
-    //     }
-    // }
+        if (!sampleId) {
+            if (!data.addUnmatchedSamples)
+                continue;
+            sampleId = uniquePlId();
+            args.sampleIds.push(sampleId);
+            args.sampleLabels[sampleId] = iSampleName;
+        }
+
+        for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; ++cIdx) {
+            const column = modelColumns[cIdx];
+            if (column === undefined)
+                continue; // sample label column
+            column.data[sampleId] = row[cIdx];
+        }
+    }
 
     emit('onClose')
 }
@@ -111,23 +131,21 @@ function runImport() {
 </script>
 
 <template>
-    <PlDialogModal :model-value="true" closable @update:model-value="(v) => { if (!v) emit('onClose') }">
-        <h3>Import metadata</h3>
+    <PlDialogModal :model-value="true" closable @update:model-value="(v) => { if (!v) emit('onClose') }" width="80%">
+        <template #title>Import metadata</template>
         <PlDropdown label="Sample name column" :options="sampleColumnOptions" v-model="data.sampleNameColumnIdx" />
         <PlCheckbox v-model="data.addUnmatchedSamples">
             Add unmatched samples
         </PlCheckbox>
-        <div>
-            Table to be imported:
-            <pre>{{ tableDataText }}</pre>
-            <div v-if="tableIssuesText">
-                Table issues:
-                <pre>{{ tableIssuesText }}</pre>
-            </div>
-        </div>
-        <div :style="{ marginTop: '10px' }" class="d-flex gap-4">
-            <PlBtnPrimary>Import</PlBtnPrimary>
+        <PlTextArea :model-value="tableDataText" label="Import information" readonly :autogrow="true">
+            <template #tooltip>Matching algorithm: {{ algo.topAlgorithm.name }}}</template>
+        </PlTextArea>
+        <template v-if="tableIssuesText">
+            <PlTextArea :model-value="tableIssuesText" label="File issues" readonly :autogrow="true" :rows="1" />
+        </template>
+        <template #actions>
+            <PlBtnPrimary @click="runImport">Import</PlBtnPrimary>
             <PlBtnSecondary @click="() => emit('onClose')">Cancel</PlBtnSecondary>
-        </div>
+        </template>
     </PlDialogModal>
 </template>
