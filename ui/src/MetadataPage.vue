@@ -125,6 +125,7 @@ async function importMetadata() {
       data.errorMessage = { title: "Table is empty", message: JSON.stringify(ic) };
       return;
     }
+    console.dir(ic, { depth: 5 });
     data.importCandidate = ic;
   } catch (e: any) {
     console.log(e);

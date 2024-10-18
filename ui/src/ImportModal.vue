@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ListOption, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown } from '@platforma-sdk/ui-vue';
+import { isDefined, ListOption, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown } from '@platforma-sdk/ui-vue';
 import { useApp } from './app';
 import { ImportResult } from './dataimport';
 import { computed, reactive, watch } from 'vue';
 import { MetadataColumn, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ar } from 'vitest/dist/chunks/reporters.C4ZHgdxQ.js';
+import { determineBestMatchingAlgorithm } from './sample_matching';
 
 const props = defineProps<{ importCandidate: ImportResult }>()
 
@@ -23,6 +24,12 @@ watch(() => props.importCandidate, (ic) => {
         data.sampleNameColumnIdx = 0;
 }, { immediate: true })
 
+const algo = computed(() => determineBestMatchingAlgorithm(Object.values(
+    app.model.args.sampleLabels).filter(isDefined),
+    data.sampleNameColumnIdx === -1
+        ? []
+        : props.importCandidate.data.rows.map(r => r[data.sampleNameColumnIdx]).filter(isDefined).map(v => String(v))))
+
 const sampleColumnOptions = computed<ListOption<number>[]>(() => props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })))
 
 function columnNamesMatch(existingColumn: string, importColumn: string): boolean {
@@ -40,7 +47,9 @@ const tableDataText = computed(() => {
     const ic = props.importCandidate;
     let result = ""
     result += `  Columns: ${ic.data.columns.length} (match existing ${colsMatchingExisting.value})\n`
-    result += `  Rows: ${ic.data.rows.length}`
+    result += `  Rows: ${ic.data.rows.length}\n`
+    result += `  Matching algorithm: ${algo.value.topAlgorithm.name}\n`
+    result += `  Matching: ${algo.value.matches}`
     return result;
 })
 

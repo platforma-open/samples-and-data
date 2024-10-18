@@ -36,6 +36,6 @@ test.for([
   'simple best algorithm test $expectedAlgorithm',
   ({ existingNames, importNames, expectedAlgorithm }, { expect }) => {
     const algo = determineBestMatchingAlgorithm(existingNames, importNames);
-    expect(algo.name).contain(expectedAlgorithm);
+    expect(algo.topAlgorithm.name).contain(expectedAlgorithm);
   }
 );
