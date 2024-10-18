@@ -5,3 +5,7 @@ type Entries<T> = {
 export function typeSafeEntries<T>(obj: T): Entries<T> {
   return Object.entries(obj as any) as Entries<T>;
 }
+
+export function escapeRegExp(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
