@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 1.4.4
+
+### Patch Changes
+
+- 1233dab: SDK upgrade
+
 ## 1.4.3
 
 ### Patch Changes

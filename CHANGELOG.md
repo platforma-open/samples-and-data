@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.5.2
+
+### Patch Changes
+
+- 1233dab: SDK upgrade
+- Updated dependencies [1233dab]
+- Updated dependencies [1233dab]
+  - @platforma-open/milaboratories.samples-and-data.ui@1.9.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.4.2
+
 ## 1.5.1
 
 ### Patch Changes
