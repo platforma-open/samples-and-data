@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.9.0
+
+### Minor Changes
+
+- 1233dab: All dependencies moved to devDependencies
+
 ## 1.8.1
 
 ### Patch Changes
