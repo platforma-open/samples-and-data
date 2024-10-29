@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.9.1
+
+### Patch Changes
+
+- 7e7128f: update ui: remove last error handling from FileCells
+
 ## 1.9.0
 
 ### Minor Changes
