@@ -1,10 +1,9 @@
 <script setup lang="ts">
+import { MetadataColumn, PlId, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { isDefined, ListOption, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown, PlLogView, PlTextArea } from '@platforma-sdk/ui-vue';
+import { computed, reactive, watch } from 'vue';
 import { useApp } from './app';
 import { ImportResult } from './dataimport';
-import { computed, reactive, watch } from 'vue';
-import { MetadataColumn, PlId, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
-import { ar } from 'vitest/dist/chunks/reporters.C4ZHgdxQ.js';
 import { determineBestMatchingAlgorithm } from './sample_matching';
 
 const props = defineProps<{ importCandidate: ImportResult }>()
@@ -131,18 +130,19 @@ function runImport() {
 </script>
 
 <template>
-    <PlDialogModal :model-value="true" closable @update:model-value="(v) => { if (!v) emit('onClose') }" width="80%">
+    <PlDialogModal :model-value="true" closable @update:model-value="(v) => { if (!v) emit('onClose') }" width="70%">
         <template #title>Import metadata</template>
         <PlDropdown label="Sample name column" :options="sampleColumnOptions" v-model="data.sampleNameColumnIdx" />
         <PlCheckbox v-model="data.addUnmatchedSamples">
             Add unmatched samples
         </PlCheckbox>
-        <PlTextArea :model-value="tableDataText" label="Import information" readonly :autogrow="true">
-            <template #tooltip>Matching algorithm: {{ algo.topAlgorithm.name }}}</template>
-        </PlTextArea>
+        <PlLogView :value="tableDataText" label="Import information">
+            <template #tooltip>Matching algorithm: {{ algo.topAlgorithm.name }}</template>
+        </PlLogView>
         <template v-if="tableIssuesText">
             <PlTextArea :model-value="tableIssuesText" label="File issues" readonly :autogrow="true" :rows="1" />
         </template>
+
         <template #actions>
             <PlBtnPrimary @click="runImport">Import</PlBtnPrimary>
             <PlBtnSecondary @click="() => emit('onClose')">Cancel</PlBtnSecondary>
