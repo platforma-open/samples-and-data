@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-quartz.css';
 
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   ColDef,
   GridApi,
@@ -11,12 +10,11 @@ import {
   ModuleRegistry
 } from '@ag-grid-community/core';
 import {
-  RichSelectModule
-} from '@ag-grid-enterprise/rich-select';
-import {
   MenuModule
 } from '@ag-grid-enterprise/menu';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import {
+  RichSelectModule
+} from '@ag-grid-enterprise/rich-select';
 
 import { AgGridVue } from '@ag-grid-community/vue3';
 
@@ -25,11 +23,10 @@ import {
   FastqFileGroup,
   PlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import FileCell from './FileCell.vue';
 import { computed } from 'vue';
 import { useApp } from './app';
+import FileCell from './FileCell.vue';
 import { argsModel } from './lens';
-import { isDefined } from '@platforma-sdk/ui-vue';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -68,7 +65,7 @@ const columnDefs = computed(() => {
   const sampleLabels = app.args.sampleLabels;
   const res: ColDef<FastaDatasetRow>[] = [
     {
-      headerName: "Sample",
+      headerName: app.model.args.sampleLabelColumnLabel,
       flex: 1,
       valueGetter: (params) => params.data?.sample,
       editable: (params) => {
@@ -87,7 +84,8 @@ const columnDefs = computed(() => {
       singleClickEdit: true,
       cellEditorParams: {
         values: unusedIds,
-      } satisfies IRichCellEditorParams<FastaDatasetRow>
+      } satisfies IRichCellEditorParams<FastaDatasetRow>,
+      suppressMenu: true
     }
   ];
 
@@ -111,7 +109,8 @@ const columnDefs = computed(() => {
           return false;
         dataset.update(ds => ds.content.data[sample]![readIndex] = params.newValue)
         return true;
-      }
+      },
+      suppressMenu: true
     });
 
   return res;

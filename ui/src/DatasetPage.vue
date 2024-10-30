@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, provide, reactive, ref, watch } from 'vue';
+import { ReadIndices } from '@platforma-open/milaboratories.samples-and-data.model';
+import { PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlSlideModal, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
+import { computed, reactive } from 'vue';
 import { useApp } from './app';
-import { PlBlockPage, PlBtnGhost, PlBtnSecondary, PlTextField, PlDialogModal, PlBtnPrimary, PlSlideModal, PlCheckbox, PlContainer, PlBtnGroup, ListOption, SimpleOption } from '@platforma-sdk/ui-vue';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
-import { AllReadIndices, ReadIndices } from '@platforma-open/milaboratories.samples-and-data.model';
 
 const app = useApp();
 
@@ -54,7 +54,7 @@ async function deleteTheDataset() {
   <PlBlockPage>
     <template #title>{{ dataset.value.label }}</template>
     <template #append>
-      <PlBtnGhost :icon="'comp'" @click.stop="() => data.settingsOpen = true">Settings</PlBtnGhost>
+      <PlBtnGhost :icon="'settings-2'" @click.stop="() => data.settingsOpen = true">Settings</PlBtnGhost>
     </template>
     <div v-if="dataset.value.content.type === 'Fastq'" :style="{ height: '100%' }">
       <FastqDatasetPage />
@@ -62,18 +62,17 @@ async function deleteTheDataset() {
   </PlBlockPage>
 
   <!-- Settings panel -->
-  <PlSlideModal v-model="data.settingsOpen" width="50%">
-    <PlContainer :style="{ marginTop: '40px', marginLeft: '5px', marginRight: '5px' }">
-      <PlTextField label="Dataset Name" @update:model-value="v => dataset.update(ds => ds.label = v ?? '')"
-        :model-value="dataset.value.label" />
-      <PlCheckbox :model-value="dataset.value.content.gzipped"
-        @update:model-value="v => dataset.update(ds => ds.content.gzipped = v)">
-        Gzipped
-      </PlCheckbox>
-      <PlBtnGroup :model-value="currentReadIndices" @update:model-value="setReadIndices"
-        :options="readIndicesOptions" />
-      <PlBtnPrimary icon="clear" @click="() => data.deleteModalOpen = true">Delete Dataset</PlBtnPrimary>
-    </PlContainer>
+  <PlSlideModal v-model="data.settingsOpen">
+    <template #title>Settings</template>
+
+    <PlTextField label="Dataset label" @update:model-value="v => dataset.update(ds => ds.label = v ?? '')"
+      :model-value="dataset.value.label" />
+    <PlCheckbox :model-value="dataset.value.content.gzipped"
+      @update:model-value="v => dataset.update(ds => ds.content.gzipped = v)">
+      Gzipped
+    </PlCheckbox>
+    <PlBtnGroup :model-value="currentReadIndices" @update:model-value="setReadIndices" :options="readIndicesOptions" />
+    <PlBtnSecondary icon="clear" @click="() => data.deleteModalOpen = true">Delete Dataset</PlBtnSecondary>
   </PlSlideModal>
 
   <!-- Delete dataset confirmation dialog -->

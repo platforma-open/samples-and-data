@@ -1,19 +1,46 @@
 <script setup lang="ts">
-import { ListOption, PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlContainer, PlDropdown, PlRow, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
-import { useApp } from './app';
-import { computed, reactive, ref, shallowRef, watch } from 'vue';
-import { buildWrappedString, FileNameFormattingOpts, FileNamePattern, FileNamePatternMatch, getWellFormattedReadIndex, inferFileNamePattern } from './file_name_parser';
-import { PlFileDialog } from '@platforma-sdk/ui-vue';
-import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
-import { useCssModule } from 'vue'
 import { BlockArgs, DatasetContentFastq, PlId, ReadIndices, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
+import { PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown, PlFileDialog, PlRow, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
+import { computed, reactive, ref, shallowRef, watch } from 'vue';
+import { useApp } from './app';
+import { FileNamePattern, getWellFormattedReadIndex, inferFileNamePattern } from './file_name_parser';
 import ParsedFilesList from './ParsedFilesList.vue';
-import { whenever } from '@vueuse/core';
 import { ParsedFile } from './types';
 
 const app = useApp();
 
-type ImprtMode = "create-new-dataset" | "add-to-existing";
+const showDialog = defineModel<boolean>()
+
+const data = reactive({
+  mode: "create-new-dataset" as ImportMode,
+  files: [] as ImportFileHandle[],
+
+  newDatasetLabel: inferNewDatasetLabel(),
+  targetAddDataset: undefined as PlId | undefined,
+
+  gzipped: false,
+  readIndices: ["R1"] as string[],
+  pattern: "",
+  fileDialogOpened: false,
+  datasetDialogOpened: false,
+  importing: false
+});
+
+watch(() => showDialog.value, (sh) => {
+  if (sh) {
+    data.fileDialogOpened = true;
+    data.datasetDialogOpened = false;
+  } else {
+    data.fileDialogOpened = false;
+    data.datasetDialogOpened = false;
+  }
+});
+
+const openDatasetDialog = () => { data.datasetDialogOpened = true; }
+const closeDialog = () => { showDialog.value = false; }
+
+type ImportMode = "create-new-dataset" | "add-to-existing";
 
 function inferNewDatasetLabel() {
   let i = app.args.datasets.length + 1;
@@ -26,21 +53,6 @@ function inferNewDatasetLabel() {
   return "New Dataset";
 }
 
-const data = reactive({
-  mode: "create-new-dataset" as ImprtMode,
-  files: [] as ImportFileHandle[],
-
-  newDatasetLabel: inferNewDatasetLabel(),
-  targetAddDataset: undefined as PlId | undefined,
-
-  gzipped: false,
-  readIndices: ["R1"] as string[],
-  pattern: "",
-  fileDialogOpened: false,
-  importing: false
-});
-
-whenever(() => data.files.length === 0, () => data.fileDialogOpened = true, { immediate: true })
 
 // Pattern compilation and file name matching
 const patternError = ref<string | undefined>(undefined)
@@ -97,12 +109,13 @@ const readIndicesOptions: SimpleOption<string>[] = [{
   text: "R1, R2"
 }]
 
-const modesOptions: SimpleOption<ImprtMode>[] = [{
-  value: 'add-to-existing',
-  text: "Add to existing dataset"
-}, {
+const modesOptions: SimpleOption<ImportMode>[] = [{
   value: 'create-new-dataset',
   text: "Create new dataset"
+},
+{
+  value: 'add-to-existing',
+  text: "Add to existing dataset"
 }]
 
 const addToExistingOptions = computed<SimpleOption<PlId>[]>(() => {
@@ -191,37 +204,44 @@ async function createNewDataset() {
 </script>
 
 <template>
-  <PlBlockPage>
-    <template #title>Import </template>
-    <template #append>
-      <PlBtnGhost :icon="'clear'" @click.stop="() => data.files = []">Clear</PlBtnGhost>
+
+  <PlDialogModal v-model="data.datasetDialogOpened" width="70%">
+    <template #title>Import files</template>
+
+    <PlBtnGroup v-model="data.mode" :options="modesOptions" />
+
+    <PlRow alignCenter>
+      <PlTextField v-if="data.mode === 'create-new-dataset'" label="Dataset Name" v-model="data.newDatasetLabel"
+        class="flex-grow-1" />
+      <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" />
+      <PlBtnGroup :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
+        @update:model-value="v => data.readIndices = JSON.parse(v)" :options="readIndicesOptions" />
+      <PlCheckbox v-model="data.gzipped">
+        Gzipped
+      </PlCheckbox>
+    </PlRow>
+
+    <PlTextField label="Pattern" v-model="data.pattern" :error="patternError" />
+
+    <ParsedFilesList :items="parsedFiles" />
+
+    <PlBtnSecondary @click="() => data.fileDialogOpened = true"> + add more files</PlBtnSecondary>
+
+    <template #actions>
+      <PlBtnPrimary :disabled="compiledPattern?.hasLaneMatcher || !hasMatchedFiles"
+        @click="{ createOrAdd(); closeDialog(); }" :loading="data.importing">
+        {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
+      </PlBtnPrimary>
+
+      <PlBtnGhost @click.stop="() => { data.files = []; closeDialog(); }">Cancel</PlBtnGhost>
     </template>
-    <PlContainer>
-      <PlBtnPrimary @click="() => data.fileDialogOpened = true" v-if='data.files.length === 0'>Add files</PlBtnPrimary>
-      <PlContainer v-if='data.files.length > 0'>
-        <PlBtnGroup v-model="data.mode" :options="modesOptions" />
 
-        <PlRow class="align-center">
-          <PlTextField v-if="data.mode === 'create-new-dataset'" label="Dataset Name" v-model="data.newDatasetLabel"
-            class="flex-grow-1" />
-          <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" />
-          <PlBtnGroup :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
-            @update:model-value="v => data.readIndices = JSON.parse(v)" :options="readIndicesOptions" />
-          <PlCheckbox v-model="data.gzipped">
-            Gzipped
-          </PlCheckbox>
-          <PlBtnPrimary :style="{ width: '100px' }" :disabled="compiledPattern?.hasLaneMatcher || !hasMatchedFiles"
-            @click="createOrAdd()" :loading="data.importing">
-            {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
-          </PlBtnPrimary>
-        </PlRow>
+  </PlDialogModal>
 
-        <PlTextField label="Pattern" v-model="data.pattern" :error="patternError" />
-        <ParsedFilesList :items="parsedFiles" />
-        <PlBtnSecondary @click="() => data.fileDialogOpened = true"> + add more files</PlBtnSecondary>
-      </PlContainer>
-    </PlContainer>
-  </PlBlockPage>
-  <PlFileDialog v-model="data.fileDialogOpened" :multi="true" :title="'Select files to import'"
-    @import:files="(e) => addFiles(e.files)" />
+
+  <PlFileDialog v-model="data.fileDialogOpened" :multi="true" title="Select files to import" @import:files="(e) => {
+    addFiles(e.files);
+    openDatasetDialog();
+  }" />
+
 </template>
