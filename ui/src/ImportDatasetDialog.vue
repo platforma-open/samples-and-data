@@ -45,7 +45,10 @@ type ImportMode = "create-new-dataset" | "add-to-existing";
 function inferNewDatasetLabel() {
   let i = app.args.datasets.length + 1;
   while (i < 1000) {
-    const label = `Dataset (${i})`;
+    let label = "My Dataset";
+    if (i > 0) {
+      label = label + ` (${i})`
+    }
     if (app.args.datasets.findIndex(d => d.label === label) === -1)
       return label;
     ++i;

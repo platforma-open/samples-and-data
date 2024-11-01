@@ -207,7 +207,9 @@ const columnDefs = computed<ColDef[]>(() => [
     minWidth: 45,
     maxWidth: 45,
     sortable: false,
-    resizable: false
+    resizable: false,
+    pinned: 'right',
+    lockPinned: true
   },
 ]);
 
