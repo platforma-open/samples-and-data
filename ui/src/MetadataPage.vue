@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-quartz.css';
 
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   ColDef,
   GridApi,
@@ -10,23 +9,23 @@ import {
   IRowNode,
   ModuleRegistry
 } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
 import { AgGridVue } from '@ag-grid-community/vue3';
 
+import { MenuModule } from '@ag-grid-enterprise/menu';
+import { notEmpty } from '@milaboratories/helpers';
 import {
   MetadataColumnValueType,
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlBlockPage, PlBtnGhost, PlBtnPrimary, PlBtnSecondary, PlDialogModal } from '@platforma-sdk/ui-vue';
+import { PlAgOverlayNoRows, PlBlockPage, PlBtnPrimary, PlBtnSecondary, PlDialogModal } from '@platforma-sdk/ui-vue';
+import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
-import { computed, inject, reactive, shallowRef } from 'vue';
-import { notEmpty } from '@milaboratories/helpers';
-import { MenuModule } from '@ag-grid-enterprise/menu';
-import { useCssModule } from 'vue'
 import { ImportResult, readFileForImport } from './dataimport';
+import ImportDatasetDialog from './ImportDatasetDialog.vue';
 import ImportModal from './ImportModal.vue';
+import DatasetCell from './DatasetCell.vue';
 
 const styles = useCssModule()
 
@@ -50,7 +49,7 @@ if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
     app.model.ui = { suggestedImport: true }
   else
     app.model.ui.suggestedImport = true;
-  app.navigateTo('/import-files');
+  // app.navigateTo('/import-files');
 }
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
@@ -151,7 +150,25 @@ const columnDefs = computed<ColDef[]>(() => [
     field: 'label',
     editable: true,
     headerName: app.args.sampleLabelColumnLabel,
-    flex: 1
+    initialWidth: 200,
+    flex: 1,
+    suppressMenu: true
+  },
+  {
+    colId: 'datasets',
+    field: 'datasets',
+    editable: false,
+    headerName: "Data",
+    cellRendererSelector: (params) =>
+    ({
+      component: 'DatasetCell',
+      params: {
+        datasets: params.data.datasets
+      }
+    }),
+    // flex: 1,
+    suppressMenu: true,
+    width: 200
   },
   ...app.args.metadata.map((mCol): ColDef => {
     const common: ColDef = {
@@ -190,16 +207,31 @@ const columnDefs = computed<ColDef[]>(() => [
     minWidth: 45,
     maxWidth: 45,
     sortable: false,
-    resizable: false
+    resizable: false,
+    pinned: 'right',
+    lockPinned: true
   },
 ]);
 
-const rowData = computed<MetadataRow[]>(() =>
-  app.args.sampleIds.map((id) => ({
+const rowData = computed<MetadataRow[]>(() => {
+
+  const samples2ds: Record<string, string[]> = {}
+  for (const ds of app.args.datasets) {
+    for (const sId of Object.keys(ds.content.data)) {
+      if (samples2ds[sId] === undefined) {
+        samples2ds[sId] = []
+      }
+      samples2ds[sId].push(ds.label);
+    }
+  }
+
+  return app.args.sampleIds.map((id) => ({
     id,
     label: app.args.sampleLabels[id]!,
-    meta: Object.fromEntries(app.args.metadata.map((mCol) => [mCol.id, mCol.data[id]]))
-  }))
+    meta: Object.fromEntries(app.args.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
+    datasets: samples2ds[id]
+  }));
+}
 );
 
 const gridOptions: GridOptions<MetadataRow> = {
@@ -274,18 +306,28 @@ const gridOptions: GridOptions<MetadataRow> = {
       }
     }];
   },
+
+  components: {
+    DatasetCell
+  }
 };
+
+const showImportDataset = ref(false)
+
 </script>
 
 <template>
   <PlBlockPage>
     <template #title>Samples & Metadata</template>
     <template #append>
-      <PlBtnGhost :icon="'import'" @click.stop="importMetadata">Import meta table</PlBtnGhost>
+      <PlBtnPrimary icon="add" @click.stop="() => showImportDataset = true">Import dataset</PlBtnPrimary>
+      &nbsp;
+      <PlBtnSecondary icon="import" @click.stop="importMetadata">Import sample sheet</PlBtnSecondary>
     </template>
-    <div class="ag-theme-quartz" :style="{ flex: 1 }">
+    <ImportDatasetDialog v-model="showImportDataset" />
+    <div :style="{ flex: 1 }">
       <AgGridVue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
-        :grid-options="gridOptions" />
+        :grid-options="gridOptions" :noRowsOverlayComponent=PlAgOverlayNoRows />
     </div>
   </PlBlockPage>
   <ImportModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
