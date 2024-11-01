@@ -1,23 +1,23 @@
 import {
-  MainOutputs,
   BlockModel,
-  getResourceField,
   getImportProgress,
+  getResourceField,
+  InferHrefType,
   type InferOutputsType,
-  mapResourceFields,
   It,
-  InferHrefType
+  MainOutputs,
+  mapResourceFields
 } from '@platforma-sdk/model';
 import { BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
 
-export const platforma = BlockModel.create<BlockArgs, BlockUiState>('Heavy')
+export const platforma = BlockModel.create<BlockArgs, BlockUiState>()
 
   .initialArgs({
     sampleIds: [],
     metadata: [],
-    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
     datasets: []
   })
@@ -35,7 +35,7 @@ export const platforma = BlockModel.create<BlockArgs, BlockUiState>('Heavy')
 
   .sections((ctx) => {
     return [
-      { type: 'link', href: '/', label: 'Samples & Metadata' },
+      { type: 'link', href: '/', label: 'Metadata' },
       ...ctx.args.datasets.map(
         (ds) =>
           ({
@@ -43,8 +43,7 @@ export const platforma = BlockModel.create<BlockArgs, BlockUiState>('Heavy')
             href: `/dataset?id=${ds.id}`,
             label: ds.label
           } as const)
-      ),
-      { type: 'link', href: `/import-files`, label: 'Import Files' }
+      )
     ];
   })
 
@@ -52,6 +51,7 @@ export const platforma = BlockModel.create<BlockArgs, BlockUiState>('Heavy')
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
-export { BlockArgs };
-export * from './helpers';
 export * from './args';
+export * from './helpers';
+export { BlockArgs };
+
