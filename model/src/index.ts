@@ -12,12 +12,12 @@ import { BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
 
-export const platforma = BlockModel.create<BlockArgs, BlockUiState>('Heavy')
+export const platforma = BlockModel.create<BlockArgs, BlockUiState>()
 
   .initialArgs({
     sampleIds: [],
     metadata: [],
-    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
     datasets: []
   })

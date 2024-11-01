@@ -72,7 +72,7 @@ async function deleteTheDataset() {
       Gzipped
     </PlCheckbox>
     <PlBtnGroup :model-value="currentReadIndices" @update:model-value="setReadIndices" :options="readIndicesOptions" />
-    <PlBtnSecondary icon="clear" @click="() => data.deleteModalOpen = true">Delete Dataset</PlBtnSecondary>
+    <PlBtnSecondary icon="delete" @click="() => data.deleteModalOpen = true">Delete Dataset</PlBtnSecondary>
   </PlSlideModal>
 
   <!-- Delete dataset confirmation dialog -->
