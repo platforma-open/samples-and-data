@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.10.0
+
+### Minor Changes
+
+- e35d541: - improved table styles
+  - moved dataset creating to a button on the Metadata page
+
 ## 1.9.1
 
 ### Patch Changes

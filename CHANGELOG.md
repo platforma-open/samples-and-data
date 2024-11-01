@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.6.0
+
+### Minor Changes
+
+- e35d541: - improved table styles
+  - moved dataset creating to a button on the Metadata page
+
+### Patch Changes
+
+- Updated dependencies [e35d541]
+  - @platforma-open/milaboratories.samples-and-data.model@1.5.0
+  - @platforma-open/milaboratories.samples-and-data.ui@1.10.0
+
 ## 1.5.3
 
 ### Patch Changes
