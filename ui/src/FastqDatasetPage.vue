@@ -23,7 +23,6 @@ import { ImportFileHandle } from '@platforma-sdk/model';
 import { PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from './app';
-import FileCell from './FileCell.vue';
 import { argsModel } from './lens';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
@@ -83,8 +82,7 @@ const columnDefs = computed(() => {
       singleClickEdit: true,
       cellEditorParams: {
         values: unusedIds,
-      } satisfies IRichCellEditorParams<FastaDatasetRow>,
-      suppressMenu: true
+      } satisfies IRichCellEditorParams<FastaDatasetRow>
     }
   ];
 
@@ -95,10 +93,6 @@ const columnDefs = computed(() => {
       cellStyle: { padding: 0 },
 
       cellRendererParams: {
-        /**
-         * Calculate progress for file upload.
-         * For importing PlAgCellFile you need build platforma/fix-styles branch localy
-         */
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
           const progresses = app.progresses;
           if (!fileHandle) return undefined;
@@ -122,11 +116,10 @@ const columnDefs = computed(() => {
       valueSetter: (params) => {
         const sample = params.data.sample;
         if (sample === '') return false;
-        dataset.update((ds) => (ds.content.data[sample]![readIndex] = params.newValue));
+        dataset.update((ds) => (ds.content.data[sample]![readIndex] = params.newValue ? params.newValue : undefined));
         return true;
-      },
-      suppressMenu: true
-    });
+      }
+    } as ColDef<FastaDatasetRow, ImportFileHandle>);
 
   return res;
 });
@@ -139,12 +132,9 @@ function getSelectedSamples(
   api: GridApi<FastaDatasetRow>,
   node: IRowNode<FastaDatasetRow> | null
 ): PlId[] {
-  // @todo remove casting when AG-12581 will be resolved:
-  // https://www.ag-grid.com/pipeline/
-  // https://github.com/ag-grid/ag-grid/issues/8538
   const samples = api
     .getSelectedRows()
-    .map((row) => (row as FastaDatasetRow).sample)
+    .map((row) => row.sample)
     .filter(isPlId);
   if (samples.length !== 0) return samples;
   const sample = node?.data?.sample;
@@ -174,7 +164,6 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
     ];
   },
   components: {
-    FileCell,
     PlAgCellFile
   }
 };

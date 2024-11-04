@@ -95,7 +95,7 @@ export type ArgsModelOps<T> = {
 
 export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T>): ArgsModel<T> {
   const connected = ref(true);
-  const initialValue = ops.get(app.args);
+  const initialValue = ops.get(app.model.args);
   if (initialValue === undefined) {
     connected.value = false;
     if (ops.onDisconnected) ops.onDisconnected();
@@ -107,7 +107,7 @@ export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T
   }
   const r = ref<T>(initialValue) as Ref<T>;
   watch(
-    () => app.args,
+    () => app.model.args,
     (args) => {
       if (!connected.value) return;
       const newValue = ops.get(args);

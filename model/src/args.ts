@@ -91,6 +91,7 @@ export const Lane = z
   .string()
   .regex(/[0-9]+/)
   .describe('Lane');
+export type Lane = z.infer<typeof Lane>;
 
 export const DatasetContentMultilaneFastq = z
   .object({
