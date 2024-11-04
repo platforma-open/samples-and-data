@@ -19,7 +19,7 @@ import {
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlAgOverlayNoRows, PlBlockPage, PlBtnPrimary, PlBtnSecondary, PlDialogModal } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, PlAgOverlayNoRows, PlBlockPage, PlBtnPrimary, PlBtnSecondary, PlDialogModal } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
@@ -326,7 +326,7 @@ const showImportDataset = ref(false)
     </template>
     <ImportDatasetDialog v-model="showImportDataset" />
     <div :style="{ flex: 1 }">
-      <AgGridVue :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
+      <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
         :grid-options="gridOptions" :noRowsOverlayComponent=PlAgOverlayNoRows />
     </div>
   </PlBlockPage>
