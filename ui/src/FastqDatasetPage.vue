@@ -20,7 +20,7 @@ import {
   PlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
-import { PlAgCellFile } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from './app';
 import FileCell from './FileCell.vue';
@@ -183,7 +183,6 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 <template>
   <!-- :style="{ height: '600px' }" -->
   <div class="ag-theme-quartz" :style="{ height: '100%' }">
-    <ag-grid-vue :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs" :gridOptions="gridOptions">
-    </ag-grid-vue>
+    <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs" :gridOptions="gridOptions" />
   </div>
 </template>
