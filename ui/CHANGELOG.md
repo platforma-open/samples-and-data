@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.11.2
+
+### Patch Changes
+
+- d9b8f93: Multilate Dataset UI migration to new AgGrid theming API
+
 ## 1.11.1
 
 ### Patch Changes
