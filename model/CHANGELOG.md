@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.6.0
+
+### Minor Changes
+
+- 82307ca: Multilane fastq dataset support
+
+### Patch Changes
+
+- f31934a: SDK upgrade
+
 ## 1.5.0
 
 ### Minor Changes
