@@ -5,7 +5,7 @@ import DatasetPage from './DatasetPage.vue';
 import MetadataPage from './MetadataPage.vue';
 
 export const sdkPlugin = defineApp(platforma, (app) => {
-  const progresses = computed(() => app.outputs.fileImports?.ok ? app.outputs.fileImports.value ?? {} : {})
+  const progresses = computed(() => app.model.outputs.fileImports ?? {});
 
   return {
     progresses,

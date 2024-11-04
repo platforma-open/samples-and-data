@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BlockArgs, DatasetContentFastq, PlId, ReadIndices, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import { BlockArgs, DatasetContentFastq, DatasetContentMultilaneFastq, PlId, ReadIndices, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
 import { PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown, PlFileDialog, PlRow, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
@@ -124,7 +124,10 @@ const modesOptions: SimpleOption<ImportMode>[] = [{
 const addToExistingOptions = computed<SimpleOption<PlId>[]>(() => {
   const { gzipped, readIndices } = data;
   return app.model.args.datasets
-    .filter(ds => ds.content.gzipped === gzipped && JSON.stringify(ds.content.readIndices) === JSON.stringify(readIndices))
+    .filter(ds => compiledPattern.value &&
+      ds.content.type === (compiledPattern.value.hasLaneMatcher ? 'MultilaneFastq' : 'Fastq') &&
+      ds.content.gzipped === gzipped &&
+      JSON.stringify(ds.content.readIndices) === JSON.stringify(readIndices))
     .map(ds => ({
       value: ds.id,
       text: ds.label
@@ -138,8 +141,8 @@ watch(addToExistingOptions, ops => {
     data.targetAddDataset = ops[0].value;
 })
 
-function addDatasetContent(args: BlockArgs, contentData: DatasetContentFastq["data"]) {
-  const getOrCreateSample = (sampleName: string) => {
+function createGetOrCreateSample(args: BlockArgs) {
+  return (sampleName: string) => {
     const id = Object.entries(args.sampleLabels).find(([, label]) => label === sampleName)?.[0]
     if (id)
       return id as PlId;
@@ -148,6 +151,13 @@ function addDatasetContent(args: BlockArgs, contentData: DatasetContentFastq["da
     args.sampleLabels[newId] = sampleName;
     return newId;
   }
+}
+
+function addFastqDatasetContent(args: BlockArgs, contentData: DatasetContentFastq["data"]) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+
+  if (compiledPattern.value?.hasLaneMatcher)
+    throw new Error("Dataset has no lanes, trying to add data with lanes")
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -161,9 +171,37 @@ function addDatasetContent(args: BlockArgs, contentData: DatasetContentFastq["da
     }
     fileGroup[readIndex] = f.handle;
   }
-
-  console.dir(contentData, { depth: 5 });
 }
+
+function addMultilaneFastqDatasetContent(args: BlockArgs, contentData: DatasetContentMultilaneFastq["data"]) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+
+  if (!compiledPattern.value?.hasLaneMatcher)
+    throw new Error("Dataset has lanes, trying to add data without lanes")
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(sample)
+    const lane = f.match.lane!.value
+    const readIndex = getWellFormattedReadIndex(f.match)
+
+    let laneGroup = contentData[sampleId];
+    if (!laneGroup) {
+      laneGroup = {};
+      contentData[sampleId] = laneGroup;
+    }
+
+    let fileGroup = laneGroup[lane];
+    if (!fileGroup) {
+      fileGroup = {};
+      laneGroup[lane] = fileGroup;
+    }
+
+    fileGroup[readIndex] = f.handle;
+  }
+}
+
 
 async function createOrAdd() {
   if (data.mode === 'add-to-existing')
@@ -178,7 +216,12 @@ async function addToExistingDataset() {
   await app.updateArgs(args => {
     const dataset = args.datasets.find(ds => ds.id === datasetId);
     if (dataset === undefined) throw new Error("Dataset not found");
-    addDatasetContent(args, dataset.content.data);
+    if (dataset.content.type === 'Fastq')
+      addFastqDatasetContent(args, dataset.content.data);
+    else if (dataset.content.type === 'MultilaneFastq')
+      addMultilaneFastqDatasetContent(args, dataset.content.data);
+    else
+      throw new Error("Unknonw dataset type")
   })
   app.navigateTo(`/dataset?id=${datasetId}`)
 }
@@ -187,19 +230,35 @@ async function createNewDataset() {
   data.importing = true;
   const newDatasetId = uniquePlId();
   await app.updateArgs(args => {
-    const contentData: DatasetContentFastq["data"] = {}
-    addDatasetContent(args, contentData);
+    if (compiledPattern.value?.hasLaneMatcher) {
+      const contentData: DatasetContentMultilaneFastq["data"] = {}
+      addMultilaneFastqDatasetContent(args, contentData);
 
-    args.datasets.push({
-      label: data.newDatasetLabel,
-      id: newDatasetId,
-      content: {
-        type: 'Fastq',
-        gzipped: data.gzipped,
-        readIndices: ReadIndices.parse(data.readIndices),
-        data: contentData
-      }
-    })
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'MultilaneFastq',
+          gzipped: data.gzipped,
+          readIndices: ReadIndices.parse(data.readIndices),
+          data: contentData
+        }
+      })
+    } else {
+      const contentData: DatasetContentFastq["data"] = {}
+      addFastqDatasetContent(args, contentData);
+
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'Fastq',
+          gzipped: data.gzipped,
+          readIndices: ReadIndices.parse(data.readIndices),
+          data: contentData
+        }
+      })
+    }
   })
   app.navigateTo(`/dataset?id=${newDatasetId}`)
 }
@@ -231,8 +290,7 @@ async function createNewDataset() {
     <PlBtnSecondary @click="() => data.fileDialogOpened = true"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary :disabled="compiledPattern?.hasLaneMatcher || !hasMatchedFiles"
-        @click="{ createOrAdd(); closeDialog(); }" :loading="data.importing">
+      <PlBtnPrimary :disabled="!hasMatchedFiles" @click="{ createOrAdd(); closeDialog(); }" :loading="data.importing">
         {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
       </PlBtnPrimary>
 

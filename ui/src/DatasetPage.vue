@@ -5,6 +5,7 @@ import { computed, reactive } from 'vue';
 import { useApp } from './app';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
+import MultilaneFastqDatasetPage from './MultilaneFastqDatasetPage.vue';
 
 const app = useApp();
 
@@ -56,9 +57,12 @@ async function deleteTheDataset() {
     <template #append>
       <PlBtnGhost :icon="'settings-2'" @click.stop="() => data.settingsOpen = true">Settings</PlBtnGhost>
     </template>
-    <div v-if="dataset.value.content.type === 'Fastq'" :style="{ height: '100%' }">
+    <template v-if="dataset.value.content.type === 'Fastq'">
       <FastqDatasetPage />
-    </div>
+    </template>
+    <template v-else-if="dataset.value.content.type === 'MultilaneFastq'">
+      <MultilaneFastqDatasetPage />
+    </template>
   </PlBlockPage>
 
   <!-- Settings panel -->
