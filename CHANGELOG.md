@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.6.2
+
+### Patch Changes
+
+- f19fca3: Use the new AgGrid theming API
+- Updated dependencies [f19fca3]
+  - @platforma-open/milaboratories.samples-and-data.ui@1.11.1
+
 ## 1.6.1
 
 ### Patch Changes
