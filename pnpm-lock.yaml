@@ -52,8 +52,8 @@ catalogs:
       specifier: ^1.7.38
       version: 1.7.38
     '@platforma-sdk/ui-vue':
-      specifier: ^1.7.37
-      version: 1.7.37
+      specifier: ^1.7.40
+      version: 1.7.40
     '@platforma-sdk/workflow-tengo':
       specifier: ^1.7.2
       version: 1.7.2
@@ -199,7 +199,7 @@ importers:
         version: 1.7.20
       '@platforma-sdk/ui-vue':
         specifier: 'catalog:'
-        version: 1.7.37(typescript@5.5.4)
+        version: 1.7.40(typescript@5.5.4)
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.15
@@ -259,6 +259,9 @@ packages:
 
   '@ag-grid-community/styles@32.3.2':
     resolution: {integrity: sha512-zAimgm2bORRNDegPnhopYx0s3017j12m9h6Fv3KKW+CSpjHh4U+5ykacrsp8vN6f2vecRxXbrDl8gJC8hCJdcg==}
+
+  '@ag-grid-community/theming@32.3.2':
+    resolution: {integrity: sha512-JTi3r2TpHPHPgbBUQh87OysKD7VfIXrCUKiQxX3OiWJXutX0D0H6eAFwP4C83ourCMRIeZgBqCLhK+TMyzlKJw==}
 
   '@ag-grid-community/vue3@32.3.2':
     resolution: {integrity: sha512-jv1i1OIhybPJOLV5Mc32VPbjFqRK6Mo4pA2+gsgoK8mQRYSus3iX4lwkyYtApOPBkUVTbyz0zBui/jkDAOHz0A==}
@@ -976,8 +979,8 @@ packages:
   '@platforma-sdk/test@1.7.38':
     resolution: {integrity: sha512-7vU/EjL/1c+h2Ak4g2AcnlaHUL9SX6ScKRtyQTZsihReMYUlJ8CkkvXLYoFuYVuFQ7MrHRfokbed1C7x0hryag==}
 
-  '@platforma-sdk/ui-vue@1.7.37':
-    resolution: {integrity: sha512-48gmmaj3euta1RP5MYWoXZHySUKW7GU17rxwQYnjG2yO033lUAmSZclj7C19C0lobXYjuzx0ElxsS2focPZGzg==}
+  '@platforma-sdk/ui-vue@1.7.40':
+    resolution: {integrity: sha512-TqE0Fg0tiK53OmFxVWVquTUnAkTAxptAmiPQD50X3rvQsLJR0yNLJwglOtzh/biZGiMtmVwG+map+MrdSNhEGg==}
 
   '@platforma-sdk/workflow-tengo@1.7.2':
     resolution: {integrity: sha512-Ss6lFmXY8r/L9J1V+Fa6WSwgw2MUC5BAU7co+ye9do04wKhE9GsBslePmpxIddE+F4C+zmx5vvc3AnmpOSdSFw==}
@@ -2990,6 +2993,11 @@ snapshots:
 
   '@ag-grid-community/styles@32.3.2': {}
 
+  '@ag-grid-community/theming@32.3.2':
+    dependencies:
+      '@ag-grid-community/core': 32.3.2
+      tslib: 2.8.1
+
   '@ag-grid-community/vue3@32.3.2(typescript@5.5.4)':
     dependencies:
       '@ag-grid-community/core': 32.3.2
@@ -4196,13 +4204,14 @@ snapshots:
       - supports-color
       - terser
 
-  '@platforma-sdk/ui-vue@1.7.37(typescript@5.5.4)':
+  '@platforma-sdk/ui-vue@1.7.40(typescript@5.5.4)':
     dependencies:
       '@ag-grid-community/client-side-row-model': 32.3.2
       '@ag-grid-community/core': 32.3.2
       '@ag-grid-community/csv-export': 32.3.2
       '@ag-grid-community/infinite-row-model': 32.3.2
       '@ag-grid-community/styles': 32.3.2
+      '@ag-grid-community/theming': 32.3.2
       '@ag-grid-community/vue3': 32.3.2(typescript@5.5.4)
       '@ag-grid-enterprise/clipboard': 32.3.2
       '@ag-grid-enterprise/core': 32.3.2
