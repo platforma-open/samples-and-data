@@ -52,8 +52,8 @@ catalogs:
       specifier: ^1.7.38
       version: 1.7.38
     '@platforma-sdk/ui-vue':
-      specifier: ^1.7.40
-      version: 1.7.40
+      specifier: ^1.7.51
+      version: 1.7.51
     '@platforma-sdk/workflow-tengo':
       specifier: ^1.7.2
       version: 1.7.2
@@ -199,7 +199,7 @@ importers:
         version: 1.7.20
       '@platforma-sdk/ui-vue':
         specifier: 'catalog:'
-        version: 1.7.40(typescript@5.5.4)
+        version: 1.7.51(typescript@5.5.4)
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.15
@@ -939,8 +939,8 @@ packages:
   '@milaboratories/ts-helpers@1.1.1':
     resolution: {integrity: sha512-frFq4u6Z0iePdtcA+Jj8h798RiHe+Ls5U+YpCQcx1Dk349RFs59HMNK7Y9xWTdxfSTna8+noEiBhqp2tV6Y4cA==}
 
-  '@milaboratories/uikit@2.0.4':
-    resolution: {integrity: sha512-k6EPpNjvPTuzUzh0KQ6iT6SKtxIBLmeZJE8P6vne+HGl6KJrpwmtneKDIP5dxLrm6IyAV9UJE5tgvQyJMKgD7A==}
+  '@milaboratories/uikit@2.0.11':
+    resolution: {integrity: sha512-S4NISyD4ztzEUwc0YhpJ8gcoaPwXAklPZjDJ1BgQR7WuPRQNYk0vYSVll2ekYqWmpRFxpi8ObFgO5lNUrkjYug==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -979,8 +979,8 @@ packages:
   '@platforma-sdk/test@1.7.38':
     resolution: {integrity: sha512-7vU/EjL/1c+h2Ak4g2AcnlaHUL9SX6ScKRtyQTZsihReMYUlJ8CkkvXLYoFuYVuFQ7MrHRfokbed1C7x0hryag==}
 
-  '@platforma-sdk/ui-vue@1.7.40':
-    resolution: {integrity: sha512-TqE0Fg0tiK53OmFxVWVquTUnAkTAxptAmiPQD50X3rvQsLJR0yNLJwglOtzh/biZGiMtmVwG+map+MrdSNhEGg==}
+  '@platforma-sdk/ui-vue@1.7.51':
+    resolution: {integrity: sha512-mYMlTieqf4KrwobF+9RSB1DX6nfgoskPc8wrL7VUgWpspZiqqDXsVqLVAFtF3DR/8U3/QGeWK/niCCRHsDZUcw==}
 
   '@platforma-sdk/workflow-tengo@1.7.2':
     resolution: {integrity: sha512-Ss6lFmXY8r/L9J1V+Fa6WSwgw2MUC5BAU7co+ye9do04wKhE9GsBslePmpxIddE+F4C+zmx5vvc3AnmpOSdSFw==}
@@ -4101,7 +4101,7 @@ snapshots:
     dependencies:
       denque: 2.1.0
 
-  '@milaboratories/uikit@2.0.4(typescript@5.5.4)':
+  '@milaboratories/uikit@2.0.11(typescript@5.5.4)':
     dependencies:
       vue: 3.5.12(typescript@5.5.4)
     transitivePeerDependencies:
@@ -4204,7 +4204,7 @@ snapshots:
       - supports-color
       - terser
 
-  '@platforma-sdk/ui-vue@1.7.40(typescript@5.5.4)':
+  '@platforma-sdk/ui-vue@1.7.51(typescript@5.5.4)':
     dependencies:
       '@ag-grid-community/client-side-row-model': 32.3.2
       '@ag-grid-community/core': 32.3.2
@@ -4220,7 +4220,7 @@ snapshots:
       '@ag-grid-enterprise/range-selection': 32.3.2
       '@ag-grid-enterprise/rich-select': 32.3.2
       '@ag-grid-enterprise/server-side-row-model': 32.3.2
-      '@milaboratories/uikit': 2.0.4(typescript@5.5.4)
+      '@milaboratories/uikit': 2.0.11(typescript@5.5.4)
       '@platforma-sdk/model': 1.7.20
       canonicalize: 2.0.0
       lru-cache: 11.0.2
