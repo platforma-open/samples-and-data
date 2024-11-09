@@ -119,7 +119,7 @@ wf.body(func(args) {
 				// a "dense" axis with specified key value list.
 				// When this concept will be fully defined, the domain most
 				// probably should be renamed to "pl7.app/dense"
-				"pl7.app/readIndices": json.encode(dataset.content.readIndices)
+				"pl7.app/readIndices": string(json.encode(dataset.content.readIndices))
 			}
 		}
 
