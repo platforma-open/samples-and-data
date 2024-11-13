@@ -10,7 +10,14 @@ import { ParsedFile } from './types';
 
 const app = useApp();
 
-const showDialog = defineModel<boolean>()
+const emit = defineEmits<{ onClose: [] }>();
+
+let closed = false;
+function doClose() {
+  if (closed) return;
+  closed = true;
+  emit("onClose");
+}
 
 const data = reactive({
   mode: "create-new-dataset" as ImportMode,
@@ -22,23 +29,17 @@ const data = reactive({
   gzipped: false,
   readIndices: ["R1"] as string[],
   pattern: "",
-  fileDialogOpened: false,
+
+  fileDialogOpened: true,
   datasetDialogOpened: false,
+
   importing: false
 });
 
-watch(() => showDialog.value, (sh) => {
-  if (sh) {
-    data.fileDialogOpened = true;
-    data.datasetDialogOpened = false;
-  } else {
-    data.fileDialogOpened = false;
-    data.datasetDialogOpened = false;
-  }
-});
-
-const openDatasetDialog = () => { data.datasetDialogOpened = true; }
-const closeDialog = () => { showDialog.value = false; }
+watch(() => ({ fileDialogOpened: data.fileDialogOpened, datasetDialogOpened: data.datasetDialogOpened }), ({ fileDialogOpened, datasetDialogOpened }) => {
+  if (!fileDialogOpened && !datasetDialogOpened)
+    doClose();
+})
 
 type ImportMode = "create-new-dataset" | "add-to-existing";
 
@@ -204,14 +205,18 @@ function addMultilaneFastqDatasetContent(args: BlockArgs, contentData: DatasetCo
 
 
 async function createOrAdd() {
-  if (data.mode === 'add-to-existing')
-    await addToExistingDataset();
-  else
-    await createNewDataset()
+  try {
+    data.importing = true;
+    if (data.mode === 'add-to-existing')
+      await addToExistingDataset();
+    else
+      await createNewDataset()
+  } finally {
+    doClose();
+  }
 }
 
 async function addToExistingDataset() {
-  data.importing = true;
   const datasetId = data.targetAddDataset!;
   await app.updateArgs(args => {
     const dataset = args.datasets.find(ds => ds.id === datasetId);
@@ -227,7 +232,6 @@ async function addToExistingDataset() {
 }
 
 async function createNewDataset() {
-  data.importing = true;
   const newDatasetId = uniquePlId();
   await app.updateArgs(args => {
     if (compiledPattern.value?.hasLaneMatcher) {
@@ -290,19 +294,18 @@ async function createNewDataset() {
     <PlBtnSecondary @click="() => data.fileDialogOpened = true"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary :disabled="!hasMatchedFiles" @click="{ createOrAdd(); closeDialog(); }" :loading="data.importing">
+      <PlBtnPrimary :disabled="!hasMatchedFiles" @click="{ createOrAdd(); }" :loading="data.importing">
         {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
       </PlBtnPrimary>
 
-      <PlBtnGhost @click.stop="() => { data.files = []; closeDialog(); }">Cancel</PlBtnGhost>
+      <PlBtnGhost @click.stop="() => doClose()">Cancel</PlBtnGhost>
     </template>
 
   </PlDialogModal>
 
-
   <PlFileDialog v-model="data.fileDialogOpened" :multi="true" title="Select files to import" @import:files="(e) => {
     addFiles(e.files);
-    openDatasetDialog();
+    data.datasetDialogOpened = true;
   }" />
 
 </template>
