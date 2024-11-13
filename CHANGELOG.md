@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.6.5
+
+### Patch Changes
+
+- ce8663b: SDK upgrade
+- Updated dependencies [ce8663b]
+- Updated dependencies [ce8663b]
+  - @platforma-open/milaboratories.samples-and-data.model@1.6.1
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.7.7
+  - @platforma-open/milaboratories.samples-and-data.ui@1.11.3
+
 ## 1.6.4
 
 ### Patch Changes
