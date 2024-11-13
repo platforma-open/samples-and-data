@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.7.7
+
+### Patch Changes
+
+- ce8663b: SDK upgrade
+
 ## 1.7.6
 
 ### Patch Changes
