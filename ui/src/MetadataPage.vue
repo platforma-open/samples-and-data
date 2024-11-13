@@ -24,7 +24,7 @@ import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
 import ImportDatasetDialog from './ImportDatasetDialog.vue';
-import ImportModal from './ImportModal.vue';
+import ImportModal from './ImportMetadataModal.vue';
 import DatasetCell from './DatasetCell.vue';
 
 const styles = useCssModule()
@@ -324,14 +324,17 @@ const showImportDataset = ref(false)
       &nbsp;
       <PlBtnSecondary icon="import" @click.stop="importMetadata">Import sample sheet</PlBtnSecondary>
     </template>
-    <ImportDatasetDialog v-model="showImportDataset" />
     <div :style="{ flex: 1 }">
-      <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData" :columnDefs="columnDefs"
-        :grid-options="gridOptions" :noRowsOverlayComponent=PlAgOverlayNoRows />
+      <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData"
+        :columnDefs="columnDefs" :grid-options="gridOptions" :noRowsOverlayComponent=PlAgOverlayNoRows />
     </div>
   </PlBlockPage>
+
+  <ImportDatasetDialog v-if="showImportDataset" @on-close="showImportDataset = false" />
+
   <ImportModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
     @on-close="data.importCandidate = undefined" />
+
   <PlDialogModal :model-value="data.errorMessage !== undefined" closable
     @update:model-value="(v) => { if (!v) data.errorMessage = undefined }">
     <div>{{ data.errorMessage?.title }}</div>
