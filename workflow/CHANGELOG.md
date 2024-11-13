@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.7.6
+
+### Patch Changes
+
+- a23294d: Minor fix for pl7.app/readIndices annotation in exported columns
+
 ## 1.7.5
 
 ### Patch Changes

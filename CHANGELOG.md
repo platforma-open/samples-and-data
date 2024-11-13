@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.6.4
+
+### Patch Changes
+
+- c83579f: Add marketplaceRanking 10000 (high enough)
+- d824ac6: Update SDK UI
+- Updated dependencies [a23294d]
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.7.6
+
 ## 1.6.3
 
 ### Patch Changes
