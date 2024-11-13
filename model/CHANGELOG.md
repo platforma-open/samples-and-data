@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.6.1
+
+### Patch Changes
+
+- ce8663b: SDK upgrade
+
 ## 1.6.0
 
 ### Minor Changes

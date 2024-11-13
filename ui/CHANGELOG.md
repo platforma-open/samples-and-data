@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.11.3
+
+### Patch Changes
+
+- ce8663b: Fixes import dataset dialog reopen after cancel
+
 ## 1.11.2
 
 ### Patch Changes
