@@ -52,11 +52,11 @@ catalogs:
       specifier: ^1.8.9
       version: 1.8.9
     '@platforma-sdk/ui-vue':
-      specifier: ^1.8.7
-      version: 1.8.7
+      specifier: ^1.8.18
+      version: 1.8.18
     '@platforma-sdk/workflow-tengo':
-      specifier: ^2.0.0
-      version: 2.0.0
+      specifier: ^2.1.0
+      version: 2.1.0
     '@types/node':
       specifier: ~20.16.15
       version: 20.16.15
@@ -199,7 +199,7 @@ importers:
         version: 1.8.0
       '@platforma-sdk/ui-vue':
         specifier: 'catalog:'
-        version: 1.8.7(typescript@5.5.4)
+        version: 1.8.18(typescript@5.5.4)
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.15
@@ -241,7 +241,7 @@ importers:
         version: 1.16.1
       '@platforma-sdk/workflow-tengo':
         specifier: 'catalog:'
-        version: 2.0.0
+        version: 2.1.0
 
 packages:
 
@@ -948,8 +948,8 @@ packages:
   '@milaboratories/ts-helpers@1.1.1':
     resolution: {integrity: sha512-frFq4u6Z0iePdtcA+Jj8h798RiHe+Ls5U+YpCQcx1Dk349RFs59HMNK7Y9xWTdxfSTna8+noEiBhqp2tV6Y4cA==}
 
-  '@milaboratories/uikit@2.1.1':
-    resolution: {integrity: sha512-Rtm/7Cl+3q3VHwjztf3xwcfLuJkcN3g3AyIDASbfQ1mnXtCFkYNx6t56c16yEo2ZOFl6FPrkYvWtS1nhzfavgQ==}
+  '@milaboratories/uikit@2.2.0':
+    resolution: {integrity: sha512-q6dUpGY5IeFAyWpYROG6oOC1aNF1z9FMnznTb9fWm1P9MLwE0TrDA9NrTe9g0Xogys6onHLs9J61wle7/kV1cg==}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -988,11 +988,14 @@ packages:
   '@platforma-sdk/test@1.8.9':
     resolution: {integrity: sha512-+y1fGF3O0tlBd5HDin1Z0kdiHFE4YCZ5R8HhdMK6VTyIGKnkZPtPSwr3iLPCZCAkmPisyb6AALWJ/oSmt3DAQg==}
 
-  '@platforma-sdk/ui-vue@1.8.7':
-    resolution: {integrity: sha512-HNxfG51mLKs1Otf3Um1qUrf+h2XmNpoISFwCT8GiW4OSqoQEabbhyONlDHUYSqQqVm0TLak2JFQVIyseT4jXQw==}
+  '@platforma-sdk/ui-vue@1.8.18':
+    resolution: {integrity: sha512-FzR82NpGrazd9SAjVNp+uJS7RTZCsShMgFzfgyn9xsIo/ALOGZfIpVqhuIjXuLG6a+XdVbvYdJRZQY+xcOugkQ==}
 
   '@platforma-sdk/workflow-tengo@2.0.0':
     resolution: {integrity: sha512-/vNu74UCHorb/3vYMkZZBSH57figsLYL5AfbJidfu77o5JKcEeD5EbvhEn+fzROvYzK28MUORwweRbGqltA87g==}
+
+  '@platforma-sdk/workflow-tengo@2.1.0':
+    resolution: {integrity: sha512-1vYEbvaNQXsBmUZ9GCCCx/NNey7u7aI1ohimIxt1VNFaXwt9ZsU3CKp76U6xO4K8WWfzoMOx1mzU4raNKqvvDA==}
 
   '@protobuf-ts/grpc-transport@2.9.4':
     resolution: {integrity: sha512-CgjTR3utmkMkkThpfgtOz9tNR9ZARbNoQYL7TCKqFU2sgAX0LgzAkwOx+sfgtUsZn9J08+yvn307nNJdYocLRA==}
@@ -4123,7 +4126,7 @@ snapshots:
     dependencies:
       denque: 2.1.0
 
-  '@milaboratories/uikit@2.1.1(typescript@5.5.4)':
+  '@milaboratories/uikit@2.2.0(typescript@5.5.4)':
     dependencies:
       vue: 3.5.12(typescript@5.5.4)
     transitivePeerDependencies:
@@ -4226,11 +4229,11 @@ snapshots:
       - supports-color
       - terser
 
-  '@platforma-sdk/ui-vue@1.8.7(typescript@5.5.4)':
+  '@platforma-sdk/ui-vue@1.8.18(typescript@5.5.4)':
     dependencies:
       '@ag-grid-community/client-side-row-model': 32.3.3
       '@ag-grid-community/core': 32.3.3
-      '@ag-grid-community/csv-export': 32.3.2
+      '@ag-grid-community/csv-export': 32.3.3
       '@ag-grid-community/infinite-row-model': 32.3.2
       '@ag-grid-community/styles': 32.3.3
       '@ag-grid-community/theming': 32.3.2
@@ -4242,7 +4245,7 @@ snapshots:
       '@ag-grid-enterprise/range-selection': 32.3.3
       '@ag-grid-enterprise/rich-select': 32.3.3
       '@ag-grid-enterprise/server-side-row-model': 32.3.2
-      '@milaboratories/uikit': 2.1.1(typescript@5.5.4)
+      '@milaboratories/uikit': 2.2.0(typescript@5.5.4)
       '@platforma-sdk/model': 1.8.0
       canonicalize: 2.0.0
       lru-cache: 11.0.2
@@ -4251,6 +4254,11 @@ snapshots:
       - typescript
 
   '@platforma-sdk/workflow-tengo@2.0.0':
+    dependencies:
+      '@milaboratories/software-pframes-conv': 2.0.1
+      '@platforma-open/milaboratories.software-small-binaries': 1.14.5
+
+  '@platforma-sdk/workflow-tengo@2.1.0':
     dependencies:
       '@milaboratories/software-pframes-conv': 2.0.1
       '@platforma-open/milaboratories.software-small-binaries': 1.14.5

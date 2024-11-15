@@ -23,9 +23,9 @@ import { AgGridTheme, PlAgOverlayNoRows, PlBlockPage, PlBtnPrimary, PlBtnSeconda
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
+import DatasetCell from './DatasetCell.vue';
 import ImportDatasetDialog from './ImportDatasetDialog.vue';
 import ImportModal from './ImportMetadataModal.vue';
-import DatasetCell from './DatasetCell.vue';
 
 const styles = useCssModule()
 
@@ -322,7 +322,7 @@ const showImportDataset = ref(false)
     <template #append>
       <PlBtnPrimary icon="add" @click.stop="() => showImportDataset = true">Import dataset</PlBtnPrimary>
       &nbsp;
-      <PlBtnSecondary icon="import" @click.stop="importMetadata">Import sample sheet</PlBtnSecondary>
+      <PlBtnSecondary icon="download" @click.stop="importMetadata">Import sample sheet</PlBtnSecondary>
     </template>
     <div :style="{ flex: 1 }">
       <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ReadIndices } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlSlideModal, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
+import { PlBlockPage, PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlMaskIcon24, PlSlideModal, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
 import { computed, reactive } from 'vue';
 import { useApp } from './app';
 import FastqDatasetPage from './FastqDatasetPage.vue';
@@ -55,7 +55,11 @@ async function deleteTheDataset() {
   <PlBlockPage>
     <template #title>{{ dataset.value.label }}</template>
     <template #append>
-      <PlBtnGhost :icon="'settings-2'" @click.stop="() => data.settingsOpen = true">Settings</PlBtnGhost>
+      <PlBtnGhost @click.stop="() => data.settingsOpen = true">Settings
+        <template #append>
+          <PlMaskIcon24 name="settings" />
+        </template>
+      </PlBtnGhost>
     </template>
     <template v-if="dataset.value.content.type === 'Fastq'">
       <FastqDatasetPage />
@@ -76,7 +80,7 @@ async function deleteTheDataset() {
       Gzipped
     </PlCheckbox>
     <PlBtnGroup :model-value="currentReadIndices" @update:model-value="setReadIndices" :options="readIndicesOptions" />
-    <PlBtnSecondary icon="delete" @click="() => data.deleteModalOpen = true">Delete Dataset</PlBtnSecondary>
+    <PlBtnSecondary @click="() => data.deleteModalOpen = true" icon="delete-bin">Delete Dataset</PlBtnSecondary>
   </PlSlideModal>
 
   <!-- Delete dataset confirmation dialog -->
