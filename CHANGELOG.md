@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.6.6
+
+### Patch Changes
+
+- ead3b52: Update ui-vue (fixed File Dialog error)
+
 ## 1.6.5
 
 ### Patch Changes
