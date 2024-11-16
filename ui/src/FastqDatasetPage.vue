@@ -60,6 +60,10 @@ const rowData = computed(() => {
 
 const readIndices = computed(() => dataset.value.content.readIndices);
 
+const defaultColDef: ColDef = {
+  suppressHeaderMenuButton: true
+}
+
 const columnDefs = computed(() => {
   const sampleLabels = app.args.sampleLabels;
   const res: ColDef<FastaDatasetRow>[] = [
@@ -82,7 +86,9 @@ const columnDefs = computed(() => {
       singleClickEdit: true,
       cellEditorParams: {
         values: unusedIds,
-      } satisfies IRichCellEditorParams<FastaDatasetRow>
+      } satisfies IRichCellEditorParams<FastaDatasetRow>,
+      pinned: 'left',
+      lockPinned: true
     }
   ];
 
@@ -172,6 +178,7 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 <template>
   <!-- :style="{ height: '600px' }" -->
   <div class="ag-theme-quartz" :style="{ height: '100%' }">
-    <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs" :gridOptions="gridOptions" />
+    <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
+      :columnDefs="columnDefs" :gridOptions="gridOptions" />
   </div>
 </template>
