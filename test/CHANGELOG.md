@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 1.4.7
+
+### Patch Changes
+
+- a6d8a0f: Fix for AGGrid and new import button icons
+
 ## 1.4.6
 
 ### Patch Changes
