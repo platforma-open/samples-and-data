@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.7.8
+
+### Patch Changes
+
+- a6d8a0f: Fix for AGGrid and new import button icons
+
 ## 1.7.7
 
 ### Patch Changes
