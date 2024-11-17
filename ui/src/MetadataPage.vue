@@ -19,7 +19,7 @@ import {
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { AgGridTheme, PlAgOverlayNoRows, PlBlockPage, PlBtnPrimary, PlBtnSecondary, PlDialogModal } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, PlAgOverlayNoRows, PlBlockPage, PlBtnGhost, PlBtnPrimary, PlDialogModal, PlMaskIcon24 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
@@ -320,9 +320,19 @@ const showImportDataset = ref(false)
   <PlBlockPage>
     <template #title>Samples & Metadata</template>
     <template #append>
-      <PlBtnPrimary icon="add" @click.stop="() => showImportDataset = true">Import dataset</PlBtnPrimary>
+      <PlBtnGhost @click.stop="() => showImportDataset = true">
+        Import fastq files
+        <template #append>
+          <PlMaskIcon24 name="file-doc-import" />
+        </template>
+      </PlBtnGhost>
       &nbsp;
-      <PlBtnSecondary icon="download" @click.stop="importMetadata">Import sample sheet</PlBtnSecondary>
+      <PlBtnGhost @click.stop="importMetadata">
+        Import metadata
+        <template #append>
+          <PlMaskIcon24 name="table-import" />
+        </template>
+      </PlBtnGhost>
     </template>
     <div :style="{ flex: 1 }">
       <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData"
