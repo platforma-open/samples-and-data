@@ -7,15 +7,15 @@ packages:
 
 catalog:
   '@platforma-sdk/block-tools': ^2.3.24
-  '@platforma-sdk/model': ^1.8.0
-  '@platforma-sdk/ui-vue': ^1.8.20
+  '@platforma-sdk/model': ^1.8.19
+  '@platforma-sdk/ui-vue': ^1.8.23
   '@platforma-sdk/tengo-builder': ^1.16.1
-  '@platforma-sdk/workflow-tengo': ^2.1.0
+  '@platforma-sdk/workflow-tengo': ^2.2.0
 
-  '@platforma-sdk/test': ^1.8.9
+  '@platforma-sdk/test': ^1.8.23
   '@milaboratories/helpers': ^1.6.6
 
-  'vue': ^3.5.12
+  'vue': ^3.5.13
   'vue-tsc': ^2.1.6
 
   'zod': ^3.23.8
@@ -23,7 +23,7 @@ catalog:
 
   'typescript': ~5.5.4
   'tsup': ~8.1.2
-  'turbo': ^2.2.3
+  'turbo': ^2.3.0
 
   'vite': ^5.4.11
   'vitest': ^2.1.5
