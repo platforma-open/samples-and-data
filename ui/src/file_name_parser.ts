@@ -1,4 +1,4 @@
-import { escapeRegExp } from "./util";
+import { escapeRegExp } from './util';
 
 export type Range = {
   from: number;
@@ -231,6 +231,7 @@ export function getWellFormattedReadIndex(match: FileNameGroups<Match>): 'R1' | 
 
 type WellKnownPattern = {
   patternWithoutExtension: string;
+  defaultReadIndices: string[];
   extensions: string[];
   minimalPercent: number;
 };
@@ -238,52 +239,68 @@ type WellKnownPattern = {
 const wellKnownPattern: WellKnownPattern[] = [
   {
     patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}_{{n}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}_{{n}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}_{{n}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}_L{{n}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_{{RR}}_{{*}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.9
   },
   {
     patternWithoutExtension: '{{Sample}}_{{R}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.9
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}',
+    defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.9
   },
   {
     patternWithoutExtension: '{{Sample}}',
-    extensions: ['fastq', 'fastq.gz', 'fasta', 'fa'],
+    defaultReadIndices: [],
+    extensions: ['fasta', 'fa', 'fasta.gz', 'fa.gz'],
+    minimalPercent: 0.7
+  },
+  {
+    patternWithoutExtension: '{{Sample}}',
+    defaultReadIndices: ['R1'],
+    extensions: ['fastq', 'fastq.gz'],
     minimalPercent: 0.99
   }
 ];
@@ -327,7 +344,8 @@ export function inferFileNamePattern(
         return {
           pattern,
           extension,
-          readIndices: readIndices === undefined ? ['R1'] : [...readIndices].sort()
+          readIndices:
+            readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort()
         };
     }
   }

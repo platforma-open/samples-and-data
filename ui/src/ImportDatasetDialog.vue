@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { BlockArgs, DatasetContentFastq, DatasetContentMultilaneFastq, PlId, ReadIndices, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import { BlockArgs, DatasetContentFasta, DatasetContentFastq, DatasetContentMultilaneFastq, PlId, ReadIndices, uniquePlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
 import { PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlBtnSecondary, PlCheckbox, PlDialogModal, PlDropdown, PlFileDialog, PlRow, PlTextField, SimpleOption } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, watch } from 'vue';
@@ -84,7 +84,7 @@ function addFiles(files: ImportFileHandle[]) {
     const inferedPattern = inferFileNamePattern(fileNames);
     if (inferedPattern) {
       data.pattern = inferedPattern.pattern.rawPattern;
-      data.gzipped = inferedPattern.extension === "fastq.gz";
+      data.gzipped = inferedPattern.extension.endsWith(".gz");
       data.readIndices = inferedPattern.readIndices;
     }
     // @todo add some meaningful notification if failed to infer pattern
@@ -111,7 +111,10 @@ const readIndicesOptions: SimpleOption<string>[] = [{
 }, {
   value: JSON.stringify(["R1", "R2"]),
   text: "R1, R2"
-}]
+}, {
+  value: JSON.stringify([]),
+  text: "fasta"
+},]
 
 const modesOptions: SimpleOption<ImportMode>[] = [{
   value: 'create-new-dataset',
@@ -151,6 +154,20 @@ function createGetOrCreateSample(args: BlockArgs) {
     args.sampleIds.push(newId);
     args.sampleLabels[newId] = sampleName;
     return newId;
+  }
+}
+
+function addFastaDatasetContent(args: BlockArgs, contentData: DatasetContentFasta["data"]) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error("Dataset has read or lane matcher, trying to add fasta dataset")
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(sample)
+    contentData[sampleId] = f.handle
   }
 }
 
@@ -221,6 +238,8 @@ async function addToExistingDataset() {
   await app.updateArgs(args => {
     const dataset = args.datasets.find(ds => ds.id === datasetId);
     if (dataset === undefined) throw new Error("Dataset not found");
+    if (dataset.content.type === 'Fasta')
+      addFastaDatasetContent(args, dataset.content.data);
     if (dataset.content.type === 'Fastq')
       addFastqDatasetContent(args, dataset.content.data);
     else if (dataset.content.type === 'MultilaneFastq')
@@ -234,7 +253,20 @@ async function addToExistingDataset() {
 async function createNewDataset() {
   const newDatasetId = uniquePlId();
   await app.updateArgs(args => {
-    if (compiledPattern.value?.hasLaneMatcher) {
+    if (data.readIndices.length === 0 /* fasta */) {
+      const contentData: DatasetContentFasta["data"] = {}
+      addFastaDatasetContent(args, contentData);
+
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'Fasta',
+          gzipped: data.gzipped,
+          data: contentData
+        }
+      })
+    } else if (compiledPattern.value?.hasLaneMatcher) {
       const contentData: DatasetContentMultilaneFastq["data"] = {}
       addMultilaneFastqDatasetContent(args, contentData);
 
@@ -267,6 +299,9 @@ async function createNewDataset() {
   app.navigateTo(`/dataset?id=${newDatasetId}`)
 }
 
+const canCreateOrAdd = computed(() => hasMatchedFiles.value &&
+  // This prevents selecting fasta as type while having read index matcher in pattern
+  (data.readIndices.length !== 0 || (compiledPattern.value?.hasReadIndexMatcher === false && compiledPattern.value?.hasLaneMatcher === false)))
 </script>
 
 <template>
@@ -294,7 +329,7 @@ async function createNewDataset() {
     <PlBtnSecondary @click="() => data.fileDialogOpened = true"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary :disabled="!hasMatchedFiles" @click="{ createOrAdd(); }" :loading="data.importing">
+      <PlBtnPrimary :disabled="!canCreateOrAdd" @click="{ createOrAdd(); }" :loading="data.importing">
         {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
       </PlBtnPrimary>
 

@@ -44,12 +44,14 @@ const data = reactive<{
   errorMessage: undefined
 })
 
+const showImportDataset = ref(false)
+
 if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
   if (app.model.ui === undefined)
     app.model.ui = { suggestedImport: true }
   else
     app.model.ui.suggestedImport = true;
-  // app.navigateTo('/import-files');
+  showImportDataset.value = true;
 }
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
@@ -311,8 +313,6 @@ const gridOptions: GridOptions<MetadataRow> = {
     DatasetCell
   }
 };
-
-const showImportDataset = ref(false)
 
 </script>
 

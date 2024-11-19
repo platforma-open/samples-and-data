@@ -30,7 +30,7 @@ ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, Menu
 const app = useApp();
 const datasetId = app.queryParams.id;
 
-type FastaDatasetRow = {
+type FastqDatasetRow = {
   // undefined for an empty row at the end of the table
   readonly sample: PlId | '';
   readonly reads: FastqFileGroup;
@@ -48,7 +48,7 @@ const unusedIds = () => {
 };
 
 const rowData = computed(() => {
-  const result: FastaDatasetRow[] = Object.entries(dataset.value.content.data).map(
+  const result: FastqDatasetRow[] = Object.entries(dataset.value.content.data).map(
     ([sampleId, fastqs]) => ({
       sample: sampleId as PlId,
       reads: fastqs!
@@ -66,7 +66,7 @@ const defaultColDef: ColDef = {
 
 const columnDefs = computed(() => {
   const sampleLabels = app.args.sampleLabels;
-  const res: ColDef<FastaDatasetRow>[] = [
+  const res: ColDef<FastqDatasetRow>[] = [
     {
       headerName: app.model.args.sampleLabelColumnLabel,
       flex: 1,
@@ -86,7 +86,7 @@ const columnDefs = computed(() => {
       singleClickEdit: true,
       cellEditorParams: {
         values: unusedIds,
-      } satisfies IRichCellEditorParams<FastaDatasetRow>,
+      } satisfies IRichCellEditorParams<FastqDatasetRow>,
       pinned: 'left',
       lockPinned: true
     }
@@ -125,7 +125,7 @@ const columnDefs = computed(() => {
         dataset.update((ds) => (ds.content.data[sample]![readIndex] = params.newValue ? params.newValue : undefined));
         return true;
       }
-    } as ColDef<FastaDatasetRow, ImportFileHandle>);
+    } as ColDef<FastqDatasetRow, ImportFileHandle>);
 
   return res;
 });
@@ -135,8 +135,8 @@ function isPlId(v: PlId | ''): v is PlId {
 }
 
 function getSelectedSamples(
-  api: GridApi<FastaDatasetRow>,
-  node: IRowNode<FastaDatasetRow> | null
+  api: GridApi<FastqDatasetRow>,
+  node: IRowNode<FastqDatasetRow> | null
 ): PlId[] {
   const samples = api
     .getSelectedRows()
@@ -148,7 +148,7 @@ function getSelectedSamples(
   return [sample];
 }
 
-const gridOptions: GridOptions<FastaDatasetRow> = {
+const gridOptions: GridOptions<FastqDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
   rowSelection: 'multiple',
   rowHeight: 45,
@@ -176,9 +176,6 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 </script>
 
 <template>
-  <!-- :style="{ height: '600px' }" -->
-  <div class="ag-theme-quartz" :style="{ height: '100%' }">
-    <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
-      :columnDefs="columnDefs" :gridOptions="gridOptions" />
-  </div>
+  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs" :gridOptions="gridOptions" />
 </template>
