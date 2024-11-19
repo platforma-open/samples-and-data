@@ -161,8 +161,6 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
 </script>
 
 <template>
-  <!-- :style="{ height: '600px' }" -->
-  <div class="ag-theme-quartz" :style="{ height: '100%' }">
-    <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs" :gridOptions="gridOptions"/>
-  </div>
+  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs"
+    :gridOptions="gridOptions" />
 </template>

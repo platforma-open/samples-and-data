@@ -108,6 +108,42 @@ wf.body(func(args) {
 	for _, dataset in args.datasets {
 		exportKey := "dataset." + dataset.id
 
+		if dataset.content.type == "Fasta" {
+			fastaDataSpec := {
+				kind: "PColumn",
+				name: "pl7.app/sequencing/data",
+				domain: {
+					"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta",
+					"pl7.app/blockId": blockId
+				},
+				valueType: "File",
+				annotations: {
+					"pl7.app/label": dataset.label
+				},
+				axesSpec: [sampleIdAxisSpec]
+			}
+
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: 1
+			}))
+
+			for sampleId, importHandle in dataset.content.data {
+				if !importHandle {
+					ll.panic("File handle not set for sample %v", sampleId)
+				}
+				data.createInputField(json.encode([sampleId])).set(importFile(importHandle))
+			}
+
+			exports[exportKey] = {
+				spec: fastaDataSpec,
+				data: data.lockAndBuild()
+			}
+
+			break
+		}
+
+		// Code below service Fastq and MultilaneFastq datasets
+
 		readIndexAxisSpec := {
 			type: "String",
 			name: "pl7.app/sequencing/readIndex",

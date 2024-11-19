@@ -1,20 +1,16 @@
 import {
   BlockModel,
-  getImportProgress,
-  getResourceField,
+  ImportFileHandle,
   InferHrefType,
-  type InferOutputsType,
-  It,
-  MainOutputs,
-  mapResourceFields
+  type InferOutputsType
 } from '@platforma-sdk/model';
 import { BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
 
-export const platforma = BlockModel.create<BlockArgs, BlockUiState>()
+export const platforma = BlockModel.create()
 
-  .initialArgs({
+  .withArgs<BlockArgs>({
     sampleIds: [],
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
@@ -22,9 +18,20 @@ export const platforma = BlockModel.create<BlockArgs, BlockUiState>()
     datasets: []
   })
 
+  .withUiState<BlockUiState>({ suggestedImport: false })
+
   .output(
     'fileImports',
-    mapResourceFields(getResourceField(MainOutputs, 'fileImports'), getImportProgress(It))
+    (ctx) =>
+      Object.fromEntries(
+        ctx.outputs
+          ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
+          ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
+            skipUnresolved: true
+          }) ?? []
+      ),
+    { isActive: true }
+    // mapResourceFields(getResourceField(MainOutputs, 'fileImports'), getImportProgress(It))
   )
 
   // .output('exports', (ctx) => {
@@ -54,4 +61,3 @@ export type Href = InferHrefType<typeof platforma>;
 export * from './args';
 export * from './helpers';
 export { BlockArgs };
-

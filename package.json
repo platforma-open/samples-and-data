@@ -52,7 +52,12 @@
   "//": {
     "pnpm": {
       "overrides": {
-        "@platforma-sdk/ui-vue": "file:/Users/dbolotin/milab/core/platforma/sdk/ui-vue/package.tgz"
+        "@platforma-sdk/ui-vue": "file:/Users/dbolotin/milab/core/platforma/sdk/ui-vue/package.tgz",
+        "@milaboratories/pl-middle-layer": "file:/Users/dbolotin/milab/core/platforma/lib/node/pl-middle-layer/package.tgz",
+        "@milaboratories/pl-model-middle-layer": "file:/Users/dbolotin/milab/core/platforma/lib/model/middle-layer/package.tgz",
+        "@milaboratories/pl-model-common": "file:/Users/dbolotin/milab/core/platforma/lib/model/common/package.tgz",
+        "@platforma-sdk/model": "file:/Users/dbolotin/milab/core/platforma/sdk/model/package.tgz",
+        "@platforma-sdk/test": "file:/Users/dbolotin/milab/core/platforma/sdk/test/package.tgz"
       }
     }
   },

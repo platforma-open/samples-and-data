@@ -77,6 +77,18 @@ export type ReadIndices = z.infer<typeof ReadIndices>;
 export const FastqFileGroup = z.record(ReadIndex, ImportFileHandleSchema);
 export type FastqFileGroup = z.infer<typeof FastqFileGroup>;
 
+export const DatasetContentFasta = z
+  .object({
+    type: z.literal('Fasta'),
+    gzipped: z.boolean(),
+    data: z.record(
+      PlId,
+      ImportFileHandleSchema.nullable() /* null meand sampple is added to the dataset, but file is not yet set */
+    )
+  })
+  .strict();
+export type DatasetContentFasta = z.infer<typeof DatasetContentFasta>;
+
 export const DatasetContentFastq = z
   .object({
     type: z.literal('Fastq'),
@@ -105,7 +117,8 @@ export type DatasetContentMultilaneFastq = z.infer<typeof DatasetContentMultilan
 
 export const DatasetContent = z.discriminatedUnion('type', [
   DatasetContentFastq,
-  DatasetContentMultilaneFastq
+  DatasetContentMultilaneFastq,
+  DatasetContentFasta
 ]);
 export type DatasetContent = z.infer<typeof DatasetContent>;
 
@@ -118,6 +131,8 @@ export function Dataset<const ContentType extends z.ZodTypeAny>(content: Content
 }
 
 export const DatasetAny = Dataset(DatasetContent);
+export const DatasetFasta = Dataset(DatasetContentFasta);
+export type DatasetFasta = z.infer<typeof DatasetFasta>;
 export const DatasetFastq = Dataset(DatasetContentFastq);
 export type DatasetFastq = z.infer<typeof DatasetFastq>;
 export const DatasetMultilaneFastq = Dataset(DatasetContentMultilaneFastq);

@@ -201,3 +201,29 @@ test('infer file name pattern 4', ({ expect }) => {
   expect(result?.extension).to.equal('fastq.gz');
   expect(result?.readIndices).to.toMatchObject(['R1', 'R2']);
 });
+
+test('infer file name pattern 5', ({ expect }) => {
+  const fileNames = [
+    'accList.txt',
+    'seq1.fasta',
+    'seq2.fasta',
+    'seq3.fasta',
+    'seq4.fasta',
+    'seq5.fasta',
+    'seq6.fasta',
+    'seq7.fasta',
+    'seq8.fasta',
+    'seq11.fasta',
+    'seq12.fasta',
+    'seq13.fasta',
+    'seq14.fasta',
+    'seq15.fasta',
+    'seq16.fasta',
+    'seq17.fasta',
+    'seq18.fasta'
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal('{{Sample}}.fasta');
+  expect(result?.extension).to.equal('fasta');
+  expect(result?.readIndices).to.toMatchObject([]);
+});

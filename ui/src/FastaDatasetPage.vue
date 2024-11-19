@@ -15,8 +15,7 @@ import { RichSelectModule } from '@ag-grid-enterprise/rich-select';
 import { AgGridVue } from '@ag-grid-community/vue3';
 
 import {
-  DatasetFastq,
-  FastqFileGroup,
+  DatasetFasta,
   PlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
@@ -30,15 +29,22 @@ ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, Menu
 const app = useApp();
 const datasetId = app.queryParams.id;
 
-type FastqDatasetRow = {
+type FastaDatasetRow = {
   // undefined for an empty row at the end of the table
   readonly sample: PlId | '';
-  readonly reads: FastqFileGroup;
+  readonly data?: ImportFileHandle | null;
 };
 
+function nullToUndefined<T>(value: T | undefined | null): T | undefined {
+  return value === null ? undefined : value;
+}
+
+function undefinedToNull<T>(value: T | undefined): T | null {
+  return value === undefined ? null : value;
+}
 
 const dataset = argsModel(app, {
-  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetFastq,
+  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetFasta,
   onDisconnected: () => app.navigateTo('/')
 });
 
@@ -48,17 +54,15 @@ const unusedIds = () => {
 };
 
 const rowData = computed(() => {
-  const result: FastqDatasetRow[] = Object.entries(dataset.value.content.data).map(
-    ([sampleId, fastqs]) => ({
+  const result: FastaDatasetRow[] = Object.entries(dataset.value.content.data).map(
+    ([sampleId, data]) => ({
       sample: sampleId as PlId,
-      reads: fastqs!
+      data
     })
   );
-  if (unusedIds().length > 0) result.push({ sample: '', reads: {} });
+  if (unusedIds().length > 0) result.push({ sample: '' });
   return result;
 });
-
-const readIndices = computed(() => dataset.value.content.readIndices);
 
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true
@@ -66,7 +70,7 @@ const defaultColDef: ColDef = {
 
 const columnDefs = computed(() => {
   const sampleLabels = app.args.sampleLabels;
-  const res: ColDef<FastqDatasetRow>[] = [
+  const res: ColDef<FastaDatasetRow>[] = [
     {
       headerName: app.model.args.sampleLabelColumnLabel,
       flex: 1,
@@ -78,7 +82,7 @@ const columnDefs = computed(() => {
       valueSetter: (params) => {
         if (params.oldValue !== '') throw new Error('Unexpected edit');
         if (!params.newValue) return false;
-        dataset.update((ds) => (ds.content.data[params.newValue] = {}));
+        dataset.update((ds) => (ds.content.data[params.newValue] = null));
         return true;
       },
       cellEditor: 'agRichSelectCellEditor',
@@ -86,46 +90,45 @@ const columnDefs = computed(() => {
       singleClickEdit: true,
       cellEditorParams: {
         values: unusedIds,
-      } satisfies IRichCellEditorParams<FastqDatasetRow>,
+      } satisfies IRichCellEditorParams<FastaDatasetRow>,
       pinned: 'left',
       lockPinned: true
     }
   ];
 
-  for (const readIndex of readIndices.value)
-    res.push({
-      headerName: readIndex,
-      flex: 2,
-      cellStyle: { padding: 0 },
+  res.push({
+    headerName: "Fasta file",
+    flex: 2,
+    cellStyle: { padding: 0 },
 
-      cellRendererParams: {
-        resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-          const progresses = app.progresses;
-          if (!fileHandle) return undefined;
-          else return progresses[fileHandle];
-        }
-      },
-
-      cellRendererSelector: (params) =>
-        params.data?.sample
-          ? {
-            component: 'PlAgCellFile',
-            params: {
-              extensions: dataset.value.content.gzipped ? ['fastq.gz'] : ['fastq']
-            }
-          }
-          : undefined,
-      valueGetter: (params) =>
-        params.data?.sample
-          ? dataset.value.content.data[params.data.sample]![readIndex]
-          : undefined,
-      valueSetter: (params) => {
-        const sample = params.data.sample;
-        if (sample === '') return false;
-        dataset.update((ds) => (ds.content.data[sample]![readIndex] = params.newValue ? params.newValue : undefined));
-        return true;
+    cellRendererParams: {
+      resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
+        const progresses = app.progresses;
+        if (!fileHandle) return undefined;
+        else return progresses[fileHandle];
       }
-    } as ColDef<FastqDatasetRow, ImportFileHandle>);
+    },
+
+    cellRendererSelector: (params) =>
+      params.data?.sample
+        ? {
+          component: 'PlAgCellFile',
+          params: {
+            extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+          }
+        }
+        : undefined,
+    valueGetter: (params) =>
+      params.data?.sample
+        ? nullToUndefined(dataset.value.content.data[params.data.sample])
+        : undefined,
+    valueSetter: (params) => {
+      const sample = params.data.sample;
+      if (sample === '') return false;
+      dataset.update((ds) => ds.content.data[sample] = nullToUndefined(params.newValue));
+      return true;
+    }
+  } as ColDef<FastaDatasetRow, ImportFileHandle>);
 
   return res;
 });
@@ -135,8 +138,8 @@ function isPlId(v: PlId | ''): v is PlId {
 }
 
 function getSelectedSamples(
-  api: GridApi<FastqDatasetRow>,
-  node: IRowNode<FastqDatasetRow> | null
+  api: GridApi<FastaDatasetRow>,
+  node: IRowNode<FastaDatasetRow> | null
 ): PlId[] {
   const samples = api
     .getSelectedRows()
@@ -148,7 +151,7 @@ function getSelectedSamples(
   return [sample];
 }
 
-const gridOptions: GridOptions<FastqDatasetRow> = {
+const gridOptions: GridOptions<FastaDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
   rowSelection: 'multiple',
   rowHeight: 45,

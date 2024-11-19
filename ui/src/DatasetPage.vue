@@ -6,6 +6,7 @@ import { useApp } from './app';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
 import MultilaneFastqDatasetPage from './MultilaneFastqDatasetPage.vue';
+import FastaDatasetPage from './FastaDatasetPage.vue';
 
 const app = useApp();
 
@@ -28,16 +29,15 @@ const readIndicesOptions: SimpleOption<string>[] = [{
   text: "R1, R2"
 }]
 
-const currentReadIndices = computed(() => JSON.stringify(dataset.value.content.readIndices))
+const currentReadIndices = computed(() => JSON.stringify(dataset.value.content.type === 'Fasta' ? undefined : dataset.value.content.readIndices))
 
 function setReadIndices(newIndices: string) {
   const indicesArray = ReadIndices.parse(JSON.parse(newIndices))
-  // const readIndicesToClean = AllReadIndices.filter(r => !indicesArray.includes(r));
   dataset.update(ds => {
-    ds.content.readIndices = indicesArray;
-    // for (const [_, fg] of Object.entries(ds.content.data))
-    //   for (const r of readIndicesToClean)
-    //     delete fg[r];
+    if (ds.content.type !== 'Fasta')
+      ds.content.readIndices = indicesArray;
+    else
+      throw new Error("Can't set read indices for fasta dataset.")
   })
 }
 
@@ -67,6 +67,9 @@ async function deleteTheDataset() {
     <template v-else-if="dataset.value.content.type === 'MultilaneFastq'">
       <MultilaneFastqDatasetPage />
     </template>
+    <template v-else-if="dataset.value.content.type === 'Fasta'">
+      <FastaDatasetPage />
+    </template>
   </PlBlockPage>
 
   <!-- Settings panel -->
@@ -79,7 +82,8 @@ async function deleteTheDataset() {
       @update:model-value="v => dataset.update(ds => ds.content.gzipped = v)">
       Gzipped
     </PlCheckbox>
-    <PlBtnGroup :model-value="currentReadIndices" @update:model-value="setReadIndices" :options="readIndicesOptions" />
+    <PlBtnGroup v-if="dataset.value.content.type !== 'Fasta'" :model-value="currentReadIndices"
+      @update:model-value="setReadIndices" :options="readIndicesOptions" />
     <PlBtnSecondary @click="() => data.deleteModalOpen = true" icon="delete-bin">Delete Dataset</PlBtnSecondary>
   </PlSlideModal>
 
