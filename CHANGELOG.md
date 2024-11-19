@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.7.0
+
+### Minor Changes
+
+- 82e916f: Fasta datasets support + minor UX fixes
+
+### Patch Changes
+
+- Updated dependencies [82e916f]
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.8.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.7.0
+  - @platforma-open/milaboratories.samples-and-data.ui@1.12.0
+
 ## 1.6.7
 
 ### Patch Changes
