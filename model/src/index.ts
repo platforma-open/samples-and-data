@@ -11,6 +11,7 @@ export type BlockUiState = { suggestedImport: boolean };
 export const platforma = BlockModel.create()
 
   .withArgs<BlockArgs>({
+    blockTitle: 'Samples & Data',
     sampleIds: [],
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
@@ -39,6 +40,8 @@ export const platforma = BlockModel.create()
   //   if (ex === undefined) return undefined;
   //   return ex.listInputFields().flatMap((f) => ex.resolve(f)?.listInputFields());
   // })
+
+  .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
 
   .sections((ctx) => {
     return [

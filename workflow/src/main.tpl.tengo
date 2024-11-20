@@ -105,6 +105,11 @@ wf.body(func(args) {
 		}
 	}
 
+	blockTitle := args.blockTitle
+	if is_undefined(blockTitle) {
+		blockTitle = "Samples & Data"
+	}
+
 	for _, dataset in args.datasets {
 		exportKey := "dataset." + dataset.id
 
@@ -118,6 +123,7 @@ wf.body(func(args) {
 				},
 				valueType: "File",
 				annotations: {
+					"pl7.app/blockTitle": blockTitle,
 					"pl7.app/label": dataset.label
 				},
 				axesSpec: [sampleIdAxisSpec]
@@ -168,6 +174,7 @@ wf.body(func(args) {
 			},
 			valueType: "File",
 			annotations: {
+				"pl7.app/blockTitle": blockTitle,
 				"pl7.app/label": dataset.label
 			}
 		}

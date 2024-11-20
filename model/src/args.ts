@@ -143,6 +143,7 @@ export type DatasetType = DatasetAny['content']['type'];
 
 export const BlockArgs = z
   .object({
+    blockTitle: z.string().optional(),
     sampleIds: z.array(PlId),
     sampleLabelColumnLabel: z.string(),
     sampleLabels: z.record(PlId, z.string()),
