@@ -341,6 +341,6 @@ const canCreateOrAdd = computed(() => hasMatchedFiles.value &&
   <PlFileDialog v-model="data.fileDialogOpened" :multi="true" title="Select files to import" @import:files="(e) => {
     addFiles(e.files);
     data.datasetDialogOpened = true;
-  }" />
+  }"/>
 
 </template>
