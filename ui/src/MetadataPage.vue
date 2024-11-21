@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   ColDef,
@@ -19,7 +18,15 @@ import {
   PlId,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { AgGridTheme, PlAgOverlayNoRows, PlBlockPage, PlBtnGhost, PlBtnPrimary, PlDialogModal, PlMaskIcon24 } from '@platforma-sdk/ui-vue';
+import {
+  AgGridTheme,
+  PlAgOverlayNoRows,
+  PlBlockPage,
+  PlBtnGhost,
+  PlBtnPrimary,
+  PlDialogModal,
+  PlMaskIcon24
+} from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
@@ -27,30 +34,28 @@ import DatasetCell from './DatasetCell.vue';
 import ImportDatasetDialog from './ImportDatasetDialog.vue';
 import ImportModal from './ImportMetadataModal.vue';
 
-const styles = useCssModule()
+const styles = useCssModule();
 
 const app = useApp();
 
 type ErrorMessage = {
-  title: string,
-  message?: string
-}
+  title: string;
+  message?: string;
+};
 
 const data = reactive<{
-  importCandidate: ImportResult | undefined,
-  errorMessage: ErrorMessage | undefined
+  importCandidate: ImportResult | undefined;
+  errorMessage: ErrorMessage | undefined;
 }>({
   importCandidate: undefined,
   errorMessage: undefined
-})
+});
 
-const showImportDataset = ref(false)
+const showImportDataset = ref(false);
 
 if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
-  if (app.model.ui === undefined)
-    app.model.ui = { suggestedImport: true }
-  else
-    app.model.ui.suggestedImport = true;
+  if (app.model.ui === undefined) app.model.ui = { suggestedImport: true };
+  else app.model.ui.suggestedImport = true;
   showImportDataset.value = true;
 }
 
@@ -83,7 +88,7 @@ async function addColumn(valueType: MetadataColumnValueType) {
 }
 
 async function deleteMetaColumn(metaColumnId: string) {
-  const metaColumnIdx = app.args.metadata.findIndex((mCol) => mCol.id === metaColumnId)
+  const metaColumnIdx = app.args.metadata.findIndex((mCol) => mCol.id === metaColumnId);
   await app.updateArgs((arg) => {
     arg.metadata.splice(metaColumnIdx, 1);
   });
@@ -96,26 +101,23 @@ type MetadataRow = {
 };
 
 function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
-  const samples = gridApi.value!.getSelectedRows().map(row => row.id);
-  if (samples.length !== 0)
-    return samples;
+  const samples = gridApi.value!.getSelectedRows().map((row) => row.id);
+  if (samples.length !== 0) return samples;
   const sample = node?.data?.id;
-  if (!sample)
-    return [];
+  if (!sample) return [];
   return [sample];
 }
 
 async function importMetadata() {
   const result = await platforma!.lsDriver.showOpenSingleFileDialog({
-    title: "Import metadata table",
-    buttonLabel: "Import",
-    filters: [{ extensions: ["xlsx", "csv", "tsv", "txt"], name: "Table data" }]
-  })
+    title: 'Import metadata table',
+    buttonLabel: 'Import',
+    filters: [{ extensions: ['xlsx', 'csv', 'tsv', 'txt'], name: 'Table data' }]
+  });
   const file = result.file;
-  if (!file)
-    return;
-  if (await platforma!.lsDriver.getLocalFileSize(file) > 5_000_000) {
-    data.errorMessage = { title: "File is too big" };
+  if (!file) return;
+  if ((await platforma!.lsDriver.getLocalFileSize(file)) > 5_000_000) {
+    data.errorMessage = { title: 'File is too big' };
     return;
   }
   const content = await platforma!.lsDriver.getLocalFileContent(file);
@@ -123,25 +125,23 @@ async function importMetadata() {
     const ic = readFileForImport(content);
     if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
       // TODO human readable parsing metrics
-      data.errorMessage = { title: "Table is empty", message: JSON.stringify(ic) };
+      data.errorMessage = { title: 'Table is empty', message: JSON.stringify(ic) };
       return;
     }
     data.importCandidate = ic;
   } catch (e: any) {
     console.log(e);
-    data.errorMessage = { title: "Error reading table", message: e.msg };
+    data.errorMessage = { title: 'Error reading table', message: e.msg };
   }
 }
 
 async function deleteSamples(sampleIds: PlId[]) {
   await app.updateArgs((arg) => {
-    arg.sampleIds = arg.sampleIds.filter(s => !sampleIds.includes(s))
+    arg.sampleIds = arg.sampleIds.filter((s) => !sampleIds.includes(s));
     for (const s of sampleIds) {
       delete arg.sampleLabels[s];
-      for (const m of arg.metadata)
-        delete m.data[s];
-      for (const ds of arg.datasets)
-        delete ds.content.data[s];
+      for (const m of arg.metadata) delete m.data[s];
+      for (const ds of arg.datasets) delete ds.content.data[s];
     }
   });
 }
@@ -160,9 +160,8 @@ const columnDefs = computed<ColDef[]>(() => [
     colId: 'datasets',
     field: 'datasets',
     editable: false,
-    headerName: "Data",
-    cellRendererSelector: (params) =>
-    ({
+    headerName: 'Data',
+    cellRendererSelector: (params) => ({
       component: 'DatasetCell',
       params: {
         datasets: params.data.datasets
@@ -212,16 +211,15 @@ const columnDefs = computed<ColDef[]>(() => [
     resizable: false,
     pinned: 'right',
     lockPinned: true
-  },
+  }
 ]);
 
 const rowData = computed<MetadataRow[]>(() => {
-
-  const samples2ds: Record<string, string[]> = {}
+  const samples2ds: Record<string, string[]> = {};
   for (const ds of app.args.datasets) {
     for (const sId of Object.keys(ds.content.data)) {
       if (samples2ds[sId] === undefined) {
-        samples2ds[sId] = []
+        samples2ds[sId] = [];
       }
       samples2ds[sId].push(ds.label);
     }
@@ -233,8 +231,7 @@ const rowData = computed<MetadataRow[]>(() => {
     meta: Object.fromEntries(app.args.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
     datasets: samples2ds[id]
   }));
-}
-);
+});
 
 const gridOptions: GridOptions<MetadataRow> = {
   getRowId: (row) => row.data.id,
@@ -275,52 +272,61 @@ const gridOptions: GridOptions<MetadataRow> = {
   getMainMenuItems: (params) => {
     const columnId = params.column.getId();
     if (columnId === 'add') {
-      return [{
-        name: 'Add String Column',
-        action: (params) => addColumn('String')
-      }, {
-        name: 'Add Integer Column',
-        action: (params) => addColumn('Long')
-      }, {
-        name: 'Add Numerical Column',
-        action: (params) => addColumn('Double')
-      }];
+      return [
+        {
+          name: 'Add String Column',
+          action: (params) => addColumn('String')
+        },
+        {
+          name: 'Add Integer Column',
+          action: (params) => addColumn('Long')
+        },
+        {
+          name: 'Add Numerical Column',
+          action: (params) => addColumn('Double')
+        }
+      ];
     } else if (columnId.startsWith('meta.')) {
       const metaColumnId = columnId.slice(5);
-      return [{
-        name: `Delete ${params.column.getColDef().headerName}`,
-        action: (params) => deleteMetaColumn(metaColumnId)
-      }];
-    } else
-      return [];
+      return [
+        {
+          name: `Delete ${params.column.getColDef().headerName}`,
+          action: (params) => deleteMetaColumn(metaColumnId)
+        }
+      ];
+    } else return [];
   },
 
   getContextMenuItems: (params) => {
-    console.log("Ctx:", params);
+    console.log('Ctx:', params);
     const targetSamples = getSelectedSamples(params.node);
-    if (getSelectedSamples(params.node).length === 0)
-      return [];
-    return [{
-      name: `Delete ${targetSamples.length > 1 ? `${targetSamples.length} samples` : app.args.sampleLabels[targetSamples[0]]}`,
-      action: (params) => {
-        const samplesToDelete = getSelectedSamples(params.node);
-        deleteSamples(targetSamples);
+    if (getSelectedSamples(params.node).length === 0) return [];
+    return [
+      {
+        name: `Delete ${
+          targetSamples.length > 1
+            ? `${targetSamples.length} samples`
+            : app.args.sampleLabels[targetSamples[0]]
+        }`,
+        action: (params) => {
+          const samplesToDelete = getSelectedSamples(params.node);
+          deleteSamples(targetSamples);
+        }
       }
-    }];
+    ];
   },
 
   components: {
     DatasetCell
   }
 };
-
 </script>
 
 <template>
   <PlBlockPage>
     <template #title>Samples & Metadata</template>
     <template #append>
-      <PlBtnGhost @click.stop="() => showImportDataset = true">
+      <PlBtnGhost @click.stop="() => (showImportDataset = true)">
         Import fastq files
         <template #append>
           <PlMaskIcon24 name="file-doc-import" />
@@ -335,18 +341,35 @@ const gridOptions: GridOptions<MetadataRow> = {
       </PlBtnGhost>
     </template>
     <div :style="{ flex: 1 }">
-      <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData"
-        :columnDefs="columnDefs" :grid-options="gridOptions" :noRowsOverlayComponent=PlAgOverlayNoRows />
+      <AgGridVue
+        :theme="AgGridTheme"
+        :style="{ height: '100%' }"
+        @grid-ready="onGridReady"
+        :rowData="rowData"
+        :columnDefs="columnDefs"
+        :grid-options="gridOptions"
+        :noRowsOverlayComponent="PlAgOverlayNoRows"
+      />
     </div>
   </PlBlockPage>
 
   <ImportDatasetDialog v-if="showImportDataset" @on-close="showImportDataset = false" />
 
-  <ImportModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
-    @on-close="data.importCandidate = undefined" />
+  <ImportModal
+    v-if="data.importCandidate !== undefined"
+    :import-candidate="data.importCandidate"
+    @on-close="data.importCandidate = undefined"
+  />
 
-  <PlDialogModal :model-value="data.errorMessage !== undefined" closable
-    @update:model-value="(v) => { if (!v) data.errorMessage = undefined }">
+  <PlDialogModal
+    :model-value="data.errorMessage !== undefined"
+    closable
+    @update:model-value="
+      (v) => {
+        if (!v) data.errorMessage = undefined;
+      }
+    "
+  >
     <div>{{ data.errorMessage?.title }}</div>
     <pre v-if="data.errorMessage?.message">{{ data.errorMessage?.message }}</pre>
     <PlBtnPrimary>Ok</PlBtnPrimary>

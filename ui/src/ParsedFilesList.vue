@@ -8,31 +8,35 @@ const props = defineProps<{ items: ParsedFile[] }>();
 const formattedFilesHtml = computed(() => {
   const styles = useCssModule();
   const wrappingOps: FileNameFormattingOpts = {
-    sample: { begin: `<span class="${styles['sampleName']}">`, end: "</span>" },
-    readIndex: { begin: `<span class="${styles['readIndex']}">`, end: "</span>" },
-    lane: { begin: `<span class="${styles['lane']}">`, end: "</span>" },
-  }
-  return props.items.map((f) => {
-    if (!f.match)
-      return `<pre class="${styles['unmatched']}">${f.fileName}</pre>`
-    else
-      return "<pre>" + buildWrappedString(f.fileName, f.match, wrappingOps) + "</pre>"
-  }).join("")
-})
+    sample: { begin: `<span class="${styles['sampleName']}">`, end: '</span>' },
+    readIndex: { begin: `<span class="${styles['readIndex']}">`, end: '</span>' },
+    lane: { begin: `<span class="${styles['lane']}">`, end: '</span>' }
+  };
+  return props.items
+    .map((f) => {
+      if (!f.match) return `<pre class="${styles['unmatched']}">${f.fileName}</pre>`;
+      else return '<pre>' + buildWrappedString(f.fileName, f.match, wrappingOps) + '</pre>';
+    })
+    .join('');
+});
 
 const nFilesMatched = computed(() => {
-  return props.items.filter((f) => f.match).length
+  return props.items.filter((f) => f.match).length;
 });
 
 const nFilesUnmatched = computed(() => {
-  return props.items.filter((f) => !f.match).length
+  return props.items.filter((f) => !f.match).length;
 });
-
 </script>
 
 <template>
   <div :class="$style.container">
-    <span :class="$style.matchText">{{ nFilesMatched }} file(s) matched <span :class="$style.unmatchedText">&nbsp;&nbsp;/&nbsp;&nbsp;{{ nFilesUnmatched }} file(s) not matched </span></span>
+    <span :class="$style.matchText"
+      >{{ nFilesMatched }} file(s) matched
+      <span :class="$style.unmatchedText"
+        >&nbsp;&nbsp;/&nbsp;&nbsp;{{ nFilesUnmatched }} file(s) not matched
+      </span></span
+    >
 
     <div :class="$style.fileList" class="pl-scrollable" v-html="formattedFilesHtml" />
   </div>
@@ -58,7 +62,7 @@ const nFilesUnmatched = computed(() => {
 }
 
 .unmatchedText {
-  color: var(--dis-01)
+  color: var(--dis-01);
 }
 
 .fileList {
@@ -84,18 +88,18 @@ const nFilesUnmatched = computed(() => {
 }
 
 .sampleName {
-  background-color: #D0F0C0;
+  background-color: #d0f0c0;
 }
 
 .readIndex {
-  background-color: #FAF5AA;
+  background-color: #faf5aa;
 }
 
 .lane {
-  background-color: #DEDBFF;
+  background-color: #dedbff;
 }
 
 .unmatched {
-  background-color: #E1E3EB;
+  background-color: #e1e3eb;
 }
 </style>
