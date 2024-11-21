@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   ColDef,
@@ -36,7 +35,6 @@ type FastqDatasetRow = {
   readonly reads: FastqFileGroup;
 };
 
-
 const dataset = argsModel(app, {
   get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetFastq,
   onDisconnected: () => app.navigateTo('/')
@@ -62,7 +60,7 @@ const readIndices = computed(() => dataset.value.content.readIndices);
 
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true
-}
+};
 
 const columnDefs = computed(() => {
   const sampleLabels = app.args.sampleLabels;
@@ -85,7 +83,7 @@ const columnDefs = computed(() => {
       refData: { ...sampleLabels, '': '+ add sample' },
       singleClickEdit: true,
       cellEditorParams: {
-        values: unusedIds,
+        values: unusedIds
       } satisfies IRichCellEditorParams<FastqDatasetRow>,
       pinned: 'left',
       lockPinned: true
@@ -109,11 +107,11 @@ const columnDefs = computed(() => {
       cellRendererSelector: (params) =>
         params.data?.sample
           ? {
-            component: 'PlAgCellFile',
-            params: {
-              extensions: dataset.value.content.gzipped ? ['fastq.gz'] : ['fastq']
+              component: 'PlAgCellFile',
+              params: {
+                extensions: dataset.value.content.gzipped ? ['fastq.gz'] : ['fastq']
+              }
             }
-          }
           : undefined,
       valueGetter: (params) =>
         params.data?.sample
@@ -122,7 +120,10 @@ const columnDefs = computed(() => {
       valueSetter: (params) => {
         const sample = params.data.sample;
         if (sample === '') return false;
-        dataset.update((ds) => (ds.content.data[sample]![readIndex] = params.newValue ? params.newValue : undefined));
+        dataset.update(
+          (ds) =>
+            (ds.content.data[sample]![readIndex] = params.newValue ? params.newValue : undefined)
+        );
         return true;
       }
     } as ColDef<FastqDatasetRow, ImportFileHandle>);
@@ -176,6 +177,12 @@ const gridOptions: GridOptions<FastqDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs" :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs"
+    :gridOptions="gridOptions"
+  />
 </template>

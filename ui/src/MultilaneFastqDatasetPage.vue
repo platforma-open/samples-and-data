@@ -1,11 +1,5 @@
 <script setup lang="ts">
-
-import {
-  ColDef,
-  GridApi,
-  GridOptions,
-  IRowNode,
-} from '@ag-grid-community/core';
+import { ColDef, GridApi, GridOptions, IRowNode } from '@ag-grid-community/core';
 
 import { AgGridVue } from '@ag-grid-community/vue3';
 
@@ -37,23 +31,22 @@ const dataset = argsModel(app, {
 });
 
 function encodeKey(sampleId: PlId, lane: string): string {
-  return JSON.stringify([sampleId, lane])
+  return JSON.stringify([sampleId, lane]);
 }
 
 function decodeKey(key: string): [PlId, string] {
-  return JSON.parse(key)
+  return JSON.parse(key);
 }
 
 const rowData = computed(() => {
   const result: MultilaneFastaDatasetRow[] = Object.entries(dataset.value.content.data).flatMap(
-    ([sampleId, lanes]) => Object.entries(lanes!).map(
-      ([lane, fastqs]) => ({
+    ([sampleId, lanes]) =>
+      Object.entries(lanes!).map(([lane, fastqs]) => ({
         key: encodeKey(sampleId as PlId, lane),
         sample: sampleId as PlId,
         lane: lane,
         reads: fastqs!
-      })
-    )
+      }))
   );
   console.dir(result, { depth: 5 });
   return result;
@@ -76,7 +69,7 @@ const columnDefs = computed(() => {
       flex: 1,
       field: 'lane',
       editable: false
-    } as ColDef<MultilaneFastaDatasetRow, string>,
+    } as ColDef<MultilaneFastaDatasetRow, string>
   ];
 
   for (const readIndex of readIndices.value)
@@ -103,7 +96,12 @@ const columnDefs = computed(() => {
         const sample = params.data.sample;
         if (sample === '') return false;
         const lane = params.data.lane;
-        dataset.update((ds) => (ds.content.data[sample]![lane]![readIndex] = params.newValue ? params.newValue : undefined));
+        dataset.update(
+          (ds) =>
+            (ds.content.data[sample]![lane]![readIndex] = params.newValue
+              ? params.newValue
+              : undefined)
+        );
         return true;
       },
       suppressMenu: true
@@ -120,9 +118,7 @@ function getSelectedKeys(
   api: GridApi<MultilaneFastaDatasetRow>,
   node: IRowNode<MultilaneFastaDatasetRow> | null
 ): [PlId, string][] {
-  const keys = api
-    .getSelectedRows()
-    .map((row) => [row.sample, row.lane] as [PlId, string]);
+  const keys = api.getSelectedRows().map((row) => [row.sample, row.lane] as [PlId, string]);
   if (keys.length !== 0) return keys;
   const sample = node?.data?.sample;
   if (!node?.data) return [];
@@ -147,8 +143,8 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
             for (const [sampleId, lane] of keysToDelete) {
               delete ds.content.data[sampleId]![lane];
               if (Object.keys(ds.content.data[sampleId]!).length === 0)
-                delete ds.content.data[sampleId]
-            };
+                delete ds.content.data[sampleId];
+            }
           });
         }
       }
@@ -161,6 +157,11 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs"
-    :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :columnDefs="columnDefs"
+    :gridOptions="gridOptions"
+  />
 </template>
