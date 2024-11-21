@@ -329,7 +329,7 @@ const gridOptions: GridOptions<MetadataRow> = {
       <PlBtnGhost @click.stop="() => (showImportDataset = true)">
         Import fastq files
         <template #append>
-          <PlMaskIcon24 name="file-doc-import" />
+          <PlMaskIcon24 name="dna-import" />
         </template>
       </PlBtnGhost>
       &nbsp;
