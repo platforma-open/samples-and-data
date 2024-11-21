@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
   ColDef,
@@ -14,10 +13,7 @@ import { RichSelectModule } from '@ag-grid-enterprise/rich-select';
 
 import { AgGridVue } from '@ag-grid-community/vue3';
 
-import {
-  DatasetFasta,
-  PlId
-} from '@platforma-open/milaboratories.samples-and-data.model';
+import { DatasetFasta, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
 import { AgGridTheme, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
@@ -66,7 +62,7 @@ const rowData = computed(() => {
 
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true
-}
+};
 
 const columnDefs = computed(() => {
   const sampleLabels = app.args.sampleLabels;
@@ -89,7 +85,7 @@ const columnDefs = computed(() => {
       refData: { ...sampleLabels, '': '+ add sample' },
       singleClickEdit: true,
       cellEditorParams: {
-        values: unusedIds,
+        values: unusedIds
       } satisfies IRichCellEditorParams<FastaDatasetRow>,
       pinned: 'left',
       lockPinned: true
@@ -97,7 +93,7 @@ const columnDefs = computed(() => {
   ];
 
   res.push({
-    headerName: "Fasta file",
+    headerName: 'Fasta file',
     flex: 2,
     cellStyle: { padding: 0 },
 
@@ -112,11 +108,11 @@ const columnDefs = computed(() => {
     cellRendererSelector: (params) =>
       params.data?.sample
         ? {
-          component: 'PlAgCellFile',
-          params: {
-            extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+            component: 'PlAgCellFile',
+            params: {
+              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+            }
           }
-        }
         : undefined,
     valueGetter: (params) =>
       params.data?.sample
@@ -125,7 +121,7 @@ const columnDefs = computed(() => {
     valueSetter: (params) => {
       const sample = params.data.sample;
       if (sample === '') return false;
-      dataset.update((ds) => ds.content.data[sample] = nullToUndefined(params.newValue));
+      dataset.update((ds) => (ds.content.data[sample] = nullToUndefined(params.newValue)));
       return true;
     }
   } as ColDef<FastaDatasetRow, ImportFileHandle>);
@@ -179,6 +175,12 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs" :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs"
+    :gridOptions="gridOptions"
+  />
 </template>
