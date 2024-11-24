@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.12.1
+
+### Patch Changes
+
+- 20db14c: SDK upgrade, minor improvements.
+- 499f85f: updated icon and package
+- da1d69e: ui-vue 1.10.18
+
 ## 1.12.0
 
 ### Minor Changes
