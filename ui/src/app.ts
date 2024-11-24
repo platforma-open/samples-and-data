@@ -10,8 +10,8 @@ export const sdkPlugin = defineApp(platforma, (app) => {
   return {
     progresses,
     routes: {
-      '/': MetadataPage,
-      '/dataset': DatasetPage
+      '/': () => MetadataPage,
+      '/dataset': () => DatasetPage
     }
   };
 });
