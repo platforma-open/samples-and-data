@@ -1,9 +1,12 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data",
   "scripts": {
+    "reset:node_modules": "find . -type d -name 'node_modules' | grep -v '\\.pnpm' | xargs rm -r",
+    "reset:turbo-cache": "find . -type d -name '.turbo' | grep -v '\\.pnpm' | xargs rm -r",
+    "reset": "pnpm run reset:node_modules && pnpm run reset:turbo-cache",
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "turbo run build",
-    "test": "turbo run test --concurrency 1",
+    "test": "turbo run test --concurrency 1 --env-mode=loose",
     "watch": "turbo watch build",
     "changeset": "changeset",
     "version-packages": "changeset version"
