@@ -2,8 +2,8 @@ packages:
   - workflow
   - model
   - ui
+  - block
   - test
-  - .
 
 catalog:
   '@platforma-sdk/block-tools': ^2.3.25
