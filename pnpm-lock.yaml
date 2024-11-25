@@ -148,6 +148,9 @@ importers:
 
   test:
     dependencies:
+      '@platforma-open/milaboratories.samples-and-data.model':
+        specifier: workspace:*
+        version: link:../model
       this-block:
         specifier: workspace:@platforma-open/milaboratories.samples-and-data@*
         version: link:../block
