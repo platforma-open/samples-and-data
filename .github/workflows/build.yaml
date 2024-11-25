@@ -28,6 +28,7 @@ jobs:
       node-version: '20.x'
       build-script-name: 'build'
       pnpm-recursive-build: false
+      team-id: 'ciplopen'
 
       test: true
       test-script-name: 'test'
