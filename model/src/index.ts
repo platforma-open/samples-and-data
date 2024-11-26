@@ -32,14 +32,7 @@ export const platforma = BlockModel.create()
           }) ?? []
       ),
     { isActive: true }
-    // mapResourceFields(getResourceField(MainOutputs, 'fileImports'), getImportProgress(It))
   )
-
-  // .output('exports', (ctx) => {
-  //   const ex = ctx.outputs?.resolve('exports');
-  //   if (ex === undefined) return undefined;
-  //   return ex.listInputFields().flatMap((f) => ex.resolve(f)?.listInputFields());
-  // })
 
   .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
 

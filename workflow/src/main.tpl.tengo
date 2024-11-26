@@ -4,6 +4,7 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 file := import("@platforma-sdk/workflow-tengo:file")
+pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
 
 json := import("json")
 
@@ -113,21 +114,32 @@ wf.body(func(args) {
 	for _, dataset in args.datasets {
 		exportKey := "dataset." + dataset.id
 
+		trace := pSpec.makeTrace(undefined,
+			{type: "milaboratories.samples-and-data", id: blockId, importance: 10, label: blockTitle},
+			{type: "milaboratories.samples-and-data/dataset", id: dataset.id, importance: 100, label: dataset.label}
+		)
+
+		columnSpecParent := trace.inject({
+			kind: "PColumn",
+			name: "pl7.app/sequencing/data",
+			domain: {
+				"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta",
+				"pl7.app/block": blockId,
+				"pl7.app/dataset": dataset.id
+			},
+			valueType: "File",
+			annotations: {
+				"pl7.app/label": "Sequencing Data"
+			}
+		})
+
 		if dataset.content.type == "Fasta" {
-			fastaDataSpec := {
-				kind: "PColumn",
-				name: "pl7.app/sequencing/data",
+			columnSpec := maps.deepMerge(columnSpecParent, {
 				domain: {
-					"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta",
-					"pl7.app/blockId": blockId
-				},
-				valueType: "File",
-				annotations: {
-					"pl7.app/blockTitle": blockTitle,
-					"pl7.app/label": dataset.label
+					"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta"
 				},
 				axesSpec: [sampleIdAxisSpec]
-			}
+			})
 
 			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
 				keyLength: 1
@@ -141,7 +153,7 @@ wf.body(func(args) {
 			}
 
 			exports[exportKey] = {
-				spec: fastaDataSpec,
+				spec: columnSpec,
 				data: data.lockAndBuild()
 			}
 
@@ -165,19 +177,11 @@ wf.body(func(args) {
 			}
 		}
 
-		fastqDataSpec := {
-			kind: "PColumn",
-			name: "pl7.app/sequencing/data",
+		fastqDataSpec := maps.deepMerge(columnSpecParent, {
 			domain: {
-				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq",
-				"pl7.app/blockId": blockId
-			},
-			valueType: "File",
-			annotations: {
-				"pl7.app/blockTitle": blockTitle,
-				"pl7.app/label": dataset.label
+				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq"
 			}
-		}
+		})
 
 		if dataset.content.type == "Fastq" {
 			fastqDataSpec.axesSpec = [sampleIdAxisSpec, readIndexAxisSpec]
