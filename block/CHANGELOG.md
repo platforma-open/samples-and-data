@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.8.0
+
+### Minor Changes
+
+- ebebf39: Trace annotation in the output; SDK upgrade
+
+### Patch Changes
+
+- Updated dependencies [ebebf39]
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.9.0
+  - @platforma-open/milaboratories.samples-and-data.model@1.8.0
+  - @platforma-open/milaboratories.samples-and-data.ui@1.13.0
+
 ## 1.7.1
 
 ### Patch Changes

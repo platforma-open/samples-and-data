@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.13.0
+
+### Minor Changes
+
+- ebebf39: Trace annotation in the output; SDK upgrade
+
 ## 1.12.1
 
 ### Patch Changes
