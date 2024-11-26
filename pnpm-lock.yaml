@@ -97,29 +97,32 @@ overrides:
 importers:
 
   .:
-    dependencies:
-      '@platforma-open/milaboratories.samples-and-data.model':
-        specifier: workspace:*
-        version: link:model
-      '@platforma-open/milaboratories.samples-and-data.ui':
-        specifier: workspace:*
-        version: link:ui
-      '@platforma-open/milaboratories.samples-and-data.workflow':
-        specifier: workspace:*
-        version: link:workflow
-      '@platforma-sdk/model':
-        specifier: 'catalog:'
-        version: 1.10.2
     devDependencies:
       '@changesets/cli':
         specifier: 'catalog:'
         version: 2.27.10
-      '@platforma-sdk/block-tools':
-        specifier: 'catalog:'
-        version: 2.3.25
       turbo:
         specifier: 'catalog:'
         version: 2.3.0
+
+  block:
+    dependencies:
+      '@platforma-open/milaboratories.samples-and-data.model':
+        specifier: workspace:*
+        version: link:../model
+      '@platforma-open/milaboratories.samples-and-data.ui':
+        specifier: workspace:*
+        version: link:../ui
+      '@platforma-open/milaboratories.samples-and-data.workflow':
+        specifier: workspace:*
+        version: link:../workflow
+      '@platforma-sdk/model':
+        specifier: 'catalog:'
+        version: 1.10.2
+    devDependencies:
+      '@platforma-sdk/block-tools':
+        specifier: 'catalog:'
+        version: 2.3.25
 
   model:
     dependencies:
@@ -145,9 +148,12 @@ importers:
 
   test:
     dependencies:
+      '@platforma-open/milaboratories.samples-and-data.model':
+        specifier: workspace:*
+        version: link:../model
       this-block:
         specifier: workspace:@platforma-open/milaboratories.samples-and-data@*
-        version: link:..
+        version: link:../block
     devDependencies:
       '@platforma-sdk/test':
         specifier: 'catalog:'
