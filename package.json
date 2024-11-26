@@ -21,13 +21,12 @@
         "@milaboratories/pl-model-middle-layer": "file:/Users/dbolotin/milab/core/platforma/lib/model/middle-layer/package.tgz",
         "@milaboratories/pl-model-common": "file:/Users/dbolotin/milab/core/platforma/lib/model/common/package.tgz",
         "@platforma-sdk/model": "file:/Users/dbolotin/milab/core/platforma/sdk/model/package.tgz",
-        "@platforma-sdk/test": "file:/Users/dbolotin/milab/core/platforma/sdk/test/package.tgz"
+        "@platforma-sdk/test": "file:/Users/dbolotin/milab/core/platforma/sdk/test/package.tgz",
+        "@platforma-sdk/workflow-tengo": "file:/Users/dbolotin/milab/core/platforma/sdk/workflow-tengo/package.tgz"
       }
     }
   },
   "pnpm": {
-    "overrides": {
-      "@platforma-sdk/workflow-tengo": "file:/Users/dbolotin/milab/core/platforma/sdk/workflow-tengo/package.tgz"
-    }
+    "overrides": {}
   }
 }

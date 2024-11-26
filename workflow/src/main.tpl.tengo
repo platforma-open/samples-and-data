@@ -4,6 +4,7 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 file := import("@platforma-sdk/workflow-tengo:file")
+pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
 
 json := import("json")
 
@@ -113,7 +114,12 @@ wf.body(func(args) {
 	for _, dataset in args.datasets {
 		exportKey := "dataset." + dataset.id
 
-		columnSpecParent := {
+		trace := pSpec.makeTrace(undefined,
+			{type: "milaboratories.samples-and-data", id: blockId, importance: 10, label: blockTitle},
+			{type: "milaboratories.samples-and-data/dataset", id: dataset.id, importance: 100, label: dataset.label}
+		)
+
+		columnSpecParent := trace.inject({
 			kind: "PColumn",
 			name: "pl7.app/sequencing/data",
 			domain: {
@@ -123,13 +129,9 @@ wf.body(func(args) {
 			},
 			valueType: "File",
 			annotations: {
-				"pl7.app/trace": json.encode([
-					{type: "milaboratories.samples-and-data", id: blockId, label: blockTitle},
-					{type: "milaboratories.samples-and-data/dataset", id: dataset.id, label: dataset.label}
-				]),
-				"pl7.app/label": dataset.label
+				"pl7.app/label": "Sequencing Data"
 			}
-		}
+		})
 
 		if dataset.content.type == "Fasta" {
 			columnSpec := maps.deepMerge(columnSpecParent, {
