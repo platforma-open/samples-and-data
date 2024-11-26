@@ -1,0 +1,47 @@
+{
+  "name": "@platforma-open/milaboratories.samples-and-data",
+  "version": "1.7.1",
+  "scripts": {
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
+    "build": "rm -rf block-pack && block-tools pack",
+    "prepublishOnly": "block-tools pack && block-tools publish -r 's3://milab-euce1-prod-pkgs-s3-block-registry/pub/releases/?region=eu-central-1'"
+  },
+  "files": [
+    "index.d.ts",
+    "index.js"
+  ],
+  "dependencies": {
+    "@platforma-sdk/model": "catalog:",
+    "@platforma-open/milaboratories.samples-and-data.workflow": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.ui": "workspace:*"
+  },
+  "block": {
+    "components": {
+      "workflow": "@platforma-open/milaboratories.samples-and-data.workflow/dist/tengo/tpl/main.plj.gz",
+      "model": "@platforma-open/milaboratories.samples-and-data.model/dist/model.json",
+      "ui": "@platforma-open/milaboratories.samples-and-data.ui/dist"
+    },
+    "meta": {
+      "title": "Samples & Data",
+      "logo": "file:../logos/block-logo.png",
+      "url": "https://github.com/platforma-open/samples-and-data",
+      "docs": "https://github.com/platforma-open/samples-and-data/docs",
+      "support": "mailto:support@milaboratories.com",
+      "description": "Allows to create samples, specify sample meta information and link samples to sequencing data",
+      "longDescription": "file:../docs/description.md",
+      "changelog": "file:../CHANGELOG.md",
+      "tags": [],
+      "organization": {
+        "name": "MiLaboratories Inc",
+        "url": "https://milaboratories.com/",
+        "logo": "file:../logos/organization-logo.png"
+      },
+      "marketplaceRanking": 10000
+    }
+  },
+  "devDependencies": {
+    "@platforma-sdk/block-tools": "catalog:"
+  },
+  "packageManager": "pnpm@9.12.0"
+}

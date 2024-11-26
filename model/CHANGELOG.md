@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.7.1
+
+### Patch Changes
+
+- 20db14c: SDK upgrade, minor improvements.
+
 ## 1.7.0
 
 ### Minor Changes
