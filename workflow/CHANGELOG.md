@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.9.0
+
+### Minor Changes
+
+- ebebf39: Trace annotation in the output; SDK upgrade
+
 ## 1.8.1
 
 ### Patch Changes
