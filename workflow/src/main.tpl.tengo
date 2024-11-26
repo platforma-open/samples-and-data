@@ -113,21 +113,31 @@ wf.body(func(args) {
 	for _, dataset in args.datasets {
 		exportKey := "dataset." + dataset.id
 
+		columnSpecParent := {
+			kind: "PColumn",
+			name: "pl7.app/sequencing/data",
+			domain: {
+				"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta",
+				"pl7.app/block": blockId,
+				"pl7.app/dataset": dataset.id
+			},
+			valueType: "File",
+			annotations: {
+				"pl7.app/trace": json.encode([
+					{type: "milaboratories.samples-and-data", id: blockId, label: blockTitle},
+					{type: "milaboratories.samples-and-data/dataset", id: dataset.id, label: dataset.label}
+				]),
+				"pl7.app/label": dataset.label
+			}
+		}
+
 		if dataset.content.type == "Fasta" {
-			fastaDataSpec := {
-				kind: "PColumn",
-				name: "pl7.app/sequencing/data",
+			columnSpec := maps.deepMerge(columnSpecParent, {
 				domain: {
-					"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta",
-					"pl7.app/blockId": blockId
-				},
-				valueType: "File",
-				annotations: {
-					"pl7.app/blockTitle": blockTitle,
-					"pl7.app/label": dataset.label
+					"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta"
 				},
 				axesSpec: [sampleIdAxisSpec]
-			}
+			})
 
 			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
 				keyLength: 1
@@ -141,7 +151,7 @@ wf.body(func(args) {
 			}
 
 			exports[exportKey] = {
-				spec: fastaDataSpec,
+				spec: columnSpec,
 				data: data.lockAndBuild()
 			}
 
@@ -165,19 +175,11 @@ wf.body(func(args) {
 			}
 		}
 
-		fastqDataSpec := {
-			kind: "PColumn",
-			name: "pl7.app/sequencing/data",
+		fastqDataSpec := maps.deepMerge(columnSpecParent, {
 			domain: {
-				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq",
-				"pl7.app/blockId": blockId
-			},
-			valueType: "File",
-			annotations: {
-				"pl7.app/blockTitle": blockTitle,
-				"pl7.app/label": dataset.label
+				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq"
 			}
-		}
+		})
 
 		if dataset.content.type == "Fastq" {
 			fastqDataSpec.axesSpec = [sampleIdAxisSpec, readIndexAxisSpec]

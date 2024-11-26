@@ -54,9 +54,6 @@ catalogs:
     '@platforma-sdk/ui-vue':
       specifier: ^1.10.18
       version: 1.10.18
-    '@platforma-sdk/workflow-tengo':
-      specifier: ^2.2.0
-      version: 2.2.0
     '@types/node':
       specifier: ~20.16.15
       version: 20.16.15
@@ -93,6 +90,9 @@ catalogs:
     zod:
       specifier: ^3.23.8
       version: 3.23.8
+
+overrides:
+  '@platforma-sdk/workflow-tengo': file:/Users/dbolotin/milab/core/platforma/sdk/workflow-tengo/package.tgz
 
 importers:
 
@@ -240,8 +240,8 @@ importers:
         specifier: 'catalog:'
         version: 1.17.2
       '@platforma-sdk/workflow-tengo':
-        specifier: 'catalog:'
-        version: 2.2.0
+        specifier: file:/Users/dbolotin/milab/core/platforma/sdk/workflow-tengo/package.tgz
+        version: file:../../core/platforma/sdk/workflow-tengo/package.tgz
 
 packages:
 
@@ -925,8 +925,8 @@ packages:
   '@milaboratories/resolve-helper@1.0.1':
     resolution: {integrity: sha512-X3SV7YA21LRN8caw3glOsENubglQPIRc02i+C2Sa+cuy4iGc6sk6fQQC34Cx1BXHeZWHXL8fjntFjIWHAfVlQw==}
 
-  '@milaboratories/software-pframes-conv@2.0.1':
-    resolution: {integrity: sha512-4OBgZGL1iVi3XGLJSryUz3ASJyhHaXYjPLTqMd7breHOccXkkdLMa7bD25ABADAV/Zcp1BcnC37ugreUwM/E4Q==}
+  '@milaboratories/software-pframes-conv@2.0.4':
+    resolution: {integrity: sha512-GUGa5SK1mJtpkrzFMq6hd/0e/b8qHSYfTz9b5I4gJnLEPLFSDExHw8YAqEG/le0c6f9zIY4TKNZtjPGy7wRT9w==}
 
   '@milaboratories/tengo-tester@1.4.5':
     resolution: {integrity: sha512-zkSlRlQKZRv1TXicCSeOGhGDdinUfJ7BsIww0AVz7bS6q2vOTaVy9DONlvOk+5ntIOClzFhlozYVj0algea3rA==}
@@ -962,8 +962,8 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@platforma-open/milaboratories.software-small-binaries@1.14.5':
-    resolution: {integrity: sha512-zfLLCu6Bv7yDcu8pFOUiP4v1dvSCDRjAGlzYuiNJ0IAxgC85+GUWuD0Pu7+NO/MaKQ2hrUPHhgJjzByAI/vM1w==}
+  '@platforma-open/milaboratories.software-small-binaries@1.14.6':
+    resolution: {integrity: sha512-d7cbFNHb6/1O4wWNlvjTVlTTsIelafnt/niAe8AZNjxoM0ivbE8bR4jnTUXaXwURjUzwV/LI5sk39kJelZxsMA==}
 
   '@platforma-sdk/block-tools@2.3.25':
     resolution: {integrity: sha512-U908yTA6HM21pdZnOwumEQ2uSPzmbih/dMZI/VcqmNEGgnNf9nMyDomTffLLTkAb2xGWMLIm0DR3qZUsevVKXg==}
@@ -985,8 +985,9 @@ packages:
   '@platforma-sdk/ui-vue@1.10.18':
     resolution: {integrity: sha512-5nkVrMXDxSbk2o7lENMeM6CEBQEs+OhVJ5P/sNJetUN217JPjeZCo+ErheZGbom2ip8fImsG6lrOyMLpFAktDw==}
 
-  '@platforma-sdk/workflow-tengo@2.2.0':
-    resolution: {integrity: sha512-ZT+nRZhVFXnnl1TDlAAHdeLNLohLrbVk/vqUM0fKCVZvdKzyRiVGG+hKwwGjDHb7z1kZ5rasrE6a0vCXyuV+Fw==}
+  '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
+    resolution: {integrity: sha512-X4AEJhyAtyKfa/TqPDyuZlEtPpQIkPpLKcAHVlw6GiipTme6WxVzvhkCUoknYs4SKeMB6B7ObaKROwrDIaNMZg==, tarball: file:../../core/platforma/sdk/workflow-tengo/package.tgz}
+    version: 2.2.1
 
   '@protobuf-ts/grpc-transport@2.9.4':
     resolution: {integrity: sha512-CgjTR3utmkMkkThpfgtOz9tNR9ZARbNoQYL7TCKqFU2sgAX0LgzAkwOx+sfgtUsZn9J08+yvn307nNJdYocLRA==}
@@ -4049,7 +4050,7 @@ snapshots:
       '@milaboratories/ts-helpers': 1.1.1
       '@platforma-sdk/block-tools': 2.3.25
       '@platforma-sdk/model': 1.10.2
-      '@platforma-sdk/workflow-tengo': 2.2.0
+      '@platforma-sdk/workflow-tengo': file:../../core/platforma/sdk/workflow-tengo/package.tgz
       canonicalize: 2.0.0
       denque: 2.1.0
       lru-cache: 11.0.2
@@ -4086,7 +4087,7 @@ snapshots:
 
   '@milaboratories/resolve-helper@1.0.1': {}
 
-  '@milaboratories/software-pframes-conv@2.0.1': {}
+  '@milaboratories/software-pframes-conv@2.0.4': {}
 
   '@milaboratories/tengo-tester@1.4.5': {}
 
@@ -4141,7 +4142,7 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@platforma-open/milaboratories.software-small-binaries@1.14.5': {}
+  '@platforma-open/milaboratories.software-small-binaries@1.14.6': {}
 
   '@platforma-sdk/block-tools@2.3.25':
     dependencies:
@@ -4234,10 +4235,10 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@platforma-sdk/workflow-tengo@2.2.0':
+  '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
     dependencies:
-      '@milaboratories/software-pframes-conv': 2.0.1
-      '@platforma-open/milaboratories.software-small-binaries': 1.14.5
+      '@milaboratories/software-pframes-conv': 2.0.4
+      '@platforma-open/milaboratories.software-small-binaries': 1.14.6
 
   '@protobuf-ts/grpc-transport@2.9.4(@grpc/grpc-js@1.12.2)':
     dependencies:
