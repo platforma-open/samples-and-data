@@ -348,30 +348,17 @@ const canCreateOrAdd = computed(
 </script>
 
 <template>
-  <PlDialogModal v-model="data.datasetDialogOpened" width="70%">
+  <PlDialogModal v-model="data.datasetDialogOpened" width="70%" :close-on-outside-click="false">
     <template #title>Import files</template>
 
     <PlBtnGroup v-model="data.mode" :options="modesOptions" />
 
     <PlRow alignCenter>
-      <PlTextField
-        v-if="data.mode === 'create-new-dataset'"
-        label="Dataset Name"
-        v-model="data.newDatasetLabel"
-        class="flex-grow-1"
-      />
-      <PlDropdown
-        v-else
-        v-model="data.targetAddDataset"
-        :options="addToExistingOptions"
-        class="flex-grow-1"
-      />
-      <PlBtnGroup
-        :model-value="JSON.stringify(data.readIndices)"
-        :style="{ width: '200px' }"
-        @update:model-value="(v) => (data.readIndices = JSON.parse(v))"
-        :options="readIndicesOptions"
-      />
+      <PlTextField v-if="data.mode === 'create-new-dataset'" label="Dataset Name" v-model="data.newDatasetLabel"
+        class="flex-grow-1" />
+      <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" />
+      <PlBtnGroup :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
+        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" :options="readIndicesOptions" />
       <PlCheckbox v-model="data.gzipped"> Gzipped </PlCheckbox>
     </PlRow>
 
@@ -382,15 +369,11 @@ const canCreateOrAdd = computed(
     <PlBtnSecondary @click="() => (data.fileDialogOpened = true)"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary
-        :disabled="!canCreateOrAdd"
-        @click="
+      <PlBtnPrimary :disabled="!canCreateOrAdd" @click="
           {
-            createOrAdd();
-          }
-        "
-        :loading="data.importing"
-      >
+        createOrAdd();
+      }
+        " :loading="data.importing">
         {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
       </PlBtnPrimary>
 
@@ -398,15 +381,10 @@ const canCreateOrAdd = computed(
     </template>
   </PlDialogModal>
 
-  <PlFileDialog
-    v-model="data.fileDialogOpened"
-    :multi="true"
-    title="Select files to import"
-    @import:files="
-      (e) => {
+  <PlFileDialog v-model="data.fileDialogOpened" :close-on-outside-click="false" :multi="true"
+    title="Select files to import" @import:files="(e) => {
         addFiles(e.files);
         data.datasetDialogOpened = true;
       }
-    "
-  />
+      " />
 </template>
