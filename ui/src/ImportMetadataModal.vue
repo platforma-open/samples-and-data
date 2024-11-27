@@ -152,6 +152,7 @@ function runImport() {
 <template>
   <PlDialogModal
     :model-value="true"
+    :close-on-outside-click="false"
     closable
     @update:model-value="
       (v) => {
