@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.13.1
+
+### Patch Changes
+
+- ef21209: Prevent import dialog close if clicked outside.
+
 ## 1.13.0
 
 ### Minor Changes
