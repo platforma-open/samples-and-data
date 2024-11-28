@@ -25,7 +25,8 @@ import {
   PlBtnGhost,
   PlBtnPrimary,
   PlDialogModal,
-  PlMaskIcon24
+  PlMaskIcon24,
+  PlEditableTitle,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
@@ -323,10 +324,12 @@ const gridOptions: GridOptions<MetadataRow> = {
 
 <template>
   <PlBlockPage>
-    <template #title>Samples & Metadata</template>
+    <template #title>
+      <PlEditableTitle max-width="600px" placeholder="Samples & Data" :max-length="40" v-model="app.model.args.blockTitle" />
+    </template>
     <template #append>
       <PlBtnGhost @click.stop="() => (showImportDataset = true)">
-        Import sequecing data
+        Import sequencing data
         <template #append>
           <PlMaskIcon24 name="dna-import" />
         </template>
