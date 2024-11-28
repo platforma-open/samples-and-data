@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.13.2
+
+### Patch Changes
+
+- d142efb: \*.fq extension support for FASTA files
+- c2545a2: Block-wide upload progress
+- 8a0fc95: Editable title
+
 ## 1.13.1
 
 ### Patch Changes
