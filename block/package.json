@@ -28,10 +28,10 @@
       "url": "https://github.com/platforma-open/samples-and-data",
       "docs": "https://github.com/platforma-open/samples-and-data/docs",
       "support": "mailto:support@milaboratories.com",
-      "description": "Allows to create samples, specify sample meta information and link samples to sequencing data",
+      "description": "In most projects, this is the first block you will need to add. Here, you can create multiple datasets of samples from your raw sequencing data in FASTQ or FASTA format and attach metadata to them. The output of this block is used by other blocks that require raw sequencing data as input.",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:../CHANGELOG.md",
-      "tags": [],
+      "tags": ["General","FASTQ", "FASTA", "Metadata","Samples"],
       "organization": {
         "name": "MiLaboratories Inc",
         "url": "https://milaboratories.com/",
