@@ -294,7 +294,7 @@ const wellKnownPattern: WellKnownPattern[] = [
   {
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: [],
-    extensions: ['fasta', 'fa', 'fasta.gz', 'fa.gz'],
+    extensions: ['fasta', 'fa', 'fq', 'fasta.gz', 'fa.gz'],
     minimalPercent: 0.7
   },
   {
