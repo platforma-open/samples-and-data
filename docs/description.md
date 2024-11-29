@@ -1,4 +1,3 @@
 # Overview
 
-This block allows to create samples and link samples with meta information.
-
+Import raw sequencing data and assign metadata to your samples.
