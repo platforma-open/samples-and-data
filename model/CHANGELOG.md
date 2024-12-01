@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.8.1
+
+### Patch Changes
+
+- cdb6867: Update sdk model, ui-vue, test
+
 ## 1.8.0
 
 ### Minor Changes
