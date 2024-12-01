@@ -240,67 +240,67 @@ const wellKnownPattern: WellKnownPattern[] = [
   {
     patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}_{{n}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}_{{n}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}_{{n}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}_L{{n}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.49
   },
   {
     patternWithoutExtension: '{{Sample}}_{{RR}}_{{*}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.9
   },
   {
     patternWithoutExtension: '{{Sample}}_{{R}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.9
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.9
   },
   {
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: [],
-    extensions: ['fasta', 'fa', 'fq', 'fasta.gz', 'fa.gz'],
+    extensions: ['fasta', 'fa', 'fasta.gz', 'fa.gz'],
     minimalPercent: 0.7
   },
   {
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz'],
+    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
     minimalPercent: 0.99
   }
 ];

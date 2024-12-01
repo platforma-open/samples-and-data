@@ -107,11 +107,11 @@ const columnDefs = computed(() => {
       cellRendererSelector: (params) =>
         params.data?.sample
           ? {
-              component: 'PlAgCellFile',
-              params: {
-                extensions: dataset.value.content.gzipped ? ['fastq.gz'] : ['fastq']
-              }
+            component: 'PlAgCellFile',
+            params: {
+              extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq']
             }
+          }
           : undefined,
       valueGetter: (params) =>
         params.data?.sample
@@ -177,12 +177,6 @@ const gridOptions: GridOptions<FastqDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue
-    :theme="AgGridTheme"
-    :style="{ height: '100%' }"
-    :rowData="rowData"
-    :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs"
-    :gridOptions="gridOptions"
-  />
+  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs" :gridOptions="gridOptions" />
 </template>

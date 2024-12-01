@@ -80,7 +80,7 @@ const columnDefs = computed(() => {
 
       cellRenderer: 'PlAgCellFile',
       cellRendererParams: {
-        extensions: dataset.value.content.gzipped ? ['fastq.gz'] : ['fastq'],
+        extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
           const progresses = app.progresses;
           if (!fileHandle) return undefined;
@@ -98,9 +98,9 @@ const columnDefs = computed(() => {
         const lane = params.data.lane;
         dataset.update(
           (ds) =>
-            (ds.content.data[sample]![lane]![readIndex] = params.newValue
-              ? params.newValue
-              : undefined)
+          (ds.content.data[sample]![lane]![readIndex] = params.newValue
+            ? params.newValue
+            : undefined)
         );
         return true;
       },
@@ -157,11 +157,6 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue
-    :theme="AgGridTheme"
-    :style="{ height: '100%' }"
-    :rowData="rowData"
-    :columnDefs="columnDefs"
-    :gridOptions="gridOptions"
-  />
+  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs"
+    :gridOptions="gridOptions" />
 </template>
