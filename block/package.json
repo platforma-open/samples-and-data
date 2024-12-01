@@ -28,10 +28,10 @@
       "url": "https://github.com/platforma-open/samples-and-data",
       "docs": "https://github.com/platforma-open/samples-and-data/docs",
       "support": "mailto:support@milaboratories.com",
-      "description": "Allows to create samples, specify sample meta information and link samples to sequencing data",
+      "description": "Import raw sequencing data and assign metadata to your samples.",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:../CHANGELOG.md",
-      "tags": [],
+      "tags": ["General","FASTQ", "FASTA", "Metadata","Samples"],
       "organization": {
         "name": "MiLaboratories Inc",
         "url": "https://milaboratories.com/",
