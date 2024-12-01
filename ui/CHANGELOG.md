@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.13.3
+
+### Patch Changes
+
+- cdb6867: Update sdk model, ui-vue, test
+- 21ee8ce: \*.fq file support fix
+
 ## 1.13.2
 
 ### Patch Changes
