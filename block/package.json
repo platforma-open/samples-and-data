@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data",
-  "version": "1.8.3",
+  "version": "1.8.4",
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "rm -rf block-pack && block-tools pack",
@@ -31,7 +31,13 @@
       "description": "Import raw sequencing data and assign metadata to your samples.",
       "longDescription": "file:../docs/description.md",
       "changelog": "file:../CHANGELOG.md",
-      "tags": ["General","FASTQ", "FASTA", "Metadata","Samples"],
+      "tags": [
+        "General",
+        "FASTQ",
+        "FASTA",
+        "Metadata",
+        "Samples"
+      ],
       "organization": {
         "name": "MiLaboratories Inc",
         "url": "https://milaboratories.com/",

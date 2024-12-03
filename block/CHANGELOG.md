@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.8.4
+
+### Patch Changes
+
+- aa1dd4e: SDK upgrade: new registry format
+- Updated dependencies [aa1dd4e]
+  - @platforma-open/milaboratories.samples-and-data.model@1.8.2
+  - @platforma-open/milaboratories.samples-and-data.ui@1.13.4
+  - @platforma-open/milaboratories.samples-and-data.workflow@1.9.1
+
 ## 1.8.3
 
 ### Patch Changes
