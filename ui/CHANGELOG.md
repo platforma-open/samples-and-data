@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.13.4
+
+### Patch Changes
+
+- aa1dd4e: SDK upgrade: new registry format
+
 ## 1.13.3
 
 ### Patch Changes
