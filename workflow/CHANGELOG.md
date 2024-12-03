@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.9.1
+
+### Patch Changes
+
+- aa1dd4e: SDK upgrade: new registry format
+
 ## 1.9.0
 
 ### Minor Changes
