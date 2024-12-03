@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.8.5
+
+### Patch Changes
+
+- 9cb6700: block-tools upgrade, block publication fix, mark-stable cmd
+
 ## 1.8.4
 
 ### Patch Changes
