@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.8.6
+
+### Patch Changes
+
+- 0f501b9: Update ui-vue (FileDialog selection supports Ctrl on Windows/Linux)
+- Updated dependencies [0f501b9]
+  - @platforma-open/milaboratories.samples-and-data.ui@1.13.5
+
 ## 1.8.5
 
 ### Patch Changes
