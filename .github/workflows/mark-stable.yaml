@@ -10,6 +10,8 @@ jobs:
           version-canonize: false
           branch-versioning: main
   run:
+    needs:
+      - init
     uses: milaboratory/github-ci/.github/workflows/block-mark-stable.yaml@v4-beta
     with:
       app-name: 'Block: Samples & Data - Mark Stable'
