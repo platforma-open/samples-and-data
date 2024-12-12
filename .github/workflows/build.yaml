@@ -34,6 +34,7 @@ jobs:
 
       publish-to-public: 'true'
       package-path: 'block'
+      create-tag: 'true'
 
       npmrc-config: |
         {
