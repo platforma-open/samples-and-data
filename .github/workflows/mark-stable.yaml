@@ -2,6 +2,13 @@ name: Mark Platforma Block as Stable
 on:
   workflow_dispatch: {}
 jobs:
+  init:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: milaboratory/github-ci/actions/context/init@v4
+        with:
+          version-canonize: false
+          branch-versioning: main
   run:
     uses: milaboratory/github-ci/.github/workflows/block-mark-stable.yaml@v4-beta
     with:
