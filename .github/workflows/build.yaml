@@ -1,5 +1,6 @@
 name: Build, Test and Release Platforma Block
 on:
+  merge_group:
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
@@ -19,7 +20,7 @@ jobs:
   run:
     needs:
       - init
-    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4-beta
+    uses: milaboratory/github-ci/.github/workflows/node-simple-pnpm.yaml@v4
     with:
       app-name: 'Block: Samples & Data'
       app-name-slug: 'block-samples-and-data'
