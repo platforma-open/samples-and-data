@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.8.8
+
+### Patch Changes
+
+- bd53d5f: chore: bump version
+
 ## 1.8.7
 
 ### Patch Changes
