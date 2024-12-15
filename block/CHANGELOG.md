@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.9.0
+
+### Minor Changes
+
+- f398a4c: chore: bump version
+
 ## 1.8.8
 
 ### Patch Changes
