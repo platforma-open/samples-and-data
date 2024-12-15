@@ -6,7 +6,7 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': ^2.4.3
+  '@platforma-sdk/block-tools': ^2.5.0
   '@platforma-sdk/model': ^1.14.1
   '@platforma-sdk/ui-vue': ^1.14.20
   '@platforma-sdk/tengo-builder': ^1.17.3
