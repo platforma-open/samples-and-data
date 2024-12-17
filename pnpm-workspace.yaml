@@ -7,13 +7,13 @@ packages:
 
 catalog:
   '@platforma-sdk/block-tools': ^2.5.0
-  '@platforma-sdk/model': ^1.14.1
-  '@platforma-sdk/ui-vue': ^1.14.20
-  '@platforma-sdk/tengo-builder': ^1.17.3
-  '@platforma-sdk/workflow-tengo': ^2.6.0
+  '@platforma-sdk/model': ^1.20.11
+  '@platforma-sdk/ui-vue': ^1.20.21
+  '@platforma-sdk/tengo-builder': ^1.17.4
+  '@platforma-sdk/workflow-tengo': ^2.8.4
 
   '@platforma-sdk/test': ^1.14.10
-  '@milaboratories/helpers': ^1.6.8
+  '@milaboratories/helpers': ^1.6.11
 
   'vue': ^3.5.13
   'vue-tsc': ^2.1.6
@@ -31,15 +31,8 @@ catalog:
 
   '@vueuse/core': ^12.0.0
 
-  '@ag-grid-community/core': &ag-grid ^32.3.3
-  '@ag-grid-community/client-side-row-model': *ag-grid
-  '@ag-grid-community/vue3': *ag-grid
-  '@ag-grid-community/styles': *ag-grid
-  '@ag-grid-enterprise/core': *ag-grid
-  '@ag-grid-enterprise/rich-select': *ag-grid
-  '@ag-grid-enterprise/menu': *ag-grid
-  '@ag-grid-enterprise/clipboard': *ag-grid
-  '@ag-grid-enterprise/range-selection': *ag-grid
+  'ag-grid-enterprise': &ag-grid ^33.0.2
+  'ag-grid-vue3': *ag-grid
 
   '@changesets/cli': ^2.27.10
 
