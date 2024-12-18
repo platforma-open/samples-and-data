@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.14.0
+
+### Minor Changes
+
+- d775001: Update AgGrid and add row number column
+
 ## 1.13.5
 
 ### Patch Changes
