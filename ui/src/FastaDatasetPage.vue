@@ -1,21 +1,17 @@
 <script setup lang="ts">
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
-  ColDef,
+  ClientSideRowModelModule, ColDef,
   GridApi,
   GridOptions,
   IRichCellEditorParams,
-  IRowNode,
-  ModuleRegistry
-} from '@ag-grid-community/core';
-import { MenuModule } from '@ag-grid-enterprise/menu';
-import { RichSelectModule } from '@ag-grid-enterprise/rich-select';
+  IRowNode, MenuModule, ModuleRegistry, RichSelectModule
+} from 'ag-grid-enterprise';
 
-import { AgGridVue } from '@ag-grid-community/vue3';
+import { AgGridVue } from 'ag-grid-vue3';
 
 import { DatasetFasta, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, PlAgCellFile } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
@@ -46,7 +42,7 @@ const dataset = argsModel(app, {
 
 const unusedIds = () => {
   const usedIds = new Set(Object.keys(dataset.value.content.data));
-  return app.args.sampleIds.filter((id) => !usedIds.has(id));
+  return app.model.args.sampleIds.filter((id) => !usedIds.has(id));
 };
 
 const rowData = computed(() => {
@@ -65,8 +61,9 @@ const defaultColDef: ColDef = {
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.args.sampleLabels;
+  const sampleLabels = app.model.args.sampleLabels;
   const res: ColDef<FastaDatasetRow>[] = [
+    makeRowNumberColDef(),
     {
       headerName: app.model.args.sampleLabelColumnLabel,
       flex: 1,
@@ -108,11 +105,11 @@ const columnDefs = computed(() => {
     cellRendererSelector: (params) =>
       params.data?.sample
         ? {
-            component: 'PlAgCellFile',
-            params: {
-              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
-            }
+          component: 'PlAgCellFile',
+          params: {
+            extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
           }
+        }
         : undefined,
     valueGetter: (params) =>
       params.data?.sample
@@ -175,12 +172,6 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue
-    :theme="AgGridTheme"
-    :style="{ height: '100%' }"
-    :rowData="rowData"
-    :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs"
-    :gridOptions="gridOptions"
-  />
+  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs" :gridOptions="gridOptions" />
 </template>

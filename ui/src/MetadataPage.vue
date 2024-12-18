@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
-  ColDef,
-  GridApi,
-  GridOptions,
-  GridReadyEvent,
-  IRowNode,
+  ClientSideRowModelModule,
+  type ColDef,
+  type GridApi,
+  type GridOptions,
+  type GridReadyEvent,
+  type IRowNode,
+  MenuModule,
   ModuleRegistry
-} from '@ag-grid-community/core';
+} from 'ag-grid-enterprise';
+import { AgGridVue } from 'ag-grid-vue3';
 
-import { AgGridVue } from '@ag-grid-community/vue3';
-
-import { MenuModule } from '@ag-grid-enterprise/menu';
 import { notEmpty } from '@milaboratories/helpers';
 import {
   MetadataColumnValueType,
@@ -20,13 +19,14 @@ import {
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import {
   AgGridTheme,
+  makeRowNumberColDef,
   PlAgOverlayNoRows,
   PlBlockPage,
   PlBtnGhost,
   PlBtnPrimary,
   PlDialogModal,
-  PlMaskIcon24,
   PlEditableTitle,
+  PlMaskIcon24
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
@@ -67,14 +67,6 @@ const onGridReady = (params: GridReadyEvent) => {
   gridApi.value = params.api;
 };
 
-async function addRow() {
-  const sampleId = uniquePlId();
-  await app.updateArgs((arg) => {
-    arg.sampleIds.push(sampleId);
-    arg.sampleLabels[sampleId] = `New Sample (${Object.values(arg.sampleLabels).length})`;
-  });
-}
-
 async function addColumn(valueType: MetadataColumnValueType) {
   const metaColumnId = uniquePlId();
   await app.updateArgs((arg) => {
@@ -89,7 +81,7 @@ async function addColumn(valueType: MetadataColumnValueType) {
 }
 
 async function deleteMetaColumn(metaColumnId: string) {
-  const metaColumnIdx = app.args.metadata.findIndex((mCol) => mCol.id === metaColumnId);
+  const metaColumnIdx = app.model.args.metadata.findIndex((mCol) => mCol.id === metaColumnId);
   await app.updateArgs((arg) => {
     arg.metadata.splice(metaColumnIdx, 1);
   });
@@ -148,14 +140,15 @@ async function deleteSamples(sampleIds: PlId[]) {
 }
 
 const columnDefs = computed<ColDef[]>(() => [
+  { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
   {
     colId: 'label',
     field: 'label',
     editable: true,
-    headerName: app.args.sampleLabelColumnLabel,
+    headerName: app.model.args.sampleLabelColumnLabel,
     initialWidth: 200,
     flex: 1,
-    suppressMenu: true
+    suppressHeaderMenuButton: true
   },
   {
     colId: 'datasets',
@@ -169,10 +162,10 @@ const columnDefs = computed<ColDef[]>(() => [
       }
     }),
     // flex: 1,
-    suppressMenu: true,
+    suppressHeaderMenuButton: true,
     width: 200
   },
-  ...app.args.metadata.map((mCol): ColDef => {
+  ...app.model.args.metadata.map((mCol): ColDef => {
     const common: ColDef = {
       colId: `meta.${mCol.id}`,
       field: `meta.${mCol.id}`,
@@ -217,7 +210,7 @@ const columnDefs = computed<ColDef[]>(() => [
 
 const rowData = computed<MetadataRow[]>(() => {
   const samples2ds: Record<string, string[]> = {};
-  for (const ds of app.args.datasets) {
+  for (const ds of app.model.args.datasets) {
     for (const sId of Object.keys(ds.content.data)) {
       if (samples2ds[sId] === undefined) {
         samples2ds[sId] = [];
@@ -226,10 +219,10 @@ const rowData = computed<MetadataRow[]>(() => {
     }
   }
 
-  return app.args.sampleIds.map((id) => ({
+  return app.model.args.sampleIds.map((id) => ({
     id,
-    label: app.args.sampleLabels[id]!,
-    meta: Object.fromEntries(app.args.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
+    label: app.model.args.sampleLabels[id]!,
+    meta: Object.fromEntries(app.model.args.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
     datasets: samples2ds[id]
   }));
 });
@@ -271,7 +264,10 @@ const gridOptions: GridOptions<MetadataRow> = {
   },
 
   getMainMenuItems: (params) => {
-    const columnId = params.column.getId();
+    const columnId = params?.column?.getId();
+    if (!columnId) {
+      return [];
+    }
     if (columnId === 'add') {
       return [
         {
@@ -291,7 +287,7 @@ const gridOptions: GridOptions<MetadataRow> = {
       const metaColumnId = columnId.slice(5);
       return [
         {
-          name: `Delete ${params.column.getColDef().headerName}`,
+          name: `Delete ${params?.column?.getColDef().headerName}`,
           action: (params) => deleteMetaColumn(metaColumnId)
         }
       ];
@@ -306,7 +302,7 @@ const gridOptions: GridOptions<MetadataRow> = {
       {
         name: `Delete ${targetSamples.length > 1
           ? `${targetSamples.length} samples`
-          : app.args.sampleLabels[targetSamples[0]]
+          : app.model.args.sampleLabels[targetSamples[0]]
           }`,
         action: (params) => {
           const samplesToDelete = getSelectedSamples(params.node);
@@ -325,7 +321,8 @@ const gridOptions: GridOptions<MetadataRow> = {
 <template>
   <PlBlockPage>
     <template #title>
-      <PlEditableTitle max-width="600px" placeholder="Samples & Data" :max-length="40" v-model="app.model.args.blockTitle" />
+      <PlEditableTitle max-width="600px" placeholder="Samples & Data" :max-length="40"
+        v-model="app.model.args.blockTitle" />
     </template>
     <template #append>
       <PlBtnGhost @click.stop="() => (showImportDataset = true)">

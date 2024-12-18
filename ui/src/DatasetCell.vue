@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ICellRendererParams } from '@ag-grid-community/core';
 import { PlChip } from '@platforma-sdk/ui-vue';
+import { ICellRendererParams } from 'ag-grid-enterprise';
 import { computed } from 'vue';
 
 const props = defineProps<{
