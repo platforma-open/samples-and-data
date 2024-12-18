@@ -73,13 +73,13 @@ watch(
 type ImportMode = 'create-new-dataset' | 'add-to-existing';
 
 function inferNewDatasetLabel() {
-  let i = app.args.datasets.length + 1;
+  let i = app.model.args.datasets.length + 1;
   while (i < 1000) {
     let label = 'My Dataset';
     if (i > 0) {
       label = label + ` (${i})`;
     }
-    if (app.args.datasets.findIndex((d) => d.label === label) === -1) return label;
+    if (app.model.args.datasets.findIndex((d) => d.label === label) === -1) return label;
     ++i;
   }
   return 'New Dataset';

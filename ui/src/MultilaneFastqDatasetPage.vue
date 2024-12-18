@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ColDef, GridApi, GridOptions, IRowNode } from '@ag-grid-community/core';
+import { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
 
-import { AgGridVue } from '@ag-grid-community/vue3';
+import { AgGridVue } from 'ag-grid-vue3';
 
 import {
   DatasetMultilaneFastq,
@@ -10,7 +10,7 @@ import {
   PlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, PlAgCellFile } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
@@ -54,9 +54,14 @@ const rowData = computed(() => {
 
 const readIndices = computed(() => dataset.value.content.readIndices);
 
+const defaultColDef: ColDef = {
+  suppressHeaderMenuButton: true
+};
+
 const columnDefs = computed(() => {
   const sampleLabels = app.model.args.sampleLabels;
   const res: ColDef<MultilaneFastaDatasetRow>[] = [
+    makeRowNumberColDef(),
     {
       headerName: app.model.args.sampleLabelColumnLabel,
       flex: 1,
@@ -158,5 +163,5 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
 
 <template>
   <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs"
-    :gridOptions="gridOptions" />
+    :defaultColDef="defaultColDef" :gridOptions="gridOptions" />
 </template>
