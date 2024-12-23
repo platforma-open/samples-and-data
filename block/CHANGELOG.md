@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.9.2
+
+### Patch Changes
+
+- 9e94c45: chore: update marketplace score
+
 ## 1.9.1
 
 ### Patch Changes
