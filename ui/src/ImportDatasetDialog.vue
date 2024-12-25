@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   BlockArgs,
+  DatasetAny,
   DatasetContentFasta,
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
@@ -10,6 +11,7 @@ import {
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
 import {
+  ListOption,
   PlBtnGhost,
   PlBtnGroup,
   PlBtnPrimary,
@@ -31,10 +33,22 @@ import {
 } from './file_name_parser';
 import ParsedFilesList from './ParsedFilesList.vue';
 import { ParsedFile } from './types';
+import { a } from 'vitest/dist/chunks/suite.B2jumIFP.js';
 
 const app = useApp();
 
 const emit = defineEmits<{ onClose: [] }>();
+
+const props = defineProps<{
+  targetDataset?: PlId
+}>()
+
+const presetTargetDataset = computed(() => {
+  if (props.targetDataset === undefined) return undefined;
+  return app.model.args.datasets.find(ds => ds.id === props.targetDataset)
+})
+
+const fixedSettings = computed(() => presetTargetDataset.value !== undefined)
 
 let closed = false;
 function doClose() {
@@ -43,15 +57,28 @@ function doClose() {
   emit('onClose');
 }
 
+const initialData = presetTargetDataset.value === undefined
+  ? {
+    mode: 'create-new-dataset' as ImportMode,
+    targetAddDataset: undefined,
+    gzipped: false,
+    readIndices: ['R1'] as string[],
+  }
+  : {
+    mode: 'add-to-existing' as ImportMode,
+    targetAddDataset: presetTargetDataset.value.id,
+    gzipped: presetTargetDataset.value.content.gzipped,
+    readIndices: presetTargetDataset.value.content.type === 'Fastq' || presetTargetDataset.value.content.type === 'MultilaneFastq'
+      ? presetTargetDataset.value.content.readIndices
+      : [] as string[],
+  }
+
 const data = reactive({
-  mode: 'create-new-dataset' as ImportMode,
+  ...initialData,
   files: [] as ImportFileHandle[],
 
   newDatasetLabel: inferNewDatasetLabel(),
-  targetAddDataset: undefined as PlId | undefined,
 
-  gzipped: false,
-  readIndices: ['R1'] as string[],
   pattern: '',
 
   fileDialogOpened: true,
@@ -109,10 +136,24 @@ watch(
   { immediate: true }
 );
 
+function getDsReadIndices(ds: DatasetAny): string[] {
+  const c = ds.content;
+  switch (c.type) {
+    case 'Fastq':
+    case 'MultilaneFastq':
+      return c.readIndices;
+    case 'Fasta':
+      return [];
+  }
+}
+
 function addFiles(files: ImportFileHandle[]) {
   const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
   if (data.files.length === 0) {
-    const inferedPattern = inferFileNamePattern(fileNames);
+    const pds = presetTargetDataset.value;
+    const inferedPattern = pds !== undefined
+      ? inferFileNamePattern(fileNames, { expectedReadIndices: getDsReadIndices(pds), isGzipped: pds.content.gzipped })
+      : inferFileNamePattern(fileNames);
     if (inferedPattern) {
       data.pattern = inferedPattern.pattern.rawPattern;
       data.gzipped = inferedPattern.extension.endsWith('.gz');
@@ -166,23 +207,25 @@ const modesOptions: SimpleOption<ImportMode>[] = [
   }
 ];
 
-const addToExistingOptions = computed<SimpleOption<PlId>[]>(() => {
+const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   const { gzipped, readIndices } = data;
   return app.model.args.datasets
     .filter(
       (ds) =>
-        compiledPattern.value &&
-        ds.content.type === (compiledPattern.value.hasLaneMatcher ? 'MultilaneFastq' : 'Fastq') &&
-        ds.content.gzipped === gzipped &&
-        JSON.stringify(ds.content.readIndices) === JSON.stringify(readIndices)
+        fixedSettings.value ||
+        (compiledPattern.value &&
+          ds.content.type === (compiledPattern.value.hasLaneMatcher ? 'MultilaneFastq' : 'Fastq') &&
+          ds.content.gzipped === gzipped &&
+          JSON.stringify(ds.content.readIndices) === JSON.stringify(readIndices))
     )
     .map((ds) => ({
       value: ds.id,
-      text: ds.label
+      label: ds.label
     }));
 });
 
 watch(addToExistingOptions, (ops) => {
+  if (data.targetAddDataset && ops.find(o => o.value === data.targetAddDataset)) return;
   if (ops.length === 0) data.targetAddDataset = undefined;
   else data.targetAddDataset = ops[0].value;
 });
@@ -340,6 +383,7 @@ async function createNewDataset() {
 const canCreateOrAdd = computed(
   () =>
     hasMatchedFiles.value &&
+    (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined) &&
     // This prevents selecting fasta as type while having read index matcher in pattern
     (data.readIndices.length !== 0 ||
       (compiledPattern.value?.hasReadIndexMatcher === false &&
@@ -351,15 +395,17 @@ const canCreateOrAdd = computed(
   <PlDialogModal v-model="data.datasetDialogOpened" width="70%" :close-on-outside-click="false">
     <template #title>Import files</template>
 
-    <PlBtnGroup v-model="data.mode" :options="modesOptions" />
+    <PlBtnGroup v-model="data.mode" :options="modesOptions" :disabled="fixedSettings" />
 
     <PlRow alignCenter>
       <PlTextField v-if="data.mode === 'create-new-dataset'" label="Dataset Name" v-model="data.newDatasetLabel"
         class="flex-grow-1" />
-      <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" />
+      <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1"
+        :disabled="fixedSettings" />
       <PlBtnGroup :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
-        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" :options="readIndicesOptions" />
-      <PlCheckbox v-model="data.gzipped"> Gzipped </PlCheckbox>
+        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" :options="readIndicesOptions"
+        :disabled="fixedSettings" />
+      <PlCheckbox v-model="data.gzipped" :disabled="fixedSettings"> Gzipped </PlCheckbox>
     </PlRow>
 
     <PlTextField label="Pattern" v-model="data.pattern" :error="patternError" />
@@ -383,8 +429,8 @@ const canCreateOrAdd = computed(
 
   <PlFileDialog v-model="data.fileDialogOpened" :close-on-outside-click="false" :multi="true"
     title="Select files to import" @import:files="(e) => {
-        addFiles(e.files);
-        data.datasetDialogOpened = true;
-      }
+      addFiles(e.files);
+      data.datasetDialogOpened = true;
+    }
       " />
 </template>

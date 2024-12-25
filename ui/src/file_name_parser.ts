@@ -293,7 +293,7 @@ const wellKnownPattern: WellKnownPattern[] = [
   },
   {
     patternWithoutExtension: '{{Sample}}',
-    defaultReadIndices: [],
+    defaultReadIndices: [], // also serves as a sign of FASTA format
     extensions: ['fasta', 'fa', 'fasta.gz', 'fa.gz'],
     minimalPercent: 0.7
   },
@@ -306,8 +306,8 @@ const wellKnownPattern: WellKnownPattern[] = [
 ];
 
 export type InferFileNamePatternOps = {
-  extension?: string;
-  multipleReadIndices?: boolean;
+  isGzipped?: boolean;
+  expectedReadIndices?: string[];
 };
 
 export type InferFileNamePatternResult = {
@@ -316,15 +316,24 @@ export type InferFileNamePatternResult = {
   readIndices: string[];
 };
 
+function setEquals<T>(a: Set<T>, b: Set<T>): boolean {
+  return a.size === b.size && [...a].every((x) => b.has(x));
+}
+
 export function inferFileNamePattern(
   fileNames: string[],
   ops?: InferFileNamePatternOps
 ): InferFileNamePatternResult | undefined {
   outer: for (const wkPattern of wellKnownPattern) {
-    const extensions = ops?.extension !== undefined ? [ops?.extension] : wkPattern.extensions;
-    for (const extension of extensions) {
+    if (ops?.expectedReadIndices?.length === 0 && wkPattern.defaultReadIndices.length !== 0)
+      // don't consider fasta pattern if non-zero set of read indices is expected
+      continue;
+
+    for (const extension of wkPattern.extensions) {
+      if (ops?.isGzipped !== undefined && extension.endsWith('.gz') !== ops.isGzipped) continue;
+
       const pattern = FileNamePattern.parse(wkPattern.patternWithoutExtension + '.' + extension);
-      if (ops?.multipleReadIndices && !pattern.hasReadIndexMatcher) continue outer;
+
       let matchedFiles = 0;
       const readIndices = pattern.hasReadIndexMatcher ? new Set<string>() : undefined;
       const samples = new Set<string>();
@@ -340,12 +349,21 @@ export function inferFileNamePattern(
           if (readIndices !== undefined) readIndices.add(getWellFormattedReadIndex(match));
         }
       }
+
+      const resultReadIndices =
+        readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
+
+      if (
+        ops?.expectedReadIndices !== undefined &&
+        !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
+      )
+        continue;
+        
       if (matchedFiles / fileNames.length > wkPattern.minimalPercent)
         return {
           pattern,
           extension,
-          readIndices:
-            readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort()
+          readIndices: resultReadIndices
         };
     }
   }
