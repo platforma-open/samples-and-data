@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 1.5.3
+
+### Patch Changes
+
+- 1ff5da1: SDK upgrade
+- Updated dependencies [1ff5da1]
+  - @platforma-open/milaboratories.samples-and-data.model@1.8.3
+
 ## 1.5.2
 
 ### Patch Changes

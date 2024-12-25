@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.15.0
+
+### Minor Changes
+
+- 1ff5da1: Multiple small fixes and improvements
+
+### Patch Changes
+
+- 1ff5da1: SDK upgrade
+
 ## 1.14.0
 
 ### Minor Changes
