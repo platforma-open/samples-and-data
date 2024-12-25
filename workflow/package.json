@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.workflow",
-  "version": "1.9.1",
+  "version": "1.9.2",
   "type": "module",
   "files": [
     "./dist/**/*"
