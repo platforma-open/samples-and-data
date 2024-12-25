@@ -115,10 +115,28 @@ export const DatasetContentMultilaneFastq = z
   .strict();
 export type DatasetContentMultilaneFastq = z.infer<typeof DatasetContentMultilaneFastq>;
 
+export const TaggedDatasetRecord = z.object({
+  lane: z.string(),
+  tags: z.record(z.string(), z.string()),
+  files: FastqFileGroup
+});
+export type TaggedDatasetRecord = z.infer<typeof TaggedDatasetRecord>;
+
+export const DatasetContentTaggedFastq = z
+  .object({
+    type: z.literal('TaggedFastq'),
+    gzipped: z.boolean(),
+    readIndices: z.array(ReadIndex),
+    data: z.record(PlId, z.array(TaggedDatasetRecord))
+  })
+  .strict();
+export type DatasetContentTaggedFastq = z.infer<typeof DatasetContentTaggedFastq>;
+
 export const DatasetContent = z.discriminatedUnion('type', [
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
-  DatasetContentFasta
+  DatasetContentFasta,
+  DatasetContentTaggedFastq
 ]);
 export type DatasetContent = z.infer<typeof DatasetContent>;
 
@@ -137,6 +155,8 @@ export const DatasetFastq = Dataset(DatasetContentFastq);
 export type DatasetFastq = z.infer<typeof DatasetFastq>;
 export const DatasetMultilaneFastq = Dataset(DatasetContentMultilaneFastq);
 export type DatasetMultilaneFastq = z.infer<typeof DatasetMultilaneFastq>;
+export const DatasetTaggedFastq = Dataset(DatasetContentTaggedFastq);
+export type DatasetTaggedFastq = z.infer<typeof DatasetTaggedFastq>;
 
 export type DatasetAny = z.infer<typeof DatasetAny>;
 export type DatasetType = DatasetAny['content']['type'];
