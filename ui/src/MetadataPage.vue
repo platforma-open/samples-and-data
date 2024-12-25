@@ -33,7 +33,7 @@ import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
 import DatasetCell from './DatasetCell.vue';
 import ImportDatasetDialog from './ImportDatasetDialog.vue';
-import ImportModal from './ImportMetadataModal.vue';
+import ImportMetadataModal from './ImportMetadataModal.vue';
 
 const styles = useCssModule();
 
@@ -325,18 +325,12 @@ const gridOptions: GridOptions<MetadataRow> = {
         v-model="app.model.args.blockTitle" />
     </template>
     <template #append>
-      <PlBtnGhost @click.stop="() => (showImportDataset = true)">
+      <PlBtnGhost @click.stop="() => (showImportDataset = true)" icon="dna-import">
         Import sequencing data
-        <template #append>
-          <PlMaskIcon24 name="dna-import" />
-        </template>
       </PlBtnGhost>
       &nbsp;
-      <PlBtnGhost @click.stop="importMetadata">
+      <PlBtnGhost @click.stop="importMetadata" icon="table-import">
         Import metadata
-        <template #append>
-          <PlMaskIcon24 name="table-import" />
-        </template>
       </PlBtnGhost>
     </template>
     <div :style="{ flex: 1 }">
@@ -347,7 +341,7 @@ const gridOptions: GridOptions<MetadataRow> = {
 
   <ImportDatasetDialog v-if="showImportDataset" @on-close="showImportDataset = false" />
 
-  <ImportModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
+  <ImportMetadataModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
     @on-close="data.importCandidate = undefined" />
 
   <PlDialogModal :model-value="data.errorMessage !== undefined" closable @update:model-value="(v) => {

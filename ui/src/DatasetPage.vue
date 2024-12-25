@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ReadIndices } from '@platforma-open/milaboratories.samples-and-data.model';
+import { DatasetType, ReadIndices } from '@platforma-open/milaboratories.samples-and-data.model';
 import {
+  ListOption,
   PlBlockPage,
   PlBtnGhost,
   PlBtnGroup,
@@ -8,6 +9,8 @@ import {
   PlBtnSecondary,
   PlCheckbox,
   PlDialogModal,
+  PlDropdown,
+  PlEditableTitle,
   PlMaskIcon24,
   PlSlideModal,
   PlTextField,
@@ -19,12 +22,14 @@ import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
 import MultilaneFastqDatasetPage from './MultilaneFastqDatasetPage.vue';
 import FastaDatasetPage from './FastaDatasetPage.vue';
+import ImportDatasetDialog from './ImportDatasetDialog.vue';
 
 const app = useApp();
 
 const data = reactive({
   deleteModalOpen: false,
-  settingsOpen: false
+  settingsOpen: false,
+  showImportDataset: false
 });
 
 const datasetId = app.queryParams.id;
@@ -66,18 +71,25 @@ async function deleteTheDataset() {
     );
   });
 }
+
+const datasetTypeOptions: ListOption<DatasetType>[] = [
+  { value: 'Fasta', label: "FASTA" },
+  { value: 'Fastq', label: "FASTQ" },
+  { value: 'MultilaneFastq', label: "Multi-lane FASTQ" },
+]
 </script>
 
 <template>
   <PlBlockPage>
-    <template #title>{{ dataset.value.label }}</template>
+    <template #title>
+      <PlEditableTitle max-width="600px" placeholder="Dataset (1)" :max-length="40" v-model="dataset.value.label" />
+    </template>
     <template #append>
-      <PlBtnGhost @click.stop="() => (data.settingsOpen = true)"
-        >Settings
-        <template #append>
-          <PlMaskIcon24 name="settings" />
-        </template>
+      <PlBtnGhost @click="() => (data.deleteModalOpen = true)" icon="delete-bin">Delete Dataset</PlBtnGhost>
+      <PlBtnGhost @click.stop="() => (data.showImportDataset = true)" icon="dna-import">
+        Add sequencing data
       </PlBtnGhost>
+      <PlBtnGhost @click.stop="() => (data.settingsOpen = true)" icon="settings">Settings</PlBtnGhost>
     </template>
     <template v-if="dataset.value.content.type === 'Fastq'">
       <FastqDatasetPage />
@@ -93,35 +105,25 @@ async function deleteTheDataset() {
   <!-- Settings panel -->
   <PlSlideModal v-model="data.settingsOpen">
     <template #title>Settings</template>
-
-    <PlTextField
-      label="Dataset label"
-      @update:model-value="(v) => dataset.update((ds) => (ds.label = v ?? ''))"
-      :model-value="dataset.value.label"
-    />
-    <PlCheckbox
-      :model-value="dataset.value.content.gzipped"
-      @update:model-value="(v) => dataset.update((ds) => (ds.content.gzipped = v))"
-    >
+    <PlDropdown label="Dataset Type" :options="datasetTypeOptions" :model-value="dataset.value.content.type"
+      :disabled="true" />
+    <PlCheckbox :model-value="dataset.value.content.gzipped"
+      @update:model-value="(v) => dataset.update((ds) => (ds.content.gzipped = v))">
       Gzipped
     </PlCheckbox>
-    <PlBtnGroup
-      v-if="dataset.value.content.type !== 'Fasta'"
-      :model-value="currentReadIndices"
-      @update:model-value="setReadIndices"
-      :options="readIndicesOptions"
-    />
-    <PlBtnSecondary @click="() => (data.deleteModalOpen = true)" icon="delete-bin"
-      >Delete Dataset</PlBtnSecondary
-    >
+    <PlBtnGroup v-if="dataset.value.content.type !== 'Fasta'" :model-value="currentReadIndices"
+      @update:model-value="setReadIndices" :options="readIndicesOptions" />
   </PlSlideModal>
 
   <!-- Delete dataset confirmation dialog -->
   <PlDialogModal v-model="data.deleteModalOpen">
-    <div :style="{ marginBottom: '10px' }">Are you sure?</div>
-    <div class="d-flex gap-4">
+    <template #title>Are you sure?</template>
+    <template #actions>
       <PlBtnPrimary @click="deleteTheDataset">Delete</PlBtnPrimary>
       <PlBtnSecondary @click="() => (data.deleteModalOpen = false)">Cancel</PlBtnSecondary>
-    </div>
+    </template>
   </PlDialogModal>
+
+  <ImportDatasetDialog v-if="data.showImportDataset" :target-dataset="dataset.value.id"
+    @on-close="data.showImportDataset = false" />
 </template>
