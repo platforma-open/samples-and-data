@@ -1,5 +1,5 @@
 import { ImportFileHandle, ValueType } from '@platforma-sdk/model';
-import { ZodAnyDef, ZodSchema, z } from 'zod';
+import { ZodAnyDef, ZodSchema, string, z } from 'zod';
 import { PlId } from './helpers';
 
 export const MetadataValueTypeLong = z.literal('Long') satisfies ZodSchema<ValueType>;
@@ -116,7 +116,7 @@ export const DatasetContentMultilaneFastq = z
 export type DatasetContentMultilaneFastq = z.infer<typeof DatasetContentMultilaneFastq>;
 
 export const TaggedDatasetRecord = z.object({
-  lane: z.string(),
+  lane: z.string().optional(),
   tags: z.record(z.string(), z.string()),
   files: FastqFileGroup
 });
@@ -127,6 +127,8 @@ export const DatasetContentTaggedFastq = z
     type: z.literal('TaggedFastq'),
     gzipped: z.boolean(),
     readIndices: z.array(ReadIndex),
+    hasLanes: z.boolean(),
+    tags: z.string(z.string()),
     data: z.record(PlId, z.array(TaggedDatasetRecord))
   })
   .strict();
@@ -135,8 +137,8 @@ export type DatasetContentTaggedFastq = z.infer<typeof DatasetContentTaggedFastq
 export const DatasetContent = z.discriminatedUnion('type', [
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
-  DatasetContentFasta,
-  DatasetContentTaggedFastq
+  DatasetContentTaggedFastq,
+  DatasetContentFasta
 ]);
 export type DatasetContent = z.infer<typeof DatasetContent>;
 

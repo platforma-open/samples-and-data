@@ -5,6 +5,7 @@ import {
   DatasetContentFasta,
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
+  DatasetContentTaggedFastq,
   PlId,
   ReadIndices,
   uniquePlId
@@ -33,7 +34,7 @@ import {
 } from './file_name_parser';
 import ParsedFilesList from './ParsedFilesList.vue';
 import { ParsedFile } from './types';
-import { a } from 'vitest/dist/chunks/suite.B2jumIFP.js';
+import * as R from 'remeda';
 
 const app = useApp();
 
@@ -296,6 +297,42 @@ function addMultilaneFastqDatasetContent(
       laneGroup = {};
       contentData[sampleId] = laneGroup;
     }
+
+    let fileGroup = laneGroup[lane];
+    if (!fileGroup) {
+      fileGroup = {};
+      laneGroup[lane] = fileGroup;
+    }
+
+    fileGroup[readIndex] = f.handle;
+  }
+}
+
+function addTaggedFastqDatasetContent(
+  args: BlockArgs,
+  contentData: DatasetContentTaggedFastq['data']
+) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+
+  const pattern = compiledPattern.value;
+  if (!pattern)
+    throw new Error('No pattern');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(sample);
+    const lane = f.match.lane?.value;
+    const readIndex = getWellFormattedReadIndex(f.match);
+    const tags = Object.entries(f.match.tags!).map(([tag, v]) => [tag, v.value])
+
+    let sampleRecords = contentData[sampleId];
+    if (!sampleRecords) {
+      sampleRecords = [];
+      contentData[sampleId] = sampleRecords;
+    }
+
+    let sampleRecord = sampleRecords.find(r => r.lane === lane && r.tags);
 
     let fileGroup = laneGroup[lane];
     if (!fileGroup) {
