@@ -13,6 +13,7 @@ export type FileNameGroups<T> = {
   sample: T;
   readIndex?: T;
   lane?: T;
+  tags?: Record<string, T>;
   anyMatchers: T[];
   anyNumberMatchers: T[];
 };
@@ -60,6 +61,10 @@ export class FileNamePattern {
     if (this.groups.readIndex !== undefined)
       result.readIndex = getMatch(match, this.groups.readIndex);
     if (this.groups.lane !== undefined) result.lane = getMatch(match, this.groups.lane);
+    if (this.groups.tags !== undefined)
+      result.tags = Object.fromEntries(
+        Object.entries(this.groups.tags).map(([tag, gi]) => [tag, getMatch(match, gi)])
+      );
     for (const gi of this.groups.anyMatchers) result.anyMatchers!.push(getMatch(match, gi));
     for (const gi of this.groups.anyNumberMatchers)
       result.anyNumberMatchers!.push(getMatch(match, gi));
@@ -67,14 +72,22 @@ export class FileNamePattern {
   }
 
   private static patternElement =
-    /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
+    /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|\*?\:(?<anytag>[a-zA-Z0-9_]+)|n\:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
 
   public static parse(fileNamePattern: string, ops?: FileNamePatternParsingOps): FileNamePattern {
     let regexp = '^';
     let lastIndex = 0;
     let groupCounter = 1;
-    let groups: Partial<FileNameGroups<number>> = { anyMatchers: [], anyNumberMatchers: [] };
-    let rawElements: Partial<FileNameGroups<Range>> = { anyMatchers: [], anyNumberMatchers: [] };
+    let groups: Partial<FileNameGroups<number>> = {
+      tags: {},
+      anyMatchers: [],
+      anyNumberMatchers: []
+    };
+    let rawElements: Partial<FileNameGroups<Range>> = {
+      tags: {},
+      anyMatchers: [],
+      anyNumberMatchers: []
+    };
     function appendInsert(insert: string) {
       regexp += escapeRegExp(insert);
     }
@@ -111,6 +124,18 @@ export class FileNamePattern {
         groups.anyMatchers!.push(groupCounter++);
         regexp += '(.+?)';
         rawElements.anyMatchers!.push(range);
+      } else if (match.groups?.['anytag']) {
+        if (groups.tags === undefined) groups.tags = {};
+        groups.tags[match.groups['anytag']] = groupCounter++;
+        regexp += '(.+?)';
+        if (rawElements.tags === undefined) rawElements.tags = {};
+        rawElements.tags[match.groups['anytag']] = range;
+      } else if (match.groups?.['anynumbertag']) {
+        if (groups.tags === undefined) groups.tags = {};
+        groups.tags[match.groups['anynumbertag']] = groupCounter++;
+        regexp += '([0-9]+)';
+        if (rawElements.tags === undefined) rawElements.tags = {};
+        rawElements.tags[match.groups['anynumbertag']] = range;
       } else if (match.groups!['anynumber']) {
         groups.anyNumberMatchers!.push(groupCounter++);
         regexp += '([0-9]+)';
@@ -358,7 +383,7 @@ export function inferFileNamePattern(
         !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
       )
         continue;
-        
+
       if (matchedFiles / fileNames.length > wkPattern.minimalPercent)
         return {
           pattern,
