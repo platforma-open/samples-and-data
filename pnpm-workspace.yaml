@@ -6,13 +6,13 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': ^2.5.2
-  '@platforma-sdk/model': ^1.21.10
-  '@platforma-sdk/ui-vue': ^1.21.12
+  '@platforma-sdk/block-tools': ^2.5.3
+  '@platforma-sdk/model': ^1.21.20
+  '@platforma-sdk/ui-vue': ^1.21.21
   '@platforma-sdk/tengo-builder': ^1.17.5
-  '@platforma-sdk/workflow-tengo': ^2.9.3
+  '@platforma-sdk/workflow-tengo': ^2.9.6
 
-  '@platforma-sdk/test': ^1.21.14
+  '@platforma-sdk/test': ^1.21.20
   '@milaboratories/helpers': ^1.6.11
 
   'vue': ^3.5.13
@@ -26,7 +26,7 @@ catalog:
   'tsup': ~8.1.2
   'turbo': ^2.3.3
 
-  'vite': ^6.0.5
+  'vite': ^6.0.6
   'vitest': ^2.1.8
   '@vitejs/plugin-vue': ^5.2.1
 
