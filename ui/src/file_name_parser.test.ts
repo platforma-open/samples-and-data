@@ -46,6 +46,23 @@ test.for([
     }
   },
   {
+    pattern: '{{s}}{{n:TAG2}}_{{*:TAG1}}_{{RR}}_L{{n}}.fastq.gz',
+    target: 'FebControl10_sampled_R2_L002.fastq.gz',
+    match: {
+      sample: {
+        value: 'FebControl'
+      },
+      tags: {
+        TAG1: { value: 'sampled' },
+        TAG2: { value: '10' }
+      },
+      readIndex: {
+        value: 'R2'
+      },
+      anyNumberMatchers: [{ value: '002' }]
+    }
+  },
+  {
     pattern: '{{s}}{{R}}L{{n}}.fastq.gz',
     target: 'FebControl10_sampled_R2_L002.fastq.gz',
     match: {
