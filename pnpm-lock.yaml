@@ -45,9 +45,9 @@ catalogs:
     ag-grid-vue3:
       specifier: ^33.0.3
       version: 33.0.3
-    remeda:
-      specifier: ^2.18.0
-      version: 2.19.0
+    radashi:
+      specifier: ^12.3.0
+      version: 12.3.0
     tsup:
       specifier: ~8.1.2
       version: 8.1.2
@@ -176,9 +176,9 @@ importers:
       ag-grid-vue3:
         specifier: 'catalog:'
         version: 33.0.3(vue@3.5.13(typescript@5.5.4))
-      remeda:
+      radashi:
         specifier: 'catalog:'
-        version: 2.19.0
+        version: 12.3.0
       typescript:
         specifier: 'catalog:'
         version: 5.5.4
@@ -2545,6 +2545,10 @@ packages:
 
   quickjs-emscripten@0.31.0:
     resolution: {integrity: sha512-K7Yt78aRPLjPcqv3fIuLW1jW3pvwO21B9pmFOolsjM/57ZhdVXBr51GqJpalgBlkPu9foAvhEAuuQPnvIGvLvQ==}
+    engines: {node: '>=16.0.0'}
+
+  radashi@12.3.0:
+    resolution: {integrity: sha512-ViMnMTF4g+wqL1pp4sMJOEXFydvB+6EsJJOv9/PBVO1lrKbeYNay2ePd6SGrbaBKf1MH+ZpGFx0EwGTElVCWHw==}
     engines: {node: '>=16.0.0'}
 
   read-yaml-file@1.1.0:
@@ -6028,6 +6032,8 @@ snapshots:
       '@jitl/quickjs-wasmfile-release-asyncify': 0.31.0
       '@jitl/quickjs-wasmfile-release-sync': 0.31.0
       quickjs-emscripten-core: 0.31.0
+
+  radashi@12.3.0: {}
 
   read-yaml-file@1.1.0:
     dependencies:

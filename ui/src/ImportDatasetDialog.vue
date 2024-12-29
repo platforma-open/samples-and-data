@@ -34,7 +34,7 @@ import {
 } from './file_name_parser';
 import ParsedFilesList from './ParsedFilesList.vue';
 import { ParsedFile } from './types';
-import * as R from 'remeda';
+import * as _ from 'radashi'
 
 const app = useApp();
 
@@ -142,6 +142,7 @@ function getDsReadIndices(ds: DatasetAny): string[] {
   switch (c.type) {
     case 'Fastq':
     case 'MultilaneFastq':
+    case 'TaggedFastq':
       return c.readIndices;
     case 'Fasta':
       return [];
@@ -324,7 +325,7 @@ function addTaggedFastqDatasetContent(
     const sampleId = getOrCreateSample(sample);
     const lane = f.match.lane?.value;
     const readIndex = getWellFormattedReadIndex(f.match);
-    const tags = Object.entries(f.match.tags!).map(([tag, v]) => [tag, v.value])
+    const tags = _.mapValues(f.match.tags!, v => v.value)
 
     let sampleRecords = contentData[sampleId];
     if (!sampleRecords) {
@@ -332,15 +333,13 @@ function addTaggedFastqDatasetContent(
       contentData[sampleId] = sampleRecords;
     }
 
-    let sampleRecord = sampleRecords.find(r => r.lane === lane && r.tags);
+    let sampleRecord = sampleRecords.find(r => r.lane === lane && _.isEqual(r.tags, tags));
+    if (!sampleRecord)
+      sampleRecords.push(sampleRecord = {
+        tags, lane, files: {}
+      })
 
-    let fileGroup = laneGroup[lane];
-    if (!fileGroup) {
-      fileGroup = {};
-      laneGroup[lane] = fileGroup;
-    }
-
-    fileGroup[readIndex] = f.handle;
+    sampleRecord.files[readIndex] = f.handle;
   }
 }
 
@@ -371,6 +370,7 @@ async function addToExistingDataset() {
 async function createNewDataset() {
   const newDatasetId = uniquePlId();
   await app.updateArgs((args) => {
+    const pattern = compiledPattern.value;
     if (data.readIndices.length === 0 /* fasta */) {
       const contentData: DatasetContentFasta['data'] = {};
       addFastaDatasetContent(args, contentData);
@@ -384,7 +384,23 @@ async function createNewDataset() {
           data: contentData
         }
       });
-    } else if (compiledPattern.value?.hasLaneMatcher) {
+    } else if (pattern?.hasTagMatchers) {
+      const contentData: DatasetContentTaggedFastq['data'] = {};
+      addTaggedFastqDatasetContent(args, contentData);
+
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'TaggedFastq',
+          gzipped: data.gzipped,
+          tags: pattern.tags,
+          hasLanes: pattern.hasLaneMatcher,
+          readIndices: ReadIndices.parse(data.readIndices),
+          data: contentData
+        }
+      });
+    } else if (pattern?.hasLaneMatcher) {
       const contentData: DatasetContentMultilaneFastq['data'] = {};
       addMultilaneFastqDatasetContent(args, contentData);
 

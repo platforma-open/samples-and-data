@@ -23,6 +23,7 @@ import { argsModel } from './lens';
 import MultilaneFastqDatasetPage from './MultilaneFastqDatasetPage.vue';
 import FastaDatasetPage from './FastaDatasetPage.vue';
 import ImportDatasetDialog from './ImportDatasetDialog.vue';
+import TaggedFastqDatasetPage from './TaggedFastqDatasetPage.vue';
 
 const app = useApp();
 
@@ -76,6 +77,7 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
   { value: 'Fasta', label: "FASTA" },
   { value: 'Fastq', label: "FASTQ" },
   { value: 'MultilaneFastq', label: "Multi-lane FASTQ" },
+  { value: 'TaggedFastq', label: "Tagged FASTQ" },
 ]
 </script>
 
@@ -86,7 +88,8 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
     </template>
     <template #append>
       <PlBtnGhost @click="() => (data.deleteModalOpen = true)" icon="delete-bin">Delete Dataset</PlBtnGhost>
-      <PlBtnGhost @click.stop="() => (data.showImportDataset = true)" icon="dna-import">
+      <PlBtnGhost v-if="dataset.value.content.type !== 'TaggedFastq'"
+        @click.stop="() => (data.showImportDataset = true)" icon="dna-import">
         Add sequencing data
       </PlBtnGhost>
       <PlBtnGhost @click.stop="() => (data.settingsOpen = true)" icon="settings">Settings</PlBtnGhost>
@@ -99,6 +102,9 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
     </template>
     <template v-else-if="dataset.value.content.type === 'Fasta'">
       <FastaDatasetPage />
+    </template>
+    <template v-else-if="dataset.value.content.type === 'TaggedFastq'">
+      <TaggedFastqDatasetPage />
     </template>
   </PlBlockPage>
 

@@ -21,7 +21,7 @@
     "utility-types": "catalog:",
     "vue": "catalog:",
     "zod": "catalog:",
-    "lodash": "catalog:",
+    "radashi": "catalog:",
     "xlsx": "../vendor/xlsx-0.20.3.tgz",
     "@vitejs/plugin-vue": "catalog:",
     "@types/node": "catalog:",
