@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.9.0
+
+### Minor Changes
+
+- c0b61eb: Initial implementation for tagged datasets
+
 ## 1.8.3
 
 ### Patch Changes

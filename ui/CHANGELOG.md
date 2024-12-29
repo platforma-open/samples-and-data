@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.16.0
+
+### Minor Changes
+
+- c0b61eb: Initial implementation for tagged datasets
+
 ## 1.15.0
 
 ### Minor Changes

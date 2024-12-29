@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.10.0
+
+### Minor Changes
+
+- c0b61eb: Initial implementation for tagged datasets
+
 ## 1.9.2
 
 ### Patch Changes
