@@ -1,4 +1,5 @@
 import { escapeRegExp } from './util';
+import * as _ from 'radashi';
 
 export type Range = {
   from: number;
@@ -35,12 +36,17 @@ type FileNamePatternParsingOps = {
 export type FileNamePatternMatch = FileNameGroups<Match>;
 
 export class FileNamePattern {
+  public readonly tags: string[];
+
   private constructor(
     private readonly pattern: RegExp,
     private readonly groups: FileNameGroups<number>,
     public readonly rawPattern: string,
     public readonly rawPatternElements: FileNameGroups<Range>
-  ) {}
+  ) {
+    this.tags = this.groups.tags ? Object.keys(this.groups.tags) : [];
+    this.tags.sort();
+  }
 
   public get hasReadIndexMatcher() {
     return this.groups.readIndex !== undefined;
@@ -48,6 +54,10 @@ export class FileNamePattern {
 
   public get hasLaneMatcher() {
     return this.groups.lane !== undefined;
+  }
+
+  public get hasTagMatchers() {
+    return this.groups.tags !== undefined && Object.keys(this.groups.tags).length > 0;
   }
 
   public match(fileName: string): FileNamePatternMatch | undefined {
@@ -62,9 +72,7 @@ export class FileNamePattern {
       result.readIndex = getMatch(match, this.groups.readIndex);
     if (this.groups.lane !== undefined) result.lane = getMatch(match, this.groups.lane);
     if (this.groups.tags !== undefined)
-      result.tags = Object.fromEntries(
-        Object.entries(this.groups.tags).map(([tag, gi]) => [tag, getMatch(match, gi)])
-      );
+      result.tags = _.mapValues(this.groups.tags, (gi) => getMatch(match, gi));
     for (const gi of this.groups.anyMatchers) result.anyMatchers!.push(getMatch(match, gi));
     for (const gi of this.groups.anyNumberMatchers)
       result.anyNumberMatchers!.push(getMatch(match, gi));

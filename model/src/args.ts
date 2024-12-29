@@ -128,7 +128,7 @@ export const DatasetContentTaggedFastq = z
     gzipped: z.boolean(),
     readIndices: z.array(ReadIndex),
     hasLanes: z.boolean(),
-    tags: z.string(z.string()),
+    tags: z.array(z.string()),
     data: z.record(PlId, z.array(TaggedDatasetRecord))
   })
   .strict();

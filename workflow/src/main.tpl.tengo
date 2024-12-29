@@ -177,6 +177,14 @@ wf.body(func(args) {
 			}
 		}
 
+		laneAxisSpec := {
+			type: "String",
+			name: "pl7.app/sequencing/lane",
+			annotations: {
+				"pl7.app/label": "Lane"
+			}
+		}
+
 		fastqDataSpec := maps.deepMerge(columnSpecParent, {
 			domain: {
 				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq"
@@ -205,13 +213,6 @@ wf.body(func(args) {
 				data: data.lockAndBuild()
 			}
 		} else if dataset.content.type == "MultilaneFastq" {
-			laneAxisSpec := {
-				type: "String",
-				name: "pl7.app/sequencing/lane",
-				annotations: {
-					"pl7.app/label": "Lane"
-				}
-			}
 			fastqDataSpec.axesSpec = [sampleIdAxisSpec, laneAxisSpec, readIndexAxisSpec]
 
 			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
@@ -226,6 +227,60 @@ wf.body(func(args) {
 							ll.panic("File handle not set for %v, lane %v in sample %v", readIndex, laneId, sampleId)
 						}
 						data.createInputField(json.encode([sampleId, laneId, readIndex])).set(importFile(importHandle))
+					}
+				}
+			}
+
+			exports[exportKey] = {
+				spec: fastqDataSpec,
+				data: data.lockAndBuild()
+			}
+		} else if dataset.content.type == "TaggedFastq" {
+			axesSpec := [sampleIdAxisSpec]
+			for tag in dataset.content.tags {
+				axesSpec = append(axesSpec, {
+					type: "String",
+					name: "pl7.app/sequencing/tag",
+					domain: {
+						"pl7.app/sequencing/tag": tag
+					},
+					annotations: {
+						"pl7.app/label": tag + " tag"
+					}
+				})
+			}
+			if dataset.content.hasLanes {
+				axesSpec = append(axesSpec, laneAxisSpec)
+			}
+			axesSpec = append(axesSpec, readIndexAxisSpec)
+			fastqDataSpec.axesSpec = axesSpec
+
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: len(axesSpec)
+			}))
+
+			for sampleId, records in dataset.content.data {
+				for record in records {
+					keyPrefix := [sampleId]
+					for tag in dataset.content.tags {
+						tagValue := record.tags[tag]
+						if !tagValue {
+							ll.panic("No tag value for %v in sample %v", tag, sampleId)
+						}
+						keyPrefix = append(keyPrefix, tagValue)
+					}
+					if dataset.content.hasLanes {
+						keyPrefix = append(keyPrefix, record.lane)
+					}
+					for readIndex in dataset.content.readIndices {
+						importHandle := record.files[readIndex]
+						key := maps.clone(keyPrefix)
+						key = append(key, readIndex)
+						key = json.encode(key)
+						if !importHandle {
+							ll.panic("File handle not set for key %v", key)
+						}
+						data.createInputField(key).set(importFile(importHandle))
 					}
 				}
 			}
