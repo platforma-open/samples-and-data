@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.9.5
+
+### Patch Changes
+
+- 2661a83: chore: fix changelog
+
 ## 1.9.4
 
 ### Patch Changes
