@@ -34,108 +34,14 @@ import {
 } from './file_name_parser';
 import ParsedFilesList from './ParsedFilesList.vue';
 import { ParsedFile } from './types';
-import * as _ from 'radashi'
+import * as _ from 'radashi';
 
-const app = useApp();
-
-const emit = defineEmits<{ onClose: [] }>();
-
-const props = defineProps<{
-  targetDataset?: PlId
-}>()
-
-const presetTargetDataset = computed(() => {
-  if (props.targetDataset === undefined) return undefined;
-  return app.model.args.datasets.find(ds => ds.id === props.targetDataset)
-})
-
-const fixedSettings = computed(() => presetTargetDataset.value !== undefined)
-
-let closed = false;
-function doClose() {
-  if (closed) return;
-  closed = true;
-  emit('onClose');
-}
-
-const initialData = presetTargetDataset.value === undefined
-  ? {
-    mode: 'create-new-dataset' as ImportMode,
-    targetAddDataset: undefined,
-    gzipped: false,
-    readIndices: ['R1'] as string[],
-  }
-  : {
-    mode: 'add-to-existing' as ImportMode,
-    targetAddDataset: presetTargetDataset.value.id,
-    gzipped: presetTargetDataset.value.content.gzipped,
-    readIndices: presetTargetDataset.value.content.type === 'Fastq' || presetTargetDataset.value.content.type === 'MultilaneFastq'
-      ? presetTargetDataset.value.content.readIndices
-      : [] as string[],
-  }
-
-const data = reactive({
-  ...initialData,
-  files: [] as ImportFileHandle[],
-
-  newDatasetLabel: inferNewDatasetLabel(),
-
-  pattern: '',
-
-  fileDialogOpened: true,
-  datasetDialogOpened: false,
-
-  importing: false
-});
-
-watch(
-  () => ({
-    fileDialogOpened: data.fileDialogOpened,
-    datasetDialogOpened: data.datasetDialogOpened
-  }),
-  ({ fileDialogOpened, datasetDialogOpened }) => {
-    if (!fileDialogOpened && !datasetDialogOpened) doClose();
-  }
-);
-
+// to move
 type ImportMode = 'create-new-dataset' | 'add-to-existing';
 
-function inferNewDatasetLabel() {
-  let i = app.model.args.datasets.length + 1;
-  while (i < 1000) {
-    let label = 'My Dataset';
-    if (i > 0) {
-      label = label + ` (${i})`;
-    }
-    if (app.model.args.datasets.findIndex((d) => d.label === label) === -1) return label;
-    ++i;
-  }
-  return 'New Dataset';
+function extractFileName(filePath: string) {
+  return filePath.replace(/^.*[\\/]/, '');
 }
-
-// Pattern compilation and file name matching
-const patternError = ref<string | undefined>(undefined);
-const compiledPattern = shallowRef<FileNamePattern | undefined>(undefined);
-
-watch(
-  () => data.pattern,
-  (p) => {
-    if (!p) {
-      compiledPattern.value = undefined;
-      patternError.value = undefined;
-      return;
-    }
-
-    try {
-      compiledPattern.value = FileNamePattern.parse(p);
-      patternError.value = undefined;
-    } catch (err: any) {
-      compiledPattern.value = undefined;
-      patternError.value = err.message;
-    }
-  },
-  { immediate: true }
-);
 
 function getDsReadIndices(ds: DatasetAny): string[] {
   const c = ds.content;
@@ -148,40 +54,6 @@ function getDsReadIndices(ds: DatasetAny): string[] {
       return [];
   }
 }
-
-function addFiles(files: ImportFileHandle[]) {
-  const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
-  if (data.files.length === 0) {
-    const pds = presetTargetDataset.value;
-    const inferedPattern = pds !== undefined
-      ? inferFileNamePattern(fileNames, { expectedReadIndices: getDsReadIndices(pds), isGzipped: pds.content.gzipped })
-      : inferFileNamePattern(fileNames);
-    if (inferedPattern) {
-      data.pattern = inferedPattern.pattern.rawPattern;
-      data.gzipped = inferedPattern.extension.endsWith('.gz');
-      data.readIndices = inferedPattern.readIndices;
-    }
-    // @todo add some meaningful notification if failed to infer pattern
-  }
-  data.files.push(...files);
-}
-
-function extractFileName(filePath: string) {
-  return filePath.replace(/^.*[\\/]/, '');
-}
-
-const parsedFiles = computed<ParsedFile[]>(() =>
-  data.files.map((handle) => {
-    const fileName = extractFileName(getFilePathFromHandle(handle));
-    const match = compiledPattern.value?.match(fileName);
-    return {
-      handle,
-      fileName,
-      match
-    };
-  })
-);
-const hasMatchedFiles = computed(() => parsedFiles.value.filter((f) => f.match).length > 0);
 
 const readIndicesOptions: SimpleOption<string>[] = [
   {
@@ -208,6 +80,122 @@ const modesOptions: SimpleOption<ImportMode>[] = [
     text: 'Add to existing dataset'
   }
 ];
+
+// end
+
+const emit = defineEmits<{ onClose: [] }>();
+
+const app = useApp();
+
+const props = defineProps<{
+  targetDataset?: PlId
+}>()
+
+const presetTargetDataset = computed(() => {
+  if (props.targetDataset === undefined) return undefined;
+  return app.model.args.datasets.find(ds => ds.id === props.targetDataset)
+})
+
+const fixedSettings = computed(() => presetTargetDataset.value !== undefined)
+
+function doClose() {
+  app.showImportDataset = false;
+  emit('onClose');
+}
+
+const initialData = presetTargetDataset.value === undefined
+  ? {
+    mode: 'create-new-dataset' as ImportMode,
+    targetAddDataset: undefined,
+    gzipped: false,
+    readIndices: ['R1'] as string[],
+  }
+  : {
+    mode: 'add-to-existing' as ImportMode,
+    targetAddDataset: presetTargetDataset.value.id,
+    gzipped: presetTargetDataset.value.content.gzipped,
+    readIndices: presetTargetDataset.value.content.type === 'Fastq' || presetTargetDataset.value.content.type === 'MultilaneFastq'
+      ? presetTargetDataset.value.content.readIndices
+      : [] as string[],
+  }
+
+const data = reactive({
+  ...initialData,
+  files: [] as ImportFileHandle[],
+
+  newDatasetLabel: app.inferNewDatasetLabel(),
+
+  pattern: '',
+
+  fileDialogOpened: true,
+  datasetDialogOpened: false,
+
+  importing: false
+});
+
+const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
+
+watch(isOneOfDialogsOpened, v => {
+  if (!v) {
+    doClose();
+  }
+});
+
+// Pattern compilation and file name matching
+const patternError = ref<string | undefined>(undefined);
+const compiledPattern = shallowRef<FileNamePattern | undefined>(undefined);
+
+watch(
+  () => data.pattern,
+  (p) => {
+    if (!p) {
+      compiledPattern.value = undefined;
+      patternError.value = undefined;
+      return;
+    }
+
+    try {
+      compiledPattern.value = FileNamePattern.parse(p);
+      patternError.value = undefined;
+    } catch (err: any) {
+      compiledPattern.value = undefined;
+      patternError.value = err.message;
+    }
+  },
+  { immediate: true }
+);
+
+function addFiles(files: ImportFileHandle[]) {
+  const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
+  if (data.files.length === 0) {
+    const pds = presetTargetDataset.value;
+    const inferredPattern = pds !== undefined
+      ? inferFileNamePattern(fileNames, { expectedReadIndices: getDsReadIndices(pds), isGzipped: pds.content.gzipped })
+      : inferFileNamePattern(fileNames);
+    if (inferredPattern) {
+      data.pattern = inferredPattern.pattern.rawPattern;
+      data.gzipped = inferredPattern.extension.endsWith('.gz');
+      data.readIndices = inferredPattern.readIndices;
+    }
+    // @todo add some meaningful notification if failed to infer pattern
+  }
+  data.files.push(...files);
+  data.datasetDialogOpened = true;
+}
+
+const parsedFiles = computed<ParsedFile[]>(() =>
+  data.files.map((handle) => {
+    const fileName = extractFileName(getFilePathFromHandle(handle));
+    const match = compiledPattern.value?.match(fileName);
+    return {
+      handle,
+      fileName,
+      match
+    };
+  })
+);
+
+const hasMatchedFiles = computed(() => parsedFiles.value.filter((f) => f.match).length > 0);
 
 const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   const { gzipped, readIndices } = data;
@@ -362,7 +350,7 @@ async function addToExistingDataset() {
     if (dataset.content.type === 'Fastq') addFastqDatasetContent(args, dataset.content.data);
     else if (dataset.content.type === 'MultilaneFastq')
       addMultilaneFastqDatasetContent(args, dataset.content.data);
-    else throw new Error('Unknonw dataset type');
+    else throw new Error('Unknown dataset type');
   });
   app.navigateTo(`/dataset?id=${datasetId}`);
 }
@@ -430,7 +418,8 @@ async function createNewDataset() {
       });
     }
   });
-  app.navigateTo(`/dataset?id=${newDatasetId}`);
+
+  await app.navigateTo(`/dataset?id=${newDatasetId}`);
 }
 
 const canCreateOrAdd = computed(
@@ -481,9 +470,5 @@ const canCreateOrAdd = computed(
   </PlDialogModal>
 
   <PlFileDialog v-model="data.fileDialogOpened" :close-on-outside-click="false" :multi="true"
-    title="Select files to import" @import:files="(e) => {
-      addFiles(e.files);
-      data.datasetDialogOpened = true;
-    }
-      " />
+    title="Select files to import" @import:files="(e) => addFiles(e.files)" />
 </template>

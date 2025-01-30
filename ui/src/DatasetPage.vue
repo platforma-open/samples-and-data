@@ -11,9 +11,7 @@ import {
   PlDialogModal,
   PlDropdown,
   PlEditableTitle,
-  PlMaskIcon24,
   PlSlideModal,
-  PlTextField,
   SimpleOption
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive } from 'vue';
@@ -30,7 +28,6 @@ const app = useApp();
 const data = reactive({
   deleteModalOpen: false,
   settingsOpen: false,
-  showImportDataset: false
 });
 
 const datasetId = app.queryParams.id;
@@ -89,7 +86,7 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
     <template #append>
       <PlBtnGhost @click="() => (data.deleteModalOpen = true)" icon="delete-bin">Delete Dataset</PlBtnGhost>
       <PlBtnGhost v-if="dataset.value.content.type !== 'TaggedFastq'"
-        @click.stop="() => (data.showImportDataset = true)" icon="dna-import">
+        @click.stop="() => (app.showImportDataset = true)" icon="dna-import">
         Add sequencing data
       </PlBtnGhost>
       <PlBtnGhost @click.stop="() => (data.settingsOpen = true)" icon="settings">Settings</PlBtnGhost>
@@ -130,6 +127,5 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
     </template>
   </PlDialogModal>
 
-  <ImportDatasetDialog v-if="data.showImportDataset" :target-dataset="dataset.value.id"
-    @on-close="data.showImportDataset = false" />
+  <ImportDatasetDialog v-if="app.showImportDataset" :target-dataset="dataset.value.id" />
 </template>

@@ -26,7 +26,6 @@ import {
   PlBtnPrimary,
   PlDialogModal,
   PlEditableTitle,
-  PlMaskIcon24
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
@@ -51,14 +50,6 @@ const data = reactive<{
   importCandidate: undefined,
   errorMessage: undefined
 });
-
-const showImportDataset = ref(false);
-
-if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
-  if (app.model.ui === undefined) app.model.ui = { suggestedImport: true };
-  else app.model.ui.suggestedImport = true;
-  showImportDataset.value = true;
-}
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
 
@@ -325,7 +316,7 @@ const gridOptions: GridOptions<MetadataRow> = {
         v-model="app.model.args.blockTitle" />
     </template>
     <template #append>
-      <PlBtnGhost @click.stop="() => (showImportDataset = true)" icon="dna-import">
+      <PlBtnGhost @click.stop="() => (app.showImportDataset = true)" icon="dna-import">
         Import sequencing data
       </PlBtnGhost>
       &nbsp;
@@ -339,7 +330,7 @@ const gridOptions: GridOptions<MetadataRow> = {
     </div>
   </PlBlockPage>
 
-  <ImportDatasetDialog v-if="showImportDataset" @on-close="showImportDataset = false" />
+  <ImportDatasetDialog v-if="app.showImportDataset" />
 
   <ImportMetadataModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
     @on-close="data.importCandidate = undefined" />
