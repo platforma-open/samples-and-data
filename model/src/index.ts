@@ -46,7 +46,13 @@ export const platforma = BlockModel.create()
             href: `/dataset?id=${ds.id}`,
             label: ds.label
           } as const)
-      )
+      ),
+      {
+        type: 'link',
+        href: '/new-dataset',
+        appearance: 'add-section',
+        label: 'New Dataset',
+      },
     ];
   })
 
