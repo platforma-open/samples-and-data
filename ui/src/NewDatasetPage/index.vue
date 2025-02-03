@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import ImportDatasetDialog from '../ImportDatasetDialog.vue';
+import { ImportDatasetDialog } from '../ImportDatasetDialog';
 import { useApp } from '../app';
 
 const app = useApp();

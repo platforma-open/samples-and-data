@@ -20,7 +20,7 @@ import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
 import MultilaneFastqDatasetPage from './MultilaneFastqDatasetPage.vue';
 import FastaDatasetPage from './FastaDatasetPage.vue';
-import ImportDatasetDialog from './ImportDatasetDialog.vue';
+import { UpdateDatasetDialog } from './UpdateDatasetDialog';
 import TaggedFastqDatasetPage from './TaggedFastqDatasetPage.vue';
 
 const app = useApp();
@@ -127,5 +127,5 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
     </template>
   </PlDialogModal>
 
-  <ImportDatasetDialog v-if="app.showImportDataset" :target-dataset="dataset.value.id" />
+  <UpdateDatasetDialog v-if="app.showImportDataset" :target-dataset="dataset.value.id" />
 </template>

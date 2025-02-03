@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import {
   BlockArgs,
-  DatasetAny,
   DatasetContentFasta,
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
@@ -23,113 +22,37 @@ import {
   PlFileDialog,
   PlRow,
   PlTextField,
-  SimpleOption
 } from '@platforma-sdk/ui-vue';
-import { computed, reactive, ref, shallowRef, watch } from 'vue';
-import { useApp } from './app';
+import { computed, reactive, watch } from 'vue';
+import { useApp } from '../app';
 import {
-  FileNamePattern,
   getWellFormattedReadIndex,
   inferFileNamePattern
-} from './file_name_parser';
-import ParsedFilesList from './ParsedFilesList.vue';
-import { ParsedFile } from './types';
+} from '../file_name_parser';
+import ParsedFilesList from '../ParsedFilesList.vue';
+import type { ImportMode } from '../datasets';
 import * as _ from 'radashi';
-
-// to move
-type ImportMode = 'create-new-dataset' | 'add-to-existing';
-
-function extractFileName(filePath: string) {
-  return filePath.replace(/^.*[\\/]/, '');
-}
-
-function getDsReadIndices(ds: DatasetAny): string[] {
-  const c = ds.content;
-  switch (c.type) {
-    case 'Fastq':
-    case 'MultilaneFastq':
-    case 'TaggedFastq':
-      return c.readIndices;
-    case 'Fasta':
-      return [];
-  }
-}
-
-const readIndicesOptions: SimpleOption<string>[] = [
-  {
-    value: JSON.stringify(['R1']),
-    text: 'R1'
-  },
-  {
-    value: JSON.stringify(['R1', 'R2']),
-    text: 'R1, R2'
-  },
-  {
-    value: JSON.stringify([]),
-    text: 'fasta'
-  }
-];
-
-const modesOptions: SimpleOption<ImportMode>[] = [
-  {
-    value: 'create-new-dataset',
-    text: 'Create new dataset'
-  },
-  {
-    value: 'add-to-existing',
-    text: 'Add to existing dataset'
-  }
-];
-
-// end
+import { usePatternCompilation, extractFileName, useParsedFiles, readIndicesOptions, modesOptions, createGetOrCreateSample } from '../datasets';
 
 const emit = defineEmits<{ onClose: [] }>();
 
 const app = useApp();
-
-const props = defineProps<{
-  targetDataset?: PlId
-}>()
-
-const presetTargetDataset = computed(() => {
-  if (props.targetDataset === undefined) return undefined;
-  return app.model.args.datasets.find(ds => ds.id === props.targetDataset)
-})
-
-const fixedSettings = computed(() => presetTargetDataset.value !== undefined)
 
 function doClose() {
   app.showImportDataset = false;
   emit('onClose');
 }
 
-const initialData = presetTargetDataset.value === undefined
-  ? {
-    mode: 'create-new-dataset' as ImportMode,
-    targetAddDataset: undefined,
-    gzipped: false,
-    readIndices: ['R1'] as string[],
-  }
-  : {
-    mode: 'add-to-existing' as ImportMode,
-    targetAddDataset: presetTargetDataset.value.id,
-    gzipped: presetTargetDataset.value.content.gzipped,
-    readIndices: presetTargetDataset.value.content.type === 'Fastq' || presetTargetDataset.value.content.type === 'MultilaneFastq'
-      ? presetTargetDataset.value.content.readIndices
-      : [] as string[],
-  }
-
 const data = reactive({
-  ...initialData,
+  mode: 'create-new-dataset' as ImportMode,
+  targetAddDataset: undefined as PlId | undefined,
+  gzipped: false,
+  readIndices: ['R1'] as string[],
   files: [] as ImportFileHandle[],
-
   newDatasetLabel: app.inferNewDatasetLabel(),
-
   pattern: '',
-
   fileDialogOpened: true,
   datasetDialogOpened: false,
-
   importing: false
 });
 
@@ -142,36 +65,16 @@ watch(isOneOfDialogsOpened, v => {
 });
 
 // Pattern compilation and file name matching
-const patternError = ref<string | undefined>(undefined);
-const compiledPattern = shallowRef<FileNamePattern | undefined>(undefined);
+const { patternError, compiledPattern } = usePatternCompilation(data);
 
-watch(
-  () => data.pattern,
-  (p) => {
-    if (!p) {
-      compiledPattern.value = undefined;
-      patternError.value = undefined;
-      return;
-    }
+const parsedFiles = useParsedFiles(data, compiledPattern);
 
-    try {
-      compiledPattern.value = FileNamePattern.parse(p);
-      patternError.value = undefined;
-    } catch (err: any) {
-      compiledPattern.value = undefined;
-      patternError.value = err.message;
-    }
-  },
-  { immediate: true }
-);
+const hasMatchedFiles = computed(() => parsedFiles.value.filter((f) => f.match).length > 0);
 
 function addFiles(files: ImportFileHandle[]) {
   const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
   if (data.files.length === 0) {
-    const pds = presetTargetDataset.value;
-    const inferredPattern = pds !== undefined
-      ? inferFileNamePattern(fileNames, { expectedReadIndices: getDsReadIndices(pds), isGzipped: pds.content.gzipped })
-      : inferFileNamePattern(fileNames);
+    const inferredPattern = inferFileNamePattern(fileNames);
     if (inferredPattern) {
       data.pattern = inferredPattern.pattern.rawPattern;
       data.gzipped = inferredPattern.extension.endsWith('.gz');
@@ -183,26 +86,11 @@ function addFiles(files: ImportFileHandle[]) {
   data.datasetDialogOpened = true;
 }
 
-const parsedFiles = computed<ParsedFile[]>(() =>
-  data.files.map((handle) => {
-    const fileName = extractFileName(getFilePathFromHandle(handle));
-    const match = compiledPattern.value?.match(fileName);
-    return {
-      handle,
-      fileName,
-      match
-    };
-  })
-);
-
-const hasMatchedFiles = computed(() => parsedFiles.value.filter((f) => f.match).length > 0);
-
 const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   const { gzipped, readIndices } = data;
   return app.model.args.datasets
     .filter(
       (ds) =>
-        fixedSettings.value ||
         (compiledPattern.value &&
           ds.content.type === (compiledPattern.value.hasLaneMatcher ? 'MultilaneFastq' : 'Fastq') &&
           ds.content.gzipped === gzipped &&
@@ -219,17 +107,6 @@ watch(addToExistingOptions, (ops) => {
   if (ops.length === 0) data.targetAddDataset = undefined;
   else data.targetAddDataset = ops[0].value;
 });
-
-function createGetOrCreateSample(args: BlockArgs) {
-  return (sampleName: string) => {
-    const id = Object.entries(args.sampleLabels).find(([, label]) => label === sampleName)?.[0];
-    if (id) return id as PlId;
-    const newId = uniquePlId();
-    args.sampleIds.push(newId);
-    args.sampleLabels[newId] = sampleName;
-    return newId;
-  };
-}
 
 function addFastaDatasetContent(args: BlockArgs, contentData: DatasetContentFasta['data']) {
   const getOrCreateSample = createGetOrCreateSample(args);
@@ -437,17 +314,15 @@ const canCreateOrAdd = computed(
   <PlDialogModal v-model="data.datasetDialogOpened" width="70%" :close-on-outside-click="false">
     <template #title>Import files</template>
 
-    <PlBtnGroup v-model="data.mode" :options="modesOptions" :disabled="fixedSettings" />
+    <PlBtnGroup v-model="data.mode" :options="modesOptions" />
 
     <PlRow alignCenter>
       <PlTextField v-if="data.mode === 'create-new-dataset'" label="Dataset Name" v-model="data.newDatasetLabel"
         class="flex-grow-1" />
-      <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1"
-        :disabled="fixedSettings" />
+      <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" />
       <PlBtnGroup :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
-        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" :options="readIndicesOptions"
-        :disabled="fixedSettings" />
-      <PlCheckbox v-model="data.gzipped" :disabled="fixedSettings"> Gzipped </PlCheckbox>
+        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" :options="readIndicesOptions" />
+      <PlCheckbox v-model="data.gzipped"> Gzipped </PlCheckbox>
     </PlRow>
 
     <PlTextField label="Pattern" v-model="data.pattern" :error="patternError" />
@@ -457,11 +332,7 @@ const canCreateOrAdd = computed(
     <PlBtnSecondary @click="() => (data.fileDialogOpened = true)"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary :disabled="!canCreateOrAdd" @click="
-          {
-        createOrAdd();
-      }
-        " :loading="data.importing">
+      <PlBtnPrimary :disabled="!canCreateOrAdd" @click="createOrAdd" :loading="data.importing">
         {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
       </PlBtnPrimary>
 
