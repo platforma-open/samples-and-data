@@ -230,7 +230,11 @@ const rowData = computed<MetadataRow[]>(() => {
 const gridOptions: GridOptions<MetadataRow> = {
   getRowId: (row) => row.data.id,
 
-  rowSelection: 'multiple',
+  rowSelection: {
+    mode: 'multiRow',
+    checkboxes: false,
+    headerCheckbox: false
+  },
 
   autoSizeStrategy: {
     type: 'fitGridWidth'
@@ -300,10 +304,11 @@ const gridOptions: GridOptions<MetadataRow> = {
     if (getSelectedSamples(params.node).length === 0) return [];
     return [
       {
-        name: `Delete ${targetSamples.length > 1
-          ? `${targetSamples.length} samples`
-          : app.model.args.sampleLabels[targetSamples[0]]
-          }`,
+        name: `Delete ${
+          targetSamples.length > 1
+            ? `${targetSamples.length} samples`
+            : app.model.args.sampleLabels[targetSamples[0]]
+        }`,
         action: (params) => {
           const samplesToDelete = getSelectedSamples(params.node);
           deleteSamples(targetSamples);
@@ -321,33 +326,50 @@ const gridOptions: GridOptions<MetadataRow> = {
 <template>
   <PlBlockPage>
     <template #title>
-      <PlEditableTitle max-width="600px" placeholder="Samples & Data" :max-length="40"
-        v-model="app.model.args.blockTitle" />
+      <PlEditableTitle
+        v-model="app.model.args.blockTitle"
+        :max-length="40"
+        max-width="600px"
+        placeholder="Samples & Data"
+      />
     </template>
     <template #append>
-      <PlBtnGhost @click.stop="() => (showImportDataset = true)" icon="dna-import">
+      <PlBtnGhost icon="dna-import" @click.stop="() => (showImportDataset = true)">
         Import sequencing data
       </PlBtnGhost>
       &nbsp;
-      <PlBtnGhost @click.stop="importMetadata" icon="table-import">
-        Import metadata
-      </PlBtnGhost>
+      <PlBtnGhost icon="table-import" @click.stop="importMetadata"> Import metadata </PlBtnGhost>
     </template>
     <div :style="{ flex: 1 }">
-      <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" @grid-ready="onGridReady" :rowData="rowData"
-        :columnDefs="columnDefs" :grid-options="gridOptions" :noRowsOverlayComponent="PlAgOverlayNoRows" />
+      <AgGridVue
+        :theme="AgGridTheme"
+        :style="{ height: '100%' }"
+        :rowData="rowData"
+        :columnDefs="columnDefs"
+        :grid-options="gridOptions"
+        :noRowsOverlayComponent="PlAgOverlayNoRows"
+        @grid-ready="onGridReady"
+      />
     </div>
   </PlBlockPage>
 
   <ImportDatasetDialog v-if="showImportDataset" @on-close="showImportDataset = false" />
 
-  <ImportMetadataModal v-if="data.importCandidate !== undefined" :import-candidate="data.importCandidate"
-    @on-close="data.importCandidate = undefined" />
+  <ImportMetadataModal
+    v-if="data.importCandidate !== undefined"
+    :import-candidate="data.importCandidate"
+    @on-close="data.importCandidate = undefined"
+  />
 
-  <PlDialogModal :model-value="data.errorMessage !== undefined" closable @update:model-value="(v) => {
-    if (!v) data.errorMessage = undefined;
-  }
-    ">
+  <PlDialogModal
+    :model-value="data.errorMessage !== undefined"
+    closable
+    @update:model-value="
+      (v) => {
+        if (!v) data.errorMessage = undefined;
+      }
+    "
+  >
     <div>{{ data.errorMessage?.title }}</div>
     <pre v-if="data.errorMessage?.message">{{ data.errorMessage?.message }}</pre>
     <PlBtnPrimary>Ok</PlBtnPrimary>
