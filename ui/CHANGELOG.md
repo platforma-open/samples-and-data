@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.16.1
+
+### Patch Changes
+
+- d5a1df7: package version update
+
 ## 1.16.0
 
 ### Minor Changes
