@@ -31,7 +31,7 @@ import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
 import { useApp } from './app';
 import { ImportResult, readFileForImport } from './dataimport';
 import DatasetCell from './DatasetCell.vue';
-import ImportDatasetDialog from './ImportDatasetDialog.vue';
+import {ImportDatasetDialog} from './ImportDatasetDialog';
 import ImportMetadataModal from './ImportMetadataModal.vue';
 
 const styles = useCssModule();
