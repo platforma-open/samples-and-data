@@ -103,9 +103,9 @@ const columnDefs = computed(() => {
         const lane = params.data.lane;
         dataset.update(
           (ds) =>
-          (ds.content.data[sample]![lane]![readIndex] = params.newValue
-            ? params.newValue
-            : undefined)
+            (ds.content.data[sample]![lane]![readIndex] = params.newValue
+              ? params.newValue
+              : undefined)
         );
         return true;
       },
@@ -132,7 +132,11 @@ function getSelectedKeys(
 
 const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
   getRowId: (row) => row.data.key,
-  rowSelection: 'multiple',
+  rowSelection: {
+    mode: 'multiRow',
+    checkboxes: false,
+    headerCheckbox: false
+  },
   rowHeight: 45,
   getMainMenuItems: (params) => {
     return [];
@@ -162,6 +166,12 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs"
-    :defaultColDef="defaultColDef" :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :columnDefs="columnDefs"
+    :defaultColDef="defaultColDef"
+    :gridOptions="gridOptions"
+  />
 </template>

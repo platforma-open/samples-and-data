@@ -1,10 +1,14 @@
 <script setup lang="ts">
 import {
-  ClientSideRowModelModule, ColDef,
+  ClientSideRowModelModule,
+  ColDef,
   GridApi,
   GridOptions,
   IRichCellEditorParams,
-  IRowNode, MenuModule, ModuleRegistry, RichSelectModule
+  IRowNode,
+  MenuModule,
+  ModuleRegistry,
+  RichSelectModule
 } from 'ag-grid-enterprise';
 
 import { AgGridVue } from 'ag-grid-vue3';
@@ -105,11 +109,11 @@ const columnDefs = computed(() => {
     cellRendererSelector: (params) =>
       params.data?.sample
         ? {
-          component: 'PlAgCellFile',
-          params: {
-            extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+            component: 'PlAgCellFile',
+            params: {
+              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+            }
           }
-        }
         : undefined,
     valueGetter: (params) =>
       params.data?.sample
@@ -146,7 +150,11 @@ function getSelectedSamples(
 
 const gridOptions: GridOptions<FastaDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
-  rowSelection: 'multiple',
+  rowSelection: {
+    mode: 'multiRow',
+    checkboxes: false,
+    headerCheckbox: false
+  },
   rowHeight: 45,
   getMainMenuItems: (params) => {
     return [];
@@ -172,6 +180,12 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs" :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs"
+    :gridOptions="gridOptions"
+  />
 </template>
