@@ -20,6 +20,8 @@ import {
 import {
   AgGridTheme,
   makeRowNumberColDef,
+  PlAgColumnHeader,
+  type PlAgHeaderComponentParams,
   PlAgOverlayNoRows,
   PlBlockPage,
   PlBtnGhost,
@@ -148,7 +150,9 @@ const columnDefs = computed<ColDef[]>(() => [
     headerName: app.model.args.sampleLabelColumnLabel,
     initialWidth: 200,
     flex: 1,
-    suppressHeaderMenuButton: true
+    suppressHeaderMenuButton: true,
+    headerComponent: PlAgColumnHeader,
+    headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
   },
   {
     colId: 'datasets',
@@ -163,7 +167,9 @@ const columnDefs = computed<ColDef[]>(() => [
     }),
     // flex: 1,
     suppressHeaderMenuButton: true,
-    width: 200
+    width: 200,
+    headerComponent: PlAgColumnHeader,
+    headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
   },
   ...app.model.args.metadata.map((mCol): ColDef => {
     const common: ColDef = {
@@ -175,12 +181,18 @@ const columnDefs = computed<ColDef[]>(() => [
     };
     switch (mCol.valueType) {
       case 'String':
-        return common;
+        return {
+          ...common,
+          headerComponent: PlAgColumnHeader,
+          headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+        };
       case 'Double':
         return {
           ...common,
           cellDataType: 'number',
-          cellEditor: 'agNumberCellEditor'
+          cellEditor: 'agNumberCellEditor',
+          headerComponent: PlAgColumnHeader,
+          headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
         };
       case 'Long':
         return {
@@ -190,7 +202,9 @@ const columnDefs = computed<ColDef[]>(() => [
           cellEditorParams: {
             precision: 0,
             showStepperButtons: true
-          }
+          },
+          headerComponent: PlAgColumnHeader,
+          headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
         };
     }
   }),
