@@ -34,20 +34,19 @@ const dataset = argsModel(app, {
 });
 
 function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedDatasetRecord): string {
-  return JSON.stringify([sampleId, ...tags.map(t => r.tags[t]), r.lane ?? '']);
+  return JSON.stringify([sampleId, ...tags.map((t) => r.tags[t]), r.lane ?? '']);
 }
 
 const rowData = computed(() => {
   const dsc = dataset.value.content;
-  const result: MultilaneFastaDatasetRow[] = Object.entries(dsc.data).flatMap(
-    ([sampleId, rs]) =>
-      (rs ?? []).map((r) => ({
-        key: encodeKey(dsc.tags, sampleId as PlId, r),
-        sample: sampleId as PlId,
-        lane: r.lane,
-        tags: r.tags,
-        reads: r.files
-      }))
+  const result: MultilaneFastaDatasetRow[] = Object.entries(dsc.data).flatMap(([sampleId, rs]) =>
+    (rs ?? []).map((r) => ({
+      key: encodeKey(dsc.tags, sampleId as PlId, r),
+      sample: sampleId as PlId,
+      lane: r.lane,
+      tags: r.tags,
+      reads: r.files
+    }))
   );
   // console.dir(result, { depth: 5 });
   return result;
@@ -79,7 +78,7 @@ const columnDefs = computed(() => {
       flex: 1,
       field: 'lane',
       editable: false
-    })
+    });
 
   for (const tag of dsc.tags)
     res.push({
@@ -156,6 +155,12 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :columnDefs="columnDefs"
-    :defaultColDef="defaultColDef" :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :columnDefs="columnDefs"
+    :defaultColDef="defaultColDef"
+    :gridOptions="gridOptions"
+  />
 </template>
