@@ -107,11 +107,11 @@ const columnDefs = computed(() => {
       cellRendererSelector: (params) =>
         params.data?.sample
           ? {
-            component: 'PlAgCellFile',
-            params: {
-              extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq']
+              component: 'PlAgCellFile',
+              params: {
+                extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq']
+              }
             }
-          }
           : undefined,
       valueGetter: (params) =>
         params.data?.sample
@@ -151,7 +151,11 @@ function getSelectedSamples(
 
 const gridOptions: GridOptions<FastqDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
-  rowSelection: 'multiple',
+  rowSelection: {
+    mode: 'multiRow',
+    checkboxes: false,
+    headerCheckbox: false
+  },
   rowHeight: 45,
   getMainMenuItems: (params) => {
     return [];
@@ -177,6 +181,12 @@ const gridOptions: GridOptions<FastqDatasetRow> = {
 </script>
 
 <template>
-  <AgGridVue :theme="AgGridTheme" :style="{ height: '100%' }" :rowData="rowData" :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs" :gridOptions="gridOptions" />
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs"
+    :gridOptions="gridOptions"
+  />
 </template>
