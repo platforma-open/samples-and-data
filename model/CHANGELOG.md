@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.9.1
+
+### Patch Changes
+
+- 468906f: Start decomposing "ImportDatasetDialog"
+- 06a5344: [design/review] S&D: Add New Dataset Section
+
 ## 1.9.0
 
 ### Minor Changes
