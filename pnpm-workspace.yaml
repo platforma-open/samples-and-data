@@ -6,13 +6,13 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': ^2.5.3
-  '@platforma-sdk/model': ^1.21.20
-  '@platforma-sdk/ui-vue': ^1.22.16
-  '@platforma-sdk/tengo-builder': ^1.17.5
-  '@platforma-sdk/workflow-tengo': ^2.9.6
+  '@platforma-sdk/block-tools': ^2.5.14
+  '@platforma-sdk/model': ^1.21.59
+  '@platforma-sdk/ui-vue': ^1.22.59
+  '@platforma-sdk/tengo-builder': ^1.17.7
+  '@platforma-sdk/workflow-tengo': ^2.13.1
 
-  '@platforma-sdk/test': ^1.21.20
+  '@platforma-sdk/test': ^1.22.60
   '@milaboratories/helpers': ^1.6.11
 
   'vue': ^3.5.13
