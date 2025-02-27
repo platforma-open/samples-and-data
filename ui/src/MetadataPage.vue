@@ -133,18 +133,19 @@ async function deleteSamples(sampleIds: PlId[]) {
 }
 
 const columnDefs = computed<ColDef[]>(() => [
+  // First columns: row numbers
   { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
+  // Second columns: Sample
   {
     colId: 'label',
     field: 'label',
     editable: true,
     headerName: app.model.args.sampleLabelColumnLabel,
-    initialWidth: 200,
-    flex: 1,
     suppressHeaderMenuButton: true,
     headerComponent: PlAgColumnHeader,
     headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
   },
+  // Third columns: Data
   {
     colId: 'datasets',
     field: 'datasets',
@@ -156,19 +157,17 @@ const columnDefs = computed<ColDef[]>(() => [
         datasets: params.data.datasets
       }
     }),
-    // flex: 1,
     suppressHeaderMenuButton: true,
-    width: 200,
     headerComponent: PlAgColumnHeader,
     headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
   },
+  // Loaded metadata columns
   ...app.model.args.metadata.map((mCol): ColDef => {
     const common: ColDef = {
       colId: `meta.${mCol.id}`,
       field: `meta.${mCol.id}`,
       headerName: mCol.label,
       editable: true,
-      flex: 1
     };
     switch (mCol.valueType) {
       case 'String':
@@ -199,6 +198,7 @@ const columnDefs = computed<ColDef[]>(() => [
         };
     }
   }),
+  // Add column button pinned to right
   {
     colId: 'add',
     headerName: '+',
@@ -240,9 +240,9 @@ const gridOptions: GridOptions<MetadataRow> = {
     checkboxes: false,
     headerCheckbox: false
   },
-
+  // This column sizing is applied every time we open the block
   autoSizeStrategy: {
-    type: 'fitGridWidth'
+    type: 'fitCellContents'
   },
   stopEditingWhenCellsLoseFocus: true,
 
