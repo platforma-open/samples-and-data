@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.9.9
+
+### Patch Changes
+
+- e93ee43: Updated tags
+
 ## 1.9.8
 
 ### Patch Changes
