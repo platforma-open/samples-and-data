@@ -33,18 +33,17 @@
       "longDescription": "file:../docs/description.md",
       "changelog": "file:./CHANGELOG.md",
       "tags": [
-        "General",
-        "FASTQ",
-        "FASTA",
+        "Samples",
         "Metadata",
-        "Samples"
+        "FASTQ",
+        "FASTA"
       ],
       "organization": {
         "name": "MiLaboratories Inc",
         "url": "https://milaboratories.com/",
         "logo": "file:../logos/organization-logo.png"
       },
-      "marketplaceRanking": 12000
+      "marketplaceRanking": 31000
     }
   },
   "devDependencies": {
