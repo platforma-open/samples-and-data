@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.16.4
+
+### Patch Changes
+
+- e39205a: [samples-and-data] Automatically resize metadata columns to fit width
+
 ## 1.16.3
 
 ### Patch Changes
