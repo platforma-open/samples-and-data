@@ -132,86 +132,90 @@ async function deleteSamples(sampleIds: PlId[]) {
   });
 }
 
-const columnDefs = computed<ColDef[]>(() => [
-  { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
-  {
-    colId: 'label',
-    field: 'label',
-    editable: true,
-    headerName: app.model.args.sampleLabelColumnLabel,
-    initialWidth: 200,
-    flex: 1,
-    suppressHeaderMenuButton: true,
-    headerComponent: PlAgColumnHeader,
-    headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
-  },
-  {
-    colId: 'datasets',
-    field: 'datasets',
-    editable: false,
-    headerName: 'Data',
-    cellRendererSelector: (params) => ({
-      component: 'DatasetCell',
-      params: {
-        datasets: params.data.datasets
+const columnDefs = computed<ColDef[]>(() => {
+  const colDefs: ColDef[] = [
+    { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
+    {
+      colId: 'label',
+      field: 'label',
+      editable: true,
+      headerName: app.model.args.sampleLabelColumnLabel,
+      minWidth: 100,
+      maxWidth: 300,
+      suppressHeaderMenuButton: true,
+      headerComponent: PlAgColumnHeader,
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+    },
+    {
+      colId: 'datasets',
+      field: 'datasets',
+      editable: false,
+      headerName: 'Data',
+      cellRendererSelector: (params) => ({
+        component: 'DatasetCell',
+        params: {
+          datasets: params.data.datasets
+        }
+      }),
+      minWidth: 100,
+      suppressHeaderMenuButton: true,
+      headerComponent: PlAgColumnHeader,
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+    },
+    ...app.model.args.metadata.map((mCol): ColDef => {
+      const common: ColDef = {
+        colId: `meta.${mCol.id}`,
+        field: `meta.${mCol.id}`,
+        headerName: mCol.label,
+        editable: true,
+        minWidth: 100,
+        maxWidth: 200,
+      };
+      switch (mCol.valueType) {
+        case 'String':
+          return {
+            ...common,
+            headerComponent: PlAgColumnHeader,
+            headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+          };
+        case 'Double':
+          return {
+            ...common,
+            cellDataType: 'number',
+            cellEditor: 'agNumberCellEditor',
+            headerComponent: PlAgColumnHeader,
+            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
+          };
+        case 'Long':
+          return {
+            ...common,
+            cellDataType: 'number',
+            cellEditor: 'agNumberCellEditor',
+            cellEditorParams: {
+              precision: 0,
+              showStepperButtons: true
+            },
+            headerComponent: PlAgColumnHeader,
+            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
+          };
       }
     }),
-    // flex: 1,
-    suppressHeaderMenuButton: true,
-    width: 200,
-    headerComponent: PlAgColumnHeader,
-    headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
-  },
-  ...app.model.args.metadata.map((mCol): ColDef => {
-    const common: ColDef = {
-      colId: `meta.${mCol.id}`,
-      field: `meta.${mCol.id}`,
-      headerName: mCol.label,
-      editable: true,
-      flex: 1
-    };
-    switch (mCol.valueType) {
-      case 'String':
-        return {
-          ...common,
-          headerComponent: PlAgColumnHeader,
-          headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
-        };
-      case 'Double':
-        return {
-          ...common,
-          cellDataType: 'number',
-          cellEditor: 'agNumberCellEditor',
-          headerComponent: PlAgColumnHeader,
-          headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
-        };
-      case 'Long':
-        return {
-          ...common,
-          cellDataType: 'number',
-          cellEditor: 'agNumberCellEditor',
-          cellEditorParams: {
-            precision: 0,
-            showStepperButtons: true
-          },
-          headerComponent: PlAgColumnHeader,
-          headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
-        };
+    {
+      colId: 'add',
+      headerName: '+',
+      headerClass: styles.plusHeader,
+      suppressHeaderMenuButton: true,
+      minWidth: 45,
+      maxWidth: 45,
+      sortable: false,
+      resizable: false,
+      pinned: 'right',
+      lockPinned: true
     }
-  }),
-  {
-    colId: 'add',
-    headerName: '+',
-    headerClass: styles.plusHeader,
-    suppressHeaderMenuButton: true,
-    minWidth: 45,
-    maxWidth: 45,
-    sortable: false,
-    resizable: false,
-    pinned: 'right',
-    lockPinned: true
-  }
-]);
+  ];
+
+  return colDefs.map((c, i, arr) => arr.length === i + 2 /** before last "+" column */ ? { ...c, flex: 1, minWidth: 200, maxWidth: undefined } : c);
+});
 
 const rowData = computed<MetadataRow[]>(() => {
   const samples2ds: Record<string, string[]> = {};
@@ -242,8 +246,10 @@ const gridOptions: GridOptions<MetadataRow> = {
   },
 
   autoSizeStrategy: {
-    type: 'fitGridWidth'
+    type: 'fitCellContents',
+    colIds: columnDefs.value.slice(0, -2).map((c) => c.colId!) // except last two columns
   },
+
   stopEditingWhenCellsLoseFocus: true,
 
   onColumnHeaderClicked: (event) => {
