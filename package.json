@@ -14,6 +14,20 @@
     "@changesets/cli": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
+  "///": {
+    "pnpm": {
+      "overrides": {
+        "@platforma-sdk/ui-vue": "file:/home/snyssfx/prog/mi/platforma/sdk/ui-vue/package.tgz",
+        "@milaboratories/pl-middle-layer": "file:/home/snyssfx/prog/mi/platforma/lib/node/pl-middle-layer/package.tgz",
+        "@milaboratories/pl-model-middle-layer": "file:/home/snyssfx/prog/mi/platforma/lib/model/middle-layer/package.tgz",
+        "@milaboratories/pl-model-common": "file:/home/snyssfx/prog/mi/platforma/lib/model/common/package.tgz",
+        "@platforma-sdk/model": "file:/home/snyssfx/prog/mi/platforma/sdk/model/package.tgz",
+        "@platforma-sdk/test": "file:/home/snyssfx/prog/mi/platforma/sdk/test/package.tgz",
+        "@platforma-sdk/workflow-tengo": "file:/home/snyssfx/prog/mi/platforma/sdk/workflow-tengo/package.tgz",
+        "@platforma-sdk/tengo-builder": "file:/home/snyssfx/prog/mi/platforma/tools/tengo-builder/package.tgz"
+      }
+    }
+  },
   "//": {
     "pnpm": {
       "overrides": {
