@@ -129,7 +129,8 @@ wf.body(func(args) {
 			},
 			valueType: "File",
 			annotations: {
-				"pl7.app/label": "Sequencing Data"
+				"pl7.app/label": "Sequencing Data",
+				"pl7.app/hideDataFromUi": "true"
 			}
 		})
 
