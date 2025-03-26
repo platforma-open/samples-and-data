@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.10.1
+
+### Patch Changes
+
+- 7051768: don't export samples for UI, it greatly saves network and storage
+
 ## 1.10.0
 
 ### Minor Changes
