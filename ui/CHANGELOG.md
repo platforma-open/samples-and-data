@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.17.1
+
+### Patch Changes
+
+- 5463fc6: Attempt to fix table blinking on big data (result is unknown)
+
 ## 1.17.0
 
 ### Minor Changes
