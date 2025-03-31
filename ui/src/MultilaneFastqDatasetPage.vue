@@ -60,6 +60,7 @@ const defaultColDef: ColDef = {
 
 const columnDefs = computed(() => {
   const sampleLabels = app.model.args.sampleLabels;
+  const progresses = app.progresses;
   const res: ColDef<MultilaneFastaDatasetRow>[] = [
     makeRowNumberColDef(),
     {
@@ -87,7 +88,6 @@ const columnDefs = computed(() => {
       cellRendererParams: {
         extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-          const progresses = app.progresses;
           if (!fileHandle) return undefined;
           else return progresses[fileHandle];
         }
