@@ -63,6 +63,8 @@ const defaultColDef: ColDef = {
 
 const columnDefs = computed(() => {
   const sampleLabels = app.model.args.sampleLabels;
+  const progresses = app.progresses;
+
   const res: ColDef<FastqDatasetRow>[] = [
     makeRowNumberColDef(),
     {
@@ -98,7 +100,6 @@ const columnDefs = computed(() => {
 
       cellRendererParams: {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-          const progresses = app.progresses;
           if (!fileHandle) return undefined;
           else return progresses[fileHandle];
         }
@@ -115,7 +116,7 @@ const columnDefs = computed(() => {
           : undefined,
       valueGetter: (params) =>
         params.data?.sample
-          ? dataset.value.content.data[params.data.sample]![readIndex]
+          ? dataset.value.content.data[params.data.sample]?.[readIndex]
           : undefined,
       valueSetter: (params) => {
         const sample = params.data.sample;

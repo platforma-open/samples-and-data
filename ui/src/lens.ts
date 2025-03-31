@@ -1,6 +1,6 @@
 import { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import { useApp } from './app';
-import { DeepReadonly, Ref, ref, watch } from 'vue';
+import { DeepReadonly, Ref, ref, watch, shallowRef, reactive, UnwrapNestedRefs } from 'vue';
 
 // type ExtractFieldType<T, Path extends any[]> = Path extends [infer Key, ...infer Rest]
 //   ? Key extends keyof T
@@ -93,19 +93,23 @@ export type ArgsModelOps<T> = {
   onDisconnected?: () => void;
 };
 
-export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T>): ArgsModel<T> {
+export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T>): UnwrapNestedRefs<ArgsModel<T>> {
   const connected = ref(true);
+
   const initialValue = ops.get(app.model.args);
+  
   if (initialValue === undefined) {
     connected.value = false;
     if (ops.onDisconnected) ops.onDisconnected();
-    return {
+    return reactive({
       connected,
       value: undefined as DeepReadonly<T>,
       update: () => {} // noop we are disconnected
-    };
+    });
   }
-  const r = ref<T>(initialValue) as Ref<T>;
+
+  const r = shallowRef<T>(initialValue) as Ref<T>;
+
   watch(
     () => app.model.args,
     (args) => {
@@ -118,13 +122,13 @@ export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T
         return;
       }
       r.value = newValue;
-    }
-  );
-  return {
-    connected,
-    get value() {
-      return r.value as DeepReadonly<T>;
     },
+    { deep: true }
+  );
+  
+  const model: ArgsModel<T> = {
+    connected,
+    value: r as DeepReadonly<T>,
     update: (op) => {
       if (!connected.value) throw new Error("Can't mutate disconnected model");
       app.updateArgs((args) => {
@@ -140,4 +144,6 @@ export function argsModel<T>(app: ReturnType<typeof useApp>, ops: ArgsModelOps<T
       });
     }
   };
+
+  return reactive(model);
 }
