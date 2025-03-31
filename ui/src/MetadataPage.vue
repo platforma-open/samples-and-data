@@ -236,7 +236,7 @@ const rowData = computed<MetadataRow[]>(() => {
   }));
 });
 
-const gridOptions: GridOptions<MetadataRow> = {
+const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
   getRowId: (row) => row.data.id,
 
   rowSelection: {
@@ -331,7 +331,7 @@ const gridOptions: GridOptions<MetadataRow> = {
   components: {
     DatasetCell
   }
-};
+}));
 </script>
 
 <template>
