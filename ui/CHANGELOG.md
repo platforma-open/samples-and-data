@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.17.2
+
+### Patch Changes
+
+- 61a4bfe: [MILAB-1966] Update ui-sdk (better performance)
+
 ## 1.17.1
 
 ### Patch Changes
