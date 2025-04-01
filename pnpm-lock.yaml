@@ -25,8 +25,8 @@ catalogs:
       specifier: ^1.24.7
       version: 1.24.7
     '@platforma-sdk/ui-vue':
-      specifier: ^1.24.5
-      version: 1.24.5
+      specifier: ^1.25.2
+      version: 1.25.2
     '@platforma-sdk/workflow-tengo':
       specifier: ^3.0.2
       version: 3.0.2
@@ -160,7 +160,7 @@ importers:
         version: 1.24.5
       '@platforma-sdk/ui-vue':
         specifier: 'catalog:'
-        version: 1.24.5(typescript@5.5.4)
+        version: 1.25.2(typescript@5.5.4)
       '@types/node':
         specifier: 'catalog:'
         version: 20.16.15
@@ -846,6 +846,9 @@ packages:
   '@milaboratories/pl-model-common@1.11.1':
     resolution: {integrity: sha512-bCuItv8bIjrRmMk4vItBf6cJtHwl4j5vt5XbT/Fa7KjcEKl3RskED+H/KQqEdd026Esr+y9qKA5PmvP31qEfDg==}
 
+  '@milaboratories/pl-model-common@1.12.0':
+    resolution: {integrity: sha512-e9wRTIJRUKf/T7pk5qbXy8JN4vCXOk53oFaTgq0lz1PtZM7XUBQuUHbB328l70Fs1uRpddk2M5scjnNRGMgdUQ==}
+
   '@milaboratories/pl-model-middle-layer@1.7.11':
     resolution: {integrity: sha512-nfaBRS+4XjjgmMvNfJry9uGkYEycxc+xlGBurg0vPG9qUKlEJMqx/y+Rkrm7SwpOeXzl6SCZ4Xqb2p/ySsiE6A==}
 
@@ -944,6 +947,9 @@ packages:
   '@platforma-sdk/model@1.24.5':
     resolution: {integrity: sha512-hiyc8aqpSH544fbO8phDZc5Gua9NHwZQv5CHts+UPJMAmcBOLPYpcKK9ImTXhEpo+KQdFqJ0v3Pvl5zLI417Lw==}
 
+  '@platforma-sdk/model@1.25.0':
+    resolution: {integrity: sha512-GXlIX1gP6DZFpq0QRpgfQuVQ677058sRujjspGGHoHIzCb5Zgma5VUcJ635oSr26litind6Dc+nNr5KYD0zhYA==}
+
   '@platforma-sdk/tengo-builder@2.0.1':
     resolution: {integrity: sha512-2LgxAFIeFSPMDrPoJLW5GH5qf1SYOosLQzEdP6uMsYeEDS7Xk9cHRnoEHolStEuPy/PiE3NYAlhHXgFzgV4nJg==}
     engines: {node: '>=20'}
@@ -952,8 +958,8 @@ packages:
   '@platforma-sdk/test@1.24.7':
     resolution: {integrity: sha512-vhlim9B/Jtyt0S6o37UVMV3V6NGac7IshU5EToShYBUwY7ZFCUlFkPSmuC5ZyTJaweeIaKyJnqCxKgykl6eRHA==}
 
-  '@platforma-sdk/ui-vue@1.24.5':
-    resolution: {integrity: sha512-RdoKKoLM/svTPUpagK7ZYaCSe2ONQw4yuiETgvo5bdUbdch70k4tL97smDIF5R8RH42QgSWY/LtamDl4GMhRTw==}
+  '@platforma-sdk/ui-vue@1.25.2':
+    resolution: {integrity: sha512-exr8LNULxyxPj+efuAA+P3DcPAlRR/odLUEEWWdpEGGhOZRii3byookudBSEtHYvSLFqoJOd8PIiuU0gzmIXIg==}
 
   '@platforma-sdk/workflow-tengo@3.0.2':
     resolution: {integrity: sha512-uOl1h0gqzQ2WgRV2gscCMb7mMRAa8xlI9n/IM31zHpHLj/foaEzGi4gCYbzfWKGcSmhQ5Q9JRTvXawKMiljaeA==}
@@ -4070,6 +4076,11 @@ snapshots:
       canonicalize: 2.1.0
       zod: 3.23.8
 
+  '@milaboratories/pl-model-common@1.12.0':
+    dependencies:
+      canonicalize: 2.1.0
+      zod: 3.23.8
+
   '@milaboratories/pl-model-middle-layer@1.7.11':
     dependencies:
       '@milaboratories/pl-model-common': 1.11.1
@@ -4227,6 +4238,12 @@ snapshots:
       utility-types: 3.11.0
       zod: 3.23.8
 
+  '@platforma-sdk/model@1.25.0':
+    dependencies:
+      '@milaboratories/pl-model-common': 1.12.0
+      utility-types: 3.11.0
+      zod: 3.23.8
+
   '@platforma-sdk/tengo-builder@2.0.1':
     dependencies:
       '@milaboratories/pl-model-backend': 1.0.2
@@ -4267,10 +4284,10 @@ snapshots:
       - supports-color
       - terser
 
-  '@platforma-sdk/ui-vue@1.24.5(typescript@5.5.4)':
+  '@platforma-sdk/ui-vue@1.25.2(typescript@5.5.4)':
     dependencies:
       '@milaboratories/uikit': 2.2.60(typescript@5.5.4)
-      '@platforma-sdk/model': 1.24.5
+      '@platforma-sdk/model': 1.25.0
       ag-grid-enterprise: 33.2.1
       ag-grid-vue3: 33.2.1(vue@3.5.13(typescript@5.5.4))
       canonicalize: 2.1.0
