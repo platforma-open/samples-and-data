@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.17.3
+
+### Patch Changes
+
+- 540544f: Fix breadcrumbs in plFileDialog
+
 ## 1.17.2
 
 ### Patch Changes
