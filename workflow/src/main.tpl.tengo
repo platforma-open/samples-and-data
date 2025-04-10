@@ -130,7 +130,8 @@ wf.body(func(args) {
 			valueType: "File",
 			annotations: {
 				"pl7.app/label": "Sequencing Data",
-				"pl7.app/hideDataFromUi": "true"
+				"pl7.app/hideDataFromUi": "true",
+				"pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))) // axis values for sampleIdAxis
 			}
 		})
 
