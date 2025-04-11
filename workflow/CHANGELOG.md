@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.12.0
+
+### Minor Changes
+
+- d483670: Save dataset samplesIds in axisKeys annotation
+
 ## 1.11.0
 
 ### Minor Changes
