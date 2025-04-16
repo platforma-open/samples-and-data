@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.12.1
+
+### Patch Changes
+
+- 40ec8d7: bump dependencies: compact template compilation
+
 ## 1.12.0
 
 ### Minor Changes
