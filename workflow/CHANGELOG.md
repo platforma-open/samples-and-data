@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.12.2
+
+### Patch Changes
+
+- c8a903d: chore: update deps
+
 ## 1.12.1
 
 ### Patch Changes
