@@ -95,18 +95,18 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
 }
 
 async function importMetadata() {
-  const result = await platforma!.lsDriver.showOpenSingleFileDialog({
+  const result = await window.platforma!.lsDriver.showOpenSingleFileDialog({
     title: 'Import metadata table',
     buttonLabel: 'Import',
     filters: [{ extensions: ['xlsx', 'csv', 'tsv', 'txt'], name: 'Table data' }]
   });
   const file = result.file;
   if (!file) return;
-  if ((await platforma!.lsDriver.getLocalFileSize(file)) > 5_000_000) {
+  if ((await window.platforma!.lsDriver.getLocalFileSize(file)) > 5_000_000) {
     data.errorMessage = { title: 'File is too big' };
     return;
   }
-  const content = await platforma!.lsDriver.getLocalFileContent(file);
+  const content = await window.platforma!.lsDriver.getLocalFileContent(file);
   try {
     const ic = readFileForImport(content);
     if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
