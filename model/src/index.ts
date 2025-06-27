@@ -26,9 +26,10 @@ export const platforma = BlockModel.create()
     (ctx) =>
       Object.fromEntries(
         ctx.outputs
-          ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
+          ?.resolve({ field: 'fileImports', assertFieldType: 'Input', ignoreError: true })
           ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
-            skipUnresolved: true
+            fieldType: 'Input',
+            skipUnresolved: true,
           }) ?? []
       ),
     { isActive: true }
