@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.12.3
+
+### Patch Changes
+
+- 1d70af2: Update SDK dependency to get fresh bugfixes
+
 ## 1.12.2
 
 ### Patch Changes

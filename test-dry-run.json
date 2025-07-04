@@ -3,7 +3,7 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "2yPcwKrB1yZmzAEzIq75KJL2fo7",
+  "id": "2zPeKrRVQuxh3TsdwwgzmVfqLyW",
   "version": "1",
   "turboVersion": "2.4.4",
   "monorepo": true,
@@ -37,12 +37,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "9a72fbf1382d9b9f",
+      "hash": "c4bfa0ba7ffd33b1",
       "inputs": {
-        "CHANGELOG.md": "498aeda2324514f6dc88c908c05b176555680c80",
+        "CHANGELOG.md": "a087a4305f540551ece88adcebc51237d8513f93",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "d77eb4b1d07e09ea54e8a53032691fa9a2feafab"
+        "package.json": "4b2b0a1779edfd6fb53bcc162a1e57ca4a7a3ff7"
       },
       "hashOfExternalDependencies": "368e4938b57c8619",
       "cache": {
@@ -50,7 +50,7 @@
         "remote": false,
         "status": "HIT",
         "source": "LOCAL",
-        "timeSaved": 1597
+        "timeSaved": 1780
       },
       "command": "rm -rf block-pack && block-tools pack",
       "cliArguments": [],
@@ -106,12 +106,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "cc604f3eb8b761c0",
+      "hash": "63601a6f9d540174",
       "inputs": {
-        "CHANGELOG.md": "498aeda2324514f6dc88c908c05b176555680c80",
+        "CHANGELOG.md": "a087a4305f540551ece88adcebc51237d8513f93",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "d77eb4b1d07e09ea54e8a53032691fa9a2feafab"
+        "package.json": "4b2b0a1779edfd6fb53bcc162a1e57ca4a7a3ff7"
       },
       "hashOfExternalDependencies": "368e4938b57c8619",
       "cache": {
@@ -194,7 +194,7 @@
         "remote": false,
         "status": "HIT",
         "source": "LOCAL",
-        "timeSaved": 5341
+        "timeSaved": 5059
       },
       "command": "tsup && vite build && block-tools build-model",
       "cliArguments": [],
@@ -323,7 +323,7 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "5fbbc2f54e9d743c",
+      "hash": "7558fc3a5d14885b",
       "inputs": {
         "CHANGELOG.md": "863c4a5af49868d8c7b5a1209744e95f3adaf66f",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
@@ -334,7 +334,7 @@
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
       },
-      "hashOfExternalDependencies": "d4fe1dfeccf4bb8e",
+      "hashOfExternalDependencies": "443b232ba01bdd30",
       "cache": {
         "local": false,
         "remote": false,
@@ -393,7 +393,7 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "29397c4a95868f90",
+      "hash": "193dadeb18301428",
       "inputs": {
         "CHANGELOG.md": "863c4a5af49868d8c7b5a1209744e95f3adaf66f",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
@@ -404,7 +404,7 @@
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
       },
-      "hashOfExternalDependencies": "d4fe1dfeccf4bb8e",
+      "hashOfExternalDependencies": "443b232ba01bdd30",
       "cache": {
         "local": false,
         "remote": false,
@@ -521,7 +521,7 @@
         "remote": false,
         "status": "HIT",
         "source": "LOCAL",
-        "timeSaved": 15465
+        "timeSaved": 15357
       },
       "command": "vue-tsc -b && vite build",
       "cliArguments": [],
@@ -686,20 +686,20 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "eb36247f55346118",
+      "hash": "5d8528ae430b3454",
       "inputs": {
-        "CHANGELOG.md": "4e0f33dcf817f59475462194998a63b828baeab3",
+        "CHANGELOG.md": "aeb5cff13e421dfda1d0f475578a399273965fff",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "9abbee056bdcc392132ca7958c9cb04f62e44f8b",
+        "package.json": "e79b6b7bea4e3e74caea9acf60a6e27b6704b0b2",
         "src/main.tpl.tengo": "176133a8d326060ea103546ad3a7addcf48f2e1e"
       },
-      "hashOfExternalDependencies": "7bf131336f455edb",
+      "hashOfExternalDependencies": "33a8888153386d37",
       "cache": {
         "local": true,
         "remote": false,
         "status": "HIT",
         "source": "LOCAL",
-        "timeSaved": 2583
+        "timeSaved": 2592
       },
       "command": "rm -rf dist/* && pl-tengo check && pl-tengo build",
       "cliArguments": [],
@@ -751,14 +751,14 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "d1fb9be6d517594a",
+      "hash": "4d331ef64a9012bc",
       "inputs": {
-        "CHANGELOG.md": "4e0f33dcf817f59475462194998a63b828baeab3",
+        "CHANGELOG.md": "aeb5cff13e421dfda1d0f475578a399273965fff",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "9abbee056bdcc392132ca7958c9cb04f62e44f8b",
+        "package.json": "e79b6b7bea4e3e74caea9acf60a6e27b6704b0b2",
         "src/main.tpl.tengo": "176133a8d326060ea103546ad3a7addcf48f2e1e"
       },
-      "hashOfExternalDependencies": "7bf131336f455edb",
+      "hashOfExternalDependencies": "33a8888153386d37",
       "cache": {
         "local": false,
         "remote": false,
@@ -822,7 +822,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "59cb5d2e7a911a6ed28e721d15a6664b114c9c42",
+    "sha": "0a15c6ba2b6e90a85131cb221f555455da32da39",
     "branch": "main"
   }
 }
