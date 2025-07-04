@@ -28,8 +28,8 @@ catalogs:
       specifier: ^1.29.17
       version: 1.29.17
     '@platforma-sdk/workflow-tengo':
-      specifier: ^4.9.1
-      version: 4.9.1
+      specifier: ^4.9.2
+      version: 4.9.2
     '@types/node':
       specifier: ~20.16.15
       version: 20.16.15
@@ -208,7 +208,7 @@ importers:
     dependencies:
       '@platforma-sdk/workflow-tengo':
         specifier: 'catalog:'
-        version: 4.9.1
+        version: 4.9.2
     devDependencies:
       '@platforma-sdk/tengo-builder':
         specifier: 'catalog:'
@@ -967,8 +967,8 @@ packages:
   '@platforma-sdk/workflow-tengo@4.1.2':
     resolution: {integrity: sha512-sbEPneeL1k1bCBOGP99PuDa+turCpfV3o/79+afXafYjEm4zafMbdh0+/NQQ/ZbzkcdH+bWgIIG1VikbsV/Arw==}
 
-  '@platforma-sdk/workflow-tengo@4.9.1':
-    resolution: {integrity: sha512-Ao2m3GsZypXIdBcNFwyqHSJ8tePrTfM7zgos1XLC+e4tTo8d/7ZSk/cHJl2bzzLcqXhlrjgXIlVZ4pBQJDYBvA==}
+  '@platforma-sdk/workflow-tengo@4.9.2':
+    resolution: {integrity: sha512-tKwNLM1suzbmClN2jmltIfWSU22xgM7ySnqdUGZXQY4rR0gYkiD2VruRqZ5lLMoHXCIhjP6LZhY80IaPfS3+FQ==}
 
   '@protobuf-ts/grpc-transport@2.9.6':
     resolution: {integrity: sha512-MdL6aiIhlEdXn0ZVmMfFtXtNPze21vqUW3w+E3MDqv/hgyPf5jpvQeRz+9+lu2flPfXRf+2w2d+6nWpMv25o6Q==}
@@ -4287,7 +4287,7 @@ snapshots:
       '@milaboratories/software-pframes-conv': 2.2.2
       '@platforma-open/milaboratories.software-small-binaries': 1.15.21
 
-  '@platforma-sdk/workflow-tengo@4.9.1':
+  '@platforma-sdk/workflow-tengo@4.9.2':
     dependencies:
       '@milaboratories/software-pframes-conv': 2.2.2
       '@platforma-open/milaboratories.software-ptabler': 1.6.0
