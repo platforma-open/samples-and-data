@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.12.4
+
+### Patch Changes
+
+- 3d0d737: Remove tsup build (use vite)
+
 ## 1.12.3
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 1.6.1
+
+### Patch Changes
+
+- 3d0d737: Remove tsup build (use vite)
+- Updated dependencies [3d0d737]
+  - @platforma-open/milaboratories.samples-and-data.model@1.10.1
+
 ## 1.6.0
 
 ### Minor Changes
