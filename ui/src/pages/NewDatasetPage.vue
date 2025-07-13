@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { onMounted } from 'vue';
-import { ImportDatasetDialog } from '../ImportDatasetDialog';
 import { useApp } from '../app';
+import ImportDatasetDialog from './modals/ImportDatasetDialog.vue';
 
 const app = useApp();
 

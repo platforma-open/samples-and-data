@@ -1,24 +1,26 @@
 <script setup lang="ts">
-import {
+import type {
   MetadataColumn,
-  PlId,
-  uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { PlId } from '@platforma-sdk/model';
+import { uniquePlId } from '@platforma-sdk/model';
+import type {
+  ListOption,
+} from '@platforma-sdk/ui-vue';
 import {
   isDefined,
-  ListOption,
   PlBtnPrimary,
   PlBtnSecondary,
   PlCheckbox,
   PlDialogModal,
   PlDropdown,
   PlLogView,
-  PlTextArea
+  PlTextArea,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, watch } from 'vue';
-import { useApp } from './app';
-import { ImportResult } from './dataimport';
-import { determineBestMatchingAlgorithm } from './sample_matching';
+import { useApp } from '../../app';
+import type { ImportResult } from '../../dataimport';
+import { determineBestMatchingAlgorithm } from '../../sample_matching';
 
 const props = defineProps<{ importCandidate: ImportResult }>();
 
@@ -28,7 +30,7 @@ const app = useApp();
 
 const data = reactive({
   sampleNameColumnIdx: -1,
-  addUnmatchedSamples: false
+  addUnmatchedSamples: false,
 });
 
 watch(
@@ -37,7 +39,7 @@ watch(
     data.sampleNameColumnIdx = ic.data.columns.findIndex((c) => c.header.includes('sample'));
     if (data.sampleNameColumnIdx === -1) data.sampleNameColumnIdx = 0;
   },
-  { immediate: true }
+  { immediate: true },
 );
 
 const algo = computed(() =>
@@ -48,12 +50,12 @@ const algo = computed(() =>
       : props.importCandidate.data.rows
           .map((r) => r[data.sampleNameColumnIdx])
           .filter(isDefined)
-          .map((v) => String(v))
-  )
+          .map((v) => String(v)),
+  ),
 );
 
 const sampleColumnOptions = computed<ListOption<number>[]>(() =>
-  props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header }))
+  props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })),
 );
 
 function columnNamesMatch(existingColumn: string, importColumn: string): boolean {
@@ -101,7 +103,7 @@ function runImport() {
     else {
       const column = props.importCandidate.data.columns[cIdx];
       const existing = app.model.args.metadata.find((mc) =>
-        columnNamesMatch(mc.label, column.header)
+        columnNamesMatch(mc.label, column.header),
       );
       if (existing) modelColumns.push(existing);
       else {
@@ -110,7 +112,7 @@ function runImport() {
           valueType: column.type,
           label: column.header,
           global: true,
-          data: {}
+          data: {},
         };
         args.metadata.push(mColumn);
         modelColumns.push(mColumn);
@@ -128,7 +130,7 @@ function runImport() {
       // coerce to string
       iSampleName = String(iSampleName);
     let sampleId = existingSamples.find(
-      ([, sLabel]) => sLabel && matcher(sLabel, iSampleName)
+      ([, sLabel]) => sLabel && matcher(sLabel, iSampleName),
     )?.[0] as PlId | undefined;
 
     if (!sampleId) {
@@ -154,18 +156,18 @@ function runImport() {
     :model-value="true"
     :close-on-outside-click="false"
     closable
+    width="70%"
     @update:model-value="
       (v) => {
         if (!v) emit('onClose');
       }
     "
-    width="70%"
   >
     <template #title>Import metadata</template>
     <PlDropdown
+      v-model="data.sampleNameColumnIdx"
       label="Sample name column"
       :options="sampleColumnOptions"
-      v-model="data.sampleNameColumnIdx"
     />
     <PlCheckbox v-model="data.addUnmatchedSamples"> Add unmatched samples </PlCheckbox>
     <PlLogView :value="tableDataText" label="Import information">

@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import {
+import type {
   BlockArgs,
   DatasetContentFasta,
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
-  PlId,
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
-import {
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
+import { getFilePathFromHandle } from '@platforma-sdk/model';
+import type {
   ListOption,
+} from '@platforma-sdk/ui-vue';
+import {
   PlBtnGhost,
   PlBtnGroup,
   PlBtnPrimary,
@@ -21,34 +23,32 @@ import {
   PlTextField,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, watch } from 'vue';
-import { useApp } from '../app';
+import { useApp } from '../../app';
+import {
+  createGetOrCreateSample,
+  extractFileName,
+  getDsReadIndices,
+  modesOptions,
+  readIndicesOptions,
+  useParsedFiles,
+  usePatternCompilation,
+} from '../../datasets';
 import {
   getWellFormattedReadIndex,
-  inferFileNamePattern
-} from '../file_name_parser';
-import ParsedFilesList from '../ParsedFilesList.vue';
-import * as _ from 'radashi';
-import { 
-  usePatternCompilation, 
-  extractFileName, 
-  getDsReadIndices, 
-  useParsedFiles, 
-  readIndicesOptions, 
-  modesOptions, 
-  createGetOrCreateSample 
-} from '../datasets';
-
+  inferFileNamePattern,
+} from '../../file_name_parser';
+import ParsedFilesList from '../components/ParsedFilesList.vue';
 
 const emit = defineEmits<{ onClose: [] }>();
 
 const app = useApp();
 
 const props = defineProps<{
-  targetDataset: PlId
-}>()
+  targetDataset: PlId;
+}>();
 
 const presetTargetDataset = computed(() => {
-  return app.model.args.datasets.find(ds => ds.id === props.targetDataset)
+  return app.model.args.datasets.find((ds) => ds.id === props.targetDataset);
 });
 
 function doClose() {
@@ -62,16 +62,16 @@ const resetData = () => {
     targetAddDataset: presetTargetDataset.value?.id,
     gzipped: presetTargetDataset.value?.content.gzipped ?? false,
     readIndices: presetTargetDataset.value?.content.type === 'Fastq' || presetTargetDataset.value?.content.type === 'MultilaneFastq'
-        ? presetTargetDataset.value.content.readIndices
-        : [] as string[],
+      ? presetTargetDataset.value.content.readIndices
+      : [] as string[],
     files: [] as ImportFileHandle[],
     newDatasetLabel: app.inferNewDatasetLabel(),
     pattern: '',
     fileDialogOpened: true,
     datasetDialogOpened: false,
-    importing: false
-  }
-};  
+    importing: false,
+  };
+};
 
 const data = reactive(resetData());
 
@@ -81,7 +81,7 @@ watch([props, presetTargetDataset], () => {
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
 
-watch(isOneOfDialogsOpened, v => {
+watch(isOneOfDialogsOpened, (v) => {
   if (!v) {
     doClose();
   }
@@ -103,7 +103,7 @@ function addFiles(files: ImportFileHandle[]) {
     }
 
     const inferredPattern = inferFileNamePattern(fileNames, { expectedReadIndices: getDsReadIndices(pds), isGzipped: pds.content.gzipped });
-    
+
     if (inferredPattern) {
       data.pattern = inferredPattern.pattern.rawPattern;
       data.gzipped = inferredPattern.extension.endsWith('.gz');
@@ -119,7 +119,7 @@ const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   return app.model.args.datasets
     .map((ds) => ({
       value: ds.id,
-      label: ds.label
+      label: ds.label,
     }));
 });
 
@@ -159,7 +159,7 @@ function addFastqDatasetContent(args: BlockArgs, contentData: DatasetContentFast
 
 function addMultilaneFastqDatasetContent(
   args: BlockArgs,
-  contentData: DatasetContentMultilaneFastq['data']
+  contentData: DatasetContentMultilaneFastq['data'],
 ) {
   const getOrCreateSample = createGetOrCreateSample(args);
 
@@ -220,12 +220,12 @@ async function addToExistingDataset() {
 
 const canAdd = computed(
   () =>
-    hasMatchedFiles.value &&
-    (data.targetAddDataset !== undefined) &&
+    hasMatchedFiles.value
+    && (data.targetAddDataset !== undefined)
     // This prevents selecting fasta as type while having read index matcher in pattern
-    (data.readIndices.length !== 0 ||
-      (compiledPattern.value?.hasReadIndexMatcher === false &&
-        compiledPattern.value?.hasLaneMatcher === false))
+    && (data.readIndices.length !== 0
+      || (compiledPattern.value?.hasReadIndexMatcher === false
+        && compiledPattern.value?.hasLaneMatcher === false)),
 );
 </script>
 
@@ -238,23 +238,24 @@ const canAdd = computed(
 
     <PlRow alignCenter>
       <PlDropdown v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" :disabled="true" />
-      <PlBtnGroup 
-        :model-value="JSON.stringify(data.readIndices)" 
+      <PlBtnGroup
+        :model-value="JSON.stringify(data.readIndices)"
         :style="{ width: '200px' }"
-        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" 
         :options="readIndicesOptions"
-        :disabled="true" />
+        :disabled="true"
+        @update:model-value="(v) => (data.readIndices = JSON.parse(v))"
+      />
       <PlCheckbox v-model="data.gzipped" :disabled="true"> Gzipped </PlCheckbox>
     </PlRow>
 
-    <PlTextField label="Pattern" v-model="data.pattern" :error="patternError" />
+    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError" />
 
     <ParsedFilesList :items="parsedFiles" />
 
     <PlBtnSecondary @click="() => (data.fileDialogOpened = true)"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary :disabled="!canAdd" @click="add" :loading="data.importing">
+      <PlBtnPrimary :disabled="!canAdd" :loading="data.importing" @click="add">
         Add
       </PlBtnPrimary>
 
@@ -262,10 +263,11 @@ const canAdd = computed(
     </template>
   </PlDialogModal>
 
-  <PlFileDialog 
-    v-model="data.fileDialogOpened" 
-    :close-on-outside-click="false" 
+  <PlFileDialog
+    v-model="data.fileDialogOpened"
+    :close-on-outside-click="false"
     :multi="true"
-    title="Select files to import" 
-    @import:files="(e) => addFiles(e.files)" />
+    title="Select files to import"
+    @import:files="(e) => addFiles(e.files)"
+  />
 </template>

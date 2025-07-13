@@ -7,19 +7,18 @@ import {
   type GridReadyEvent,
   type IRowNode,
   MenuModule,
-  ModuleRegistry
+  ModuleRegistry,
 } from 'ag-grid-enterprise';
 import { AgGridVue } from 'ag-grid-vue3';
 
 import { notEmpty } from '@milaboratories/helpers';
-import {
+import type {
   MetadataColumnValueType,
-  PlId,
-  uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { PlId } from '@platforma-sdk/model';
+import { uniquePlId } from '@platforma-sdk/model';
 import {
   AgGridTheme,
-  makeRowNumberColDef,
   PlAgColumnHeader,
   type PlAgHeaderComponentParams,
   PlAgOverlayNoRows,
@@ -27,14 +26,16 @@ import {
   PlBtnGhost,
   PlBtnPrimary,
   PlDialogModal,
-  PlEditableTitle,
+  PlEditableTitle
 } from '@platforma-sdk/ui-vue';
-import { computed, reactive, ref, shallowRef, useCssModule } from 'vue';
-import { useApp } from './app';
-import { ImportResult, readFileForImport } from './dataimport';
-import DatasetCell from './DatasetCell.vue';
-import {ImportDatasetDialog} from './ImportDatasetDialog';
-import ImportMetadataModal from './ImportMetadataModal.vue';
+import { computed, reactive, shallowRef, useCssModule } from 'vue';
+import { useApp } from '../app';
+import type { ImportResult } from '../dataimport';
+import { readFileForImport } from '../dataimport';
+
+import DatasetCell from './components/DatasetCell.vue';
+import ImportDatasetDialog from './modals/ImportDatasetDialog.vue';
+import ImportMetadataModal from './modals/ImportMetadataModal.vue';
 
 const styles = useCssModule();
 
@@ -50,7 +51,7 @@ const data = reactive<{
   errorMessage: ErrorMessage | undefined;
 }>({
   importCandidate: undefined,
-  errorMessage: undefined
+  errorMessage: undefined,
 });
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
@@ -68,7 +69,7 @@ async function addColumn(valueType: MetadataColumnValueType) {
       valueType,
       label: `Meta Column (${Object.values(arg.metadata).length})`,
       global: true,
-      data: {}
+      data: {},
     });
   });
 }
@@ -98,7 +99,7 @@ async function importMetadata() {
   const result = await platforma!.lsDriver.showOpenSingleFileDialog({
     title: 'Import metadata table',
     buttonLabel: 'Import',
-    filters: [{ extensions: ['xlsx', 'csv', 'tsv', 'txt'], name: 'Table data' }]
+    filters: [{ extensions: ['xlsx', 'csv', 'tsv', 'txt'], name: 'Table data' }],
   });
   const file = result.file;
   if (!file) return;
@@ -115,9 +116,9 @@ async function importMetadata() {
       return;
     }
     data.importCandidate = ic;
-  } catch (e: any) {
+  } catch (e) {
     console.log(e);
-    data.errorMessage = { title: 'Error reading table', message: e.msg };
+    data.errorMessage = { title: 'Error reading table', message: (e as Error).message };
   }
 }
 
@@ -134,7 +135,7 @@ async function deleteSamples(sampleIds: PlId[]) {
 
 const columnDefs = computed<ColDef[]>(() => {
   const colDefs: ColDef[] = [
-    { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
+    // { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
     {
       colId: 'label',
       field: 'label',
@@ -144,7 +145,7 @@ const columnDefs = computed<ColDef[]>(() => {
       maxWidth: 300,
       suppressHeaderMenuButton: true,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
     },
     {
       colId: 'datasets',
@@ -154,13 +155,13 @@ const columnDefs = computed<ColDef[]>(() => {
       cellRendererSelector: (params) => ({
         component: 'DatasetCell',
         params: {
-          datasets: params.data.datasets
-        }
+          datasets: params.data.datasets,
+        },
       }),
       minWidth: 100,
       suppressHeaderMenuButton: true,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
     },
     ...app.model.args.metadata.map((mCol): ColDef => {
       const common: ColDef = {
@@ -176,7 +177,7 @@ const columnDefs = computed<ColDef[]>(() => {
           return {
             ...common,
             headerComponent: PlAgColumnHeader,
-            headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams
+            headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
           };
         case 'Double':
           return {
@@ -184,7 +185,7 @@ const columnDefs = computed<ColDef[]>(() => {
             cellDataType: 'number',
             cellEditor: 'agNumberCellEditor',
             headerComponent: PlAgColumnHeader,
-            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
+            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams,
           };
         case 'Long':
           return {
@@ -193,10 +194,10 @@ const columnDefs = computed<ColDef[]>(() => {
             cellEditor: 'agNumberCellEditor',
             cellEditorParams: {
               precision: 0,
-              showStepperButtons: true
+              showStepperButtons: true,
             },
             headerComponent: PlAgColumnHeader,
-            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams
+            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams,
           };
       }
     }),
@@ -210,8 +211,8 @@ const columnDefs = computed<ColDef[]>(() => {
       sortable: false,
       resizable: false,
       pinned: 'right',
-      lockPinned: true
-    }
+      lockPinned: true,
+    },
   ];
 
   return colDefs.map((c, i, arr) => arr.length === i + 2 /** before last "+" column */ ? { ...c, flex: 1, minWidth: 200, maxWidth: undefined } : c);
@@ -232,7 +233,7 @@ const rowData = computed<MetadataRow[]>(() => {
     id,
     label: app.model.args.sampleLabels[id]!,
     meta: Object.fromEntries(app.model.args.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
-    datasets: samples2ds[id]
+    datasets: samples2ds[id],
   }));
 });
 
@@ -242,12 +243,12 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,
-    headerCheckbox: false
+    headerCheckbox: false,
   },
 
   autoSizeStrategy: {
     type: 'fitCellContents',
-    colIds: columnDefs.value.slice(0, -2).map((c) => c.colId!) // except last two columns
+    colIds: columnDefs.value.slice(0, -2).map((c) => c.colId!), // except last two columns
   },
 
   stopEditingWhenCellsLoseFocus: true,
@@ -287,24 +288,24 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
       return [
         {
           name: 'Add String Column',
-          action: (params) => addColumn('String')
+          action: () => addColumn('String'),
         },
         {
           name: 'Add Integer Column',
-          action: (params) => addColumn('Long')
+          action: () => addColumn('Long'),
         },
         {
           name: 'Add Numerical Column',
-          action: (params) => addColumn('Double')
-        }
+          action: () => addColumn('Double'),
+        },
       ];
     } else if (columnId.startsWith('meta.')) {
       const metaColumnId = columnId.slice(5);
       return [
         {
           name: `Delete ${params?.column?.getColDef().headerName}`,
-          action: (params) => deleteMetaColumn(metaColumnId)
-        }
+          action: () => deleteMetaColumn(metaColumnId),
+        },
       ];
     } else return [];
   },
@@ -320,17 +321,16 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
             ? `${targetSamples.length} samples`
             : app.model.args.sampleLabels[targetSamples[0]]
         }`,
-        action: (params) => {
-          const samplesToDelete = getSelectedSamples(params.node);
+        action: () => {
           deleteSamples(targetSamples);
-        }
-      }
+        },
+      },
     ];
   },
 
   components: {
-    DatasetCell
-  }
+    DatasetCell,
+  },
 }));
 </script>
 
@@ -345,7 +345,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
       />
     </template>
     <template #append>
-      <PlBtnGhost @click.stop="() => (app.showImportDataset = true)" icon="dna-import">
+      <PlBtnGhost icon="dna-import" @click.stop="() => (app.showImportDataset = true)">
         Import sequencing data
       </PlBtnGhost>
       &nbsp;

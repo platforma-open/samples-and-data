@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import {
+import type {
   BlockArgs,
   DatasetContentFasta,
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
   DatasetContentTaggedFastq,
-  PlId,
-  ReadIndices,
-  uniquePlId
+  ReadIndex,
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
-import {
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
+import { getFilePathFromHandle, uniquePlId } from '@platforma-sdk/model';
+import type {
   ListOption,
+} from '@platforma-sdk/ui-vue';
+import {
   PlBtnGhost,
   PlBtnGroup,
   PlBtnPrimary,
@@ -23,16 +24,16 @@ import {
   PlRow,
   PlTextField,
 } from '@platforma-sdk/ui-vue';
+import * as _ from 'radashi';
 import { computed, reactive, watch } from 'vue';
-import { useApp } from '../app';
+import { useApp } from '../../app';
+import type { ImportMode } from '../../datasets';
+import { createGetOrCreateSample, extractFileName, modesOptions, readIndicesOptions, useParsedFiles, usePatternCompilation } from '../../datasets';
 import {
   getWellFormattedReadIndex,
-  inferFileNamePattern
-} from '../file_name_parser';
-import ParsedFilesList from '../ParsedFilesList.vue';
-import type { ImportMode } from '../datasets';
-import * as _ from 'radashi';
-import { usePatternCompilation, extractFileName, useParsedFiles, readIndicesOptions, modesOptions, createGetOrCreateSample } from '../datasets';
+  inferFileNamePattern,
+} from '../../file_name_parser';
+import ParsedFilesList from '../components/ParsedFilesList.vue';
 
 const emit = defineEmits<{ onClose: [] }>();
 
@@ -47,18 +48,18 @@ const data = reactive({
   mode: 'create-new-dataset' as ImportMode,
   targetAddDataset: undefined as PlId | undefined,
   gzipped: false,
-  readIndices: ['R1'] as string[],
+  readIndices: ['R1'] as ReadIndex[],
   files: [] as ImportFileHandle[],
   newDatasetLabel: app.inferNewDatasetLabel(),
   pattern: '',
   fileDialogOpened: true,
   datasetDialogOpened: false,
-  importing: false
+  importing: false,
 });
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
 
-watch(isOneOfDialogsOpened, v => {
+watch(isOneOfDialogsOpened, (v) => {
   if (!v) {
     doClose();
   }
@@ -91,19 +92,19 @@ const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   return app.model.args.datasets
     .filter(
       (ds) =>
-        (compiledPattern.value &&
-          ds.content.type === (compiledPattern.value.hasLaneMatcher ? 'MultilaneFastq' : 'Fastq') &&
-          ds.content.gzipped === gzipped &&
-          JSON.stringify(ds.content.readIndices) === JSON.stringify(readIndices))
+        (compiledPattern.value
+          && ds.content.type === (compiledPattern.value.hasLaneMatcher ? 'MultilaneFastq' : 'Fastq')
+          && ds.content.gzipped === gzipped
+          && JSON.stringify(ds.content.readIndices) === JSON.stringify(readIndices)),
     )
     .map((ds) => ({
       value: ds.id,
-      label: ds.label
+      label: ds.label,
     }));
 });
 
 watch(addToExistingOptions, (ops) => {
-  if (data.targetAddDataset && ops.find(o => o.value === data.targetAddDataset)) return;
+  if (data.targetAddDataset && ops.find((o) => o.value === data.targetAddDataset)) return;
   if (ops.length === 0) data.targetAddDataset = undefined;
   else data.targetAddDataset = ops[0].value;
 });
@@ -144,7 +145,7 @@ function addFastqDatasetContent(args: BlockArgs, contentData: DatasetContentFast
 
 function addMultilaneFastqDatasetContent(
   args: BlockArgs,
-  contentData: DatasetContentMultilaneFastq['data']
+  contentData: DatasetContentMultilaneFastq['data'],
 ) {
   const getOrCreateSample = createGetOrCreateSample(args);
 
@@ -176,7 +177,7 @@ function addMultilaneFastqDatasetContent(
 
 function addTaggedFastqDatasetContent(
   args: BlockArgs,
-  contentData: DatasetContentTaggedFastq['data']
+  contentData: DatasetContentTaggedFastq['data'],
 ) {
   const getOrCreateSample = createGetOrCreateSample(args);
 
@@ -190,7 +191,7 @@ function addTaggedFastqDatasetContent(
     const sampleId = getOrCreateSample(sample);
     const lane = f.match.lane?.value;
     const readIndex = getWellFormattedReadIndex(f.match);
-    const tags = _.mapValues(f.match.tags!, v => v.value)
+    const tags = _.mapValues(f.match.tags!, (v) => v.value);
 
     let sampleRecords = contentData[sampleId];
     if (!sampleRecords) {
@@ -198,11 +199,11 @@ function addTaggedFastqDatasetContent(
       contentData[sampleId] = sampleRecords;
     }
 
-    let sampleRecord = sampleRecords.find(r => r.lane === lane && _.isEqual(r.tags, tags));
+    let sampleRecord = sampleRecords.find((r) => r.lane === lane && _.isEqual(r.tags, tags));
     if (!sampleRecord)
       sampleRecords.push(sampleRecord = {
-        tags, lane, files: {}
-      })
+        tags, lane, files: {},
+      });
 
     sampleRecord.files[readIndex] = f.handle;
   }
@@ -246,8 +247,8 @@ async function createNewDataset() {
         content: {
           type: 'Fasta',
           gzipped: data.gzipped,
-          data: contentData
-        }
+          data: contentData,
+        },
       });
     } else if (pattern?.hasTagMatchers) {
       const contentData: DatasetContentTaggedFastq['data'] = {};
@@ -261,9 +262,9 @@ async function createNewDataset() {
           gzipped: data.gzipped,
           tags: pattern.tags,
           hasLanes: pattern.hasLaneMatcher,
-          readIndices: ReadIndices.parse(data.readIndices),
-          data: contentData
-        }
+          readIndices: data.readIndices,
+          data: contentData,
+        },
       });
     } else if (pattern?.hasLaneMatcher) {
       const contentData: DatasetContentMultilaneFastq['data'] = {};
@@ -275,9 +276,9 @@ async function createNewDataset() {
         content: {
           type: 'MultilaneFastq',
           gzipped: data.gzipped,
-          readIndices: ReadIndices.parse(data.readIndices),
-          data: contentData
-        }
+          readIndices: data.readIndices,
+          data: contentData,
+        },
       });
     } else {
       const contentData: DatasetContentFastq['data'] = {};
@@ -289,9 +290,9 @@ async function createNewDataset() {
         content: {
           type: 'Fastq',
           gzipped: data.gzipped,
-          readIndices: ReadIndices.parse(data.readIndices),
-          data: contentData
-        }
+          readIndices: data.readIndices,
+          data: contentData,
+        },
       });
     }
   });
@@ -301,12 +302,12 @@ async function createNewDataset() {
 
 const canCreateOrAdd = computed(
   () =>
-    hasMatchedFiles.value &&
-    (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined) &&
+    hasMatchedFiles.value
+    && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
     // This prevents selecting fasta as type while having read index matcher in pattern
-    (data.readIndices.length !== 0 ||
-      (compiledPattern.value?.hasReadIndexMatcher === false &&
-        compiledPattern.value?.hasLaneMatcher === false))
+    && (data.readIndices.length !== 0
+      || (compiledPattern.value?.hasReadIndexMatcher === false
+        && compiledPattern.value?.hasLaneMatcher === false)),
 );
 </script>
 
@@ -317,22 +318,26 @@ const canCreateOrAdd = computed(
     <PlBtnGroup v-model="data.mode" :options="modesOptions" />
 
     <PlRow alignCenter>
-      <PlTextField v-if="data.mode === 'create-new-dataset'" label="Dataset Name" v-model="data.newDatasetLabel"
-        class="flex-grow-1" />
+      <PlTextField
+        v-if="data.mode === 'create-new-dataset'" v-model="data.newDatasetLabel" label="Dataset Name"
+        class="flex-grow-1"
+      />
       <PlDropdown v-else v-model="data.targetAddDataset" :options="addToExistingOptions" class="flex-grow-1" />
-      <PlBtnGroup :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
-        @update:model-value="(v) => (data.readIndices = JSON.parse(v))" :options="readIndicesOptions" />
+      <PlBtnGroup
+        :model-value="JSON.stringify(data.readIndices)" :style="{ width: '200px' }"
+        :options="readIndicesOptions" @update:model-value="(v) => (data.readIndices = JSON.parse(v))"
+      />
       <PlCheckbox v-model="data.gzipped"> Gzipped </PlCheckbox>
     </PlRow>
 
-    <PlTextField label="Pattern" v-model="data.pattern" :error="patternError" />
+    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError" />
 
     <ParsedFilesList :items="parsedFiles" />
 
     <PlBtnSecondary @click="() => (data.fileDialogOpened = true)"> + add more files</PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary :disabled="!canCreateOrAdd" @click="createOrAdd" :loading="data.importing">
+      <PlBtnPrimary :disabled="!canCreateOrAdd" :loading="data.importing" @click="createOrAdd">
         {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
       </PlBtnPrimary>
 
@@ -340,6 +345,8 @@ const canCreateOrAdd = computed(
     </template>
   </PlDialogModal>
 
-  <PlFileDialog v-model="data.fileDialogOpened" :close-on-outside-click="false" :multi="true"
-    title="Select files to import" @import:files="(e) => addFiles(e.files)" />
+  <PlFileDialog
+    v-model="data.fileDialogOpened" :close-on-outside-click="false" :multi="true"
+    title="Select files to import" @import:files="(e) => addFiles(e.files)"
+  />
 </template>

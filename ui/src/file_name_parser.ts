@@ -1,5 +1,6 @@
-import { escapeRegExp } from './util';
+import { validateReadIndices, type ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
 import * as _ from 'radashi';
+import { escapeRegExp } from './util';
 
 export type Range = {
   from: number;
@@ -24,7 +25,7 @@ function getMatch(rMatch: RegExpMatchArray, idx: number): Match {
   return {
     value: rMatch[idx],
     from,
-    to
+    to,
   };
 }
 
@@ -42,7 +43,7 @@ export class FileNamePattern {
     private readonly pattern: RegExp,
     private readonly groups: FileNameGroups<number>,
     public readonly rawPattern: string,
-    public readonly rawPatternElements: FileNameGroups<Range>
+    public readonly rawPatternElements: FileNameGroups<Range>,
   ) {
     this.tags = this.groups.tags ? Object.keys(this.groups.tags) : [];
     this.tags.sort();
@@ -66,35 +67,35 @@ export class FileNamePattern {
     const result: FileNamePatternMatch = {
       sample: getMatch(match, this.groups.sample),
       anyMatchers: [],
-      anyNumberMatchers: []
+      anyNumberMatchers: [],
     };
     if (this.groups.readIndex !== undefined)
       result.readIndex = getMatch(match, this.groups.readIndex);
     if (this.groups.lane !== undefined) result.lane = getMatch(match, this.groups.lane);
     if (this.groups.tags !== undefined)
       result.tags = _.mapValues(this.groups.tags, (gi) => getMatch(match, gi));
-    for (const gi of this.groups.anyMatchers) result.anyMatchers!.push(getMatch(match, gi));
+    for (const gi of this.groups.anyMatchers) result.anyMatchers.push(getMatch(match, gi));
     for (const gi of this.groups.anyNumberMatchers)
-      result.anyNumberMatchers!.push(getMatch(match, gi));
+      result.anyNumberMatchers.push(getMatch(match, gi));
     return result;
   }
 
-  private static patternElement =
-    /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|\*?\:(?<anytag>[a-zA-Z0-9_]+)|n\:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
+  private static patternElement
+    = /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|\*?\:(?<anytag>[a-zA-Z0-9_]+?)|n\:(?<anynumbertag>[a-zA-Z0-9_]+?)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
 
   public static parse(fileNamePattern: string, ops?: FileNamePatternParsingOps): FileNamePattern {
     let regexp = '^';
     let lastIndex = 0;
     let groupCounter = 1;
-    let groups: Partial<FileNameGroups<number>> = {
+    const groups: Partial<FileNameGroups<number>> = {
       tags: {},
       anyMatchers: [],
-      anyNumberMatchers: []
+      anyNumberMatchers: [],
     };
-    let rawElements: Partial<FileNameGroups<Range>> = {
+    const rawElements: Partial<FileNameGroups<Range>> = {
       tags: {},
       anyMatchers: [],
-      anyNumberMatchers: []
+      anyNumberMatchers: [],
     };
     function appendInsert(insert: string) {
       regexp += escapeRegExp(insert);
@@ -164,7 +165,7 @@ export class FileNamePattern {
       new RegExp(regexp, 'id'),
       groups as FileNameGroups<number>,
       fileNamePattern,
-      rawElements as FileNameGroups<Range>
+      rawElements as FileNameGroups<Range>,
     );
   }
 
@@ -202,8 +203,8 @@ export class HighlightedStringBuilder {
       if (!isNaN(lastPosition) && w.range.to > lastPosition) throw new Error('Intersecting ranges');
       lastPosition = w.range.from;
       result = result.substring(0, w.range.to) + w.wrapping.end + result.substring(w.range.to);
-      result =
-        result.substring(0, w.range.from) + w.wrapping.begin + result.substring(w.range.from);
+      result
+        = result.substring(0, w.range.from) + w.wrapping.begin + result.substring(w.range.from);
     }
     return result;
   }
@@ -219,15 +220,10 @@ export type FileNameFormattingOpts = Omit<
   anyNumberMatchers?: Wrapping;
 };
 
-function doWith<T, R>(v: T | undefined, op: (v: T) => R): R | undefined {
-  if (v === undefined) return undefined;
-  return op(v);
-}
-
 function doWith2<T1, T2, R>(
   v1: T1 | undefined,
   v2: T2 | undefined,
-  op: (v1: T1, v2: T2) => R
+  op: (v1: T1, v2: T2) => R,
 ): R | undefined {
   if (v1 === undefined) return undefined;
   if (v2 === undefined) return undefined;
@@ -244,7 +240,7 @@ function multiWrappingF(builder: HighlightedStringBuilder) {
 export function buildWrappedString(
   target: string,
   ranges: FileNameGroups<Range>,
-  formattingOpts: FileNameFormattingOpts
+  formattingOpts: FileNameFormattingOpts,
 ): string {
   const builder = new HighlightedStringBuilder(target);
   doWith2(formattingOpts.sample, ranges.sample, singleWrappingF(builder));
@@ -274,68 +270,68 @@ const wellKnownPattern: WellKnownPattern[] = [
     patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}_{{n}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.49
+    minimalPercent: 0.49,
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.49
+    minimalPercent: 0.49,
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}_{{n}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.49
+    minimalPercent: 0.49,
   },
   {
     patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.49
+    minimalPercent: 0.49,
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}_{{n}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.49
+    minimalPercent: 0.49,
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}_L{{n}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.49
+    minimalPercent: 0.49,
   },
   {
     patternWithoutExtension: '{{Sample}}_{{RR}}_{{*}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.9
+    minimalPercent: 0.9,
   },
   {
     patternWithoutExtension: '{{Sample}}_{{R}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.9
+    minimalPercent: 0.9,
   },
   {
     patternWithoutExtension: '{{Sample}}{{RR}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.9
+    minimalPercent: 0.9,
   },
   {
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: [], // also serves as a sign of FASTA format
     extensions: ['fasta', 'fa', 'fasta.gz', 'fa.gz'],
-    minimalPercent: 0.7
+    minimalPercent: 0.7,
   },
   {
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
-    minimalPercent: 0.99
-  }
+    minimalPercent: 0.99,
+  },
 ];
 
 export type InferFileNamePatternOps = {
@@ -346,7 +342,7 @@ export type InferFileNamePatternOps = {
 export type InferFileNamePatternResult = {
   pattern: FileNamePattern;
   extension: string;
-  readIndices: string[];
+  readIndices: ReadIndex[];
 };
 
 function setEquals<T>(a: Set<T>, b: Set<T>): boolean {
@@ -355,7 +351,7 @@ function setEquals<T>(a: Set<T>, b: Set<T>): boolean {
 
 export function inferFileNamePattern(
   fileNames: string[],
-  ops?: InferFileNamePatternOps
+  ops?: InferFileNamePatternOps,
 ): InferFileNamePatternResult | undefined {
   outer: for (const wkPattern of wellKnownPattern) {
     if (ops?.expectedReadIndices?.length === 0 && wkPattern.defaultReadIndices.length !== 0)
@@ -383,12 +379,12 @@ export function inferFileNamePattern(
         }
       }
 
-      const resultReadIndices =
-        readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
+      const resultReadIndices
+        = readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
 
       if (
-        ops?.expectedReadIndices !== undefined &&
-        !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
+        ops?.expectedReadIndices !== undefined
+        && !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
       )
         continue;
 
@@ -396,7 +392,7 @@ export function inferFileNamePattern(
         return {
           pattern,
           extension,
-          readIndices: resultReadIndices
+          readIndices: validateReadIndices(resultReadIndices),
         };
     }
   }
