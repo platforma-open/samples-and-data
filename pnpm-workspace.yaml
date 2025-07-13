@@ -29,6 +29,7 @@ catalog:
   'vite': ^6.0.6
   'vitest': ^2.1.8
   '@vitejs/plugin-vue': ^5.2.1
+  'vite-plugin-dts': ^4.3.0
 
   '@vueuse/core': ^12.2.0
 
