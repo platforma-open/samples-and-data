@@ -7,7 +7,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsup && vite build && block-tools build-model"
+    "build": "vite build && BUILD_UMD=true vite build && block-tools build-model"
   },
   "dependencies": {
     "@platforma-sdk/model": "catalog:",
@@ -17,21 +17,6 @@
     "@platforma-sdk/block-tools": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "tsup": "catalog:"
-  },
-  "tsup": {
-    "entry": [
-      "src/index.ts"
-    ],
-    "splitting": false,
-    "treeshake": true,
-    "clean": true,
-    "format": [
-      "cjs",
-      "esm"
-    ],
-    "dts": true,
-    "minify": false,
-    "sourcemap": true
+    "vite-plugin-dts": "catalog:"
   }
 }
