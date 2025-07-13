@@ -3,7 +3,7 @@ type Entries<T> = {
 }[keyof T][];
 
 export function typeSafeEntries<T>(obj: T): Entries<T> {
-  return Object.entries(obj as any) as Entries<T>;
+  return Object.entries(obj as object) as Entries<T>;
 }
 
 export function escapeRegExp(str: string) {

@@ -1,9 +1,9 @@
 import { platforma } from '@platforma-open/milaboratories.samples-and-data.model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
-import DatasetPage from './DatasetPage.vue';
-import MetadataPage from './MetadataPage.vue';
-import { NewDatasetPage } from './NewDatasetPage';
+import DatasetPage from './pages/DatasetPage.vue';
+import MetadataPage from './pages/MetadataPage.vue';
+import NewDatasetPage from './pages/NewDatasetPage.vue';
 
 export const sdkPlugin = defineApp(platforma, (app) => {
   const showImportDataset = ref(false);
@@ -59,7 +59,7 @@ export const sdkPlugin = defineApp(platforma, (app) => {
           doneBytes,
           totalImports,
           totalWithUnknownSize,
-          doneWithUnknownSize
+          doneWithUnknownSize,
         });
         if (totalDone === totalImports) return false;
         const knownSizeProgress = doneBytes / totalBytes;
@@ -76,8 +76,8 @@ export const sdkPlugin = defineApp(platforma, (app) => {
     routes: {
       '/': () => MetadataPage,
       '/dataset': () => DatasetPage,
-      '/new-dataset': () => NewDatasetPage
-    }
+      '/new-dataset': () => NewDatasetPage,
+    },
   };
 });
 

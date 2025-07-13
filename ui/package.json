@@ -7,12 +7,14 @@
     "test": "vitest",
     "watch": "vue-tsc && vite build --watch",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "eslint ."
   },
   "dependencies": {},
   "devDependencies": {
     "ag-grid-enterprise": "catalog:",
     "ag-grid-vue3": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:",
     "@vueuse/core": "catalog:",
     "@milaboratories/helpers": "catalog:",
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",

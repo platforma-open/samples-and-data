@@ -1,21 +1,19 @@
 <script setup lang="ts">
-import { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
+import type { ColDef, GridOptions } from 'ag-grid-enterprise';
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import {
-  DatasetMultilaneFastq,
+import type {
   DatasetTaggedFastq,
   FastqFileGroup,
   Lane,
-  PlId,
-  TaggedDatasetRecord
+  TaggedDatasetRecord,
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { ImportFileHandle } from '@platforma-sdk/model';
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
-import { useApp } from './app';
-import { argsModel } from './lens';
+import { useApp } from '../../app';
+import { argsModel } from '../../lens';
 
 const app = useApp();
 const datasetId = app.queryParams.id;
@@ -30,7 +28,7 @@ type MultilaneFastaDatasetRow = {
 
 const dataset = argsModel(app, {
   get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetTaggedFastq,
-  onDisconnected: () => app.navigateTo('/')
+  onDisconnected: () => app.navigateTo('/'),
 });
 
 function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedDatasetRecord): string {
@@ -45,8 +43,8 @@ const rowData = computed(() => {
       sample: sampleId as PlId,
       lane: r.lane,
       tags: r.tags,
-      reads: r.files
-    }))
+      reads: r.files,
+    })),
   );
   // console.dir(result, { depth: 5 });
   return result;
@@ -55,7 +53,7 @@ const rowData = computed(() => {
 const readIndices = computed(() => dataset.value.content.readIndices);
 
 const defaultColDef: ColDef = {
-  suppressHeaderMenuButton: true
+  suppressHeaderMenuButton: true,
 };
 
 const columnDefs = computed(() => {
@@ -68,8 +66,8 @@ const columnDefs = computed(() => {
       flex: 1,
       field: 'sample',
       editable: false,
-      refData: sampleLabels as Record<string, string>
-    }
+      refData: sampleLabels as Record<string, string>,
+    },
   ];
 
   if (dsc.hasLanes)
@@ -77,14 +75,14 @@ const columnDefs = computed(() => {
       headerName: 'Lane',
       flex: 1,
       field: 'lane',
-      editable: false
+      editable: false,
     });
 
   for (const tag of dsc.tags)
     res.push({
       headerName: tag,
       field: `tags.${tag}`,
-      flex: 1
+      flex: 1,
     });
 
   for (const readIndex of readIndices.value)
@@ -101,8 +99,8 @@ const columnDefs = computed(() => {
           const progresses = app.progresses;
           if (!fileHandle) return undefined;
           else return progresses[fileHandle];
-        }
-      }
+        },
+      },
     });
 
   return res;
@@ -149,8 +147,8 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
   //   ];
   // },
   components: {
-    PlAgCellFile
-  }
+    PlAgCellFile,
+  },
 };
 </script>
 

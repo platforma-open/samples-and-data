@@ -1,24 +1,26 @@
 <script setup lang="ts">
-import {
-  ClientSideRowModelModule,
+import type {
   ColDef,
   GridApi,
   GridOptions,
   IRichCellEditorParams,
   IRowNode,
+} from 'ag-grid-enterprise';
+import {
+  ClientSideRowModelModule,
   MenuModule,
   ModuleRegistry,
-  RichSelectModule
+  RichSelectModule,
 } from 'ag-grid-enterprise';
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import { DatasetFasta, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
-import { ImportFileHandle } from '@platforma-sdk/model';
+import type { DatasetFasta } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
-import { useApp } from './app';
-import { argsModel } from './lens';
+import { useApp } from '../../app';
+import { argsModel } from '../../lens';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -35,13 +37,9 @@ function nullToUndefined<T>(value: T | undefined | null): T | undefined {
   return value === null ? undefined : value;
 }
 
-function undefinedToNull<T>(value: T | undefined): T | null {
-  return value === undefined ? null : value;
-}
-
 const dataset = argsModel(app, {
   get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetFasta,
-  onDisconnected: () => app.navigateTo('/')
+  onDisconnected: () => app.navigateTo('/'),
 });
 
 const unusedIds = () => {
@@ -53,15 +51,15 @@ const rowData = computed(() => {
   const result: FastaDatasetRow[] = Object.entries(dataset.value.content.data).map(
     ([sampleId, data]) => ({
       sample: sampleId as PlId,
-      data
-    })
+      data,
+    }),
   );
   if (unusedIds().length > 0) result.push({ sample: '' });
   return result;
 });
 
 const defaultColDef: ColDef = {
-  suppressHeaderMenuButton: true
+  suppressHeaderMenuButton: true,
 };
 
 const columnDefs = computed(() => {
@@ -86,11 +84,11 @@ const columnDefs = computed(() => {
       refData: { ...sampleLabels, '': '+ add sample' },
       singleClickEdit: true,
       cellEditorParams: {
-        values: unusedIds
+        values: unusedIds,
       } satisfies IRichCellEditorParams<FastaDatasetRow>,
       pinned: 'left',
-      lockPinned: true
-    }
+      lockPinned: true,
+    },
   ];
 
   res.push({
@@ -103,7 +101,7 @@ const columnDefs = computed(() => {
         const progresses = app.progresses;
         if (!fileHandle) return undefined;
         else return progresses[fileHandle];
-      }
+      },
     },
 
     cellRendererSelector: (params) =>
@@ -111,8 +109,8 @@ const columnDefs = computed(() => {
         ? {
             component: 'PlAgCellFile',
             params: {
-              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
-            }
+              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta'],
+            },
           }
         : undefined,
     valueGetter: (params) =>
@@ -124,7 +122,7 @@ const columnDefs = computed(() => {
       if (sample === '') return false;
       dataset.update((ds) => (ds.content.data[sample] = nullToUndefined(params.newValue)));
       return true;
-    }
+    },
   } as ColDef<FastaDatasetRow, ImportFileHandle>);
 
   return res;
@@ -136,7 +134,7 @@ function isPlId(v: PlId | ''): v is PlId {
 
 function getSelectedSamples(
   api: GridApi<FastaDatasetRow>,
-  node: IRowNode<FastaDatasetRow> | null
+  node: IRowNode<FastaDatasetRow> | null,
 ): PlId[] {
   const samples = api
     .getSelectedRows()
@@ -153,10 +151,10 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,
-    headerCheckbox: false
+    headerCheckbox: false,
   },
   rowHeight: 45,
-  getMainMenuItems: (params) => {
+  getMainMenuItems: () => {
     return [];
   },
   getContextMenuItems: (params) => {
@@ -169,13 +167,13 @@ const gridOptions: GridOptions<FastaDatasetRow> = {
           dataset.update((ds) => {
             for (const s of samplesToDelete) delete ds.content.data[s];
           });
-        }
-      }
+        },
+      },
     ];
   },
   components: {
-    PlAgCellFile
-  }
+    PlAgCellFile,
+  },
 };
 </script>
 

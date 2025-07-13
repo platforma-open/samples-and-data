@@ -1,0 +1,32 @@
+{
+    "files.exclude": {
+        "**/.npmrc": true,
+        "**/*.tgz": true,
+        "**/block-pack": true,
+        "**/dist": true,
+        "**/index.d.ts": true,
+        "**/index.js": true,
+        "**/node_modules": true,
+        "**/pnpm-lock.yaml": true,
+        "**/tsconfig.app.json": true,
+        "**/tsconfig.json": true,
+        "**/tsconfig.node.json": true,
+        "**/vite.config.mts": true,
+        "**/vite.config.ts": true,
+        "**/workflow/dev": true
+    },
+    "vitest.disableWorkspaceWarning": true,
+    "prettier.singleAttributePerLine": true,
+    "vue.format.wrapAttributes": "auto",
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+    "eslint.format.enable": true,
+    "[typescript]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "[vue]": {
+        "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+    },
+    "cSpell.words": [
+    ],
+    "prettier.requireConfig": false,
+}

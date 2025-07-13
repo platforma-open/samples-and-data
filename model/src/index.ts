@@ -1,10 +1,22 @@
-import {
-  BlockModel,
+import type {
   ImportFileHandle,
   InferHrefType,
-  type InferOutputsType
+  PlId,
 } from '@platforma-sdk/model';
-import { BlockArgs } from './args';
+import {
+  BlockModel,
+  type InferOutputsType,
+} from '@platforma-sdk/model';
+import type { DatasetAny, MetadataColumn } from './types';
+
+export type BlockArgs = {
+  blockTitle?: string;
+  sampleIds: PlId[];
+  sampleLabelColumnLabel: string;
+  sampleLabels: Record<PlId, string>;
+  metadata: MetadataColumn[];
+  datasets: DatasetAny[];
+};
 
 export type BlockUiState = { suggestedImport: boolean };
 
@@ -16,7 +28,7 @@ export const platforma = BlockModel.create()
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
-    datasets: []
+    datasets: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
@@ -28,10 +40,10 @@ export const platforma = BlockModel.create()
         ctx.outputs
           ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
           ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
-            skipUnresolved: true
-          }) ?? []
+            skipUnresolved: true,
+          }) ?? [],
       ),
-    { isActive: true }
+    { isActive: true },
   )
 
   .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
@@ -44,8 +56,8 @@ export const platforma = BlockModel.create()
           ({
             type: 'link',
             href: `/dataset?id=${ds.id}`,
-            label: ds.label
-          } as const)
+            label: ds.label,
+          } as const),
       ),
       {
         type: 'link',
@@ -60,6 +72,6 @@ export const platforma = BlockModel.create()
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
-export * from './args';
-export * from './helpers';
-export { BlockArgs };
+export * from './types';
+export * from './util';
+

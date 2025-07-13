@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, useCssModule } from 'vue';
-import { buildWrappedString, FileNameFormattingOpts } from './file_name_parser';
-import { ParsedFile } from './types';
+import type { FileNameFormattingOpts } from '../../file_name_parser';
+import { buildWrappedString } from '../../file_name_parser';
+import type { ParsedFile } from '../../types';
 
 const props = defineProps<{ items: ParsedFile[] }>();
 
@@ -10,7 +11,7 @@ const formattedFilesHtml = computed(() => {
   const wrappingOps: FileNameFormattingOpts = {
     sample: { begin: `<span class="${styles['sampleName']}">`, end: '</span>' },
     readIndex: { begin: `<span class="${styles['readIndex']}">`, end: '</span>' },
-    lane: { begin: `<span class="${styles['lane']}">`, end: '</span>' }
+    lane: { begin: `<span class="${styles['lane']}">`, end: '</span>' },
   };
   return props.items
     .map((f) => {
@@ -31,12 +32,9 @@ const nFilesUnmatched = computed(() => {
 
 <template>
   <div :class="$style.container">
-    <span :class="$style.matchText"
-      >{{ nFilesMatched }} file(s) matched
-      <span :class="$style.unmatchedText"
-        >&nbsp;&nbsp;/&nbsp;&nbsp;{{ nFilesUnmatched }} file(s) not matched
-      </span></span
-    >
+    <span :class="$style.matchText">{{ nFilesMatched }} file(s) matched
+      <span :class="$style.unmatchedText">&nbsp;&nbsp;/&nbsp;&nbsp;{{ nFilesUnmatched }} file(s) not matched
+      </span></span>
 
     <div :class="$style.fileList" class="pl-scrollable" v-html="formattedFilesHtml" />
   </div>

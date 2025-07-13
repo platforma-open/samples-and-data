@@ -1,4 +1,4 @@
-import { MetadataColumnValueType } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { MetadataColumnValueType } from '@platforma-open/milaboratories.samples-and-data.model';
 import * as XLSX from 'xlsx';
 
 export type ImportDataColumn = {
@@ -24,7 +24,7 @@ export type ImportResult = {
 };
 
 function validateHeader(headerLine: unknown): (string | undefined)[] {
-  if (!headerLine || !Array.isArray(headerLine)) throw new Error("Can't parse header line");
+  if (!headerLine || !Array.isArray(headerLine)) throw new Error('Can\'t parse header line');
   return headerLine.map((c) => (!c ? undefined : String(c).trim()));
 }
 
@@ -85,12 +85,12 @@ export function readFileForImport(data: Uint8Array): ImportResult {
 
       isEmpty = false;
 
-      const type =
-        typeof c === 'string'
+      const type
+        = typeof c === 'string'
           ? TypeCodeString
           : Number.isInteger(c)
-          ? TypeCodeLong
-          : TypeCodeDouble;
+            ? TypeCodeLong
+            : TypeCodeDouble;
       types[colIdx] = Math.max(types[colIdx], type);
     }
 
@@ -117,7 +117,7 @@ export function readFileForImport(data: Uint8Array): ImportResult {
     idxMapping.push(colIdx);
     columns.push({
       header,
-      type: type === TypeCodeLong ? 'Long' : type === TypeCodeDouble ? 'Double' : 'String'
+      type: type === TypeCodeLong ? 'Long' : type === TypeCodeDouble ? 'Double' : 'String',
     });
   }
 
@@ -128,7 +128,7 @@ export function readFileForImport(data: Uint8Array): ImportResult {
       const colIdx = idxMapping[newColIdx];
       const c = rowTmp[colIdx];
       newRow.push(
-        c === undefined ? undefined : columns[newColIdx].type === 'String' ? String(c) : c
+        c === undefined ? undefined : columns[newColIdx].type === 'String' ? String(c) : c,
       );
     }
     rows.push(newRow);
@@ -137,11 +137,11 @@ export function readFileForImport(data: Uint8Array): ImportResult {
   return {
     data: {
       columns,
-      rows
+      rows,
     },
     missingHeaders,
     emptyColumns,
     emptyRowsRemoved,
-    malformedRowsRemoved
+    malformedRowsRemoved,
   };
 }

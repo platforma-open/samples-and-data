@@ -1,19 +1,18 @@
 <script setup lang="ts">
-import { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
+import type { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import {
+import type {
   DatasetMultilaneFastq,
   FastqFileGroup,
   Lane,
-  PlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { ImportFileHandle } from '@platforma-sdk/model';
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
-import { useApp } from './app';
-import { argsModel } from './lens';
+import { useApp } from '../../app';
+import { argsModel } from '../../lens';
 
 const app = useApp();
 const datasetId = app.queryParams.id;
@@ -27,16 +26,16 @@ type MultilaneFastaDatasetRow = {
 
 const dataset = argsModel(app, {
   get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetMultilaneFastq,
-  onDisconnected: () => app.navigateTo('/')
+  onDisconnected: () => app.navigateTo('/'),
 });
 
 function encodeKey(sampleId: PlId, lane: string): string {
   return JSON.stringify([sampleId, lane]);
 }
 
-function decodeKey(key: string): [PlId, string] {
-  return JSON.parse(key);
-}
+// function decodeKey(key: string): [PlId, string] {
+//   return JSON.parse(key);
+// }
 
 const rowData = computed(() => {
   const result: MultilaneFastaDatasetRow[] = Object.entries(dataset.value.content.data).flatMap(
@@ -45,8 +44,8 @@ const rowData = computed(() => {
         key: encodeKey(sampleId as PlId, lane),
         sample: sampleId as PlId,
         lane: lane,
-        reads: fastqs!
-      }))
+        reads: fastqs!,
+      })),
   );
   console.dir(result, { depth: 5 });
   return result;
@@ -55,7 +54,7 @@ const rowData = computed(() => {
 const readIndices = computed(() => dataset.value.content.readIndices);
 
 const defaultColDef: ColDef = {
-  suppressHeaderMenuButton: true
+  suppressHeaderMenuButton: true,
 };
 
 const columnDefs = computed(() => {
@@ -68,14 +67,14 @@ const columnDefs = computed(() => {
       flex: 1,
       field: 'sample',
       editable: false,
-      refData: sampleLabels
+      refData: sampleLabels,
     } as ColDef<MultilaneFastaDatasetRow, PlId>,
     {
       headerName: 'Lane',
       flex: 1,
       field: 'lane',
-      editable: false
-    } as ColDef<MultilaneFastaDatasetRow, string>
+      editable: false,
+    } as ColDef<MultilaneFastaDatasetRow, string>,
   ];
 
   for (const readIndex of readIndices.value)
@@ -90,7 +89,7 @@ const columnDefs = computed(() => {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
           if (!fileHandle) return undefined;
           else return progresses[fileHandle];
-        }
+        },
       },
 
       valueGetter: (params) =>
@@ -105,27 +104,22 @@ const columnDefs = computed(() => {
           (ds) =>
             (ds.content.data[sample]![lane]![readIndex] = params.newValue
               ? params.newValue
-              : undefined)
+              : undefined),
         );
         return true;
       },
-      suppressMenu: true
+      suppressMenu: true,
     } as ColDef<MultilaneFastaDatasetRow, ImportFileHandle>);
 
   return res;
 });
 
-function isPlId(v: PlId | ''): v is PlId {
-  return v !== '';
-}
-
 function getSelectedKeys(
   api: GridApi<MultilaneFastaDatasetRow>,
-  node: IRowNode<MultilaneFastaDatasetRow> | null
+  node: IRowNode<MultilaneFastaDatasetRow> | null,
 ): [PlId, string][] {
   const keys = api.getSelectedRows().map((row) => [row.sample, row.lane] as [PlId, string]);
   if (keys.length !== 0) return keys;
-  const sample = node?.data?.sample;
   if (!node?.data) return [];
   return [[node.data.sample, node.data.lane]];
 }
@@ -135,10 +129,10 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,
-    headerCheckbox: false
+    headerCheckbox: false,
   },
   rowHeight: 45,
-  getMainMenuItems: (params) => {
+  getMainMenuItems: () => {
     return [];
   },
   getContextMenuItems: (params) => {
@@ -155,13 +149,13 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
                 delete ds.content.data[sampleId];
             }
           });
-        }
-      }
+        },
+      },
     ];
   },
   components: {
-    PlAgCellFile
-  }
+    PlAgCellFile,
+  },
 };
 </script>
 
