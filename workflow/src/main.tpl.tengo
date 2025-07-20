@@ -159,7 +159,90 @@ wf.body(func(args) {
 				data: data.lockAndBuild()
 			}
 
-			break
+			continue
+		}
+
+		if dataset.content.type == "Xsv" {
+			columnSpec := maps.deepMerge(columnSpecParent, {
+				domain: {
+					"pl7.app/fileExtension": dataset.content.gzipped ? dataset.content.xsvType + ".gz" : dataset.content.xsvType
+				},
+				axesSpec: [sampleIdAxisSpec]
+			})
+
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: 1
+			}))
+
+			for sampleId, importHandle in dataset.content.data {
+				if !importHandle {
+					ll.panic("File handle not set for sample %v", sampleId)
+				}
+				data.createInputField(json.encode([sampleId])).set(importFile(importHandle))
+			}
+
+			exports[exportKey] = {
+				spec: columnSpec,
+				data: data.lockAndBuild()
+			}
+
+			continue
+		}
+
+
+		if dataset.content.type == "TaggedXsv" {
+
+			axesSpec := [sampleIdAxisSpec]
+			for tag in dataset.content.tags {
+				axesSpec = append(axesSpec, {
+					type: "String",
+					name: "pl7.app/sequencing/tag",
+					domain: {
+						"pl7.app/sequencing/tag": tag
+					},
+					annotations: {
+						"pl7.app/label": tag + " tag"
+					}
+				})
+			}
+
+			columnSpec := maps.deepMerge(columnSpecParent, {
+				domain: {
+					"pl7.app/fileExtension": dataset.content.gzipped ? dataset.content.xsvType + ".gz" : dataset.content.xsvType
+				}
+			})
+
+			columnSpec.axesSpec = axesSpec
+
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: len(axesSpec)
+			}))
+
+			for sampleId, records in dataset.content.data {
+				for record in records {
+					key := [sampleId]
+					for tag in dataset.content.tags {
+						tagValue := record.tags[tag]
+						if !tagValue {
+							ll.panic("No tag value for %v in sample %v", tag, sampleId)
+						}
+						key = append(key, tagValue)
+					}
+					importHandle := record.file
+					key = json.encode(key)
+					if !importHandle {
+						ll.panic("File handle not set for key %v", key)
+					}
+					data.createInputField(key).set(importFile(importHandle))
+				}
+			}
+
+			exports[exportKey] = {
+				spec: columnSpec,
+				data: data.lockAndBuild()
+			}
+
+			continue
 		}
 
 		// Code below service Fastq and MultilaneFastq datasets
@@ -292,7 +375,7 @@ wf.body(func(args) {
 				data: data.lockAndBuild()
 			}
 		} else {
-			ll.panic("Unknow dataset type %v", dataset.content.type)
+			ll.panic("Unknown dataset type %v", dataset.content.type)
 		}
 	}
 
