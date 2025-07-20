@@ -1,10 +1,10 @@
-import type { Ref, ShallowRef } from "vue";
-import { Reactive, ref, shallowRef, watch, computed } from "vue";
+import { BlockArgs, DatasetAny, PlId, uniquePlId } from "@platforma-open/milaboratories.samples-and-data.model";
+import { getFileNameFromHandle, ImportFileHandle } from "@platforma-sdk/model";
+import { SimpleOption } from "@platforma-sdk/ui-vue";
+import type { ShallowRef } from "vue";
+import { computed, Reactive, ref, shallowRef, watch } from "vue";
 import { FileNamePattern } from "./file_name_parser";
 import { ParsedFile } from "./types";
-import { getFileNameFromHandle, ImportFileHandle } from "@platforma-sdk/model";
-import { BlockArgs, DatasetAny, uniquePlId, PlId } from "@platforma-open/milaboratories.samples-and-data.model";
-import { SimpleOption } from "@platforma-sdk/ui-vue";
 
 // Dataset import mode
 export type ImportMode = 'create-new-dataset' | 'add-to-existing';
@@ -20,7 +20,7 @@ export const readIndicesOptions: SimpleOption<string>[] = [
   },
   {
     value: JSON.stringify([]),
-    text: 'fasta'
+    text: 'other'
   }
 ];
 
@@ -46,6 +46,8 @@ export function getDsReadIndices(ds: DatasetAny): string[] {
     case 'MultilaneFastq':
     case 'TaggedFastq':
       return c.readIndices;
+    case 'Xsv':
+    case 'TaggedXsv':
     case 'Fasta':
       return [];
   }

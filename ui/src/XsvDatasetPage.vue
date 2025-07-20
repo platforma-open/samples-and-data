@@ -13,7 +13,7 @@ import {
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import { DatasetFasta, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import { DatasetXsv, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
@@ -41,7 +41,7 @@ function undefinedToNull<T>(value: T | undefined): T | null {
 }
 
 const dataset = argsModel(app, {
-  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetFasta,
+  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetXsv,
   onDisconnected: () => app.navigateTo('/')
 });
 
@@ -66,9 +66,9 @@ const defaultColDef: ColDef = {
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
-  const sampleIdComparator = agSampleIdComparator(sampleLabels);
-  const res: ColDef<FastaDatasetRow>[] = [
+   const sampleLabels = app.model.args.sampleLabels  as Record<string, string>;
+   const sampleIdComparator = agSampleIdComparator(sampleLabels);
+   const res: ColDef<FastaDatasetRow>[] = [
     makeRowNumberColDef(),
     {
       headerName: app.model.args.sampleLabelColumnLabel,
@@ -114,7 +114,7 @@ const columnDefs = computed(() => {
         ? {
             component: 'PlAgCellFile',
             params: {
-              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+              extensions: dataset.value.content.gzipped ? (dataset.value.content.xsvType ? [dataset.value.content.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dataset.value.content.xsvType ? [dataset.value.content.xsvType] : ['csv', 'tsv']) ,
             }
           }
         : undefined,

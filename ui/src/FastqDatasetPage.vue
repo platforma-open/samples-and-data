@@ -22,6 +22,7 @@ import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/u
 import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
+import { agSampleIdComparator } from './util';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -62,7 +63,8 @@ const defaultColDef: ColDef = {
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels;
+  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
+  const sampleIdComparator = agSampleIdComparator(sampleLabels);
   const progresses = app.progresses;
 
   const res: ColDef<FastqDatasetRow>[] = [
@@ -88,7 +90,8 @@ const columnDefs = computed(() => {
         values: unusedIds
       } satisfies IRichCellEditorParams<FastqDatasetRow>,
       pinned: 'left',
-      lockPinned: true
+      lockPinned: true,
+      comparator: sampleIdComparator
     }
   ];
 
