@@ -18,7 +18,7 @@ import { agSampleIdComparator } from './util';
 const app = useApp();
 const datasetId = app.queryParams.id;
 
-type MultilaneFastaDatasetRow = {
+type TaggedXsvDatasetRow = {
   readonly key: string;
   readonly sample: PlId;
   readonly tags: Record<string, string>;
@@ -36,7 +36,7 @@ function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedXsvDatasetR
 
 const rowData = computed(() => {
   const dsc = dataset.value.content;
-  const result: MultilaneFastaDatasetRow[] = Object.entries(dsc.data).flatMap(([sampleId, rs]) =>
+  const result: TaggedXsvDatasetRow[] = Object.entries(dsc.data).flatMap(([sampleId, rs]) =>
     (rs ?? []).map((r) => ({
       key: encodeKey(dsc.tags, sampleId as PlId, r),
       sample: sampleId as PlId,
@@ -57,7 +57,7 @@ const columnDefs = computed(() => {
   const sampleLabels = app.model.args.sampleLabels  as Record<string, string>;
   const sampleIdComparator = agSampleIdComparator(sampleLabels);
   const dsc = dataset.value.content;
-  const res: ColDef<MultilaneFastaDatasetRow>[] = [
+  const res: ColDef<TaggedXsvDatasetRow>[] = [
     makeRowNumberColDef(),
     {
       headerName: app.model.args.sampleLabelColumnLabel,
@@ -112,7 +112,7 @@ const columnDefs = computed(() => {
 //   return [[node.data.sample, node.data.lane]];
 // }
 
-const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
+const gridOptions: GridOptions<TaggedXsvDatasetRow> = {
   getRowId: (row) => row.data.key,
   // rowSelection: 'multiple',
   rowHeight: 45,
