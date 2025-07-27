@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
+import { ColDef, GridOptions } from 'ag-grid-enterprise';
 
 import { AgGridVue } from 'ag-grid-vue3';
 
 import {
-  DatasetMultilaneFastq,
   DatasetTaggedFastq,
   FastqFileGroup,
   Lane,
@@ -16,6 +15,7 @@ import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/u
 import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
+import { agSampleIdComparator } from './util';
 
 const app = useApp();
 const datasetId = app.queryParams.id;
@@ -59,7 +59,8 @@ const defaultColDef: ColDef = {
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels;
+  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
+  const sampleIdComparator = agSampleIdComparator(sampleLabels);
   const dsc = dataset.value.content;
   const res: ColDef<MultilaneFastaDatasetRow>[] = [
     makeRowNumberColDef(),
@@ -68,7 +69,8 @@ const columnDefs = computed(() => {
       flex: 1,
       field: 'sample',
       editable: false,
-      refData: sampleLabels as Record<string, string>
+      refData: sampleLabels,
+      comparator: sampleIdComparator
     }
   ];
 

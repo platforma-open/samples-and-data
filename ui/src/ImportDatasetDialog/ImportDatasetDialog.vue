@@ -5,11 +5,13 @@ import {
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
   DatasetContentTaggedFastq,
+  DatasetContentTaggedXsv,
+  DatasetContentXsv,
   PlId,
   ReadIndices,
   uniquePlId
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
+import { getFileNameFromHandle, getFilePathFromHandle, ImportFileHandle } from '@platforma-sdk/model';
 import {
   ListOption,
   PlBtnGhost,
@@ -23,16 +25,16 @@ import {
   PlRow,
   PlTextField,
 } from '@platforma-sdk/ui-vue';
+import * as _ from 'radashi';
 import { computed, reactive, watch } from 'vue';
 import { useApp } from '../app';
+import type { ImportMode } from '../datasets';
+import { createGetOrCreateSample, extractFileName, modesOptions, readIndicesOptions, useParsedFiles, usePatternCompilation } from '../datasets';
 import {
   getWellFormattedReadIndex,
   inferFileNamePattern
 } from '../file_name_parser';
 import ParsedFilesList from '../ParsedFilesList.vue';
-import type { ImportMode } from '../datasets';
-import * as _ from 'radashi';
-import { usePatternCompilation, extractFileName, useParsedFiles, readIndicesOptions, modesOptions, createGetOrCreateSample } from '../datasets';
 
 const emit = defineEmits<{ onClose: [] }>();
 
@@ -208,6 +210,54 @@ function addTaggedFastqDatasetContent(
   }
 }
 
+
+function addXsvDatasetContent(
+  args: BlockArgs,
+  contentData: DatasetContentXsv['data']
+  ) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error('Dataset has read or lane matcher, trying to add XSV dataset');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
+function addTaggedXsvDatasetContent(
+  args: BlockArgs,
+  contentData: DatasetContentTaggedXsv['data']
+  ) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+
+  const pattern = compiledPattern.value;
+  if (!pattern)
+    throw new Error('No pattern');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(sample);
+    const tags = _.mapValues(f.match.tags!, v => v.value)
+
+    let sampleRecords = contentData[sampleId];
+    if (!sampleRecords) {
+      sampleRecords = [];
+      contentData[sampleId] = sampleRecords;
+    }
+
+    let sampleRecord = sampleRecords.find(r =>  _.isEqual(r.tags, tags));
+    if (!sampleRecord)
+      sampleRecords.push(sampleRecord = {
+        tags, file: f.handle
+      })
+
+  }
+}
+
 async function createOrAdd() {
   try {
     data.importing = true;
@@ -223,20 +273,61 @@ async function addToExistingDataset() {
   await app.updateArgs((args) => {
     const dataset = args.datasets.find((ds) => ds.id === datasetId);
     if (dataset === undefined) throw new Error('Dataset not found');
-    if (dataset.content.type === 'Fasta') addFastaDatasetContent(args, dataset.content.data);
-    if (dataset.content.type === 'Fastq') addFastqDatasetContent(args, dataset.content.data);
+    else if (dataset.content.type === 'Fasta') addFastaDatasetContent(args, dataset.content.data);
+    else if (dataset.content.type === 'Fastq') addFastqDatasetContent(args, dataset.content.data);
     else if (dataset.content.type === 'MultilaneFastq')
       addMultilaneFastqDatasetContent(args, dataset.content.data);
+    else if (dataset.content.type === 'Xsv') addXsvDatasetContent(args, dataset.content.data);
+    else if (dataset.content.type === 'TaggedXsv') addTaggedXsvDatasetContent(args, dataset.content.data);
     else throw new Error('Unknown dataset type');
   });
   app.navigateTo(`/dataset?id=${datasetId}`);
+}
+
+const isXsv = () => {
+  return data.files.map(f => getFileNameFromHandle(f)).every(f => f.endsWith('.csv') || f.endsWith('.tsv'))
+}
+
+const xsvType = (): 'csv' | 'tsv' => {
+  const fileNames = data.files.map(f => getFileNameFromHandle(f));
+  if (fileNames.every(f => f.endsWith('.csv') || f.endsWith('.csv.gz'))) return 'csv';
+  if (fileNames.every(f => f.endsWith('.tsv') || f.endsWith('.tsv.gz'))) return 'tsv';
+  throw new Error('Files are not all csv or tsv');
 }
 
 async function createNewDataset() {
   const newDatasetId = uniquePlId();
   await app.updateArgs((args) => {
     const pattern = compiledPattern.value;
-    if (data.readIndices.length === 0 /* fasta */) {
+    if (isXsv() && pattern?.hasTagMatchers) {
+      const contentData: DatasetContentTaggedXsv['data'] = {};
+      addTaggedXsvDatasetContent(args, contentData);
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'TaggedXsv',
+          xsvType: xsvType(),
+          gzipped: data.gzipped,
+          tags: pattern.tags,
+          data: contentData
+        }
+      });
+    } else if (isXsv()) {
+      const contentData: DatasetContentXsv['data'] = {};
+      addXsvDatasetContent(args, contentData);
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'Xsv',
+          xsvType: xsvType(),
+          gzipped: data.gzipped,
+          data: contentData
+        }
+      });
+    } 
+    else if (data.readIndices.length === 0 /* fasta */) {
       const contentData: DatasetContentFasta['data'] = {};
       addFastaDatasetContent(args, contentData);
 
