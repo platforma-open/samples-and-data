@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.ui",
-  "version": "1.17.4",
+  "version": "1.18.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

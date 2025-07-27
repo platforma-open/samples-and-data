@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.18.0
+
+### Minor Changes
+
+- e634778: Support CSV/TSV import
+
 ## 1.17.4
 
 ### Patch Changes
