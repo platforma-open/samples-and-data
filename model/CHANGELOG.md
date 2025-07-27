@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 1.11.0
+
+### Minor Changes
+
+- e634778: Support CSV/TSV import
+
 ## 1.10.1
 
 ### Patch Changes
