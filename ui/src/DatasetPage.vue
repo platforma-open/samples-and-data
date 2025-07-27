@@ -124,7 +124,7 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
       @update:model-value="(v) => dataset.update((ds) => (ds.content.gzipped = v))">
       Gzipped
     </PlCheckbox>
-    <PlBtnGroup v-if="dataset.value.content.type !== 'Fasta' && dataset.value.content.type !== 'TaggedXsv'" :model-value="currentReadIndices"
+    <PlBtnGroup v-if="dataset.value.content.type !== 'Fasta' && dataset.value.content.type !== 'TaggedXsv' && dataset.value.content.type !== 'Xsv'" :model-value="currentReadIndices"
       @update:model-value="setReadIndices" :options="readIndicesOptions" />
   </PlSlideModal>
 

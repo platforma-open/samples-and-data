@@ -217,7 +217,7 @@ function addXsvDatasetContent(
   ) {
   const getOrCreateSample = createGetOrCreateSample(args);
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
-    throw new Error('Dataset has read or lane matcher, trying to add fasta dataset');
+    throw new Error('Dataset has read or lane matcher, trying to add XSV dataset');
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;

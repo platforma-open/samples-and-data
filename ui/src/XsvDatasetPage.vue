@@ -97,7 +97,7 @@ const columnDefs = computed(() => {
   ];
 
   res.push({
-    headerName: 'Fasta file',
+    headerName: 'XSV file',
     flex: 2,
     cellStyle: { padding: 0 },
 
