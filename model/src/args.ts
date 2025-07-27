@@ -1,5 +1,5 @@
 import { ImportFileHandle, ValueType } from '@platforma-sdk/model';
-import { ZodAnyDef, ZodSchema, string, z } from 'zod';
+import { ZodSchema, z } from 'zod';
 import { PlId } from './helpers';
 
 export const MetadataValueTypeLong = z.literal('Long') satisfies ZodSchema<ValueType>;
@@ -83,7 +83,7 @@ export const DatasetContentFasta = z
     gzipped: z.boolean(),
     data: z.record(
       PlId,
-      ImportFileHandleSchema.nullable() /* null meand sampple is added to the dataset, but file is not yet set */
+      ImportFileHandleSchema.nullable() /* null means sample is added to the dataset, but file is not yet set */
     )
   })
   .strict();
@@ -134,11 +134,45 @@ export const DatasetContentTaggedFastq = z
   .strict();
 export type DatasetContentTaggedFastq = z.infer<typeof DatasetContentTaggedFastq>;
 
+
+export const DatasetContentXsv = z
+  .object({
+    type: z.literal('Xsv'),
+    gzipped: z.boolean(),
+    xsvType: z.union([z.literal('csv'), z.literal('tsv')]),
+    data: z.record(
+      PlId,
+      ImportFileHandleSchema.nullable() /* null means sample is added to the dataset, but file is not yet set */
+    )
+  })
+  .strict();
+export type DatasetContentXsv = z.infer<typeof DatasetContentXsv>;
+
+
+export const TaggedXsvDatasetRecord = z.object({
+  tags: z.record(z.string(), z.string()),
+  file: ImportFileHandleSchema
+});
+export type TaggedXsvDatasetRecord = z.infer<typeof TaggedXsvDatasetRecord>;
+
+export const DatasetContentTaggedXsv = z
+  .object({
+    type: z.literal('TaggedXsv'),
+    gzipped: z.boolean(),
+    xsvType: z.union([z.literal('csv'), z.literal('tsv')]),
+    tags: z.array(z.string()),
+    data: z.record(PlId, z.array(TaggedXsvDatasetRecord))
+  })
+  .strict();
+export type DatasetContentTaggedXsv = z.infer<typeof DatasetContentTaggedXsv>;
+
 export const DatasetContent = z.discriminatedUnion('type', [
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
   DatasetContentTaggedFastq,
-  DatasetContentFasta
+  DatasetContentFasta,
+  DatasetContentXsv,
+  DatasetContentTaggedXsv
 ]);
 export type DatasetContent = z.infer<typeof DatasetContent>;
 
@@ -159,6 +193,10 @@ export const DatasetMultilaneFastq = Dataset(DatasetContentMultilaneFastq);
 export type DatasetMultilaneFastq = z.infer<typeof DatasetMultilaneFastq>;
 export const DatasetTaggedFastq = Dataset(DatasetContentTaggedFastq);
 export type DatasetTaggedFastq = z.infer<typeof DatasetTaggedFastq>;
+export const DatasetXsv = Dataset(DatasetContentXsv);
+export type DatasetXsv = z.infer<typeof DatasetXsv>;
+export const DatasetTaggedXsv = Dataset(DatasetContentTaggedXsv);
+export type DatasetTaggedXsv = z.infer<typeof DatasetTaggedXsv>;
 
 export type DatasetAny = z.infer<typeof DatasetAny>;
 export type DatasetType = DatasetAny['content']['type'];

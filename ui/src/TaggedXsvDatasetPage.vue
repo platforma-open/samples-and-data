@@ -4,11 +4,9 @@ import { ColDef, GridOptions } from 'ag-grid-enterprise';
 import { AgGridVue } from 'ag-grid-vue3';
 
 import {
-  DatasetTaggedFastq,
-  FastqFileGroup,
-  Lane,
+  DatasetTaggedXsv,
   PlId,
-  TaggedDatasetRecord
+  TaggedXsvDatasetRecord
 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
@@ -20,49 +18,46 @@ import { agSampleIdComparator } from './util';
 const app = useApp();
 const datasetId = app.queryParams.id;
 
-type MultilaneFastaDatasetRow = {
+type TaggedXsvDatasetRow = {
   readonly key: string;
   readonly sample: PlId;
-  readonly lane?: Lane;
   readonly tags: Record<string, string>;
-  readonly reads: FastqFileGroup;
+  readonly file: ImportFileHandle;
 };
 
 const dataset = argsModel(app, {
-  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetTaggedFastq,
+  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetTaggedXsv,
   onDisconnected: () => app.navigateTo('/')
 });
 
-function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedDatasetRecord): string {
-  return JSON.stringify([sampleId, ...tags.map((t) => r.tags[t]), r.lane ?? '']);
+function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedXsvDatasetRecord): string {
+  return JSON.stringify([sampleId, ...tags.map((t) => r.tags[t])]);
 }
 
 const rowData = computed(() => {
   const dsc = dataset.value.content;
-  const result: MultilaneFastaDatasetRow[] = Object.entries(dsc.data).flatMap(([sampleId, rs]) =>
+  const result: TaggedXsvDatasetRow[] = Object.entries(dsc.data).flatMap(([sampleId, rs]) =>
     (rs ?? []).map((r) => ({
       key: encodeKey(dsc.tags, sampleId as PlId, r),
       sample: sampleId as PlId,
-      lane: r.lane,
       tags: r.tags,
-      reads: r.files
+      file: r.file
     }))
   );
   // console.dir(result, { depth: 5 });
   return result;
 });
 
-const readIndices = computed(() => dataset.value.content.readIndices);
 
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
+  const sampleLabels = app.model.args.sampleLabels  as Record<string, string>;
   const sampleIdComparator = agSampleIdComparator(sampleLabels);
   const dsc = dataset.value.content;
-  const res: ColDef<MultilaneFastaDatasetRow>[] = [
+  const res: ColDef<TaggedXsvDatasetRow>[] = [
     makeRowNumberColDef(),
     {
       headerName: app.model.args.sampleLabelColumnLabel,
@@ -74,13 +69,6 @@ const columnDefs = computed(() => {
     }
   ];
 
-  if (dsc.hasLanes)
-    res.push({
-      headerName: 'Lane',
-      flex: 1,
-      field: 'lane',
-      editable: false
-    });
 
   for (const tag of dsc.tags)
     res.push({
@@ -89,23 +77,22 @@ const columnDefs = computed(() => {
       flex: 1
     });
 
-  for (const readIndex of readIndices.value)
-    res.push({
-      headerName: readIndex,
-      field: `reads.${readIndex}`,
-      flex: 2,
-      cellStyle: { padding: 0 },
+  res.push({
+    headerName: 'File',
+    field: 'file',
+    flex: 2,
+    cellStyle: { padding: 0 },
 
-      cellRenderer: 'PlAgCellFile',
-      cellRendererParams: {
-        extensions: dsc.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
-        resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-          const progresses = app.progresses;
-          if (!fileHandle) return undefined;
-          else return progresses[fileHandle];
-        }
+    cellRenderer: 'PlAgCellFile',
+    cellRendererParams: {
+      extensions: dsc.gzipped ? (dsc.xsvType ? [dsc.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dsc.xsvType ? [dsc.xsvType] : ['csv', 'tsv']) ,
+      resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
+        const progresses = app.progresses;
+        if (!fileHandle) return undefined;
+        else return progresses[fileHandle];
       }
-    });
+    }
+  });
 
   return res;
 });
@@ -125,7 +112,7 @@ const columnDefs = computed(() => {
 //   return [[node.data.sample, node.data.lane]];
 // }
 
-const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
+const gridOptions: GridOptions<TaggedXsvDatasetRow> = {
   getRowId: (row) => row.data.key,
   // rowSelection: 'multiple',
   rowHeight: 45,

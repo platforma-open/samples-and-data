@@ -14,6 +14,7 @@ import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/u
 import { computed } from 'vue';
 import { useApp } from './app';
 import { argsModel } from './lens';
+import { agSampleIdComparator } from './util';
 
 const app = useApp();
 const datasetId = app.queryParams.id;
@@ -59,7 +60,8 @@ const defaultColDef: ColDef = {
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels;
+  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
+  const sampleIdComparator = agSampleIdComparator(sampleLabels);
   const progresses = app.progresses;
   const res: ColDef<MultilaneFastaDatasetRow>[] = [
     makeRowNumberColDef(),
@@ -68,7 +70,8 @@ const columnDefs = computed(() => {
       flex: 1,
       field: 'sample',
       editable: false,
-      refData: sampleLabels
+      refData: sampleLabels,
+      comparator: sampleIdComparator
     } as ColDef<MultilaneFastaDatasetRow, PlId>,
     {
       headerName: 'Lane',

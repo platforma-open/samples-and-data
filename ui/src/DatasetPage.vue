@@ -16,12 +16,14 @@ import {
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive } from 'vue';
 import { useApp } from './app';
+import FastaDatasetPage from './FastaDatasetPage.vue';
 import FastqDatasetPage from './FastqDatasetPage.vue';
 import { argsModel } from './lens';
 import MultilaneFastqDatasetPage from './MultilaneFastqDatasetPage.vue';
-import FastaDatasetPage from './FastaDatasetPage.vue';
-import { UpdateDatasetDialog } from './UpdateDatasetDialog';
 import TaggedFastqDatasetPage from './TaggedFastqDatasetPage.vue';
+import TaggedXsvDatasetPage from './TaggedXsvDatasetPage.vue';
+import { UpdateDatasetDialog } from './UpdateDatasetDialog';
+import XsvDatasetPage from './XsvDatasetPage.vue';
 
 const app = useApp();
 
@@ -49,14 +51,14 @@ const readIndicesOptions: SimpleOption<string>[] = [
 
 const currentReadIndices = computed(() =>
   JSON.stringify(
-    dataset.value.content.type === 'Fasta' ? undefined : dataset.value.content.readIndices
+    (dataset.value.content.type === 'Fasta' || dataset.value.content.type === 'TaggedXsv' || dataset.value.content.type === 'Xsv') ? undefined : dataset.value.content.readIndices
   )
 );
 
 function setReadIndices(newIndices: string) {
   const indicesArray = ReadIndices.parse(JSON.parse(newIndices));
   dataset.update((ds) => {
-    if (ds.content.type !== 'Fasta') ds.content.readIndices = indicesArray;
+    if (ds.content.type !== 'Fasta' && ds.content.type !== 'TaggedXsv' && ds.content.type !== 'Xsv') ds.content.readIndices = indicesArray;
     else throw new Error("Can't set read indices for fasta dataset.");
   });
 }
@@ -75,6 +77,8 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
   { value: 'Fastq', label: "FASTQ" },
   { value: 'MultilaneFastq', label: "Multi-lane FASTQ" },
   { value: 'TaggedFastq', label: "Tagged FASTQ" },
+  { value: 'Xsv', label: "XSV" },
+  { value: 'TaggedXsv', label: "Tagged XSV" },
 ]
 </script>
 
@@ -103,6 +107,12 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
     <template v-else-if="dataset.value.content.type === 'TaggedFastq'">
       <TaggedFastqDatasetPage />
     </template>
+    <template v-else-if="dataset.value.content.type === 'Xsv'">
+      <XsvDatasetPage />
+    </template>
+    <template v-else-if="dataset.value.content.type === 'TaggedXsv'">
+      <TaggedXsvDatasetPage />
+    </template>
   </PlBlockPage>
 
   <!-- Settings panel -->
@@ -114,7 +124,7 @@ const datasetTypeOptions: ListOption<DatasetType>[] = [
       @update:model-value="(v) => dataset.update((ds) => (ds.content.gzipped = v))">
       Gzipped
     </PlCheckbox>
-    <PlBtnGroup v-if="dataset.value.content.type !== 'Fasta'" :model-value="currentReadIndices"
+    <PlBtnGroup v-if="dataset.value.content.type !== 'Fasta' && dataset.value.content.type !== 'TaggedXsv' && dataset.value.content.type !== 'Xsv'" :model-value="currentReadIndices"
       @update:model-value="setReadIndices" :options="readIndicesOptions" />
   </PlSlideModal>
 

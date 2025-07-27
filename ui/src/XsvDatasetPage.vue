@@ -13,7 +13,7 @@ import {
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import { DatasetFasta, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import { DatasetXsv, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import { ImportFileHandle } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
@@ -26,7 +26,7 @@ ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, Menu
 const app = useApp();
 const datasetId = app.queryParams.id;
 
-type FastaDatasetRow = {
+type XsvDatasetRow = {
   // undefined for an empty row at the end of the table
   readonly sample: PlId | '';
   readonly data?: ImportFileHandle | null;
@@ -41,7 +41,7 @@ function undefinedToNull<T>(value: T | undefined): T | null {
 }
 
 const dataset = argsModel(app, {
-  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetFasta,
+  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetXsv,
   onDisconnected: () => app.navigateTo('/')
 });
 
@@ -51,7 +51,7 @@ const unusedIds = () => {
 };
 
 const rowData = computed(() => {
-  const result: FastaDatasetRow[] = Object.entries(dataset.value.content.data).map(
+  const result: XsvDatasetRow[] = Object.entries(dataset.value.content.data).map(
     ([sampleId, data]) => ({
       sample: sampleId as PlId,
       data
@@ -66,9 +66,9 @@ const defaultColDef: ColDef = {
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
-  const sampleIdComparator = agSampleIdComparator(sampleLabels);
-  const res: ColDef<FastaDatasetRow>[] = [
+   const sampleLabels = app.model.args.sampleLabels  as Record<string, string>;
+   const sampleIdComparator = agSampleIdComparator(sampleLabels);
+   const res: ColDef<XsvDatasetRow>[] = [
     makeRowNumberColDef(),
     {
       headerName: app.model.args.sampleLabelColumnLabel,
@@ -89,7 +89,7 @@ const columnDefs = computed(() => {
       singleClickEdit: true,
       cellEditorParams: {
         values: unusedIds
-      } satisfies IRichCellEditorParams<FastaDatasetRow>,
+      } satisfies IRichCellEditorParams<XsvDatasetRow>,
       pinned: 'left',
       lockPinned: true,
       comparator: sampleIdComparator
@@ -97,7 +97,7 @@ const columnDefs = computed(() => {
   ];
 
   res.push({
-    headerName: 'Fasta file',
+    headerName: 'XSV file',
     flex: 2,
     cellStyle: { padding: 0 },
 
@@ -114,7 +114,7 @@ const columnDefs = computed(() => {
         ? {
             component: 'PlAgCellFile',
             params: {
-              extensions: dataset.value.content.gzipped ? ['fasta.gz'] : ['fasta']
+              extensions: dataset.value.content.gzipped ? (dataset.value.content.xsvType ? [dataset.value.content.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dataset.value.content.xsvType ? [dataset.value.content.xsvType] : ['csv', 'tsv']) ,
             }
           }
         : undefined,
@@ -128,7 +128,7 @@ const columnDefs = computed(() => {
       dataset.update((ds) => (ds.content.data[sample] = nullToUndefined(params.newValue)));
       return true;
     }
-  } as ColDef<FastaDatasetRow, ImportFileHandle>);
+  } as ColDef<XsvDatasetRow, ImportFileHandle>);
 
   return res;
 });
@@ -138,8 +138,8 @@ function isPlId(v: PlId | ''): v is PlId {
 }
 
 function getSelectedSamples(
-  api: GridApi<FastaDatasetRow>,
-  node: IRowNode<FastaDatasetRow> | null
+  api: GridApi<XsvDatasetRow>,
+  node: IRowNode<XsvDatasetRow> | null
 ): PlId[] {
   const samples = api
     .getSelectedRows()
@@ -151,7 +151,7 @@ function getSelectedSamples(
   return [sample];
 }
 
-const gridOptions: GridOptions<FastaDatasetRow> = {
+const gridOptions: GridOptions<XsvDatasetRow> = {
   getRowId: (row) => row.data.sample ?? 'new',
   rowSelection: {
     mode: 'multiRow',

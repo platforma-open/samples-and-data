@@ -1,5 +1,5 @@
-import { escapeRegExp } from './util';
 import * as _ from 'radashi';
+import { escapeRegExp } from './util';
 
 export type Range = {
   from: number;
@@ -334,6 +334,12 @@ const wellKnownPattern: WellKnownPattern[] = [
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: ['R1'],
     extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    minimalPercent: 0.99
+  },
+  {
+    patternWithoutExtension: '{{Sample}}',
+    defaultReadIndices: [],
+    extensions: ['csv', 'tsv', 'csv.gz', 'tsv.gz'],
     minimalPercent: 0.99
   }
 ];
