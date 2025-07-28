@@ -26,7 +26,7 @@ import {
   PlTextField,
 } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
-import { computed, reactive, watch } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useApp } from '../app';
 import type { ImportMode } from '../datasets';
 import { createGetOrCreateSample, extractFileName, modesOptions, readIndicesOptions, useParsedFiles, usePatternCompilation } from '../datasets';
@@ -36,13 +36,15 @@ import {
 } from '../file_name_parser';
 import ParsedFilesList from '../ParsedFilesList.vue';
 
-const emit = defineEmits<{ onClose: [] }>();
+const emit = defineEmits<{ onClose: [navigated: boolean] }>();
 
 const app = useApp();
 
+const navigated = ref(false);
+
 function doClose() {
   app.showImportDataset = false;
-  emit('onClose');
+  emit('onClose', navigated.value);
 }
 
 const data = reactive({
@@ -281,7 +283,8 @@ async function addToExistingDataset() {
     else if (dataset.content.type === 'TaggedXsv') addTaggedXsvDatasetContent(args, dataset.content.data);
     else throw new Error('Unknown dataset type');
   });
-  app.navigateTo(`/dataset?id=${datasetId}`);
+  await app.navigateTo(`/dataset?id=${datasetId}`);
+  navigated.value = true;
 }
 
 const isXsv = () => {
@@ -388,6 +391,7 @@ async function createNewDataset() {
   });
 
   await app.navigateTo(`/dataset?id=${newDatasetId}`);
+  navigated.value = true;
 }
 
 const canCreateOrAdd = computed(

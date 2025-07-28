@@ -56,7 +56,7 @@ export const platforma = BlockModel.create()
     ];
   })
 
-  .done();
+  .done(2);
 
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
