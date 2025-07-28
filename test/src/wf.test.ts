@@ -2,7 +2,7 @@ import { BlockArgs, uniquePlId } from '@platforma-open/milaboratories.samples-an
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
 
-blockTest('empty imputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('empty inputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -12,7 +12,7 @@ blockTest('empty imputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpe
   expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} } });
 });
 
-blockTest('simple imput', async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();
   const metaColumn1Id = uniquePlId();
@@ -64,7 +64,7 @@ blockTest('simple imput', async ({ rawPrj: project, ml, helpers, expect }) => {
   });
 });
 
-blockTest('simple multilane imput', async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();
   const metaColumn1Id = uniquePlId();
