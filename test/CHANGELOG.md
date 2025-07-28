@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 1.6.3
+
+### Patch Changes
+
+- c8d1852: Update sdk (use api v2)
+- Updated dependencies [c8d1852]
+  - @platforma-open/milaboratories.samples-and-data.model@1.11.1
+
 ## 1.6.2
 
 ### Patch Changes
