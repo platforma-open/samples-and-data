@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 1.13.1
+
+### Patch Changes
+
+- c8d1852: Update sdk (use api v2)
+
 ## 1.13.0
 
 ### Minor Changes

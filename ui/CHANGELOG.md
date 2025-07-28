@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.18.1
+
+### Patch Changes
+
+- c8d1852: Update sdk (use api v2)
+
 ## 1.18.0
 
 ### Minor Changes
