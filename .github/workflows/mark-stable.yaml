@@ -15,7 +15,6 @@ jobs:
     uses: milaboratory/github-ci/.github/workflows/block-mark-stable.yaml@v4
     with:
       app-name: 'Block: Samples & Data - Mark Stable'
-      notify-telegram: true
       node-version: '20.x'
       npmrc-config: |
         {
@@ -31,5 +30,5 @@ jobs:
         { "NPMJS_TOKEN": ${{ toJSON(secrets.NPMJS_TOKEN) }},
           "AWS_CI_IAM_MONOREPO_SIMPLE_ROLE": ${{ toJSON(secrets.AWS_CI_IAM_MONOREPO_SIMPLE_ROLE) }} }
 
-      TELEGRAM_NOTIFICATION_TARGET: ${{ secrets.TG_CHANNEL_MIBUILDS }}
-      TELEGRAM_API_TOKEN: ${{ secrets.TG_CI_BOT_TOKEN }}
+      SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL: ${{ secrets.SLACK_BLOCKS_CI_CHANNEL }}
