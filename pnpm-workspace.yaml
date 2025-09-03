@@ -6,14 +6,15 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': ^2.5.76
-  '@platforma-sdk/model': ^1.42.1
-  '@platforma-sdk/ui-vue': ^1.42.3
-  '@platforma-sdk/tengo-builder': ^2.1.13
-  '@platforma-sdk/workflow-tengo': ^4.14.1
+  '@platforma-sdk/block-tools': ^2.6.2
+  '@platforma-sdk/model': ^1.42.51
+  '@platforma-sdk/ui-vue': ^1.42.51
+  '@platforma-sdk/tengo-builder': ^2.1.18
+  '@platforma-sdk/workflow-tengo': ^5.1.4
+  '@platforma-sdk/blocks-deps-updater': ^2.0.0
 
-  '@platforma-sdk/test': ^1.42.1
-  '@milaboratories/helpers': ^1.6.19
+  '@platforma-sdk/test': ^1.42.52
+  '@milaboratories/helpers': ^1.7.0
 
   'vue': ^3.5.13
   'vue-tsc': ^2.2.8
@@ -33,7 +34,7 @@ catalog:
 
   '@vueuse/core': ^12.2.0
 
-  'ag-grid-enterprise': &ag-grid ^34.0.2
+  'ag-grid-enterprise': &ag-grid ^34.1.2
   'ag-grid-vue3': *ag-grid
 
   '@changesets/cli': ^2.27.11
