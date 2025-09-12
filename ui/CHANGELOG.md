@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 1.18.2
+
+### Patch Changes
+
+- e8faec7: update dependecies
+
 ## 1.18.1
 
 ### Patch Changes
