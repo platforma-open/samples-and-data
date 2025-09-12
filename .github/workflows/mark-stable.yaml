@@ -15,7 +15,6 @@ jobs:
     uses: milaboratory/github-ci/.github/workflows/block-mark-stable.yaml@v4
     with:
       app-name: 'Block: Samples & Data - Mark Stable'
-      notify-telegram: true
       node-version: '20.x'
       npmrc-config: |
         {
