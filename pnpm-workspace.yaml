@@ -12,8 +12,8 @@ catalog:
   '@platforma-sdk/tengo-builder': ^2.1.13
   '@platforma-sdk/workflow-tengo': ^5.2.0
 
-  '@platforma-sdk/test': ^1.42.1
-  '@milaboratories/helpers': ^1.6.19
+  '@platforma-sdk/test': ^1.43.3
+  '@milaboratories/helpers': ^1.8.0
 
   'vue': ^3.5.13
   'vue-tsc': ^2.2.8
