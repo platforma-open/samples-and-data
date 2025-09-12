@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.10.12
+
+### Patch Changes
+
+- f6437d5: update test dependencies
+
 ## 1.10.11
 
 ### Patch Changes
