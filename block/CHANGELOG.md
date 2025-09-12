@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.10.11
+
+### Patch Changes
+
+- 5e88be4: update dependencies
+
 ## 1.10.10
 
 ### Patch Changes
