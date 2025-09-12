@@ -24,7 +24,6 @@ jobs:
     with:
       app-name: 'Block: Samples & Data'
       app-name-slug: 'block-samples-and-data'
-      notify-telegram: true
       node-version: '20.x'
       build-script-name: 'build'
       pnpm-recursive-build: false
@@ -55,11 +54,10 @@ jobs:
           "PL_CI_TEST_PASSWORD": ${{ toJSON(secrets.PL_CI_TEST_PASSWORD) }},
 
           "AWS_CI_IAM_MONOREPO_SIMPLE_ROLE": ${{ toJSON(secrets.AWS_CI_IAM_MONOREPO_SIMPLE_ROLE) }},
-          "AWS_CI_TURBOREPO_S3_BUCKET": ${{ toJSON(secrets.AWS_CI_TURBOREPO_US_S3_BUCKET) }} }
+          "AWS_CI_TURBOREPO_S3_BUCKET": ${{ toJSON(secrets.AWS_CI_TURBOREPO_S3_BUCKET) }} }
 
       SLACK_CHANNEL: ${{ secrets.SLACK_BLOCKS_CI_CHANNEL }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-
 
       GH_ZEN_APP_ID: ${{ secrets.GH_ZEN_APP_ID }}
       GH_ZEN_APP_PRIVATE_KEY: ${{ secrets.GH_ZEN_APP_PRIVATE_KEY }}
