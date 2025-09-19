@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.10.14
+
+### Patch Changes
+
+- 6d75f36: Full SDK update
+
 ## 1.10.13
 
 ### Patch Changes
