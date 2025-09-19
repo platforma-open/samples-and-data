@@ -54,10 +54,13 @@ jobs:
           "PL_CI_TEST_PASSWORD": ${{ toJSON(secrets.PL_CI_TEST_PASSWORD) }},
 
           "AWS_CI_IAM_MONOREPO_SIMPLE_ROLE": ${{ toJSON(secrets.AWS_CI_IAM_MONOREPO_SIMPLE_ROLE) }},
-          "AWS_CI_TURBOREPO_S3_BUCKET": ${{ toJSON(secrets.AWS_CI_TURBOREPO_S3_BUCKET) }} }
+          "AWS_CI_TURBOREPO_S3_BUCKET": ${{ toJSON(secrets.AWS_CI_TURBOREPO_US_S3_BUCKET) }},
+          
+          "QUAY_USERNAME": ${{ toJSON(secrets.QUAY_USERNAME) }},
+          "QUAY_ROBOT_TOKEN": ${{ toJSON(secrets.QUAY_ROBOT_TOKEN) }} }
 
-      SLACK_CHANNEL: ${{ secrets.SLACK_BLOCKS_CI_CHANNEL }}
       SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      SLACK_CHANNEL: ${{ secrets.SLACK_BLOCKS_CI_CHANNEL }}
 
       GH_ZEN_APP_ID: ${{ secrets.GH_ZEN_APP_ID }}
       GH_ZEN_APP_PRIVATE_KEY: ${{ secrets.GH_ZEN_APP_PRIVATE_KEY }}
