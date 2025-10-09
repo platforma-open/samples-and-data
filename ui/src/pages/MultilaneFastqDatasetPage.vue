@@ -1,23 +1,30 @@
 <script setup lang="ts">
-import { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
+import type { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import {
-  DatasetMultilaneFastq,
+import type {
+  DSMultilaneFastq,
   FastqFileGroup,
   Lane,
-  PlId
+  PlId,
 } from '@platforma-open/milaboratories.samples-and-data.model';
-import { ImportFileHandle } from '@platforma-sdk/model';
+import type { ImportFileHandle } from '@platforma-sdk/model';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
-import { useApp } from './app';
-import { argsModel } from './lens';
-import { agSampleIdComparator } from './util';
+import { useApp } from '../app';
+import { agSampleIdColumnDef } from '../util';
 
 const app = useApp();
+
 const datasetId = app.queryParams.id;
+
+const dataset = (() => {
+  const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
+  if (!ds)
+    throw new Error('Dataset not found');
+  return ds as DSMultilaneFastq;
+})();
 
 type MultilaneFastaDatasetRow = {
   readonly key: string;
@@ -26,59 +33,37 @@ type MultilaneFastaDatasetRow = {
   readonly reads: FastqFileGroup;
 };
 
-const dataset = argsModel(app, {
-  get: (args) => args.datasets.find((ds) => ds.id === datasetId) as DatasetMultilaneFastq,
-  onDisconnected: () => app.navigateTo('/')
-});
-
 function encodeKey(sampleId: PlId, lane: string): string {
   return JSON.stringify([sampleId, lane]);
 }
 
-function decodeKey(key: string): [PlId, string] {
-  return JSON.parse(key);
-}
+const rowData = computed(() => Object.entries(dataset.content.data).flatMap(
+  ([sampleId, lanes]) =>
+    Object.entries(lanes!).map(([lane, fastqs]) => ({
+      key: encodeKey(sampleId as PlId, lane),
+      sample: sampleId as PlId,
+      lane: lane,
+      reads: fastqs!,
+    })),
+));
 
-const rowData = computed(() => {
-  const result: MultilaneFastaDatasetRow[] = Object.entries(dataset.value.content.data).flatMap(
-    ([sampleId, lanes]) =>
-      Object.entries(lanes!).map(([lane, fastqs]) => ({
-        key: encodeKey(sampleId as PlId, lane),
-        sample: sampleId as PlId,
-        lane: lane,
-        reads: fastqs!
-      }))
-  );
-  console.dir(result, { depth: 5 });
-  return result;
-});
-
-const readIndices = computed(() => dataset.value.content.readIndices);
+const readIndices = computed(() => dataset.content.readIndices);
 
 const defaultColDef: ColDef = {
-  suppressHeaderMenuButton: true
+  suppressHeaderMenuButton: true,
 };
 
 const columnDefs = computed(() => {
-  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
-  const sampleIdComparator = agSampleIdComparator(sampleLabels);
   const progresses = app.progresses;
   const res: ColDef<MultilaneFastaDatasetRow>[] = [
     makeRowNumberColDef(),
-    {
-      headerName: app.model.args.sampleLabelColumnLabel,
-      flex: 1,
-      field: 'sample',
-      editable: false,
-      refData: sampleLabels,
-      comparator: sampleIdComparator
-    } as ColDef<MultilaneFastaDatasetRow, PlId>,
+    agSampleIdColumnDef(app),
     {
       headerName: 'Lane',
       flex: 1,
       field: 'lane',
-      editable: false
-    } as ColDef<MultilaneFastaDatasetRow, string>
+      editable: false,
+    } as ColDef<MultilaneFastaDatasetRow, string>,
   ];
 
   for (const readIndex of readIndices.value)
@@ -89,46 +74,38 @@ const columnDefs = computed(() => {
 
       cellRenderer: 'PlAgCellFile',
       cellRendererParams: {
-        extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
+        extensions: dataset.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
           if (!fileHandle) return undefined;
           else return progresses[fileHandle];
-        }
+        },
       },
 
       valueGetter: (params) =>
         params.data?.sample
-          ? dataset.value.content.data[params.data.sample]![params.data.lane]![readIndex]
+          ? dataset.content.data[params.data.sample]![params.data.lane]![readIndex]
           : undefined,
       valueSetter: (params) => {
         const sample = params.data.sample;
-        if (sample === '') return false;
         const lane = params.data.lane;
-        dataset.update(
-          (ds) =>
-            (ds.content.data[sample]![lane]![readIndex] = params.newValue
-              ? params.newValue
-              : undefined)
-        );
+        dataset.content.data[sample]![lane]![readIndex] = params.newValue
+          ? params.newValue
+          : undefined;
+
         return true;
       },
-      suppressMenu: true
+      suppressMenu: true,
     } as ColDef<MultilaneFastaDatasetRow, ImportFileHandle>);
 
   return res;
 });
 
-function isPlId(v: PlId | ''): v is PlId {
-  return v !== '';
-}
-
 function getSelectedKeys(
   api: GridApi<MultilaneFastaDatasetRow>,
-  node: IRowNode<MultilaneFastaDatasetRow> | null
+  node: IRowNode<MultilaneFastaDatasetRow> | null,
 ): [PlId, string][] {
   const keys = api.getSelectedRows().map((row) => [row.sample, row.lane] as [PlId, string]);
   if (keys.length !== 0) return keys;
-  const sample = node?.data?.sample;
   if (!node?.data) return [];
   return [[node.data.sample, node.data.lane]];
 }
@@ -138,10 +115,10 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,
-    headerCheckbox: false
+    headerCheckbox: false,
   },
   rowHeight: 45,
-  getMainMenuItems: (params) => {
+  getMainMenuItems: (_) => {
     return [];
   },
   getContextMenuItems: (params) => {
@@ -151,20 +128,19 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
         name: 'Delete',
         action: (params) => {
           const keysToDelete = getSelectedKeys(params.api, params.node);
-          dataset.update((ds) => {
-            for (const [sampleId, lane] of keysToDelete) {
-              delete ds.content.data[sampleId]![lane];
-              if (Object.keys(ds.content.data[sampleId]!).length === 0)
-                delete ds.content.data[sampleId];
-            }
-          });
-        }
-      }
+
+          for (const [sampleId, lane] of keysToDelete) {
+            delete dataset.content.data[sampleId]![lane];
+            if (Object.keys(dataset.content.data[sampleId]!).length === 0)
+              delete dataset.content.data[sampleId];
+          }
+        },
+      },
     ];
   },
   components: {
-    PlAgCellFile
-  }
+    PlAgCellFile,
+  },
 };
 </script>
 

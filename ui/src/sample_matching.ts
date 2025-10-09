@@ -20,7 +20,7 @@ function startsWith(
   stringB: string,
   requireDelimiter: boolean,
   caseInsensitive: boolean,
-  trim: boolean
+  trim: boolean,
 ): boolean {
   stringA = prepareString(stringA, caseInsensitive, trim);
   stringB = prepareString(stringB, caseInsensitive, trim);
@@ -34,7 +34,7 @@ function endsWith(
   stringB: string,
   requireDelimiter: boolean,
   caseInsensitive: boolean,
-  trim: boolean
+  trim: boolean,
 ): boolean {
   stringA = prepareString(stringA, caseInsensitive, trim);
   stringB = prepareString(stringB, caseInsensitive, trim);
@@ -48,14 +48,14 @@ function contains(
   stringB: string,
   requireDelimiter: boolean,
   caseInsensitive: boolean,
-  trim: boolean
+  trim: boolean,
 ): boolean {
   stringA = prepareString(stringA, caseInsensitive, trim);
   stringB = prepareString(stringB, caseInsensitive, trim);
   if (requireDelimiter)
     return (
-      stringA.match(RegExp(leftDelimiterRegexp + escapeRegExp(stringB) + rightDelimiterRegexp)) !==
-      null
+      stringA.match(RegExp(leftDelimiterRegexp + escapeRegExp(stringB) + rightDelimiterRegexp))
+      !== null
     );
   else return stringA.includes(stringB);
 }
@@ -64,12 +64,12 @@ function calculateDefaultAlgorithms(): SampleMatchingAlgorithm[] {
   const result: SampleMatchingAlgorithm[] = [];
   result.push({
     name: 'Perfect match',
-    matcher: (existingSample, importSample) => existingSample === importSample
+    matcher: (existingSample, importSample) => existingSample === importSample,
   });
   result.push({
     name: 'Match ignoring case',
     matcher: (existingSample, importSample) =>
-      existingSample.toLocaleLowerCase() === importSample.toLocaleLowerCase()
+      existingSample.toLocaleLowerCase() === importSample.toLocaleLowerCase(),
   });
 
   for (const op of ['starts with', 'ends with', 'contains'] as const)
@@ -77,34 +77,34 @@ function calculateDefaultAlgorithms(): SampleMatchingAlgorithm[] {
       for (const trim of [false, true])
         for (const caseInsensitive of [false, true])
           for (const requireDelimiter of [true, false]) {
-            const baseMatcher: MatcherFunction =
-              op === 'starts with'
+            const baseMatcher: MatcherFunction
+              = op === 'starts with'
                 ? (existingSample, importSample) =>
                     startsWith(
                       existingSample,
                       importSample,
                       requireDelimiter,
                       caseInsensitive,
-                      trim
+                      trim,
                     )
                 : op === 'ends with'
-                ? (existingSample, importSample) =>
-                    endsWith(existingSample, importSample, requireDelimiter, caseInsensitive, trim)
-                : (existingSample, importSample) =>
-                    contains(existingSample, importSample, requireDelimiter, caseInsensitive, trim);
+                  ? (existingSample, importSample) =>
+                      endsWith(existingSample, importSample, requireDelimiter, caseInsensitive, trim)
+                  : (existingSample, importSample) =>
+                      contains(existingSample, importSample, requireDelimiter, caseInsensitive, trim);
             if (existingBigger)
               result.push({
                 name: `Existing sample name ${op} import sample name${
                   requireDelimiter ? ' requiring delimiter at the end' : ''
                 }${trim ? '; trim' : ''}${caseInsensitive ? '; case-insensitive' : ''}`,
-                matcher: baseMatcher
+                matcher: baseMatcher,
               });
             else
               result.push({
                 name: `Import sample name ${op} existing sample name${
                   requireDelimiter ? ' requiring delimiter at the end' : ''
                 }${trim ? '; trim' : ''}${caseInsensitive ? '; case-insensitive' : ''}`,
-                matcher: (existingSample, importSample) => baseMatcher(importSample, existingSample)
+                matcher: (existingSample, importSample) => baseMatcher(importSample, existingSample),
               });
           }
 
@@ -120,7 +120,7 @@ export type AlgorithmSearchResult = {
 
 export function determineBestMatchingAlgorithm(
   existingSamples: string[],
-  importSamples: string[]
+  importSamples: string[],
 ): AlgorithmSearchResult {
   if (existingSamples.length === 0)
     return { topAlgorithm: SampleMatchingAlgorithms[0], matches: 0 };

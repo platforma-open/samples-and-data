@@ -1,10 +1,11 @@
+import type {
+  ImportFileHandle,
+  InferHrefType } from '@platforma-sdk/model';
 import {
   BlockModel,
-  ImportFileHandle,
-  InferHrefType,
-  type InferOutputsType
+  type InferOutputsType,
 } from '@platforma-sdk/model';
-import { BlockArgs } from './args';
+import type { BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
 
@@ -16,7 +17,7 @@ export const platforma = BlockModel.create()
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
-    datasets: []
+    datasets: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
@@ -28,10 +29,10 @@ export const platforma = BlockModel.create()
         ctx.outputs
           ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
           ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
-            skipUnresolved: true
-          }) ?? []
+            skipUnresolved: true,
+          }) ?? [],
       ),
-    { isActive: true }
+    { isActive: true },
   )
 
   .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
@@ -44,8 +45,8 @@ export const platforma = BlockModel.create()
           ({
             type: 'link',
             href: `/dataset?id=${ds.id}`,
-            label: ds.label
-          } as const)
+            label: ds.label,
+          } as const),
       ),
       {
         type: 'link',
@@ -61,5 +62,3 @@ export const platforma = BlockModel.create()
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from './args';
-export * from './helpers';
-export { BlockArgs };

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { PlChip } from '@platforma-sdk/ui-vue';
-import { ICellRendererParams } from 'ag-grid-enterprise';
+import type { ICellRendererParams } from 'ag-grid-enterprise';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -13,8 +13,13 @@ const datasets = computed(() => props.params.datasets);
 </script>
 <template>
   <div>
-    <template v-for="ds in datasets">
-      <PlChip :small="true" :style="{ marginLeft: '1px', marginRight: '1px' }">{{ ds }}</PlChip>
+    <template v-for="ds in datasets" :key="ds">
+      <PlChip
+        :small="true"
+        :style="{ marginLeft: '1px', marginRight: '1px' }"
+      >
+        {{ ds }}
+      </PlChip>
     </template>
   </div>
 </template>
