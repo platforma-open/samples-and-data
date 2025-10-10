@@ -53,23 +53,25 @@ export const sdkPlugin = defineApp(platforma, (app) => {
             doneBytes += fImport.status.bytesProcessed ?? 0;
           }
         }
-        console.dir({
-          totalDone,
-          totalBytes,
-          doneBytes,
-          totalImports,
-          totalWithUnknownSize,
-          doneWithUnknownSize,
-        });
-        if (totalDone === totalImports) return false;
+        // console.dir({
+        //   totalDone,
+        //   totalBytes,
+        //   doneBytes,
+        //   totalImports,
+        //   totalWithUnknownSize,
+        //   doneWithUnknownSize,
+        // });
+        if (totalDone === totalImports)
+          return false;
         const knownSizeProgress = doneBytes / totalBytes;
         const unknownSizeProgress = doneWithUnknownSize / totalWithUnknownSize;
         let progress = 0;
         if (totalImports - totalWithUnknownSize > 0 && totalBytes > 0)
           progress += knownSizeProgress * (totalImports - totalWithUnknownSize);
-        if (totalWithUnknownSize > 0) progress += unknownSizeProgress * totalWithUnknownSize;
+        if (totalWithUnknownSize > 0)
+          progress += unknownSizeProgress * totalWithUnknownSize;
         progress = progress / totalImports;
-        console.log(progress);
+        // console.log(progress);
         return progress;
       }
     },

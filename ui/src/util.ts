@@ -1,8 +1,7 @@
-import type { BlockArgs, DSContentTaggedFastq } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { PlId } from '@platforma-sdk/model';
 import type { AppV2 } from '@platforma-sdk/ui-vue';
 import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
-import { isEqual } from 'radashi';
 
 type Entries<T> = {
   [K in keyof T]: [K, Required<T[K]>];

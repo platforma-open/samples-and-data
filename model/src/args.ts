@@ -96,6 +96,13 @@ export interface DSContentXsv {
   data: Record<PlId, ImportFileHandle | null>; /* null means sample is added to the dataset, but file is not yet set */
 }
 
+export interface DSContentCloneTable {
+  type: 'CloneTable';
+  gzipped: boolean;
+  xsvType: 'csv' | 'tsv';
+  data: Record<PlId, ImportFileHandle | null>; /* null means sample is added to the dataset, but file is not yet set */
+}
+
 export interface TaggedXsvDatasetRecord {
   tags: Record<string, string>;
   file: ImportFileHandle;

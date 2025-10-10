@@ -90,10 +90,7 @@ const columnDefs = computed(() => {
 
       valueSetter: (params) => {
         const sample = params.data.sample;
-        if (sample === '') return false;
-
         dataset.content.data[sample]![readIndex] = params.newValue ? params.newValue : undefined;
-
         return true;
       },
     } as ColDef<FastqDatasetRow, ImportFileHandle>);

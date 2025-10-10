@@ -1,0 +1,25 @@
+json := import("json")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+
+datasetColumnSpecBase := func(blockId, dataset, extension) {
+    return {
+        kind: "PColumn",
+        name: "pl7.app/sequencing/data",
+        domain: {
+            "pl7.app/fileExtension": extension,
+            "pl7.app/block": blockId,
+            "pl7.app/dataset": dataset.id
+        },
+        valueType: "File",
+        annotations: {
+            "pl7.app/label": "Sequencing Data",
+            "pl7.app/hideDataFromUi": "true",
+            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))) // axis values for sampleIdAxis
+        }
+    }
+}
+
+
+export {
+    datasetColumnSpecBase: datasetColumnSpecBase
+}

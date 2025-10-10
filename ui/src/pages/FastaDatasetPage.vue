@@ -61,9 +61,10 @@ const columnDefs = computed(() => {
 
     cellRendererParams: {
       resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-        const progresses = app.progresses;
-        if (!fileHandle) return undefined;
-        else return progresses[fileHandle];
+        if (!fileHandle)
+          return undefined;
+        else
+          return app.progresses[fileHandle];
       },
     },
 
@@ -76,7 +77,7 @@ const columnDefs = computed(() => {
             },
           }
         : undefined,
-    valueGetter: (params) => params.data?.sample,
+    valueGetter: (params) => params.data?.sample ? dataset.content.data[params.data.sample] : undefined,
     valueSetter: (params) => {
       const sample = params.data.sample;
       dataset.content.data[sample] = params.newValue ?? null;

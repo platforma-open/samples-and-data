@@ -7,78 +7,78 @@ test.for([
     target: 'FebControl10_sampled_R2.fastq.gz',
     match: {
       sample: {
-        value: 'FebControl10_sampled'
+        value: 'FebControl10_sampled',
       },
       readIndex: {
-        value: 'R2'
-      }
-    }
+        value: 'R2',
+      },
+    },
   },
   {
     pattern: '{{s}}{{R}}.fastq.gz',
     target: 'FebControl10_sampled_R2.fastqagz',
-    match: undefined
+    match: undefined,
   },
   {
     pattern: '{{s}}{{R}}_L{{n}}.fastq.gz',
     target: 'FebControl10_sampled_R2_L002.fastq.gz',
     match: {
       sample: {
-        value: 'FebControl10_sampled'
+        value: 'FebControl10_sampled',
       },
       readIndex: {
-        value: 'R2'
+        value: 'R2',
       },
-      anyNumberMatchers: [{ value: '002' }]
-    }
+      anyNumberMatchers: [{ value: '002' }],
+    },
   },
   {
     pattern: '{{s}}{{RR}}_L{{n}}.fastq.gz',
     target: 'FebControl10_sampled_R2_L002.fastq.gz',
     match: {
       sample: {
-        value: 'FebControl10_sampled'
+        value: 'FebControl10_sampled',
       },
       readIndex: {
-        value: 'R2'
+        value: 'R2',
       },
-      anyNumberMatchers: [{ value: '002' }]
-    }
+      anyNumberMatchers: [{ value: '002' }],
+    },
   },
   {
     pattern: '{{s}}{{n:TAG2}}_{{*:TAG1}}_{{RR}}_L{{n}}.fastq.gz',
     target: 'FebControl10_sampled_R2_L002.fastq.gz',
     match: {
       sample: {
-        value: 'FebControl'
+        value: 'FebControl',
       },
       tags: {
         TAG1: { value: 'sampled' },
-        TAG2: { value: '10' }
+        TAG2: { value: '10' },
       },
       readIndex: {
-        value: 'R2'
+        value: 'R2',
       },
-      anyNumberMatchers: [{ value: '002' }]
-    }
+      anyNumberMatchers: [{ value: '002' }],
+    },
   },
   {
     pattern: '{{s}}{{R}}L{{n}}.fastq.gz',
     target: 'FebControl10_sampled_R2_L002.fastq.gz',
     match: {
       sample: {
-        value: 'FebControl10_sampled'
+        value: 'FebControl10_sampled',
       },
       readIndex: {
-        value: 'R2'
-      }
-    }
+        value: 'R2',
+      },
+    },
   },
   {
     pattern: '{{s}}{{R}}.fastq',
     target: 'FebControl10_sampled_R2.fastq.gz',
-    match: undefined
-  }
+    match: undefined,
+  },
 ])('matching test for $pattern and $target', ({ pattern, target, match }, { expect }) => {
   const fileNamePattern = FileNamePattern.parse(pattern);
   const actualMatch = fileNamePattern.match(target);
@@ -92,7 +92,7 @@ test('wrapped string builder - pattern', ({ expect }) => {
     sample: { begin: '[', end: ']' },
     readIndex: { begin: '{', end: '}' },
     anyMatchers: { begin: '(', end: ')' },
-    anyNumberMatchers: { begin: '\\', end: '/' }
+    anyNumberMatchers: { begin: '\\', end: '/' },
   });
   expect(wrapped).to.equal(`[{{s}}]{{{R}}}L\\{{n}}/D({{*}}).fastq.gz`);
 });
@@ -105,7 +105,7 @@ test('wrapped string builder - match', ({ expect }) => {
     sample: { begin: '[', end: ']' },
     readIndex: { begin: '{', end: '}' },
     anyMatchers: { begin: '(', end: ')' },
-    anyNumberMatchers: { begin: '\\', end: '/' }
+    anyNumberMatchers: { begin: '\\', end: '/' },
   });
   expect(wrapped).to.equal(`[FebControl10_sampled]_{R2}_L\\002/.fastq.gz`);
 });
@@ -131,7 +131,7 @@ test('infer file name pattern 1', ({ expect }) => {
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_I1_001.fastq.gz',
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_I2_001.fastq.gz',
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R1_001.fastq.gz',
-    '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2_001.fastq.gz'
+    '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2_001.fastq.gz',
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_L{{L}}_{{RR}}_{{n}}.fastq.gz');
@@ -160,7 +160,7 @@ test('infer file name pattern 2', ({ expect }) => {
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_I1.fastq.gz',
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_I2.fastq.gz',
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R1.fastq.gz',
-    '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2.fastq.gz'
+    '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2.fastq.gz',
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_L{{L}}_{{RR}}.fastq.gz');
@@ -177,7 +177,7 @@ test('infer file name pattern 3', ({ expect }) => {
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_I1.fastq.gz',
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_I2.fastq.gz',
     '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R1.fastq.gz',
-    '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2.fastq.gz'
+    '10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2.fastq.gz',
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_L{{n}}_{{RR}}.fastq.gz');
@@ -211,7 +211,7 @@ test('infer file name pattern 4', ({ expect }) => {
     'ERR2618745_1.fastq.gz',
     'ERR2618745_2.fastq.gz',
     'ERR2618746_1.fastq.gz',
-    'ERR2618746_2.fastq.gz'
+    'ERR2618746_2.fastq.gz',
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{R}}.fastq.gz');
@@ -237,7 +237,7 @@ test('infer file name pattern 5', ({ expect }) => {
     'seq15.fasta',
     'seq16.fasta',
     'seq17.fasta',
-    'seq18.fasta'
+    'seq18.fasta',
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}.fasta');

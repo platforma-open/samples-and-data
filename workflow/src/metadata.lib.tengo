@@ -1,0 +1,82 @@
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+consts := import("@platforma-sdk/workflow-tengo:pframes.constants")
+json := import("json")
+
+
+RTYPE_P_COLUMN_DATA_JSON := consts.RTYPE_P_COLUMN_DATA_JSON
+
+// TODO implement
+normalizeString := func(str) {
+	return str
+}
+
+mapToPValueData := func(map) {
+	data := {}
+	for key, value in map {
+		data[json.encode([key])] = value
+	}
+	result := {
+		keyLength: 1,
+		data: data
+	}
+	return result
+}
+
+createJsonPColumnData := func(data) {
+	return smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, data)
+}
+
+/**
+ * Adds metadata columns to the exports
+ * 
+ * @param args - arguments
+ * @param blockId - block id
+ * @param sampleIdAxisSpec - sample id axis spec
+ * @return columns - metadata columns (id -> {spec, data})
+ */
+createMetadata := func(args, blockId, sampleIdAxisSpec) {
+    columns := {}
+	for _, column in args.metadata {
+		columns["metadata." + column.id] = {
+			spec: {
+				kind: "PColumn",
+				name: "pl7.app/metadata",
+				valueType: column.valueType,
+				annotations: {
+					"pl7.app/label": column.label
+				},
+				domain: {
+					"pl7.app/columnId": column.global ? normalizeString(column.label) : column.id
+				},
+				axesSpec: [sampleIdAxisSpec]
+			},
+			data: createJsonPColumnData(json.encode(mapToPValueData(column.data)))
+		}
+	}
+
+	//
+	// Creating sample label column
+	//
+
+	columns["metadata.sampleId"] = {
+		spec: {
+			kind: "PColumn",
+			name: "pl7.app/label",
+			valueType: "String",
+			annotations: {
+				"pl7.app/label": args.sampleLabelColumnLabel,
+				"pl7.app/isLabel": "true"
+			},
+			axesSpec: [sampleIdAxisSpec]
+		},
+		data: createJsonPColumnData(json.encode(mapToPValueData(args.sampleLabels)))
+	}
+
+    return columns
+}
+
+export {
+    createMetadata: createMetadata
+}
