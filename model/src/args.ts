@@ -96,13 +96,6 @@ export interface DSContentXsv {
   data: Record<PlId, ImportFileHandle | null>; /* null means sample is added to the dataset, but file is not yet set */
 }
 
-export interface DSContentCloneTable {
-  type: 'CloneTable';
-  gzipped: boolean;
-  xsvType: 'csv' | 'tsv';
-  data: Record<PlId, ImportFileHandle | null>; /* null means sample is added to the dataset, but file is not yet set */
-}
-
 export interface TaggedXsvDatasetRecord {
   tags: Record<string, string>;
   file: ImportFileHandle;
@@ -116,13 +109,24 @@ export interface DSContentTaggedXsv {
   data: Record<PlId, TaggedXsvDatasetRecord[]>;
 }
 
+export interface DSContentBulkCountMatrix {
+  type: 'BulkCountMatrix';
+  gzipped: boolean;
+  xsvType: 'csv' | 'tsv';
+  // group -> file
+  data: Record<PlId, ImportFileHandle | null>; /* null means group is added to the dataset, but file is not yet set */
+  // group -> samples
+  groupToSample: Record<PlId, PlId[]> | undefined;
+}
+
 export type DSContent =
   | DSContentFastq
   | DSContentMultilaneFastq
   | DSContentTaggedFastq
   | DSContentFasta
   | DSContentXsv
-  | DSContentTaggedXsv;
+  | DSContentTaggedXsv
+  | DSContentBulkCountMatrix;
 
 export interface Dataset<ContentType> {
   id: PlId;
@@ -137,6 +141,7 @@ export type DSMultilaneFastq = Dataset<DSContentMultilaneFastq>;
 export type DSTaggedFastq = Dataset<DSContentTaggedFastq>;
 export type DSXsv = Dataset<DSContentXsv>;
 export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
+export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
 
 export type DSType = DSAny['content']['type'];
 
@@ -145,6 +150,8 @@ export interface BlockArgs {
   sampleIds: PlId[];
   sampleLabelColumnLabel: string;
   sampleLabels: Record<PlId, string>;
+  groupIds: PlId[];
+  groupLabels: Record<PlId, string>;
   metadata: MTColumn[];
   datasets: DSAny[];
 }

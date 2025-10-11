@@ -3,14 +3,6 @@ import type { PlId } from '@platforma-sdk/model';
 import type { AppV2 } from '@platforma-sdk/ui-vue';
 import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
 
-type Entries<T> = {
-  [K in keyof T]: [K, Required<T[K]>];
-}[keyof T][];
-
-export function typeSafeEntries<T>(obj: T): Entries<T> {
-  return Object.entries(obj as any) as Entries<T>;
-}
-
 export function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -52,6 +44,27 @@ export function getSelectedSamplesAndTags<RowT extends { readonly sample: PlId; 
   if (!sampleId)
     return [];
   return [{ sampleId, tags: node?.data?.tags ?? {} }];
+}
+
+export function agGroupIdColumnDef<RowT extends { readonly group: PlId }>(appUt: unknown): ColDef<RowT> {
+  const app = appUt as AppV2<BlockArgs>;
+
+  const groupLabels = app.model.args.groupLabels as Record<string, string>;
+
+  const groupIdComparator = agSampleIdComparator(groupLabels);
+
+  return {
+    headerName: 'File group',
+    flex: 1,
+    valueGetter: (params) => params.data?.group,
+    editable: false,
+    refData: groupLabels,
+    pinned: 'left',
+    lockPinned: true,
+    comparator: groupIdComparator,
+    spanRows: true,
+    cellStyle: { display: 'flex', alignItems: 'center' },
+  };
 }
 
 export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(appUt: unknown): ColDef<RowT> {

@@ -1,34 +1,55 @@
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import { getFileNameFromHandle } from '@platforma-sdk/model';
-import type { SimpleOption } from '@platforma-sdk/ui-vue';
+import type { BlockArgs, DSType } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
+import { getFileNameFromHandle, uniquePlId } from '@platforma-sdk/model';
+import type { AppV2, SimpleOption } from '@platforma-sdk/ui-vue';
 import type { ComputedRef, Reactive, ShallowRef } from 'vue';
 import { computed, ref, shallowRef, watch } from 'vue';
-import type { FileNamePatternMatch } from './file_name_parser';
+import type { FileContentType, FileNamePatternMatch } from './file_name_parser';
 import { FileNamePattern } from './file_name_parser';
 
 // Dataset import mode
 export type ImportMode = 'create-new-dataset' | 'add-to-existing';
 
-export const datasetTypeOptions = [
-  {
-    value: 'Fastq', label: 'FASTQ',
+export const datasetTypes: Record<DSType, { label: string; fileType: FileContentType; hasTags: boolean }> = {
+  Fastq: {
+    label: 'FASTQ',
+    fileType: 'Fastq',
+    hasTags: false,
   },
-  {
-    value: 'Fasta', label: 'FASTA',
+  MultilaneFastq: {
+    label: 'Multi-lane FASTQ',
+    fileType: 'Fastq',
+    hasTags: false,
   },
-  {
-    value: 'MultilaneFastq', label: 'Multi-lane FASTQ',
+  TaggedFastq: {
+    label: 'Tagged FASTQ',
+    fileType: 'Fastq',
+    hasTags: true,
   },
-  {
-    value: 'TaggedFastq', label: 'Tagged FASTQ',
+  Fasta: {
+    label: 'FASTA',
+    fileType: 'Fasta',
+    hasTags: false,
   },
-  {
-    value: 'Xsv', label: 'XSV',
+  Xsv: {
+    label: 'Sample table (CSV/TSV)',
+    fileType: 'Xsv',
+    hasTags: false,
   },
-  {
-    value: 'TaggedXsv', label: 'Tagged XSV',
+  TaggedXsv: {
+    label: 'Tagged sample table (CSV/TSV)',
+    fileType: 'Xsv',
+    hasTags: true,
   },
-];
+  BulkCountMatrix: {
+    label: 'Bulk count matrix',
+    fileType: 'Xsv',
+    hasTags: false,
+  },
+};
+export const datasetTypeOptions = Object.entries(datasetTypes).map(([value, { label }]) => ({
+  value, label,
+}));
 
 export const datasetTypeLabels = datasetTypeOptions.reduce(
   (acc, { value, label }) => {
@@ -37,6 +58,19 @@ export const datasetTypeLabels = datasetTypeOptions.reduce(
   },
   {} as Record<string, string>,
 );
+
+export const datasetTypeOptionsByFileType = (() => {
+  const rec: Partial<Record<FileContentType, SimpleOption<DSType>[]>> = {};
+
+  for (const [value, { label, fileType }] of Object.entries(datasetTypes)) {
+    if (!rec[fileType]) {
+      rec[fileType] = [];
+    }
+    rec[fileType].push({ value: value as DSType, label });
+  }
+
+  return rec;
+})();
 
 export const modesOptions: SimpleOption<ImportMode>[] = [
   {
@@ -102,4 +136,14 @@ export function useParsedFiles(
       };
     }),
   );
+}
+
+export function getOrCreateSample(appUt: unknown, sampleName: string): PlId {
+  const app = appUt as AppV2<BlockArgs>;
+  const id = Object.entries(app.model.args.sampleLabels).find(([, label]) => label === sampleName)?.[0];
+  if (id) return id as PlId;
+  const newId = uniquePlId();
+  app.model.args.sampleIds.push(newId);
+  app.model.args.sampleLabels[newId] = sampleName;
+  return newId;
 }

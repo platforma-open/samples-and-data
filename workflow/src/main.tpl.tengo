@@ -7,6 +7,9 @@ pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
 pframes := import("@platforma-sdk/workflow-tengo:pframes")
 metadata := import(":metadata")
 smart := import("@platforma-sdk/workflow-tengo:smart")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+
+prerunTpl := assets.importTemplate(":prerun")
 
 dsFasta := import(":ds-fasta")
 dsFastq := import(":ds-fastq")
@@ -17,6 +20,8 @@ dsProcessors := {
 	"Fastq": dsFastq,
 	"MultilaneFastq": dsMultilaneFastq
 }
+
+wf.setPreRun(prerunTpl)
 
 wf.body(func(args) {
 

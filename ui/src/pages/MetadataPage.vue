@@ -146,6 +146,7 @@ async function deleteSamples(sampleIds: PlId[]) {
     for (const s of sampleIds) {
       delete arg.sampleLabels[s];
       for (const m of arg.metadata) delete m.data[s];
+      // @TODO: fix for groups !!!
       for (const ds of arg.datasets) delete ds.content.data[s];
     }
   });

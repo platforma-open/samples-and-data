@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type {
+  DSContentBulkCountMatrix,
   DSContentFasta,
   DSContentFastq,
   DSContentMultilaneFastq,
@@ -32,13 +33,15 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useApp } from '../app';
 import type { ImportMode } from './datasets';
 import {
-  datasetTypeLabels,
+  datasetTypes,
   extractFileName,
+  getOrCreateSample,
   modesOptions,
   useParsedFiles,
   usePatternCompilation,
 } from './datasets';
 import type {
+  FileContentType,
   FileNamePattern,
 } from './file_name_parser';
 import {
@@ -60,6 +63,14 @@ type ImportDatasetDialogData = {
    * Type of the dataset to create; undefined means not yet inferred from the files or set by the user
    */
   datasetType: DSType | undefined;
+  /**
+   * Type of the files in the dataset
+   */
+  fileType: FileContentType | undefined;
+  /**
+   * Whether the dataset has tags
+   */
+  hasTags: boolean;
   /**
    * Whether the files are gzipped
    */
@@ -137,6 +148,8 @@ const data = reactive<ImportDatasetDialogData>({
   mode: targetDs.value ? 'add-to-existing' : 'create-new-dataset',
   targetAddDataset: targetDs.value?.id,
   datasetType: targetDs.value?.content.type,
+  fileType: targetDs.value ? datasetTypes[targetDs.value.content.type].fileType : undefined,
+  hasTags: targetDs.value ? datasetTypes[targetDs.value.content.type].hasTags : false,
   gzipped: targetDs.value?.content.gzipped ?? false,
   readIndices: targetDsReadIndices.value,
   files: [],
@@ -146,8 +159,6 @@ const data = reactive<ImportDatasetDialogData>({
   datasetDialogOpened: false,
   importing: false,
 });
-
-const datasetTypeLabel = computed(() => data.datasetType ? datasetTypeLabels[data.datasetType] : undefined);
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
 
@@ -163,6 +174,8 @@ const { patternError, compiledPattern } = usePatternCompilation(data);
 function updateDataFromPattern(v: FileNamePattern | undefined) {
   if (v && !addingToFixedDataset.value) {
     data.datasetType = v.datasetType;
+    data.fileType = v.fileContentType;
+    data.hasTags = v.hasTagMatchers;
     data.gzipped = v.gzipped;
   }
 }
@@ -174,6 +187,19 @@ const parsedFiles = useParsedFiles(data, compiledPattern);
 
 // Whether any of the files matched the pattern
 const hasMatchedFiles = computed(() => parsedFiles.value.filter((f) => f.match).length > 0);
+
+const dsTypeOptions = computed(() => {
+  if (!data.fileType) {
+    return [];
+  }
+  const result = [];
+  for (const [value, props] of Object.entries(datasetTypes)) {
+    if (props.fileType === data.fileType && props.hasTags === data.hasTags) {
+      result.push({ value, label: props.label });
+    }
+  }
+  return result;
+});
 
 // Add more files to the data
 function addFiles(files: ImportFileHandle[]) {
@@ -216,12 +242,12 @@ watch(addToExistingOptions, (ops) => {
     data.targetAddDataset = ops[0].value;
 });
 
-function getOrCreateSample(sampleName: string): PlId {
-  const id = Object.entries(app.model.args.sampleLabels).find(([, label]) => label === sampleName)?.[0];
+function getOrCreateGroup(groupName: string): PlId {
+  const id = Object.entries(app.model.args.groupLabels).find(([, label]) => label === groupName)?.[0];
   if (id) return id as PlId;
   const newId = uniquePlId();
-  app.model.args.sampleIds.push(newId);
-  app.model.args.sampleLabels[newId] = sampleName;
+  app.model.args.groupIds.push(newId);
+  app.model.args.groupLabels[newId] = groupName;
   return newId;
 }
 
@@ -235,7 +261,7 @@ function addFastaDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
-    const sampleId = getOrCreateSample(sample);
+    const sampleId = getOrCreateSample(app, sample);
     contentData[sampleId] = f.handle;
   }
 }
@@ -250,7 +276,7 @@ function addFastqDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
-    const sampleId = getOrCreateSample(sample);
+    const sampleId = getOrCreateSample(app, sample);
     const readIndex = getWellFormattedReadIndex(f.match);
     let fileGroup = contentData[sampleId];
     if (!fileGroup) {
@@ -271,7 +297,7 @@ function addMultilaneFastqDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
-    const sampleId = getOrCreateSample(sample);
+    const sampleId = getOrCreateSample(app, sample);
     const lane = f.match.lane!.value;
     const readIndex = getWellFormattedReadIndex(f.match);
 
@@ -302,7 +328,7 @@ function addTaggedFastqDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
-    const sampleId = getOrCreateSample(sample);
+    const sampleId = getOrCreateSample(app, sample);
     const lane = f.match.lane?.value;
     const readIndex = getWellFormattedReadIndex(f.match);
     const tags = _.mapValues(f.match.tags!, (v) => v.value);
@@ -333,7 +359,7 @@ function addXsvDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
-    const sampleId = getOrCreateSample(sample);
+    const sampleId = getOrCreateSample(app, sample);
     contentData[sampleId] = f.handle;
   }
 }
@@ -349,7 +375,7 @@ function addTaggedXsvDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
-    const sampleId = getOrCreateSample(sample);
+    const sampleId = getOrCreateSample(app, sample);
     const tags = _.mapValues(f.match.tags!, (v) => v.value);
 
     let sampleRecords = contentData[sampleId];
@@ -363,6 +389,21 @@ function addTaggedXsvDatasetContent(
       sampleRecords.push(sampleRecord = {
         tags, file: f.handle,
       });
+  }
+}
+
+/** Bulk Count Matrix */
+function addBulkCountMatrixDatasetContent(
+  contentData: DSContentBulkCountMatrix['data'],
+) {
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error('Dataset has read or lane matcher, trying to add XSV dataset');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const group = f.match.sample.value;
+    const sampleId = getOrCreateGroup(group);
+    contentData[sampleId] = f.handle;
   }
 }
 
@@ -401,6 +442,9 @@ async function addToExistingDataset() {
     case 'TaggedXsv':
       addTaggedXsvDatasetContent(dataset.content.data);
       break;
+    case 'BulkCountMatrix':
+      addBulkCountMatrixDatasetContent(dataset.content.data);
+      break;
     default:
       throw new Error('Unknown dataset type');
   }
@@ -420,7 +464,12 @@ async function createNewDataset() {
   const newDatasetId = uniquePlId();
 
   const pattern = compiledPattern.value;
-  switch (pattern?.datasetType) {
+  const datasetType = data.datasetType;
+  if (!datasetType)
+    throw new Error('Dataset type is not set');
+  if (!pattern)
+    throw new Error('Pattern type is not set');
+  switch (datasetType) {
     case 'TaggedXsv': {
       const contentData: DSContentTaggedXsv['data'] = {};
       addTaggedXsvDatasetContent(contentData);
@@ -512,7 +561,25 @@ async function createNewDataset() {
         },
       });
       break;
+    } case 'BulkCountMatrix': {
+      const contentData: DSContentBulkCountMatrix['data'] = {};
+      addBulkCountMatrixDatasetContent(contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'BulkCountMatrix',
+          gzipped: data.gzipped,
+          xsvType: xsvType(),
+          groupToSample: {},
+          data: contentData,
+        },
+      });
+      break;
     }
+    default:
+      throw new Error('Unknown dataset type: ' + datasetType);
   }
   await app.allSettled();
   await app.navigateTo(`/dataset?id=${newDatasetId}`);
@@ -523,6 +590,7 @@ const canCreateOrAdd = computed(
   () =>
     hasMatchedFiles.value
     && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
+    && data.datasetType !== undefined
     // This prevents selecting fasta as type while having read index matcher in pattern
     && (data.readIndices.length !== 0
       || (compiledPattern.value?.hasReadIndexMatcher === false
@@ -552,9 +620,20 @@ const canCreateOrAdd = computed(
         v-else v-model="data.targetAddDataset"
         :options="addToExistingOptions"
         :disabled="addingToFixedDataset"
+        label="Dataset"
+        placeholder="Select dataset"
+        required
         class="flex-grow-1"
       />
-      <PlBtnSecondary :disabled="true" justifyCenter> {{ datasetTypeLabel ?? '' }} </PlBtnSecondary>
+      <PlDropdown
+        v-model="data.datasetType"
+        :options="dsTypeOptions"
+        :required="true"
+        label="Type"
+        error=""
+        placeholder="Select type"
+      />
+
       <PlCheckbox v-model="data.gzipped" disabled > Gzipped </PlCheckbox>
     </PlRow>
 

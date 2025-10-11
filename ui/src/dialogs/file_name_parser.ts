@@ -58,7 +58,7 @@ export class FileNamePattern {
 
   private constructor(
     private readonly pattern: RegExp,
-    private readonly fileContentType: FileContentType,
+    public readonly fileContentType: FileContentType,
     private readonly groups: FileNameGroups<number>,
     public readonly rawPattern: string,
     public readonly rawPatternElements: FileNameGroups<Range>,
@@ -79,7 +79,7 @@ export class FileNamePattern {
     return this.groups.tags !== undefined && Object.keys(this.groups.tags).length > 0;
   }
 
-  public get datasetType(): DSType {
+  public get datasetType(): DSType | undefined {
     switch (this.fileContentType) {
       case 'Fastq':
         if (this.hasTagMatchers) {
@@ -90,12 +90,8 @@ export class FileNamePattern {
           return 'Fastq';
       case 'Fasta':
         return 'Fasta';
-      case 'Xsv':
-        if (this.hasTagMatchers) {
-          return 'TaggedXsv';
-        } else {
-          return 'Xsv';
-        }
+      default:
+        return undefined;
     }
   }
 

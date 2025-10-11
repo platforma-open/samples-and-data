@@ -1,6 +1,9 @@
 import type {
   ImportFileHandle,
-  InferHrefType } from '@platforma-sdk/model';
+  InferHrefType,
+  PlId,
+  TreeNodeAccessor,
+} from '@platforma-sdk/model';
 import {
   BlockModel,
   type InferOutputsType,
@@ -17,6 +20,8 @@ export const platforma = BlockModel.create()
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
+    groupIds: [],
+    groupLabels: {},
     datasets: [],
   })
 
@@ -24,15 +29,37 @@ export const platforma = BlockModel.create()
 
   .output(
     'fileImports',
-    (ctx) =>
-      Object.fromEntries(
-        ctx.outputs
-          ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
-          ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
-            skipUnresolved: true,
-          }) ?? [],
-      ),
+    (ctx) => {
+      const getImports = (resolver?: TreeNodeAccessor) =>
+        Object.fromEntries(
+          resolver
+            ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
+            ?.mapFields(
+              (handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()],
+              { skipUnresolved: true },
+            ) ?? [],
+        );
+
+      return {
+        ...getImports(ctx.outputs),
+        ...getImports(ctx.prerun),
+      };
+    },
     { isActive: true },
+  )
+
+  .output(
+    'sampleGroups',
+    (ctx) => {
+      const mapGroups = (groups: TreeNodeAccessor | undefined) => {
+        return Object.fromEntries(groups?.mapFields((groupId, samples) => [
+          groupId, samples?.getDataAsJson<PlId[]>()]) ?? []);
+      };
+
+      return Object.fromEntries(ctx.prerun
+        ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
+        ?.mapFields((datasetId, groups) => [datasetId, mapGroups(groups)]) ?? []);
+    },
   )
 
   .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
