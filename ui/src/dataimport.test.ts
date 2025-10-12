@@ -1,5 +1,5 @@
-import { expect, test } from 'vitest';
 import * as fsp from 'node:fs/promises';
+import { test } from 'vitest';
 import { readFileForImport } from './dataimport';
 
 test.for([{ file: 'test_assets/test_table.xlsx' }, { file: 'test_assets/test_table.csv' }])(
@@ -11,7 +11,7 @@ test.for([{ file: 'test_assets/test_table.xlsx' }, { file: 'test_assets/test_tab
       missingHeaders: 1,
       emptyColumns: 1,
       emptyRowsRemoved: 2,
-      malformedRowsRemoved: 0
+      malformedRowsRemoved: 0,
     });
     expect(result.data.columns).toStrictEqual([
       { header: 'Sample', type: 'String' },
@@ -19,11 +19,11 @@ test.for([{ file: 'test_assets/test_table.xlsx' }, { file: 'test_assets/test_tab
       { header: 'ColB', type: 'String' },
       { header: 'ColC', type: 'Double' },
       { header: 'ColD', type: 'String' },
-      { header: 'ColE', type: 'String' }
+      { header: 'ColE', type: 'String' },
     ]);
     const s4 = result.data.rows.find((r) => r[0] === 'S4');
     const s5 = result.data.rows.find((r) => r[0] === 'S5');
     expect(s4).toStrictEqual(['S4', 1, '2', 112.3221, '112.3221', undefined]);
     expect(s5).toStrictEqual(['S5', undefined, 'asd', 112.3221, '112.3221', 'asd']);
-  }
+  },
 );
