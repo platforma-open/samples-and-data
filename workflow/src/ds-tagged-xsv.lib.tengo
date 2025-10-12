@@ -1,0 +1,61 @@
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+
+util := import(":util")
+
+export {
+    isGrouped: false,
+    
+    createDataset: func(blockId, sampleIdAxis, dataset, importFile) {
+        
+        extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
+        
+        spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+        
+        axesSpec := [sampleIdAxis]
+
+         for tag in dataset.content.tags {
+            axesSpec = append(axesSpec, {
+                type: "String",
+                name: "pl7.app/sequencing/tag",
+                domain: {
+                    "pl7.app/sequencing/tag": tag
+                },
+                annotations: {
+                    "pl7.app/label": tag + " tag"
+                }
+            })
+        }
+
+        data := pColumn.resourceMapBuilder(len(axesSpec))
+        
+        for sampleId, records in dataset.content.data {
+            for record in records {
+                key := [sampleId]
+                for tag in dataset.content.tags {
+                    tagValue := record.tags[tag]
+                    if !tagValue {
+                        ll.panic("No tag value for %v in sample %v", tag, sampleId)
+                    }
+                    key = append(key, tagValue)
+                }
+
+                importHandle := record.file
+                if !importHandle {
+                    ll.panic("File handle not set for key %v", key)
+                }
+                data.add(key, importFile(importHandle))
+            }
+        }
+
+        result := {}
+        result["dataset." + dataset.id] = {
+            spec: spec,
+            data: data.build()
+        }
+
+        return result
+    }
+}

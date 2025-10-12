@@ -11,7 +11,8 @@
   "keywords": [],
   "dependencies": {
     "this-block": "workspace:@platforma-open/milaboratories.samples-and-data@*",
-    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*"
+    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
+    "@platforma-sdk/model": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/test": "catalog:",

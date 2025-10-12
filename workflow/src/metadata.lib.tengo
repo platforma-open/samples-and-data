@@ -1,0 +1,81 @@
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+json := import("json")
+util := import(":util")
+
+// TODO implement
+normalizeString := func(str) {
+	return str
+}
+
+/**
+ * Adds metadata columns to the exports
+ * 
+ * @param args - arguments
+ * @param blockId - block id
+ * @param sampleIdAxisSpec - sample id axis spec
+ * @param groupIdAxisSpec - sample group id axis spec
+ * @return columns - metadata columns (id -> {spec, data})
+ */
+createMetadata := func(args, blockId, sampleIdAxisSpec, groupIdAxisSpec) {
+    columns := {}
+	for _, column in args.metadata {
+		columns["metadata." + column.id] = {
+			spec: {
+				kind: "PColumn",
+				name: "pl7.app/metadata",
+				valueType: column.valueType,
+				annotations: {
+					"pl7.app/label": column.label
+				},
+				domain: {
+					"pl7.app/columnId": column.global ? normalizeString(column.label) : column.id
+				},
+				axesSpec: [sampleIdAxisSpec]
+			},
+			data: util.createJsonPColumnData(column.data)
+		}
+	}
+
+	//
+	// Creating sample label column
+	//
+
+	columns["metadata.sampleId"] = {
+		spec: {
+			kind: "PColumn",
+			name: "pl7.app/label",
+			valueType: "String",
+			annotations: {
+				"pl7.app/label": args.sampleLabelColumnLabel,
+				"pl7.app/isLabel": "true"
+			},
+			axesSpec: [sampleIdAxisSpec]
+		},
+		data: util.createJsonPColumnData(args.sampleLabels)
+	}
+
+    //
+	// Creating sample group label column
+	//
+
+	columns["metadata.sampleGroupId"] = {
+		spec: {
+			kind: "PColumn",
+			name: "pl7.app/label",
+			valueType: "String",
+			annotations: {
+				"pl7.app/label": "Sample Group",
+				"pl7.app/isLabel": "true"
+			},
+			axesSpec: [groupIdAxisSpec]
+		},
+		data: util.createJsonPColumnData(args.groupLabels)
+	}
+
+    return columns
+}
+
+export {
+    createMetadata: createMetadata
+}
