@@ -29,6 +29,8 @@ export {
             })
         }
 
+        spec.axesSpec = axesSpec
+
         data := pColumn.resourceMapBuilder(len(axesSpec))
         
         for sampleId, records in dataset.content.data {
