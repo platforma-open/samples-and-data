@@ -113,8 +113,8 @@ export interface DSContentTaggedXsv extends WithPerSampleData<TaggedXsvDatasetRe
 export interface WithSampleGroupsData<T> extends IDSContent {
   // group -> data
   data: Record<PlId, T>;
-  // group -> samples
-  sampleGroups: Record<PlId, PlId[]> | undefined;
+  // group -> sampleId in dataset -> sample name in the file
+  sampleGroups: Record<PlId, Record<PlId, string>> | undefined;
 }
 
 export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFileHandle | null> {

@@ -4,6 +4,7 @@ import { PlAlert, PlBtnPrimary, PlProgressCell } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed } from 'vue';
 import { useApp } from '../app';
+import { setEquals } from '../util';
 import { getOrCreateSample } from './datasets';
 
 const app = useApp();
@@ -41,16 +42,19 @@ function sampleGroupsAreCalculated(dataset: Dataset<WithSampleGroupsData<unknown
  * Check if all samples are loaded for all groups from the prerun and already saved in the dataset
  */
 function sampleGroupsAreSynced(dataset: Dataset<WithSampleGroupsData<unknown>>): boolean {
-  const sg = app.model.outputs.sampleGroups?.[dataset.id];
-  if (!sg)
+  const calculatedGroups = app.model.outputs.sampleGroups?.[dataset.id];
+  if (!calculatedGroups)
     return false;
 
   for (const groupId of Object.keys(dataset.content.data)) {
-    const g = sg[groupId as PlId];
-    if (!g) {
+    const calculatedGroup: PlId[] | undefined = calculatedGroups[groupId as PlId];
+    if (!calculatedGroup) {
       return false;
     }
-    if (g.length != dataset.content.sampleGroups?.[groupId as PlId]?.length) {
+
+    const datasetGroup = Object.values(dataset.content.sampleGroups?.[groupId as PlId] ?? {});
+
+    if (!setEquals(calculatedGroup, datasetGroup)) {
       return false;
     }
   }
@@ -60,18 +64,19 @@ function sampleGroupsAreSynced(dataset: Dataset<WithSampleGroupsData<unknown>>):
 function syncGroupsToDataset(dataset: Dataset<WithSampleGroupsData<unknown>>): void {
   const datasetId = dataset.id;
 
-  const sg = app.model.outputs.sampleGroups?.[datasetId];
-  if (sg) {
+  const calculatedGroups = app.model.outputs.sampleGroups?.[datasetId];
+  if (calculatedGroups) {
     // update data
-    const groupToSample = {} as Record<PlId, PlId[]>;
-    for (const [groupId, samples] of Object.entries(sg)) {
-      if (!samples) return;
-      const sampleIds = [];
-      for (const sampleLabel of samples) {
-        const sampleId = getOrCreateSample(app, sampleLabel);
-        sampleIds.push(sampleId);
+    const groupToSample = {} as Record<PlId, Record<PlId, string>>;
+    for (const [groupId, sampleNames] of Object.entries(calculatedGroups)) {
+      if (!sampleNames)
+        return;
+      const mapping = {} as Record<PlId, string>;
+      for (const sampleName of sampleNames) {
+        const sampleId = getOrCreateSample(app, sampleName);
+        mapping[sampleId] = sampleName;
       }
-      groupToSample[groupId as PlId] = sampleIds.sort();
+      groupToSample[groupId as PlId] = mapping;
     }
     if (!_.isEqual(dataset.content.sampleGroups, groupToSample)) {
       dataset.content.sampleGroups = groupToSample;
