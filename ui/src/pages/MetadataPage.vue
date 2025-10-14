@@ -147,12 +147,6 @@ async function importMetadata() {
   }
 }
 
-function excludePlIds(target: PlId[], toDelete: PlId[]): PlId[] {
-  if (toDelete.length === 0) return target;
-  const toDeleteSet = new Set(toDelete);
-  return target.filter((id) => !toDeleteSet.has(id));
-}
-
 async function deleteSamples(sampleIds: PlId[]) {
   app.model.args.sampleIds = app.model.args.sampleIds.filter((s) => !sampleIds.includes(s));
 
@@ -175,7 +169,9 @@ async function deleteSamples(sampleIds: PlId[]) {
       for (const groupId of Object.keys(content.sampleGroups ?? {})) {
         const samples = content.sampleGroups?.[groupId as PlId];
         if (samples) {
-          content.sampleGroups![groupId as PlId] = excludePlIds(samples, sampleIds);
+          for (const sId of sampleIds) {
+            delete samples[sId as PlId];
+          }
         }
       }
     }
@@ -274,7 +270,7 @@ const rowData = computed<MetadataRow[]>(() => {
     if (isGroupedDataset(ds)) {
       const content = ds.content as WithSampleGroupsData<unknown>;
       for (const [_, samples] of Object.entries(content.sampleGroups ?? {})) {
-        for (const sId of samples) {
+        for (const sId of Object.keys(samples)) {
           if (samples2ds[sId] === undefined) {
             samples2ds[sId] = [];
           }

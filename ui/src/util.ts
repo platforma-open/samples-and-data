@@ -8,6 +8,17 @@ export function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+export function setEquals(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+  const aSet = new Set(a);
+  const bSet = new Set(b);
+  if (aSet.size !== bSet.size) return false;
+  for (const v of aSet) {
+    if (!bSet.has(v)) return false;
+  }
+  return true;
+}
+
 export function agSampleIdComparator(labels: Record<string, string>) {
   return (a: string, b: string) => {
     const aLabel = labels[a] ?? a;

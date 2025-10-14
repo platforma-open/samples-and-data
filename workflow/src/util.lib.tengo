@@ -43,9 +43,9 @@ sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     data := {}
     samples := []
     for groupId, ss in dataset.content.sampleGroups {
-        samples = samples + ss
-        for sampleId in ss {
-            data[json.encode([groupId, sampleId])] = 1
+        for sampleId, sampleName in ss {
+            samples = samples + [sampleId]
+            data[json.encode([groupId, sampleId])] = sampleName
         }
     }
     spec := {
