@@ -49,6 +49,9 @@ export function getDsReadIndices(ds: DatasetAny): string[] {
     case 'Xsv':
     case 'TaggedXsv':
     case 'Fasta':
+    case 'Mtx':
+      return [];
+    default:
       return [];
   }
 }

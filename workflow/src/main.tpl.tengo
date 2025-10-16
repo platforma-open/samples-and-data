@@ -162,6 +162,33 @@ wf.body(func(args) {
 			continue
 		}
 
+		if dataset.content.type == "Mtx" {
+			columnSpec := maps.deepMerge(columnSpecParent, {
+				domain: {
+					"pl7.app/fileExtension": dataset.content.gzipped ? "mtx.gz" : "mtx"
+				},
+				axesSpec: [sampleIdAxisSpec]
+			})
+
+			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
+				keyLength: 1
+			}))
+
+			for sampleId, importHandle in dataset.content.data {
+				if !importHandle {
+					ll.panic("File handle not set for sample %v", sampleId)
+				}
+				data.createInputField(json.encode([sampleId])).set(importFile(importHandle))
+			}
+
+			exports[exportKey] = {
+				spec: columnSpec,
+				data: data.lockAndBuild()
+			}
+
+			continue
+		}
+
 		if dataset.content.type == "Xsv" {
 			columnSpec := maps.deepMerge(columnSpecParent, {
 				domain: {
