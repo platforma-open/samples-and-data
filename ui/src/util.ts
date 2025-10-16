@@ -58,22 +58,14 @@ export function getSelectedSamplesAndTags<RowT extends { readonly sample: PlId; 
   return [{ sampleId, tags: node?.data?.tags ?? {} }];
 }
 
-export function agGroupIdColumnDef<RowT extends { readonly group: PlId }>(appUt: unknown): ColDef<RowT> {
-  const app = appUt as AppV2<BlockArgs>;
-
-  const groupLabels = app.model.args.groupLabels as Record<string, string>;
-
-  const groupIdComparator = agSampleIdComparator(groupLabels);
-
+export function agGroupIdColumnDef<RowT extends { readonly groupId: PlId; readonly groupLabel: string }>(): ColDef<RowT> {
   return {
     headerName: 'File group',
     flex: 1,
-    valueGetter: (params) => params.data?.group,
+    valueGetter: (params) => params.data?.groupLabel,
     editable: false,
-    refData: groupLabels,
     pinned: 'left',
     lockPinned: true,
-    comparator: groupIdComparator,
     headerComponent: PlAgColumnHeader,
     headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
   };

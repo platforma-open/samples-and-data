@@ -239,12 +239,11 @@ watch(addToExistingOptions, (ops) => {
     data.targetAddDataset = ops[0].value;
 });
 
-function getOrCreateGroup(groupName: string): PlId {
-  const id = Object.entries(app.model.args.groupLabels).find(([, label]) => label === groupName)?.[0];
+function getOrCreateGroup(groupLabels: Record<PlId, string>, groupName: string): PlId {
+  const id = Object.entries(groupLabels).find(([, label]) => label === groupName)?.[0];
   if (id) return id as PlId;
   const newId = uniquePlId();
-  app.model.args.groupIds.push(newId);
-  app.model.args.groupLabels[newId] = groupName;
+  groupLabels[newId] = groupName;
   return newId;
 }
 
@@ -391,6 +390,7 @@ function addTaggedXsvDatasetContent(
 
 /** Bulk Count Matrix */
 function addBulkCountMatrixDatasetContent(
+  groupLabels: Record<PlId, string>,
   contentData: DSContentBulkCountMatrix['data'],
 ) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
@@ -399,7 +399,7 @@ function addBulkCountMatrixDatasetContent(
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const group = f.match.sample.value;
-    const sampleId = getOrCreateGroup(group);
+    const sampleId = getOrCreateGroup(groupLabels, group);
     contentData[sampleId] = f.handle;
   }
 }
@@ -440,7 +440,7 @@ async function addToExistingDataset() {
       addTaggedXsvDatasetContent(dataset.content.data);
       break;
     case 'BulkCountMatrix':
-      addBulkCountMatrixDatasetContent(dataset.content.data);
+      addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
     default:
       throw new Error('Unknown dataset type');
@@ -559,8 +559,9 @@ async function createNewDataset() {
       });
       break;
     } case 'BulkCountMatrix': {
+      const groupLabels: Record<PlId, string> = {};
       const contentData: DSContentBulkCountMatrix['data'] = {};
-      addBulkCountMatrixDatasetContent(contentData);
+      addBulkCountMatrixDatasetContent(groupLabels, contentData);
 
       app.model.args.datasets.push({
         label: data.newDatasetLabel,
@@ -571,6 +572,7 @@ async function createNewDataset() {
           xsvType: xsvType(),
           sampleGroups: undefined,
           data: contentData,
+          groupLabels: groupLabels,
         },
       });
       break;
@@ -630,6 +632,7 @@ const canCreateOrAdd = computed(
         v-model="data.datasetType"
         :options="dsTypeOptions"
         :required="true"
+        :disabled="data.datasetType && addingToFixedDataset"
         label="Type"
         error=""
         placeholder="Select type"

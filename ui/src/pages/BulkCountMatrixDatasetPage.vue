@@ -34,8 +34,8 @@ const dataset = computed(() => {
 });
 
 type DatasetRow = {
-  // undefined for an empty row at the end of the table
-  readonly group: PlId;
+  readonly groupId: PlId;
+  readonly groupLabel: string;
   // number of samples in the group
   readonly nSamples: number | undefined;
   readonly data?: ImportFileHandle | null;
@@ -46,7 +46,8 @@ const rowData = computed(() => {
   return Object.entries(dataset.value.content.data).flatMap(
     ([groupId, data]) => (
       {
-        group: groupId as PlId,
+        groupId: groupId as PlId,
+        groupLabel: dataset.value.content.groupLabels[groupId as PlId],
         nSamples: groupToSample?.[groupId as PlId]?.length,
         data,
       }
@@ -69,7 +70,7 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
       headerComponent: PlAgColumnHeader,
       headerComponentParams: { type: 'Number' },
     },
-    agGroupIdColumnDef(app),
+    agGroupIdColumnDef(),
     {
       headerName: 'Data',
       flex: 2,
@@ -95,11 +96,11 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
           },
         }),
       valueGetter: (params) =>
-        params.data?.group
-          ? dataset.value.content.data[params.data.group]
+        params.data?.groupId
+          ? dataset.value.content.data[params.data.groupId]
           : undefined,
       valueSetter: (params) => {
-        const group = params.data.group;
+        const group = params.data.groupId;
         dataset.value.content.data[group] = params.newValue ?? null;
         return true;
       },
@@ -107,7 +108,7 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
 });
 
 const gridOptions: GridOptions<DatasetRow> = {
-  getRowId: (row) => row.data.group,
+  getRowId: (row) => row.data.groupId,
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,

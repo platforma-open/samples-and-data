@@ -145,7 +145,7 @@ function runImport() {
       if (column === undefined) continue; // sample label column
       const val = row[cIdx];
       if (val !== undefined && val !== null) {
-        column.data[sampleId] = val as any;
+        column.data[sampleId] = val;
       }
     }
   }
