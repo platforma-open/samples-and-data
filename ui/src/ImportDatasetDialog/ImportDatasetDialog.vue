@@ -3,6 +3,7 @@ import {
   BlockArgs,
   DatasetContentFasta,
   DatasetContentFastq,
+  DatasetContentMtx,
   DatasetContentMultilaneFastq,
   DatasetContentTaggedFastq,
   DatasetContentTaggedXsv,
@@ -117,6 +118,20 @@ function addFastaDatasetContent(args: BlockArgs, contentData: DatasetContentFast
 
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
     throw new Error('Dataset has read or lane matcher, trying to add fasta dataset');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
+function addMtxDatasetContent(args: BlockArgs, contentData: DatasetContentMtx['data']) {
+  const getOrCreateSample = createGetOrCreateSample(args);
+
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error('Dataset has read or lane matcher, trying to add mtx dataset');
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -281,6 +296,7 @@ async function addToExistingDataset() {
       addMultilaneFastqDatasetContent(args, dataset.content.data);
     else if (dataset.content.type === 'Xsv') addXsvDatasetContent(args, dataset.content.data);
     else if (dataset.content.type === 'TaggedXsv') addTaggedXsvDatasetContent(args, dataset.content.data);
+    else if (dataset.content.type === 'Mtx') addMtxDatasetContent(args, dataset.content.data);
     else throw new Error('Unknown dataset type');
   });
   await app.navigateTo(`/dataset?id=${datasetId}`);
@@ -289,6 +305,10 @@ async function addToExistingDataset() {
 
 const isXsv = () => {
   return data.files.map(f => getFileNameFromHandle(f)).every(f => f.endsWith('.csv') || f.endsWith('.tsv'))
+}
+
+const isMtx = () => {
+  return data.files.map(f => getFileNameFromHandle(f)).every(f => f.endsWith('.mtx') || f.endsWith('.mtx.gz'))
 }
 
 const xsvType = (): 'csv' | 'tsv' => {
@@ -330,6 +350,20 @@ async function createNewDataset() {
         }
       });
     } 
+    else if (isMtx()) {
+      const contentData: DatasetContentMtx['data'] = {};
+      addMtxDatasetContent(args, contentData);
+
+      args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'Mtx',
+          gzipped: data.gzipped,
+          data: contentData
+        }
+      });
+    }
     else if (data.readIndices.length === 0 /* fasta */) {
       const contentData: DatasetContentFasta['data'] = {};
       addFastaDatasetContent(args, contentData);
@@ -398,8 +432,10 @@ const canCreateOrAdd = computed(
   () =>
     hasMatchedFiles.value &&
     (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined) &&
-    // This prevents selecting fasta as type while having read index matcher in pattern
+    // This prevents selecting fasta/mtx/xsv as type while having read index matcher in pattern
     (data.readIndices.length !== 0 ||
+      isMtx() ||
+      isXsv() ||
       (compiledPattern.value?.hasReadIndexMatcher === false &&
         compiledPattern.value?.hasLaneMatcher === false))
 );

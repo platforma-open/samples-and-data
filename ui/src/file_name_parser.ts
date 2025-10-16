@@ -341,6 +341,18 @@ const wellKnownPattern: WellKnownPattern[] = [
     defaultReadIndices: [],
     extensions: ['csv', 'tsv', 'csv.gz', 'tsv.gz'],
     minimalPercent: 0.99
+  },
+  {
+    patternWithoutExtension: '{{Sample}}_matrix',
+    defaultReadIndices: [],
+    extensions: ['mtx', 'mtx.gz'],
+    minimalPercent: 0.99
+  },
+  {
+    patternWithoutExtension: '{{Sample}}',
+    defaultReadIndices: [],
+    extensions: ['mtx', 'mtx.gz'],
+    minimalPercent: 0.99
   }
 ];
 

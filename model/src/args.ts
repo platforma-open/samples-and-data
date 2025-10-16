@@ -166,13 +166,26 @@ export const DatasetContentTaggedXsv = z
   .strict();
 export type DatasetContentTaggedXsv = z.infer<typeof DatasetContentTaggedXsv>;
 
+export const DatasetContentMtx = z
+  .object({
+    type: z.literal('Mtx'),
+    gzipped: z.boolean(),
+    data: z.record(
+      PlId,
+      ImportFileHandleSchema.nullable() /* null means sample is added to the dataset, but file is not yet set */
+    )
+  })
+  .strict();
+export type DatasetContentMtx = z.infer<typeof DatasetContentMtx>;
+
 export const DatasetContent = z.discriminatedUnion('type', [
   DatasetContentFastq,
   DatasetContentMultilaneFastq,
   DatasetContentTaggedFastq,
   DatasetContentFasta,
   DatasetContentXsv,
-  DatasetContentTaggedXsv
+  DatasetContentTaggedXsv,
+  DatasetContentMtx
 ]);
 export type DatasetContent = z.infer<typeof DatasetContent>;
 
@@ -197,6 +210,8 @@ export const DatasetXsv = Dataset(DatasetContentXsv);
 export type DatasetXsv = z.infer<typeof DatasetXsv>;
 export const DatasetTaggedXsv = Dataset(DatasetContentTaggedXsv);
 export type DatasetTaggedXsv = z.infer<typeof DatasetTaggedXsv>;
+export const DatasetMtx = Dataset(DatasetContentMtx);
+export type DatasetMtx = z.infer<typeof DatasetMtx>;
 
 export type DatasetAny = z.infer<typeof DatasetAny>;
 export type DatasetType = DatasetAny['content']['type'];
