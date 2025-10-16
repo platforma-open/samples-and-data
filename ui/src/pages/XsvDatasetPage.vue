@@ -95,7 +95,7 @@ const columnDefs = computed(() => {
 });
 
 const gridOptions: GridOptions<XsvDatasetRow> = {
-  getRowId: (row) => row.data.sample ?? 'new',
+  getRowId: (row) => row.data.sample,
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,

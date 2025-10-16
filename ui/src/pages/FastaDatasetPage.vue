@@ -93,7 +93,7 @@ const columnDefs = computed(() => {
 });
 
 const gridOptions: GridOptions<FastaDatasetRow> = {
-  getRowId: (row) => row.data.sample ?? 'new',
+  getRowId: (row) => row.data.sample,
   rowSelection: {
     mode: 'multiRow',
     checkboxes: false,

@@ -107,6 +107,10 @@ export interface DSContentTaggedXsv extends WithPerSampleData<TaggedXsvDatasetRe
   tags: string[];
 }
 
+export interface DSContentMtx extends WithPerSampleData<ImportFileHandle | null> {
+  type: 'MTX';
+}
+
 /// --------------- Grouped Datasets --------------- ///
 
 /** Datasets that have data per sample */
@@ -133,6 +137,7 @@ export type DSContent =
   | DSContentFasta
   | DSContentXsv
   | DSContentTaggedXsv
+  | DSContentMtx
   | DSContentBulkCountMatrix;
 
 export interface Dataset<ContentType> {
@@ -148,6 +153,7 @@ export type DSMultilaneFastq = Dataset<DSContentMultilaneFastq>;
 export type DSTaggedFastq = Dataset<DSContentTaggedFastq>;
 export type DSXsv = Dataset<DSContentXsv>;
 export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
+export type DSMtx = Dataset<DSContentMtx>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
 
 export type DSType = DSAny['content']['type'];

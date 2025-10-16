@@ -41,6 +41,11 @@ export const datasetTypes: Record<DSType, { label: string; fileType: FileContent
     fileType: 'Xsv',
     hasTags: true,
   },
+  MTX: {
+    label: 'Matrix Market File Format',
+    fileType: 'MTX',
+    hasTags: false,
+  },
   BulkCountMatrix: {
     label: 'Bulk count matrix',
     fileType: 'Xsv',

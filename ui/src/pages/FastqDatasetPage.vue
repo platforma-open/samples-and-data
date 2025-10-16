@@ -102,7 +102,7 @@ const columnDefs = computed(() => {
 });
 
 const gridOptions: GridOptions<FastqDatasetRow> = {
-  getRowId: (row) => row.data.sample ?? 'new',
+  getRowId: (row) => row.data.sample,
 
   rowSelection: {
     mode: 'multiRow',
