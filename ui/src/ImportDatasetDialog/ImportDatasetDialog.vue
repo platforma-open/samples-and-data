@@ -288,7 +288,8 @@ async function addToExistingDataset() {
 }
 
 const isXsv = () => {
-  return data.files.map(f => getFileNameFromHandle(f)).every(f => f.endsWith('.csv') || f.endsWith('.tsv'))
+  return data.files.map(f => getFileNameFromHandle(f)).every(f => f.endsWith('.csv') 
+    || f.endsWith('.tsv') || f.endsWith('.csv.gz') || f.endsWith('.tsv.gz'))
 }
 
 const xsvType = (): 'csv' | 'tsv' => {
