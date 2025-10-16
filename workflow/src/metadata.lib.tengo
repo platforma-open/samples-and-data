@@ -17,7 +17,7 @@ normalizeString := func(str) {
  * @param groupIdAxisSpec - sample group id axis spec
  * @return columns - metadata columns (id -> {spec, data})
  */
-createMetadata := func(args, blockId, sampleIdAxisSpec, groupIdAxisSpec) {
+createMetadata := func(args, blockId, sampleIdAxisSpec) {
     columns := {}
 	for _, column in args.metadata {
 		columns["metadata." + column.id] = {
@@ -54,26 +54,6 @@ createMetadata := func(args, blockId, sampleIdAxisSpec, groupIdAxisSpec) {
 		},
 		data: util.createJsonPColumnData(args.sampleLabels)
 	}
-
-    //
-	// Creating sample group label column
-	//
-
-    for dataset in args.datasets {
-        columns["metadata." + dataset.id + ".sampleGroupLabels"] = {
-            spec: {
-                kind: "PColumn",
-                name: "pl7.app/label",
-                valueType: "String",
-                annotations: {
-                    "pl7.app/label": "Sample Group",
-                    "pl7.app/isLabel": "true"
-                },
-                axesSpec: [groupIdAxisSpec]
-            },
-            data: util.createJsonPColumnData(dataset.groupLabels)
-        }
-    }
 
     return columns
 }
