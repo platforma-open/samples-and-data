@@ -1,4 +1,4 @@
-import { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import { uniquePlId } from '@platforma-sdk/model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
@@ -22,7 +22,7 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  project.setBlockArgs(blockId, {
+  await project.setBlockArgs(blockId, {
     metadata: [
       {
         id: metaColumn1Id,
@@ -30,15 +30,13 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
         global: false,
         valueType: 'Long',
         data: {
-          [sample1Id]: 2345
-        }
-      }
+          [sample1Id]: 2345,
+        },
+      },
     ],
     sampleIds: [sample1Id],
     sampleLabelColumnLabel: 'Sample Name',
     sampleLabels: { [sample1Id]: 'Sample 1' },
-    groupIds: [],
-    groupLabels: {},
     datasets: [
       {
         id: dataset1Id,
@@ -50,12 +48,12 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
           data: {
             [sample1Id]: {
               R1: r1Handle,
-              R2: r2Handle
-            }
-          }
-        }
-      }
-    ]
+              R2: r2Handle,
+            },
+          },
+        },
+      },
+    ],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -64,7 +62,7 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
 
   expect(stableState.outputs).toMatchObject({
     fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
-    sampleGroups: { ok: true, value: { } }
+    sampleGroups: { ok: true, value: { } },
   });
 });
 
@@ -77,7 +75,7 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  project.setBlockArgs(blockId, {
+  await project.setBlockArgs(blockId, {
     metadata: [
       {
         id: metaColumn1Id,
@@ -85,15 +83,13 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
         global: false,
         valueType: 'Long',
         data: {
-          [sample1Id]: 2345
-        }
-      }
+          [sample1Id]: 2345,
+        },
+      },
     ],
     sampleIds: [sample1Id],
     sampleLabelColumnLabel: 'Sample Name',
     sampleLabels: { [sample1Id]: 'Sample 1' },
-    groupIds: [],
-    groupLabels: {},
     datasets: [
       {
         id: dataset1Id,
@@ -106,13 +102,13 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
             [sample1Id]: {
               L001: {
                 R1: r1Handle,
-                R2: r2Handle
-              }
-            }
-          }
-        }
-      }
-    ]
+                R2: r2Handle,
+              },
+            },
+          },
+        },
+      },
+    ],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -121,6 +117,6 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
 
   expect(stableState.outputs).toMatchObject({
     fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
-    sampleGroups: { ok: true, value: { } }
+    sampleGroups: { ok: true, value: { } },
   });
 });
