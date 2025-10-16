@@ -62,14 +62,6 @@ export {
             data: data.build()
         }
 
-        // linker column
-        linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, groupIdAxis)
-
-        result["dataset." + dataset.id + ".linker"] = {
-            spec: linker.spec,
-            data: linker.data
-        }
-
         return result
     }
 }

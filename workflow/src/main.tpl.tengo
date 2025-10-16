@@ -8,6 +8,7 @@ pframes := import("@platforma-sdk/workflow-tengo:pframes")
 metadata := import(":metadata")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 assets := import("@platforma-sdk/workflow-tengo:assets")
+util := import(":util")
 
 prerunTpl := assets.importTemplate(":prerun")
 
@@ -53,7 +54,7 @@ wf.body(func(args) {
 	
 	// Create metadata
 	
-	for k, v in metadata.createMetadata(args, blockId, sampleIdAxis, groupIdAxis) {
+	for k, v in metadata.createMetadata(args, blockId, sampleIdAxis) {
 		exports.add(k, v.spec, v.data)
 	}
 
@@ -92,6 +93,34 @@ wf.body(func(args) {
 		ds := undefined 
 		if proc.isGrouped {
 			ds = proc.createDataset(blockId, sampleIdAxis, groupIdAxis, dataset, importFile)
+			
+			// linker column
+			linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, groupIdAxis)
+
+			ds["dataset." + dataset.id + ".linker"] = {
+				spec: linker.spec,
+				data: linker.data
+			}
+
+			// group labels column
+			ds["dataset." + dataset.id + ".sampleGroupLabels"] = {
+				spec: {
+					kind: "PColumn",
+					name: "pl7.app/label",
+					valueType: "String",
+					domain: {
+						"pl7.app/block": blockId,
+						"pl7.app/dataset": dataset.id
+					},
+					annotations: {
+						"pl7.app/label": "Sample Group",
+						"pl7.app/isLabel": "true"
+					},
+					axesSpec: [groupIdAxis]
+				},
+				data: util.createJsonPColumnData(dataset.groupLabels)
+			}
+
 		} else {
 			ds = proc.createDataset(blockId, sampleIdAxis, dataset, importFile)
 		}
