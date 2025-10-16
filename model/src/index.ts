@@ -21,8 +21,6 @@ export const platforma = BlockModel.create()
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
-    groupIds: [],
-    groupLabels: {},
     datasets: [],
   })
 

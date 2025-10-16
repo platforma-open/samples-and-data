@@ -115,6 +115,8 @@ export interface WithSampleGroupsData<T> extends IDSContent {
   data: Record<PlId, T>;
   // group -> sampleId in dataset -> sample name in the file
   sampleGroups: Record<PlId, Record<PlId, string>> | undefined;
+  // group id -> group name
+  groupLabels: Record<PlId, string>;
 }
 
 export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFileHandle | null> {
@@ -159,8 +161,6 @@ export interface BlockArgs {
   sampleIds: PlId[];
   sampleLabelColumnLabel: string;
   sampleLabels: Record<PlId, string>;
-  groupIds: PlId[];
-  groupLabels: Record<PlId, string>;
   metadata: MTColumn[];
   datasets: DSAny[];
 }

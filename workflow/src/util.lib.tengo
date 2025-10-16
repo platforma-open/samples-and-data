@@ -55,7 +55,7 @@ sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
             "pl7.app/block": blockId,
             "pl7.app/dataset": dataset.id
         },
-        valueType: "Integer",
+        valueType: "String",
         axesSpec: [groupIdAxis, sampleIdAxis],
         annotations: {
             "pl7.app/label": "Sample Groups",

@@ -1,8 +1,7 @@
-import type { BlockArgs, BlockOutputs, Dataset, DSType, WithSampleGroupsData } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockArgs, DSType } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
 import { getFileNameFromHandle, uniquePlId } from '@platforma-sdk/model';
 import type { AppV2, SimpleOption } from '@platforma-sdk/ui-vue';
-import * as _ from 'radashi';
 import type { ComputedRef, Reactive, ShallowRef } from 'vue';
 import { computed, ref, shallowRef, watch } from 'vue';
 import type { FileContentType, FileNamePatternMatch } from './file_name_parser';
@@ -33,12 +32,12 @@ export const datasetTypes: Record<DSType, { label: string; fileType: FileContent
     hasTags: false,
   },
   Xsv: {
-    label: 'Sample table (CSV/TSV)',
+    label: 'Per sample CSV/TSV',
     fileType: 'Xsv',
     hasTags: false,
   },
   TaggedXsv: {
-    label: 'Tagged sample table (CSV/TSV)',
+    label: 'Tagged per sample CSV/TSV',
     fileType: 'Xsv',
     hasTags: true,
   },
