@@ -3,6 +3,7 @@ import type {
   DSContentBulkCountMatrix,
   DSContentFasta,
   DSContentFastq,
+  DSContentMtx,
   DSContentMultilaneFastq,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
@@ -388,6 +389,18 @@ function addTaggedXsvDatasetContent(
   }
 }
 
+/** MTX */
+function addMtxDatasetContent(
+  contentData: DSContentMtx['data'],
+) {
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
 /** Bulk Count Matrix */
 function addBulkCountMatrixDatasetContent(
   groupLabels: Record<PlId, string>,
@@ -438,6 +451,9 @@ async function addToExistingDataset() {
       break;
     case 'TaggedXsv':
       addTaggedXsvDatasetContent(dataset.content.data);
+      break;
+    case 'MTX':
+      addMtxDatasetContent(dataset.content.data);
       break;
     case 'BulkCountMatrix':
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -554,6 +570,20 @@ async function createNewDataset() {
           type: 'Fastq',
           gzipped: data.gzipped,
           readIndices: data.readIndices as ReadIndices,
+          data: contentData,
+        },
+      });
+      break;
+    } case 'MTX': {
+      const contentData: DSContentMtx['data'] = {};
+      addMtxDatasetContent(contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'MTX',
+          gzipped: data.gzipped,
           data: contentData,
         },
       });

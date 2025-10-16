@@ -12,7 +12,7 @@ import {
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import type { DSXsv, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { DSMtx, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
@@ -30,7 +30,7 @@ const dataset = (() => {
   const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
   if (!ds)
     throw new Error('Dataset not found');
-  return ds as DSXsv;
+  return ds as DSMtx;
 })();
 
 type XsvDatasetRow = {
@@ -76,7 +76,7 @@ const columnDefs = computed(() => {
         ? {
             component: 'PlAgCellFile',
             params: {
-              extensions: dataset.content.gzipped ? (dataset.content.xsvType ? [dataset.content.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dataset.content.xsvType ? [dataset.content.xsvType] : ['csv', 'tsv']),
+              extensions: dataset.content.gzipped ? ['mtx.gz'] : ['mtx'],
             },
           }
         : undefined,

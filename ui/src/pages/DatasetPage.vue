@@ -19,6 +19,7 @@ import TaggedFastqDatasetPage from '../pages/TaggedFastqDatasetPage.vue';
 import TaggedXsvDatasetPage from '../pages/TaggedXsvDatasetPage.vue';
 import XsvDatasetPage from '../pages/XsvDatasetPage.vue';
 import BulkCountMatrixDatasetPage from './BulkCountMatrixDatasetPage.vue';
+import MtxDatasetPage from './MtxDatasetPage.vue';
 
 const app = useApp();
 
@@ -78,6 +79,9 @@ const datasetTypeLabel = datasetTypeLabels[dataset.content.type];
     </template>
     <template v-else-if="dataset.content.type === 'TaggedXsv'">
       <TaggedXsvDatasetPage />
+    </template>
+    <template v-else-if="dataset.content.type === 'MTX'">
+      <MtxDatasetPage />
     </template>
     <template v-else-if="dataset.content.type === 'BulkCountMatrix'">
       <BulkCountMatrixDatasetPage />

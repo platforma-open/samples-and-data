@@ -3,7 +3,7 @@ import * as _ from 'radashi';
 import { escapeRegExp } from '../util';
 
 /** Derived from file extension */
-export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv';
+export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'MTX';
 
 function extractFileContentType(pattern: string): FileContentType {
   let pt = pattern;
@@ -15,6 +15,8 @@ function extractFileContentType(pattern: string): FileContentType {
     return 'Fasta';
   else if (['csv', 'tsv'].some((xs) => pt.endsWith(xs)))
     return 'Xsv';
+  else if (['mtx'].some((mtx) => pt.endsWith(mtx)))
+    return 'MTX';
   else
     throw new Error(`Unknown file content type: ${pt}`);
 }
@@ -90,6 +92,8 @@ export class FileNamePattern {
           return 'Fastq';
       case 'Fasta':
         return 'Fasta';
+      case 'MTX':
+        return 'MTX';
       default:
         return undefined;
     }
@@ -383,6 +387,12 @@ const wellKnownPattern: WellKnownPattern[] = [
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: [],
     extensions: ['csv', 'tsv', 'csv.gz', 'tsv.gz'],
+    minimalPercent: 0.9,
+  },
+  {
+    patternWithoutExtension: '{{Sample}}',
+    defaultReadIndices: [],
+    extensions: ['mtx', 'mtx.gz'],
     minimalPercent: 0.9,
   },
 ];
