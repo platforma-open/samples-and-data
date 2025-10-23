@@ -107,8 +107,12 @@ export interface DSContentTaggedXsv extends WithPerSampleData<TaggedXsvDatasetRe
   tags: string[];
 }
 
-export interface DSContentMtx extends WithPerSampleData<ImportFileHandle | null> {
-  type: 'MTX';
+export type CellRangerMtxRole = 'matrix.mtx' | 'features.tsv' | 'barcodes.tsv';
+export type CellRangerMtxFileGroup = Partial<Record<CellRangerMtxRole, ImportFileHandle>>;
+
+export interface DSContentCellRangerMtx extends WithPerSampleData<CellRangerMtxFileGroup> {
+  type: 'CellRangerMTX';
+  roles: CellRangerMtxRole[];
 }
 
 /// --------------- Grouped Datasets --------------- ///
@@ -137,7 +141,7 @@ export type DSContent =
   | DSContentFasta
   | DSContentXsv
   | DSContentTaggedXsv
-  | DSContentMtx
+  | DSContentCellRangerMtx
   | DSContentBulkCountMatrix;
 
 export interface Dataset<ContentType> {
@@ -153,7 +157,7 @@ export type DSMultilaneFastq = Dataset<DSContentMultilaneFastq>;
 export type DSTaggedFastq = Dataset<DSContentTaggedFastq>;
 export type DSXsv = Dataset<DSContentXsv>;
 export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
-export type DSMtx = Dataset<DSContentMtx>;
+export type DSCellRangerMtx = Dataset<DSContentCellRangerMtx>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
 
 export type DSType = DSAny['content']['type'];

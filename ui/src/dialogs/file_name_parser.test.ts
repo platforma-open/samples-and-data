@@ -1,5 +1,5 @@
 import { test } from 'vitest';
-import { buildWrappedString, FileNamePattern, inferFileNamePattern } from './file_name_parser';
+import { buildWrappedString, FileNamePattern, inferFileNamePattern, normalizeCellRangerFileRole } from './file_name_parser';
 
 test.for([
   {
@@ -243,4 +243,184 @@ test('infer file name pattern 5', ({ expect }) => {
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}.fasta');
   expect(result?.extension).to.equal('fasta');
   expect(result?.readIndices).to.toMatchObject([]);
+});
+
+test.for([
+  {
+    pattern: '{{Sample}}_{{CellRangerFileRole}}.gz',
+    target: 'GSM7891404_PBS-1_matrix.mtx.gz',
+    match: {
+      sample: {
+        value: 'GSM7891404_PBS-1',
+      },
+      cellRangerFileRole: {
+        value: 'matrix.mtx',
+      },
+    },
+  },
+  {
+    pattern: '{{Sample}}_{{CellRangerFileRole}}.gz',
+    target: 'GSM7891404_PBS-1_features.tsv.gz',
+    match: {
+      sample: {
+        value: 'GSM7891404_PBS-1',
+      },
+      cellRangerFileRole: {
+        value: 'features.tsv',
+      },
+    },
+  },
+  {
+    pattern: '{{Sample}}_{{CellRangerFileRole}}.gz',
+    target: 'GSM7891404_PBS-1_barcodes.tsv.gz',
+    match: {
+      sample: {
+        value: 'GSM7891404_PBS-1',
+      },
+      cellRangerFileRole: {
+        value: 'barcodes.tsv',
+      },
+    },
+  },
+  {
+    pattern: '{{Sample}}_{{CellRangerFileRole}}.gz',
+    target: 'GSM7891412_sEV-3_genes.tsv.gz',
+    match: {
+      sample: {
+        value: 'GSM7891412_sEV-3',
+      },
+      cellRangerFileRole: {
+        value: 'genes.tsv',
+      },
+    },
+  },
+  {
+    pattern: '{{Sample}}-{{CellRangerFileRole}}',
+    target: 'sample1-matrix.mtx',
+    match: {
+      sample: {
+        value: 'sample1',
+      },
+      cellRangerFileRole: {
+        value: 'matrix.mtx',
+      },
+    },
+  },
+  {
+    pattern: '{{Sample}}_{{CellRangerFileRole}}',
+    target: 'sample1_features.tsv',
+    match: {
+      sample: {
+        value: 'sample1',
+      },
+      cellRangerFileRole: {
+        value: 'features.tsv',
+      },
+    },
+  },
+  {
+    pattern: '{{Sample}}_{{CellRangerFileRole}}.gz',
+    target: 'sample1_invalid.txt.gz',
+    match: undefined,
+  },
+])('CellRanger MTX matching test for $pattern and $target', ({ pattern, target, match }, { expect }) => {
+  const fileNamePattern = FileNamePattern.parse(pattern);
+  const actualMatch = fileNamePattern.match(target);
+  if (match === undefined) expect(actualMatch).toBeUndefined();
+  else expect(actualMatch).to.toMatchObject(match);
+});
+
+test('normalizeCellRangerFileRole - genes.tsv to features.tsv', ({ expect }) => {
+  expect(normalizeCellRangerFileRole('genes.tsv')).to.equal('features.tsv');
+});
+
+test('normalizeCellRangerFileRole - features.tsv unchanged', ({ expect }) => {
+  expect(normalizeCellRangerFileRole('features.tsv')).to.equal('features.tsv');
+});
+
+test('normalizeCellRangerFileRole - matrix.mtx unchanged', ({ expect }) => {
+  expect(normalizeCellRangerFileRole('matrix.mtx')).to.equal('matrix.mtx');
+});
+
+test('normalizeCellRangerFileRole - barcodes.tsv unchanged', ({ expect }) => {
+  expect(normalizeCellRangerFileRole('barcodes.tsv')).to.equal('barcodes.tsv');
+});
+
+test('infer CellRanger MTX pattern - compressed with underscore', ({ expect }) => {
+  const fileNames = [
+    'GSM7891404_PBS-1_matrix.mtx.gz',
+    'GSM7891404_PBS-1_features.tsv.gz',
+    'GSM7891404_PBS-1_barcodes.tsv.gz',
+    'GSM7891405_PBS-2_matrix.mtx.gz',
+    'GSM7891405_PBS-2_features.tsv.gz',
+    'GSM7891405_PBS-2_barcodes.tsv.gz',
+    'GSM7891406_PBS-3_matrix.mtx.gz',
+    'GSM7891406_PBS-3_features.tsv.gz',
+    'GSM7891406_PBS-3_barcodes.tsv.gz',
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{CellRangerFileRole}}.gz');
+  expect(result?.extension).to.equal('.gz');
+  expect(result?.readIndices).to.toMatchObject([]);
+});
+
+test('infer CellRanger MTX pattern - compressed with genes.tsv', ({ expect }) => {
+  const fileNames = [
+    'GSM7891410_sEV-1_matrix.mtx.gz',
+    'GSM7891410_sEV-1_genes.tsv.gz',
+    'GSM7891410_sEV-1_barcodes.tsv.gz',
+    'GSM7891411_sEV-2_matrix.mtx.gz',
+    'GSM7891411_sEV-2_genes.tsv.gz',
+    'GSM7891411_sEV-2_barcodes.tsv.gz',
+    'GSM7891412_sEV-3_matrix.mtx.gz',
+    'GSM7891412_sEV-3_genes.tsv.gz',
+    'GSM7891412_sEV-3_barcodes.tsv.gz',
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{CellRangerFileRole}}.gz');
+  expect(result?.extension).to.equal('.gz');
+  expect(result?.readIndices).to.toMatchObject([]);
+});
+
+test('infer CellRanger MTX pattern - uncompressed', ({ expect }) => {
+  const fileNames = [
+    'sample1_matrix.mtx',
+    'sample1_features.tsv',
+    'sample1_barcodes.tsv',
+    'sample2_matrix.mtx',
+    'sample2_features.tsv',
+    'sample2_barcodes.tsv',
+    'sample3_matrix.mtx',
+    'sample3_features.tsv',
+    'sample3_barcodes.tsv',
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{CellRangerFileRole}}');
+  expect(result?.extension).to.equal('');
+  expect(result?.readIndices).to.toMatchObject([]);
+});
+
+test('infer CellRanger MTX pattern - dash separator', ({ expect }) => {
+  const fileNames = [
+    'sample-1-matrix.mtx.gz',
+    'sample-1-features.tsv.gz',
+    'sample-1-barcodes.tsv.gz',
+    'sample-2-matrix.mtx.gz',
+    'sample-2-features.tsv.gz',
+    'sample-2-barcodes.tsv.gz',
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal('{{Sample}}-{{CellRangerFileRole}}.gz');
+  expect(result?.extension).to.equal('.gz');
+  expect(result?.readIndices).to.toMatchObject([]);
+});
+
+test('CellRanger MTX pattern properties', ({ expect }) => {
+  const pattern = FileNamePattern.parse('{{Sample}}_{{CellRangerFileRole}}.gz');
+  expect(pattern.hasCellRangerFileRoleMatcher).to.equal(true);
+  expect(pattern.hasReadIndexMatcher).to.equal(false);
+  expect(pattern.hasLaneMatcher).to.equal(false);
+  expect(pattern.datasetType).to.equal('CellRangerMTX');
+  expect(pattern.gzipped).to.equal(true);
+  expect(pattern.fileContentType).to.equal('CellRangerMTX');
 });
