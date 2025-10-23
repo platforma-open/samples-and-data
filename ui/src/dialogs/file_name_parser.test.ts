@@ -360,8 +360,8 @@ test('infer CellRanger MTX pattern - compressed with underscore', ({ expect }) =
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{CellRangerFileRole}}.gz');
-  expect(result?.extension).to.equal('.gz');
-  expect(result?.readIndices).to.toMatchObject([]);
+  expect(result?.extension).to.equal('gz');
+  expect(result?.readIndices).to.toEqual([]);
 });
 
 test('infer CellRanger MTX pattern - compressed with genes.tsv', ({ expect }) => {
@@ -378,8 +378,8 @@ test('infer CellRanger MTX pattern - compressed with genes.tsv', ({ expect }) =>
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{CellRangerFileRole}}.gz');
-  expect(result?.extension).to.equal('.gz');
-  expect(result?.readIndices).to.toMatchObject([]);
+  expect(result?.extension).to.equal('gz');
+  expect(result?.readIndices).to.toEqual([]);
 });
 
 test('infer CellRanger MTX pattern - uncompressed', ({ expect }) => {
@@ -397,7 +397,7 @@ test('infer CellRanger MTX pattern - uncompressed', ({ expect }) => {
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}_{{CellRangerFileRole}}');
   expect(result?.extension).to.equal('');
-  expect(result?.readIndices).to.toMatchObject([]);
+  expect(result?.readIndices).to.toEqual([]);
 });
 
 test('infer CellRanger MTX pattern - dash separator', ({ expect }) => {
@@ -411,8 +411,8 @@ test('infer CellRanger MTX pattern - dash separator', ({ expect }) => {
   ];
   const result = inferFileNamePattern(fileNames);
   expect(result?.pattern.rawPattern).to.equal('{{Sample}}-{{CellRangerFileRole}}.gz');
-  expect(result?.extension).to.equal('.gz');
-  expect(result?.readIndices).to.toMatchObject([]);
+  expect(result?.extension).to.equal('gz');
+  expect(result?.readIndices).to.toEqual([]);
 });
 
 test('CellRanger MTX pattern properties', ({ expect }) => {

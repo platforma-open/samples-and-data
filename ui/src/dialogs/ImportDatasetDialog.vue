@@ -675,6 +675,7 @@ const canCreateOrAdd = computed(
         label="Type"
         error=""
         placeholder="Select type"
+        :style="{ flexBasis: '180px', flexShrink: 0 }"
       />
 
       <PlCheckbox v-model="data.gzipped" disabled > Gzipped </PlCheckbox>

@@ -6,11 +6,11 @@ util := import(":util")
 
 export {
     isGrouped: false,
-    
+
     createDataset: func(blockId, sampleIdAxis, dataset, importFile) {
         compression := dataset.content.gzipped ? "gz" : "none"
-        
-        spec := util.datasetColumnSpecBase(blockId, dataset, "")
+
+        spec := util.datasetColumnSpecBase(blockId, dataset, undefined)
         spec.domain["pl7.app/compression"] = compression
 
         cellRangerFileRoleAxisSpec := {
