@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type {
   DSContentBulkCountMatrix,
+  DSContentCellRangerMtx,
   DSContentFasta,
   DSContentFastq,
-  DSContentMtx,
   DSContentMultilaneFastq,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
@@ -48,6 +48,7 @@ import type {
 import {
   getWellFormattedReadIndex,
   inferFileNamePattern,
+  normalizeCellRangerFileRole,
 } from './file_name_parser';
 import ParsedFilesList from './ParsedFilesList.vue';
 
@@ -389,15 +390,22 @@ function addTaggedXsvDatasetContent(
   }
 }
 
-/** MTX */
-function addMtxDatasetContent(
-  contentData: DSContentMtx['data'],
+/** CellRanger MTX */
+function addCellRangerMtxDatasetContent(
+  contentData: DSContentCellRangerMtx['data'],
 ) {
   for (const f of parsedFiles.value) {
-    if (!f.match) continue;
+    if (!f.match || !f.match.cellRangerFileRole) continue;
     const sample = f.match.sample.value;
     const sampleId = getOrCreateSample(app, sample);
-    contentData[sampleId] = f.handle;
+    const role = normalizeCellRangerFileRole(f.match.cellRangerFileRole.value);
+    
+    let fileGroup = contentData[sampleId];
+    if (!fileGroup) {
+      fileGroup = {};
+      contentData[sampleId] = fileGroup;
+    }
+    fileGroup[role] = f.handle;
   }
 }
 
@@ -452,8 +460,8 @@ async function addToExistingDataset() {
     case 'TaggedXsv':
       addTaggedXsvDatasetContent(dataset.content.data);
       break;
-    case 'MTX':
-      addMtxDatasetContent(dataset.content.data);
+    case 'CellRangerMTX':
+      addCellRangerMtxDatasetContent(dataset.content.data);
       break;
     case 'BulkCountMatrix':
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -574,16 +582,17 @@ async function createNewDataset() {
         },
       });
       break;
-    } case 'MTX': {
-      const contentData: DSContentMtx['data'] = {};
-      addMtxDatasetContent(contentData);
+    } case 'CellRangerMTX': {
+      const contentData: DSContentCellRangerMtx['data'] = {};
+      addCellRangerMtxDatasetContent(contentData);
 
       app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'MTX',
+          type: 'CellRangerMTX',
           gzipped: data.gzipped,
+          roles: ['matrix.mtx', 'features.tsv', 'barcodes.tsv'],
           data: contentData,
         },
       });

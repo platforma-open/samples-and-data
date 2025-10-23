@@ -3,7 +3,7 @@ import * as _ from 'radashi';
 import { escapeRegExp } from '../util';
 
 /** Derived from file extension */
-export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'MTX';
+export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX';
 
 function extractFileContentType(pattern: string): FileContentType {
   let pt = pattern;
@@ -15,8 +15,8 @@ function extractFileContentType(pattern: string): FileContentType {
     return 'Fasta';
   else if (['csv', 'tsv'].some((xs) => pt.endsWith(xs)))
     return 'Xsv';
-  else if (['mtx'].some((mtx) => pt.endsWith(mtx)))
-    return 'MTX';
+  else if (pt.endsWith('matrix.mtx') || pt.endsWith('features.tsv') || pt.endsWith('genes.tsv') || pt.endsWith('barcodes.tsv'))
+    return 'CellRangerMTX';
   else
     throw new Error(`Unknown file content type: ${pt}`);
 }
@@ -34,6 +34,7 @@ export type FileNameGroups<T> = {
   sample: T;
   readIndex?: T;
   lane?: T;
+  cellRangerFileRole?: T;
   tags?: Record<string, T>;
   anyMatchers: T[];
   anyNumberMatchers: T[];
@@ -77,6 +78,10 @@ export class FileNamePattern {
     return this.groups.lane !== undefined;
   }
 
+  public get hasCellRangerFileRoleMatcher() {
+    return this.groups.cellRangerFileRole !== undefined;
+  }
+
   public get hasTagMatchers() {
     return this.groups.tags !== undefined && Object.keys(this.groups.tags).length > 0;
   }
@@ -92,8 +97,8 @@ export class FileNamePattern {
           return 'Fastq';
       case 'Fasta':
         return 'Fasta';
-      case 'MTX':
-        return 'MTX';
+      case 'CellRangerMTX':
+        return 'CellRangerMTX';
       default:
         return undefined;
     }
@@ -118,6 +123,8 @@ export class FileNamePattern {
       result.readIndex = getMatch(match, this.groups.readIndex);
     if (this.groups.lane !== undefined)
       result.lane = getMatch(match, this.groups.lane);
+    if (this.groups.cellRangerFileRole !== undefined)
+      result.cellRangerFileRole = getMatch(match, this.groups.cellRangerFileRole);
     if (this.groups.tags !== undefined)
       result.tags = _.mapValues(this.groups.tags, (gi) => getMatch(match, gi));
     for (const gi of this.groups.anyMatchers)
@@ -128,7 +135,7 @@ export class FileNamePattern {
   }
 
   private static patternElement
-    = /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|\*?\:(?<anytag>[a-zA-Z0-9_]+)|n\:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
+    = /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?\:(?<anytag>[a-zA-Z0-9_]+)|n\:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
 
   static parse(
     fileNamePattern: string,
@@ -199,6 +206,12 @@ export class FileNamePattern {
         groups.anyNumberMatchers!.push(groupCounter++);
         regexp += '([0-9]+)';
         rawElements.anyNumberMatchers!.push(range);
+      } else if (match.groups!['cellRangerFileRole']) {
+        if (groups.cellRangerFileRole !== undefined)
+          throw new Error(`Repeated {{CellRangerFileRole}} matcher`);
+        groups.cellRangerFileRole = groupCounter++;
+        regexp += '(matrix\\.mtx|features\\.tsv|genes\\.tsv|barcodes\\.tsv)';
+        rawElements.cellRangerFileRole = range;
       } else {
         throw new Error(`Unexpected token match: ${match[0]} in ${fileNamePattern}`);
       }
@@ -309,6 +322,13 @@ export function getWellFormattedReadIndex(match: FileNameGroups<Match>): 'R1' | 
   else return readIndex as 'R1' | 'R2';
 }
 
+export function normalizeCellRangerFileRole(role: string): 'matrix.mtx' | 'features.tsv' | 'barcodes.tsv' {
+  if (role === 'genes.tsv') return 'features.tsv';
+  if (role === 'matrix.mtx' || role === 'features.tsv' || role === 'barcodes.tsv')
+    return role;
+  throw new Error(`Unknown CellRanger file role: ${role}`);
+}
+
 type WellKnownPattern = {
   patternWithoutExtension: string;
   defaultReadIndices: string[];
@@ -390,9 +410,15 @@ const wellKnownPattern: WellKnownPattern[] = [
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
+    patternWithoutExtension: '{{Sample}}_{{CellRangerFileRole}}',
     defaultReadIndices: [],
-    extensions: ['mtx', 'mtx.gz'],
+    extensions: ['', '.gz'],
+    minimalPercent: 0.9,
+  },
+  {
+    patternWithoutExtension: '{{Sample}}-{{CellRangerFileRole}}',
+    defaultReadIndices: [],
+    extensions: ['', '.gz'],
     minimalPercent: 0.9,
   },
 ];

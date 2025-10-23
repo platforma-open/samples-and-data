@@ -18,6 +18,7 @@ dsMultilaneFastq := import(":ds-multilane-fastq")
 dsTaggedFastq := import(":ds-tagged-fastq")
 dsXsv := import(":ds-xsv")
 dsTaggedXsv := import(":ds-tagged-xsv")
+dsCellRangerMtx := import(":ds-cellranger-mtx")
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 
 dsProcessors := {
@@ -27,6 +28,7 @@ dsProcessors := {
 	"TaggedFastq": dsTaggedFastq,
 	"Xsv": dsXsv,
 	"TaggedXsv": dsTaggedXsv,
+	"CellRangerMTX": dsCellRangerMtx,
 	"BulkCountMatrix": dsBulkCountMatrix
 }
 
