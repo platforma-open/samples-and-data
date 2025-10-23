@@ -1,8 +1,9 @@
 
 ll := import("@platforma-sdk/workflow-tengo:ll")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
-json := import("json")
 util := import(":util")
+
+cellRangerMtxRoles := ["matrix.mtx", "features.tsv", "barcodes.tsv"]
 
 export {
     isGrouped: false,
@@ -18,9 +19,6 @@ export {
             name: "pl7.app/sc/cellRangerFileRole",
             annotations: {
                 "pl7.app/label": "Role"
-            },
-            domain: {
-                "pl7.app/cellRangerMtxRoles": string(json.encode(dataset.content.roles))
             }
         }
 
@@ -28,7 +26,7 @@ export {
 
         data := pColumn.resourceMapBuilder(2)
         for sampleId, fileGroup in dataset.content.data {
-            for _, role in dataset.content.roles {
+            for role in cellRangerMtxRoles {
                 importHandle := fileGroup[role]
                 if !importHandle {
                     ll.panic("File handle not set for %v in sample %v", role, sampleId)

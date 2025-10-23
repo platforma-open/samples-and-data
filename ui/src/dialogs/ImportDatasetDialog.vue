@@ -592,7 +592,6 @@ async function createNewDataset() {
         content: {
           type: 'CellRangerMTX',
           gzipped: data.gzipped,
-          roles: ['matrix.mtx', 'features.tsv', 'barcodes.tsv'],
           data: contentData,
         },
       });
