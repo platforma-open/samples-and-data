@@ -112,7 +112,6 @@ export type CellRangerMtxFileGroup = Partial<Record<CellRangerMtxRole, ImportFil
 
 export interface DSContentCellRangerMtx extends WithPerSampleData<CellRangerMtxFileGroup> {
   type: 'CellRangerMTX';
-  roles: CellRangerMtxRole[];
 }
 
 /// --------------- Grouped Datasets --------------- ///
