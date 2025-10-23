@@ -6,6 +6,9 @@ import { escapeRegExp } from '../util';
 export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX';
 
 function extractFileContentType(pattern: string): FileContentType {
+  if (pattern.includes('CellRangerFileRole'))
+    return 'CellRangerMTX';
+  
   let pt = pattern;
   if (pt.endsWith('.gz'))
     pt = pt.substring(0, pt.length - 3);
@@ -312,6 +315,7 @@ export function buildWrappedString(
   doWith2(formattingOpts.lane, ranges.lane, singleWrappingF(builder));
   doWith2(formattingOpts.anyMatchers, ranges.anyMatchers, multiWrappingF(builder));
   doWith2(formattingOpts.anyNumberMatchers, ranges.anyNumberMatchers, multiWrappingF(builder));
+  doWith2(formattingOpts.cellRangerFileRole, ranges.cellRangerFileRole, singleWrappingF(builder));
   return builder.build();
 }
 
@@ -412,13 +416,13 @@ const wellKnownPattern: WellKnownPattern[] = [
   {
     patternWithoutExtension: '{{Sample}}_{{CellRangerFileRole}}',
     defaultReadIndices: [],
-    extensions: ['', '.gz'],
+    extensions: ['gz', ''],
     minimalPercent: 0.9,
   },
   {
     patternWithoutExtension: '{{Sample}}-{{CellRangerFileRole}}',
     defaultReadIndices: [],
-    extensions: ['', '.gz'],
+    extensions: ['gz', ''],
     minimalPercent: 0.9,
   },
 ];
@@ -451,7 +455,8 @@ export function inferFileNamePattern(
     for (const extension of wkPattern.extensions) {
       if (ops?.isGzipped !== undefined && extension.endsWith('.gz') !== ops.isGzipped) continue;
 
-      const pattern = FileNamePattern.parse(wkPattern.patternWithoutExtension + '.' + extension);
+      const patternStr = extension ? wkPattern.patternWithoutExtension + '.' + extension : wkPattern.patternWithoutExtension;
+      const pattern = FileNamePattern.parse(patternStr);
 
       let matchedFiles = 0;
       const readIndices = pattern.hasReadIndexMatcher ? new Set<string>() : undefined;
@@ -462,6 +467,7 @@ export function inferFileNamePattern(
           let sample = match.sample.value;
           if (match.lane) sample += '___' + match.lane.value;
           if (match.readIndex) sample += '___' + match.readIndex.value;
+          if (match.cellRangerFileRole) sample += '___' + match.cellRangerFileRole.value;
           if (samples.has(sample)) continue outer;
           samples.add(sample);
           matchedFiles++;
