@@ -4,11 +4,12 @@
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["./dist/**", "./block-pack/**"],
+      "env": ["PL_PKG_DEV"],
+      "outputs": ["./dist/**", "./block-pack/**", "./pkg-*.tgz"],
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["build"],
+      "dependsOn": ["^build:dev", "build"],
       "passThroughEnv": ["PL_ADDRESS", "PL_TEST_PASSWORD", "PL_TEST_USER", "PL_TEST_PROXY", "DEBUG"]
     },
     "mark-stable": {
