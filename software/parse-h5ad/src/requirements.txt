@@ -1,0 +1,2 @@
+# Python dependencies for samples-and-data software
+anndata==0.11.3

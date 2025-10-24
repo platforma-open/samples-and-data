@@ -1,0 +1,60 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+render := import("@platforma-sdk/workflow-tengo:render")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+parseH5adTpl := assets.importTemplate(":parse-multisample-h5ad")
+parseSamplesTpl := assets.importTemplate(":parse-samples")
+
+util := import(":util")
+
+export {
+    isGrouped: true,
+
+    getSamples: func(dataset, importFile) {
+        result := {}
+        for groupId, importHandle in dataset.content.data {
+            if !importHandle {
+                ll.panic("File handle not set for group %v", groupId)
+            }
+            
+            h5adFile := importFile(importHandle)
+            
+            samplesContent := render.create(parseH5adTpl, {
+                h5adFile: h5adFile
+            }).output("samplesContent")
+            
+            samples := render.create(parseSamplesTpl, {
+                samplesContent: samplesContent
+            }).output("samples")
+
+            result[groupId] = samples
+        }
+        return result
+    },
+    
+    createDataset: func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
+        
+        extension := "h5ad"
+        
+        spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+        spec.axesSpec = [groupIdAxis]
+
+        data := pColumn.resourceMapBuilder(1)
+        for groupId, importHandle in dataset.content.data {
+            if !importHandle {
+                ll.panic("File handle not set for sample %v", groupId)
+            }
+            data.add([groupId], importFile(importHandle))
+        }
+
+        result := {}
+        result["dataset." + dataset.id] = {
+            spec: spec,
+            data: data.build()
+        }
+
+        return result
+    }
+}
+
