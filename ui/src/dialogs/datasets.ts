@@ -46,6 +46,16 @@ export const datasetTypes: Record<DSType, { label: string; fileType: FileContent
     fileType: 'MTX',
     hasTags: false,
   },
+  H5AD: {
+    label: 'H5AD',
+    fileType: 'H5AD',
+    hasTags: false,
+  },
+  MultiSampleH5AD: {
+    label: 'Multisample H5AD',
+    fileType: 'H5AD',
+    hasTags: false,
+  },
   BulkCountMatrix: {
     label: 'Bulk count matrix',
     fileType: 'Xsv',

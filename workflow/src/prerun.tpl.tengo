@@ -4,9 +4,11 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
+multiSampleH5AD := import(":ds-multisample-h5ad")
 
 parsers := {
-    BulkCountMatrix: dsBulkCountMatrix
+    BulkCountMatrix: dsBulkCountMatrix,
+	MultiSampleH5AD: multiSampleH5AD
 }
 
 wf.body(func(args) {

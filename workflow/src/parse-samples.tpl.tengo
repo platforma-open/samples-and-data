@@ -1,0 +1,27 @@
+tpl := import("@platforma-sdk/workflow-tengo:tpl")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+text := import("text")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+
+tpl.defineOutputs("samples")
+
+tpl.body(func(inputs) {
+    samplesContent := inputs.samplesContent.getData()        
+	lines := text.split(samplesContent, "\n")
+	samples := []
+	for line in lines {
+		ll.print("DBG: line %v", string(line))
+		trimmed := text.trim_space(line)
+		if len(trimmed) > 0 {
+			samples = append(samples, trimmed)
+		}
+	}	
+	
+    return {
+        samples: samples
+    }
+})
+

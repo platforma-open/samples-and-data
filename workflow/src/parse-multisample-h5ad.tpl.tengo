@@ -1,0 +1,27 @@
+tpl := import("@platforma-sdk/workflow-tengo:tpl")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+text := import("text")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+
+tpl.defineOutputs("samplesContent")
+
+tpl.body(func(inputs) {
+    h5adFile := inputs.h5adFile
+
+    parseH5ad := exec.builder().
+        software(assets.importSoftware("@platforma-open/milaboratories.samples-and-data.parse-h5ad:main")).
+        addFile("input.h5ad", h5adFile).
+        arg("--input").arg("input.h5ad").
+        arg("--output").arg("samples.csv").
+        saveFileContent("samples.csv").
+        printErrStreamToStdout().
+        run()
+    
+    return {
+        samplesContent: parseH5ad.getFileContent("samples.csv")
+    }
+})
+

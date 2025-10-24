@@ -3,8 +3,10 @@ import type {
   DSContentBulkCountMatrix,
   DSContentFasta,
   DSContentFastq,
+  DSContentH5ad,
   DSContentMtx,
   DSContentMultilaneFastq,
+  DSContentMultiSampleH5ad,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
   DSContentXsv,
@@ -401,6 +403,34 @@ function addMtxDatasetContent(
   }
 }
 
+/** H5AD */
+function addH5adDatasetContent(
+  contentData: DSContentH5ad['data'],
+) {
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
+/** Multi-Sample H5AD */
+function addMultiSampleH5adDatasetContent(
+  groupLabels: Record<PlId, string>,
+  contentData: DSContentMultiSampleH5ad['data'],
+) {
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error('Dataset has read or lane matcher, trying to add H5AD dataset');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const group = f.match.sample.value;
+    const sampleId = getOrCreateGroup(groupLabels, group);
+    contentData[sampleId] = f.handle;
+  }
+}
+
 /** Bulk Count Matrix */
 function addBulkCountMatrixDatasetContent(
   groupLabels: Record<PlId, string>,
@@ -454,6 +484,12 @@ async function addToExistingDataset() {
       break;
     case 'MTX':
       addMtxDatasetContent(dataset.content.data);
+      break;
+    case 'H5AD':
+      addH5adDatasetContent(dataset.content.data);
+      break;
+    case 'MultiSampleH5AD':
+      addMultiSampleH5adDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
     case 'BulkCountMatrix':
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -585,6 +621,37 @@ async function createNewDataset() {
           type: 'MTX',
           gzipped: data.gzipped,
           data: contentData,
+        },
+      });
+      break;
+    } case 'H5AD': {
+      const contentData: DSContentH5ad['data'] = {};
+      addH5adDatasetContent(contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'H5AD',
+          gzipped: false,
+          data: contentData,
+        },
+      });
+      break;
+    } case 'MultiSampleH5AD': {
+      const groupLabels: Record<PlId, string> = {};
+      const contentData: DSContentMultiSampleH5ad['data'] = {};
+      addMultiSampleH5adDatasetContent(groupLabels, contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'MultiSampleH5AD',
+          gzipped: false,
+          sampleGroups: undefined,
+          data: contentData,
+          groupLabels: groupLabels,
         },
       });
       break;

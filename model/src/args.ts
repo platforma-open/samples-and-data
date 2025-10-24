@@ -111,6 +111,10 @@ export interface DSContentMtx extends WithPerSampleData<ImportFileHandle | null>
   type: 'MTX';
 }
 
+export interface DSContentH5ad extends WithPerSampleData<ImportFileHandle | null> {
+  type: 'H5AD';
+}
+
 /// --------------- Grouped Datasets --------------- ///
 
 /** Datasets that have data per sample */
@@ -128,6 +132,10 @@ export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFil
   xsvType: 'csv' | 'tsv';
 }
 
+export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFileHandle | null> {
+  type: 'MultiSampleH5AD';
+}
+
 /// --------------- End of Datasets --------------- ///
 
 export type DSContent =
@@ -138,7 +146,9 @@ export type DSContent =
   | DSContentXsv
   | DSContentTaggedXsv
   | DSContentMtx
-  | DSContentBulkCountMatrix;
+  | DSContentH5ad
+  | DSContentBulkCountMatrix
+  | DSContentMultiSampleH5ad;
 
 export interface Dataset<ContentType> {
   id: PlId;
@@ -154,12 +164,14 @@ export type DSTaggedFastq = Dataset<DSContentTaggedFastq>;
 export type DSXsv = Dataset<DSContentXsv>;
 export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
 export type DSMtx = Dataset<DSContentMtx>;
+export type DSH5ad = Dataset<DSContentH5ad>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
+export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
 
 export type DSType = DSAny['content']['type'];
 
 export function isGroupedDataset(ds: DSAny): boolean {
-  return ds.content.type === 'BulkCountMatrix';
+  return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD';
 }
 
 export interface BlockArgs {
