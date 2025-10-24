@@ -31,7 +31,7 @@ dsProcessors := {
 	"Xsv": dsXsv,
 	"TaggedXsv": dsTaggedXsv,
 	"H5AD": dsH5ad,
-	"MultiSampleH5AD": dsMultiSampleH5ad
+	"MultiSampleH5AD": dsMultiSampleH5ad,
 	"CellRangerMTX": dsCellRangerMtx,
 	"BulkCountMatrix": dsBulkCountMatrix
 }
