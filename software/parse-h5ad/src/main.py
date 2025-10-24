@@ -29,7 +29,7 @@ def main():
     try:
         # Read the H5AD file
         print(f"Reading H5AD file: {args.input}", file=sys.stderr)
-        adata = anndata.read_h5ad(args.input)
+        adata = anndata.read_h5ad(args.input, backed="r")
         
         # Check which column is available (case-insensitive): 'sample' or 'samples'
         supported_names = ["sample", "samples"]
