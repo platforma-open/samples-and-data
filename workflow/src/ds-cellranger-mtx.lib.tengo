@@ -1,0 +1,47 @@
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+util := import(":util")
+
+cellRangerMtxRoles := ["matrix.mtx", "features.tsv", "barcodes.tsv"]
+
+export {
+    isGrouped: false,
+
+    createDataset: func(blockId, sampleIdAxis, dataset, importFile) {
+        compression := dataset.content.gzipped ? "gz" : "none"
+
+        spec := util.datasetColumnSpecBase(blockId, dataset, undefined)
+        spec.domain["pl7.app/compression"] = compression
+
+        cellRangerFileRoleAxisSpec := {
+            type: "String",
+            name: "pl7.app/sc/cellRangerFileRole",
+            annotations: {
+                "pl7.app/label": "Role"
+            }
+        }
+
+        spec.axesSpec = [sampleIdAxis, cellRangerFileRoleAxisSpec]
+
+        data := pColumn.resourceMapBuilder(2)
+        for sampleId, fileGroup in dataset.content.data {
+            for role in cellRangerMtxRoles {
+                importHandle := fileGroup[role]
+                if !importHandle {
+                    ll.panic("File handle not set for %v in sample %v", role, sampleId)
+                }
+                data.add([sampleId, role], importFile(importHandle))
+            }
+        }
+
+        result := {}
+        result["dataset." + dataset.id] = {
+            spec: spec,
+            data: data.build()
+        }
+
+        return result
+    }
+}
+

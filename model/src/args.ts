@@ -1,214 +1,175 @@
-import { ImportFileHandle, ValueType } from '@platforma-sdk/model';
-import { ZodSchema, z } from 'zod';
-import { PlId } from './helpers';
+import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
+export type { PlId } from '@platforma-sdk/model';
 
-export const MetadataValueTypeLong = z.literal('Long') satisfies ZodSchema<ValueType>;
-export const MetadataValueTypeDouble = z.literal('Double') satisfies ZodSchema<ValueType>;
-export const MetadataValueTypeString = z.literal('String') satisfies ZodSchema<ValueType>;
+/** *****  Metadata *******/
 
-export const MetadataColumnMeta = z
-  .object({
-    id: z
-      .string()
-      .min(1)
-      .describe(
-        'Id of the metadata column, that is assigned when column is created and never changes. ' +
-          'Value of this field will also used in resulting PColumn domain, if global option is false. ' +
-          'If global is set to true, normalized label will be used.'
-      ),
-    label: z
-      .string()
-      .min(1)
-      .describe(
-        'Human readable name of the metadata column. ' +
-          'Value of this field will be used in resulting PColumn domain, if global option is true. ' +
-          'String normalization proceduyre will be applied before setting the domain.'
-      ),
-    global: z
-      .boolean()
-      .describe('Regulates identifier derivation, see description of the fields above.')
-  })
-  .strict();
+export type MTValueTypeLong = 'Long';
+export type MTValueTypeDouble = 'Double';
+export type MTValueTypeString = 'String';
 
-export const MetadataDataDouble = z
-  .object({
-    valueType: MetadataValueTypeDouble,
-    data: z.record(PlId, z.number())
-  })
-  .strict();
-
-export const MetadataDataLong = z
-  .object({
-    valueType: MetadataValueTypeLong,
-    data: z.record(PlId, z.number().int())
-  })
-  .strict();
-
-export const MetadataDataString = z
-  .object({
-    valueType: MetadataValueTypeString,
-    data: z.record(PlId, z.string())
-  })
-  .strict();
-
-export const MetadataColumn = z
-  .discriminatedUnion('valueType', [MetadataDataDouble, MetadataDataLong, MetadataDataString])
-  .and(MetadataColumnMeta);
-export type MetadataColumn = z.infer<typeof MetadataColumn>;
-export type MetadataColumnValueType = MetadataColumn['valueType'];
-
-export const ImportFileHandleSchema = z
-  .string()
-  .refine<ImportFileHandle>(((a) => true) as (arg: string) => arg is ImportFileHandle);
-
-export const ReadIndexSchemas = [
-  z.literal('R1'),
-  z.literal('R2'),
-  z.literal('I1'),
-  z.literal('I2')
-] as const;
-export const ReadIndex = z.union(ReadIndexSchemas);
-export type ReadIndex = z.infer<typeof ReadIndex>;
-
-export const AllReadIndices = ReadIndexSchemas.map((s) => s.value);
-export const ReadIndices = z.array(ReadIndex);
-export type ReadIndices = z.infer<typeof ReadIndices>;
-
-export const FastqFileGroup = z.record(ReadIndex, ImportFileHandleSchema);
-export type FastqFileGroup = z.infer<typeof FastqFileGroup>;
-
-export const DatasetContentFasta = z
-  .object({
-    type: z.literal('Fasta'),
-    gzipped: z.boolean(),
-    data: z.record(
-      PlId,
-      ImportFileHandleSchema.nullable() /* null means sample is added to the dataset, but file is not yet set */
-    )
-  })
-  .strict();
-export type DatasetContentFasta = z.infer<typeof DatasetContentFasta>;
-
-export const DatasetContentFastq = z
-  .object({
-    type: z.literal('Fastq'),
-    gzipped: z.boolean(),
-    readIndices: z.array(ReadIndex),
-    data: z.record(PlId, FastqFileGroup)
-  })
-  .strict();
-export type DatasetContentFastq = z.infer<typeof DatasetContentFastq>;
-
-export const Lane = z
-  .string()
-  .regex(/[0-9]+/)
-  .describe('Lane');
-export type Lane = z.infer<typeof Lane>;
-
-export const DatasetContentMultilaneFastq = z
-  .object({
-    type: z.literal('MultilaneFastq'),
-    gzipped: z.boolean(),
-    readIndices: z.array(ReadIndex),
-    data: z.record(PlId, z.record(Lane, FastqFileGroup))
-  })
-  .strict();
-export type DatasetContentMultilaneFastq = z.infer<typeof DatasetContentMultilaneFastq>;
-
-export const TaggedDatasetRecord = z.object({
-  lane: z.string().optional(),
-  tags: z.record(z.string(), z.string()),
-  files: FastqFileGroup
-});
-export type TaggedDatasetRecord = z.infer<typeof TaggedDatasetRecord>;
-
-export const DatasetContentTaggedFastq = z
-  .object({
-    type: z.literal('TaggedFastq'),
-    gzipped: z.boolean(),
-    readIndices: z.array(ReadIndex),
-    hasLanes: z.boolean(),
-    tags: z.array(z.string()),
-    data: z.record(PlId, z.array(TaggedDatasetRecord))
-  })
-  .strict();
-export type DatasetContentTaggedFastq = z.infer<typeof DatasetContentTaggedFastq>;
-
-
-export const DatasetContentXsv = z
-  .object({
-    type: z.literal('Xsv'),
-    gzipped: z.boolean(),
-    xsvType: z.union([z.literal('csv'), z.literal('tsv')]),
-    data: z.record(
-      PlId,
-      ImportFileHandleSchema.nullable() /* null means sample is added to the dataset, but file is not yet set */
-    )
-  })
-  .strict();
-export type DatasetContentXsv = z.infer<typeof DatasetContentXsv>;
-
-
-export const TaggedXsvDatasetRecord = z.object({
-  tags: z.record(z.string(), z.string()),
-  file: ImportFileHandleSchema
-});
-export type TaggedXsvDatasetRecord = z.infer<typeof TaggedXsvDatasetRecord>;
-
-export const DatasetContentTaggedXsv = z
-  .object({
-    type: z.literal('TaggedXsv'),
-    gzipped: z.boolean(),
-    xsvType: z.union([z.literal('csv'), z.literal('tsv')]),
-    tags: z.array(z.string()),
-    data: z.record(PlId, z.array(TaggedXsvDatasetRecord))
-  })
-  .strict();
-export type DatasetContentTaggedXsv = z.infer<typeof DatasetContentTaggedXsv>;
-
-export const DatasetContent = z.discriminatedUnion('type', [
-  DatasetContentFastq,
-  DatasetContentMultilaneFastq,
-  DatasetContentTaggedFastq,
-  DatasetContentFasta,
-  DatasetContentXsv,
-  DatasetContentTaggedXsv
-]);
-export type DatasetContent = z.infer<typeof DatasetContent>;
-
-export function Dataset<const ContentType extends z.ZodTypeAny>(content: ContentType) {
-  return z.object({
-    id: PlId,
-    label: z.string(),
-    content
-  });
+export interface MTColumnInfo {
+  /**
+    * Id of the metadata column, that is assigned when column is created and never changes.
+    * Value of this field will also used in resulting PColumn domain, if global option is false.
+    * If global is set to true, normalized label will be used.
+    */
+  id: string;
+  /**
+    * Human readable name of the metadata column.
+    * Value of this field will be used in resulting PColumn domain, if global option is true.
+    * String normalization proceduyre will be applied before setting the domain.
+    */
+  label: string;
+  /**
+    * Regulates identifier derivation, see description of the fields above.
+    */
+  global: boolean;
 }
 
-export const DatasetAny = Dataset(DatasetContent);
-export const DatasetFasta = Dataset(DatasetContentFasta);
-export type DatasetFasta = z.infer<typeof DatasetFasta>;
-export const DatasetFastq = Dataset(DatasetContentFastq);
-export type DatasetFastq = z.infer<typeof DatasetFastq>;
-export const DatasetMultilaneFastq = Dataset(DatasetContentMultilaneFastq);
-export type DatasetMultilaneFastq = z.infer<typeof DatasetMultilaneFastq>;
-export const DatasetTaggedFastq = Dataset(DatasetContentTaggedFastq);
-export type DatasetTaggedFastq = z.infer<typeof DatasetTaggedFastq>;
-export const DatasetXsv = Dataset(DatasetContentXsv);
-export type DatasetXsv = z.infer<typeof DatasetXsv>;
-export const DatasetTaggedXsv = Dataset(DatasetContentTaggedXsv);
-export type DatasetTaggedXsv = z.infer<typeof DatasetTaggedXsv>;
+export interface MTDataDouble {
+  valueType: MTValueTypeDouble;
+  data: Record<PlId, number>;
+}
 
-export type DatasetAny = z.infer<typeof DatasetAny>;
-export type DatasetType = DatasetAny['content']['type'];
+export interface MTDataLong {
+  valueType: MTValueTypeLong;
+  data: Record<PlId, number>;
+}
 
-export const BlockArgs = z
-  .object({
-    blockTitle: z.string().optional(),
-    sampleIds: z.array(PlId),
-    sampleLabelColumnLabel: z.string(),
-    sampleLabels: z.record(PlId, z.string()),
-    metadata: z.array(MetadataColumn),
-    datasets: z.array(DatasetAny)
-  })
-  .strict();
-export type BlockArgs = z.infer<typeof BlockArgs>;
+export interface MTDataString {
+  valueType: MTValueTypeString;
+  data: Record<PlId, string>;
+}
+
+export type MTColumn = (MTDataDouble | MTDataLong | MTDataString) & MTColumnInfo;
+export type MTValueType = MTColumn['valueType'];
+
+export interface IDSContent {
+  gzipped: boolean;
+}
+
+/// --------------- Per Sample Datasets --------------- ///
+
+/** Datasets that have data per sample */
+export interface WithPerSampleData<T> extends IDSContent {
+  // sample -> data
+  data: Record<PlId, T>;
+}
+
+export type ReadIndex = 'R1' | 'R2' | 'I1' | 'I2';
+export type ReadIndices = ReadIndex[];
+export type FastqFileGroup = Partial<Record<ReadIndex, ImportFileHandle>>;
+
+export interface DSContentFastq extends WithPerSampleData<FastqFileGroup> {
+  type: 'Fastq';
+  readIndices: ReadIndex[];
+}
+
+/* null means sample is added to the dataset, but file is not yet set */
+export interface DSContentFasta extends WithPerSampleData<ImportFileHandle | null> {
+  type: 'Fasta';
+}
+
+export type Lane = string;
+
+export interface DSContentMultilaneFastq extends WithPerSampleData<Record<Lane, FastqFileGroup>> {
+  type: 'MultilaneFastq';
+  readIndices: ReadIndex[];
+}
+
+export interface TaggedDatasetRecord {
+  lane?: string;
+  tags: Record<string, string>;
+  files: FastqFileGroup;
+}
+
+export interface DSContentTaggedFastq extends WithPerSampleData<TaggedDatasetRecord[]> {
+  type: 'TaggedFastq';
+  readIndices: ReadIndex[];
+  hasLanes: boolean;
+  tags: string[];
+}
+
+/* null means sample is added to the dataset, but file is not yet set */
+export interface DSContentXsv extends WithPerSampleData<ImportFileHandle | null> {
+  type: 'Xsv';
+  xsvType: 'csv' | 'tsv';
+}
+
+export interface TaggedXsvDatasetRecord {
+  tags: Record<string, string>;
+  file: ImportFileHandle;
+}
+
+export interface DSContentTaggedXsv extends WithPerSampleData<TaggedXsvDatasetRecord[]> {
+  type: 'TaggedXsv';
+  xsvType: 'csv' | 'tsv';
+  tags: string[];
+}
+
+export type CellRangerMtxRole = 'matrix.mtx' | 'features.tsv' | 'barcodes.tsv';
+export type CellRangerMtxFileGroup = Partial<Record<CellRangerMtxRole, ImportFileHandle>>;
+
+export interface DSContentCellRangerMtx extends WithPerSampleData<CellRangerMtxFileGroup> {
+  type: 'CellRangerMTX';
+}
+
+/// --------------- Grouped Datasets --------------- ///
+
+/** Datasets that have data per sample */
+export interface WithSampleGroupsData<T> extends IDSContent {
+  // group -> data
+  data: Record<PlId, T>;
+  // group -> sampleId in dataset -> sample name in the file
+  sampleGroups: Record<PlId, Record<PlId, string>> | undefined;
+  // group id -> group name
+  groupLabels: Record<PlId, string>;
+}
+
+export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFileHandle | null> {
+  type: 'BulkCountMatrix';
+  xsvType: 'csv' | 'tsv';
+}
+
+/// --------------- End of Datasets --------------- ///
+
+export type DSContent =
+  | DSContentFastq
+  | DSContentMultilaneFastq
+  | DSContentTaggedFastq
+  | DSContentFasta
+  | DSContentXsv
+  | DSContentTaggedXsv
+  | DSContentCellRangerMtx
+  | DSContentBulkCountMatrix;
+
+export interface Dataset<ContentType> {
+  id: PlId;
+  label: string;
+  content: ContentType;
+}
+
+export type DSAny = Dataset<DSContent>;
+export type DSFasta = Dataset<DSContentFasta>;
+export type DSFastq = Dataset<DSContentFastq>;
+export type DSMultilaneFastq = Dataset<DSContentMultilaneFastq>;
+export type DSTaggedFastq = Dataset<DSContentTaggedFastq>;
+export type DSXsv = Dataset<DSContentXsv>;
+export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
+export type DSCellRangerMtx = Dataset<DSContentCellRangerMtx>;
+export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
+
+export type DSType = DSAny['content']['type'];
+
+export function isGroupedDataset(ds: DSAny): boolean {
+  return ds.content.type === 'BulkCountMatrix';
+}
+
+export interface BlockArgs {
+  blockTitle?: string;
+  sampleIds: PlId[];
+  sampleLabelColumnLabel: string;
+  sampleLabels: Record<PlId, string>;
+  metadata: MTColumn[];
+  datasets: DSAny[];
+}

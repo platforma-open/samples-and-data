@@ -4,9 +4,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "test": "vitest",
     "watch": "vue-tsc && vite build --watch",
     "build": "vue-tsc -b && vite build",
+    "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {},
@@ -28,6 +28,7 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vue-tsc": "catalog:",
-    "vitest": "catalog:"
+    "vitest": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:"
   }
 }

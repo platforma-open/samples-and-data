@@ -1,0 +1,32 @@
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+
+util := import(":util")
+
+export {
+    isGrouped: false,
+    
+    createDataset: func(blockId, sampleIdAxis, dataset, importFile) {
+        extension :=  dataset.content.gzipped ? "fasta.gz" : "fasta"
+        
+        spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+        spec.axesSpec = [sampleIdAxis]
+
+        data := pColumn.resourceMapBuilder(1)
+        for sampleId, importHandle in dataset.content.data {
+            if !importHandle {
+                ll.panic("File handle not set for sample %v", sampleId)
+            }
+            data.add([sampleId], importFile(importHandle))
+        }
+
+        result := {}
+        result["dataset." + dataset.id] = {
+            spec: spec,
+            data: data.build()
+        }
+
+        return result
+    }
+}
