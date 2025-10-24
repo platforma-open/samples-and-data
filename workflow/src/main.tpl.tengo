@@ -39,7 +39,6 @@ dsProcessors := {
 wf.setPreRun(prerunTpl)
 
 wf.body(func(args) {
-	ll.print("DBG: start of body")
 	blockId := wf.blockId().getDataAsJson()
 
 	sampleIdAxis := {
@@ -86,11 +85,7 @@ wf.body(func(args) {
 		blockTitle = "Samples & Data"
 	}
 
-	ll.print("DBG: %v", string(blockTitle))
-		
-
 	for _, dataset in args.datasets {
-		ll.print("DBG: start of body %v", string(dataset))
 		proc := dsProcessors[dataset.content.type]
 		if is_undefined(proc) {
 			ll.panic("Unknown dataset type %v", dataset.content.type)
