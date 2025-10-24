@@ -18,6 +18,7 @@ dsMultilaneFastq := import(":ds-multilane-fastq")
 dsTaggedFastq := import(":ds-tagged-fastq")
 dsXsv := import(":ds-xsv")
 dsTaggedXsv := import(":ds-tagged-xsv")
+dsCellRangerMtx := import(":ds-cellranger-mtx")
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 dsH5ad := import(":ds-h5ad")
 dsMultiSampleH5ad := import(":ds-multisample-h5ad")
@@ -29,9 +30,10 @@ dsProcessors := {
 	"TaggedFastq": dsTaggedFastq,
 	"Xsv": dsXsv,
 	"TaggedXsv": dsTaggedXsv,
-	"BulkCountMatrix": dsBulkCountMatrix,
 	"H5AD": dsH5ad,
 	"MultiSampleH5AD": dsMultiSampleH5ad
+	"CellRangerMTX": dsCellRangerMtx,
+	"BulkCountMatrix": dsBulkCountMatrix
 }
 
 wf.setPreRun(prerunTpl)
