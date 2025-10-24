@@ -12,6 +12,7 @@ const formattedFilesHtml = computed(() => {
     sample: { begin: `<span class="${styles['sampleName']}">`, end: '</span>' },
     readIndex: { begin: `<span class="${styles['readIndex']}">`, end: '</span>' },
     lane: { begin: `<span class="${styles['lane']}">`, end: '</span>' },
+    cellRangerFileRole: { begin: `<span class="${styles['cellRangerFileRole']}">`, end: '</span>' },
   };
   return props.items
     .map((f) => {
@@ -91,6 +92,10 @@ const nFilesUnmatched = computed(() => {
 
 .readIndex {
   background-color: #faf5aa;
+}
+
+.cellRangerFileRole {
+  background-color: #dedbff;
 }
 
 .lane {

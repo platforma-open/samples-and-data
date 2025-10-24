@@ -25,11 +25,11 @@ datasetColumnSpecBase := func(blockId, dataset, extension) {
     return {
         kind: "PColumn",
         name: "pl7.app/sequencing/data",
-        domain: {
+        domain: maps.clone({
             "pl7.app/fileExtension": extension,
             "pl7.app/block": blockId,
             "pl7.app/dataset": dataset.id
-        },
+        }, { removeUndefs: true }),
         valueType: "File",
         annotations: {
             "pl7.app/label": "Sequencing Data",

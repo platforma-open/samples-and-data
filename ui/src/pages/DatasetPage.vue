@@ -19,9 +19,9 @@ import TaggedFastqDatasetPage from '../pages/TaggedFastqDatasetPage.vue';
 import TaggedXsvDatasetPage from '../pages/TaggedXsvDatasetPage.vue';
 import XsvDatasetPage from '../pages/XsvDatasetPage.vue';
 import BulkCountMatrixDatasetPage from './BulkCountMatrixDatasetPage.vue';
-import MtxDatasetPage from './MtxDatasetPage.vue';
 import H5adDatasetPage from './H5adDatasetPage.vue';
 import MultiSampleH5adDatasetPage from './MultiSampleH5adDatasetPage.vue';
+import CellRangerMtxDatasetPage from './CellRangerMtxDatasetPage.vue';
 
 const app = useApp();
 
@@ -82,8 +82,8 @@ const datasetTypeLabel = datasetTypeLabels[dataset.content.type];
     <template v-else-if="dataset.content.type === 'TaggedXsv'">
       <TaggedXsvDatasetPage />
     </template>
-    <template v-else-if="dataset.content.type === 'MTX'">
-      <MtxDatasetPage />
+    <template v-else-if="dataset.content.type === 'CellRangerMTX'">
+      <CellRangerMtxDatasetPage />
     </template>
     <template v-else-if="dataset.content.type === 'H5AD'">
       <H5adDatasetPage />
