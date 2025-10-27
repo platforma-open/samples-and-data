@@ -1,0 +1,96 @@
+
+ll := import("@platforma-sdk/workflow-tengo:ll")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+json := import("json")
+util := import(":util")
+
+export {
+    isGrouped: false,
+    
+    createDataset: func(blockId, sampleIdAxis, dataset, importFile) {
+        extension :=  dataset.content.gzipped ? "fastq.gz" : "fastq"
+        
+        spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+
+        axesSpec := [sampleIdAxis]
+
+        for tag in dataset.content.tags {
+            axesSpec = append(axesSpec, {
+                type: "String",
+                name: "pl7.app/sequencing/tag",
+                domain: {
+                    "pl7.app/sequencing/tag": tag
+                },
+                annotations: {
+                    "pl7.app/label": tag + " tag"
+                }
+            })
+        }
+
+        if dataset.content.hasLanes {
+            laneAxisSpec := {
+                type: "String",
+                name: "pl7.app/sequencing/lane",
+                annotations: {
+                    "pl7.app/label": "Lane"
+                }
+            }
+
+            axesSpec = append(axesSpec, laneAxisSpec)
+        }
+
+        readIndexAxisSpec := {
+			type: "String",
+			name: "pl7.app/sequencing/readIndex",
+			annotations: {
+				"pl7.app/label": "Read Index"
+			},
+			domain: {
+				// Actually this is a special case of a more generic notion of
+				// a "dense" axis with specified key value list.
+				// When this concept will be fully defined, the domain most
+				// probably should be renamed to "pl7.app/dense"
+				"pl7.app/readIndices": string(json.encode(dataset.content.readIndices))
+			}
+		}
+
+        axesSpec = append(axesSpec, readIndexAxisSpec)
+        spec.axesSpec = axesSpec
+
+        data := pColumn.resourceMapBuilder(len(axesSpec))
+        
+        for sampleId, records in dataset.content.data {
+            for record in records {
+                keyPrefix := [sampleId]
+                for tag in dataset.content.tags {
+                    tagValue := record.tags[tag]
+                    if !tagValue {
+                        ll.panic("No tag value for %v in sample %v", tag, sampleId)
+                    }
+                    keyPrefix = append(keyPrefix, tagValue)
+                }
+                if dataset.content.hasLanes {
+                    keyPrefix = append(keyPrefix, record.lane)
+                }
+                for readIndex in dataset.content.readIndices {
+                    importHandle := record.files[readIndex]
+                    key := maps.clone(keyPrefix)
+                    key = append(key, readIndex)
+                    if !importHandle {
+                        ll.panic("File handle not set for key %v", key)
+                    }
+                    data.add(key, importFile(importHandle))
+                }
+            }
+        }
+
+        result := {}
+        result["dataset." + dataset.id] = {
+            spec: spec,
+            data: data.build()
+        }
+
+        return result
+    }
+}
