@@ -1,10 +1,15 @@
-import {
-  BlockModel,
+import type {
   ImportFileHandle,
   InferHrefType,
-  type InferOutputsType
+  PlId,
+  TreeNodeAccessor,
 } from '@platforma-sdk/model';
-import { BlockArgs } from './args';
+import {
+  BlockModel,
+  type InferOutputsType,
+} from '@platforma-sdk/model';
+import type { WithSampleGroupsData } from './args';
+import { isGroupedDataset, type BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
 
@@ -16,22 +21,54 @@ export const platforma = BlockModel.create()
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
-    datasets: []
+    datasets: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
 
+  .argsValid((ctx) => ctx.args.datasets.every((ds) => {
+    if (!isGroupedDataset(ds))
+      return true;
+
+    const content = ds.content as WithSampleGroupsData<unknown>;
+
+    // samples are saved for each group
+    return Object.keys(content.sampleGroups ?? {}).length === Object.keys(content.data).length;
+  }))
+
   .output(
     'fileImports',
-    (ctx) =>
-      Object.fromEntries(
-        ctx.outputs
-          ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
-          ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
-            skipUnresolved: true
-          }) ?? []
-      ),
-    { isActive: true }
+    (ctx) => {
+      const getImports = (resolver?: TreeNodeAccessor) =>
+        Object.fromEntries(
+          resolver
+            ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
+            ?.mapFields(
+              (handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()],
+              { skipUnresolved: true },
+            ) ?? [],
+        );
+
+      return {
+        ...getImports(ctx.outputs),
+        ...getImports(ctx.prerun),
+      };
+    },
+    { retentive: true, isActive: true },
+  )
+
+  .retentiveOutput(
+    'sampleGroups',
+    (ctx) => {
+      const mapGroups = (groups: TreeNodeAccessor | undefined) => {
+        return Object.fromEntries(groups?.mapFields((groupId, samples) => [
+          groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
+      };
+
+      return Object.fromEntries(ctx.prerun
+        ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
+        ?.mapFields((datasetId, groups) => [datasetId as PlId, mapGroups(groups)]) ?? []);
+    },
   )
 
   .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
@@ -44,8 +81,8 @@ export const platforma = BlockModel.create()
           ({
             type: 'link',
             href: `/dataset?id=${ds.id}`,
-            label: ds.label
-          } as const)
+            label: ds.label,
+          } as const),
       ),
       {
         type: 'link',
@@ -61,5 +98,3 @@ export const platforma = BlockModel.create()
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from './args';
-export * from './helpers';
-export { BlockArgs };

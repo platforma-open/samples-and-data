@@ -2,99 +2,69 @@ wf := import("@platforma-sdk/workflow-tengo:workflow")
 
 maps := import("@platforma-sdk/workflow-tengo:maps")
 ll := import("@platforma-sdk/workflow-tengo:ll")
-smart := import("@platforma-sdk/workflow-tengo:smart")
 file := import("@platforma-sdk/workflow-tengo:file")
 pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
+pframes := import("@platforma-sdk/workflow-tengo:pframes")
+metadata := import(":metadata")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+util := import(":util")
 
-json := import("json")
+prerunTpl := assets.importTemplate(":prerun")
 
-_P_COLUMN_DATA_RESOURCE_MAP := { Name: "PColumnData/ResourceMap", Version: "1" }
-_P_COLUMN_DATA_JSON := { Name: "PColumnData/Json", Version: "1" }
+dsFasta := import(":ds-fasta")
+dsFastq := import(":ds-fastq")
+dsMultilaneFastq := import(":ds-multilane-fastq")
+dsTaggedFastq := import(":ds-tagged-fastq")
+dsXsv := import(":ds-xsv")
+dsTaggedXsv := import(":ds-tagged-xsv")
+dsCellRangerMtx := import(":ds-cellranger-mtx")
+dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 
-// TODO implement
-normalizeString := func(str) {
-	return str
+dsProcessors := {
+	"Fasta": dsFasta,
+	"Fastq": dsFastq,
+	"MultilaneFastq": dsMultilaneFastq,
+	"TaggedFastq": dsTaggedFastq,
+	"Xsv": dsXsv,
+	"TaggedXsv": dsTaggedXsv,
+	"CellRangerMTX": dsCellRangerMtx,
+	"BulkCountMatrix": dsBulkCountMatrix
 }
 
-mapToPValueData := func(map) {
-	data := {}
-	for key, value in map {
-		data[json.encode([key])] = value
-	}
-	result := {
-		keyLength: 1,
-		data: data
-	}
-	return result
-}
-
-createJsonPColumnData := func(data) {
-	return smart.createValueResource(_P_COLUMN_DATA_JSON, data)
-}
+wf.setPreRun(prerunTpl)
 
 wf.body(func(args) {
 
 	blockId := wf.blockId().getDataAsJson()
 
-	sampleIdAxisSpec := {
+	sampleIdAxis := {
 		type: "String",
 		name: "pl7.app/sampleId",
-		annotations: {
-			"pl7.app/label": "Sample"
-		},
-		domain: {
-			"pl7.app/blockId": blockId
-		}
+		annotations: { "pl7.app/label": "Sample" },
+		domain: { "pl7.app/blockId": blockId }
 	}
 
-	exports := {}
-
-	//
-	// Creating metadata columns
-	//
-
-	for _, column in args.metadata {
-		exports["metadata." + column.id] = {
-			spec: {
-				kind: "PColumn",
-				name: "pl7.app/metadata",
-				valueType: column.valueType,
-				annotations: {
-					"pl7.app/label": column.label
-				},
-				domain: {
-					"pl7.app/columnId": column.global ? normalizeString(column.label) : column.id
-				},
-				axesSpec: [sampleIdAxisSpec]
-			},
-			data: createJsonPColumnData(json.encode(mapToPValueData(column.data)))
-		}
+	groupIdAxis := {
+		type: "String",
+		name: "pl7.app/sampleGroupId",
+		annotations: { "pl7.app/label": "Sample Group" },
+		domain: { "pl7.app/blockId": blockId }
 	}
 
-	//
-	// Creating sample label column
-	//
-
-	exports["metadata.sampleId"] = {
-		spec: {
-			kind: "PColumn",
-			name: "pl7.app/label",
-			valueType: "String",
-			annotations: {
-				"pl7.app/label": args.sampleLabelColumnLabel,
-				"pl7.app/isLabel": "true"
-			},
-			axesSpec: [sampleIdAxisSpec]
-		},
-		data: createJsonPColumnData(json.encode(mapToPValueData(args.sampleLabels)))
+	exports := pframes.pFrameBuilder()
+	
+	// Create metadata
+	
+	for k, v in metadata.createMetadata(args, blockId, sampleIdAxis) {
+		exports.add(k, v.spec, v.data)
 	}
 
-	//
-	// Creating datasets
-	//
+	// Create datasets
 
 	fileImports := {}
 
+	// Import file function; avoid re-importing the same file
 	importFile := func(importHandle) {
 		fromMap := fileImports[importHandle]
 		if fromMap == undefined {
@@ -112,279 +82,63 @@ wf.body(func(args) {
 	}
 
 	for _, dataset in args.datasets {
-		exportKey := "dataset." + dataset.id
+		proc := dsProcessors[dataset.content.type]
+		if is_undefined(proc) {
+			ll.panic("Unknown dataset type %v", dataset.content.type)
+		}
 
 		trace := pSpec.makeTrace(undefined,
 			{type: "milaboratories.samples-and-data", id: blockId, importance: 10, label: blockTitle},
 			{type: "milaboratories.samples-and-data/dataset", id: dataset.id, importance: 100, label: dataset.label}
-		)
+		)		
+		
+		ds := undefined 
+		if proc.isGrouped {
+			ds = proc.createDataset(blockId, sampleIdAxis, groupIdAxis, dataset, importFile)
+			
+			// linker column
+			linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, groupIdAxis)
 
-		columnSpecParent := trace.inject({
-			kind: "PColumn",
-			name: "pl7.app/sequencing/data",
-			domain: {
-				"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta",
-				"pl7.app/block": blockId,
-				"pl7.app/dataset": dataset.id
-			},
-			valueType: "File",
-			annotations: {
-				"pl7.app/label": "Sequencing Data",
-				"pl7.app/hideDataFromUi": "true",
-				"pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))) // axis values for sampleIdAxis
-			}
-		})
-
-		if dataset.content.type == "Fasta" {
-			columnSpec := maps.deepMerge(columnSpecParent, {
-				domain: {
-					"pl7.app/fileExtension": dataset.content.gzipped ? "fasta.gz" : "fasta"
-				},
-				axesSpec: [sampleIdAxisSpec]
-			})
-
-			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
-				keyLength: 1
-			}))
-
-			for sampleId, importHandle in dataset.content.data {
-				if !importHandle {
-					ll.panic("File handle not set for sample %v", sampleId)
-				}
-				data.createInputField(json.encode([sampleId])).set(importFile(importHandle))
+			ds["dataset." + dataset.id + ".linker"] = {
+				spec: linker.spec,
+				data: linker.data
 			}
 
-			exports[exportKey] = {
-				spec: columnSpec,
-				data: data.lockAndBuild()
-			}
-
-			continue
-		}
-
-		if dataset.content.type == "Xsv" {
-			columnSpec := maps.deepMerge(columnSpecParent, {
-				domain: {
-					"pl7.app/fileExtension": dataset.content.gzipped ? dataset.content.xsvType + ".gz" : dataset.content.xsvType
-				},
-				axesSpec: [sampleIdAxisSpec]
-			})
-
-			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
-				keyLength: 1
-			}))
-
-			for sampleId, importHandle in dataset.content.data {
-				if !importHandle {
-					ll.panic("File handle not set for sample %v", sampleId)
-				}
-				data.createInputField(json.encode([sampleId])).set(importFile(importHandle))
-			}
-
-			exports[exportKey] = {
-				spec: columnSpec,
-				data: data.lockAndBuild()
-			}
-
-			continue
-		}
-
-
-		if dataset.content.type == "TaggedXsv" {
-
-			axesSpec := [sampleIdAxisSpec]
-			for tag in dataset.content.tags {
-				axesSpec = append(axesSpec, {
-					type: "String",
-					name: "pl7.app/sequencing/tag",
+			// group labels column
+			ds["dataset." + dataset.id + ".sampleGroupLabels"] = {
+				spec: {
+					kind: "PColumn",
+					name: "pl7.app/label",
+					valueType: "String",
 					domain: {
-						"pl7.app/sequencing/tag": tag
+						"pl7.app/block": blockId,
+						"pl7.app/dataset": dataset.id
 					},
 					annotations: {
-						"pl7.app/label": tag + " tag"
-					}
-				})
-			}
-
-			columnSpec := maps.deepMerge(columnSpecParent, {
-				domain: {
-					"pl7.app/fileExtension": dataset.content.gzipped ? dataset.content.xsvType + ".gz" : dataset.content.xsvType
-				}
-			})
-
-			columnSpec.axesSpec = axesSpec
-
-			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
-				keyLength: len(axesSpec)
-			}))
-
-			for sampleId, records in dataset.content.data {
-				for record in records {
-					key := [sampleId]
-					for tag in dataset.content.tags {
-						tagValue := record.tags[tag]
-						if !tagValue {
-							ll.panic("No tag value for %v in sample %v", tag, sampleId)
-						}
-						key = append(key, tagValue)
-					}
-					importHandle := record.file
-					key = json.encode(key)
-					if !importHandle {
-						ll.panic("File handle not set for key %v", key)
-					}
-					data.createInputField(key).set(importFile(importHandle))
-				}
-			}
-
-			exports[exportKey] = {
-				spec: columnSpec,
-				data: data.lockAndBuild()
-			}
-
-			continue
-		}
-
-		// Code below service Fastq and MultilaneFastq datasets
-
-		readIndexAxisSpec := {
-			type: "String",
-			name: "pl7.app/sequencing/readIndex",
-			annotations: {
-				"pl7.app/label": "Read Index"
-			},
-			domain: {
-				// Actually this is a special case of a more generic notion of
-				// a "dense" axis with specified key value list.
-				// When this concept will be fully defined, the domain most
-				// probably should be renamed to "pl7.app/dense"
-				"pl7.app/readIndices": string(json.encode(dataset.content.readIndices))
-			}
-		}
-
-		laneAxisSpec := {
-			type: "String",
-			name: "pl7.app/sequencing/lane",
-			annotations: {
-				"pl7.app/label": "Lane"
-			}
-		}
-
-		fastqDataSpec := maps.deepMerge(columnSpecParent, {
-			domain: {
-				"pl7.app/fileExtension": dataset.content.gzipped ? "fastq.gz" : "fastq"
-			}
-		})
-
-		if dataset.content.type == "Fastq" {
-			fastqDataSpec.axesSpec = [sampleIdAxisSpec, readIndexAxisSpec]
-
-			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
-				keyLength: 2
-			}))
-
-			for sampleId, fileGroup in dataset.content.data {
-				for _, readIndex in dataset.content.readIndices {
-					importHandle := fileGroup[readIndex]
-					if !importHandle {
-						ll.panic("File handle not set for %v in sample %v", readIndex, sampleId)
-					}
-					data.createInputField(json.encode([sampleId, readIndex])).set(importFile(importHandle))
-				}
-			}
-
-			exports[exportKey] = {
-				spec: fastqDataSpec,
-				data: data.lockAndBuild()
-			}
-		} else if dataset.content.type == "MultilaneFastq" {
-			fastqDataSpec.axesSpec = [sampleIdAxisSpec, laneAxisSpec, readIndexAxisSpec]
-
-			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
-				keyLength: 3
-			}))
-
-			for sampleId, laneData in dataset.content.data {
-				for laneId, fileGroup in laneData {
-					for _, readIndex in dataset.content.readIndices {
-						importHandle := fileGroup[readIndex]
-						if !importHandle {
-							ll.panic("File handle not set for %v, lane %v in sample %v", readIndex, laneId, sampleId)
-						}
-						data.createInputField(json.encode([sampleId, laneId, readIndex])).set(importFile(importHandle))
-					}
-				}
-			}
-
-			exports[exportKey] = {
-				spec: fastqDataSpec,
-				data: data.lockAndBuild()
-			}
-		} else if dataset.content.type == "TaggedFastq" {
-			axesSpec := [sampleIdAxisSpec]
-			for tag in dataset.content.tags {
-				axesSpec = append(axesSpec, {
-					type: "String",
-					name: "pl7.app/sequencing/tag",
-					domain: {
-						"pl7.app/sequencing/tag": tag
+						"pl7.app/label": "Sample Group",
+						"pl7.app/isLabel": "true"
 					},
-					annotations: {
-						"pl7.app/label": tag + " tag"
-					}
-				})
-			}
-			if dataset.content.hasLanes {
-				axesSpec = append(axesSpec, laneAxisSpec)
-			}
-			axesSpec = append(axesSpec, readIndexAxisSpec)
-			fastqDataSpec.axesSpec = axesSpec
-
-			data := smart.structBuilder(_P_COLUMN_DATA_RESOURCE_MAP, json.encode({
-				keyLength: len(axesSpec)
-			}))
-
-			for sampleId, records in dataset.content.data {
-				for record in records {
-					keyPrefix := [sampleId]
-					for tag in dataset.content.tags {
-						tagValue := record.tags[tag]
-						if !tagValue {
-							ll.panic("No tag value for %v in sample %v", tag, sampleId)
-						}
-						keyPrefix = append(keyPrefix, tagValue)
-					}
-					if dataset.content.hasLanes {
-						keyPrefix = append(keyPrefix, record.lane)
-					}
-					for readIndex in dataset.content.readIndices {
-						importHandle := record.files[readIndex]
-						key := maps.clone(keyPrefix)
-						key = append(key, readIndex)
-						key = json.encode(key)
-						if !importHandle {
-							ll.panic("File handle not set for key %v", key)
-						}
-						data.createInputField(key).set(importFile(importHandle))
-					}
-				}
+					axesSpec: [groupIdAxis]
+				},
+				data: util.createJsonPColumnData(dataset.groupLabels)
 			}
 
-			exports[exportKey] = {
-				spec: fastqDataSpec,
-				data: data.lockAndBuild()
-			}
 		} else {
-			ll.panic("Unknown dataset type %v", dataset.content.type)
+			ds = proc.createDataset(blockId, sampleIdAxis, dataset, importFile)
+		}
+		for k, v in ds {
+			exports.add(k, trace.inject(v.spec), v.data)
 		}
 	}
 
 	return {
 		outputs: {
-			fileImports: smart.createMapResource(maps.mapValues(fileImports, func(im) {
+			fileImports: maps.mapValues(fileImports, func(im) {
 				return im.handle
-			}))
+			})
 		},
-		exports: exports
+		exports: {
+			pf: exports.build()
+		}
 	}
 })

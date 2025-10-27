@@ -1,0 +1,80 @@
+json := import("json")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+consts := import("@platforma-sdk/workflow-tengo:pframes.constants")
+
+RTYPE_P_COLUMN_DATA_JSON := consts.RTYPE_P_COLUMN_DATA_JSON
+
+mapToPValueData := func(map) {
+	data := {}
+	for key, value in map {
+		data[json.encode([key])] = value
+	}
+	result := {
+		keyLength: 1,
+		data: data
+	}
+	return result
+}
+
+createJsonPColumnData := func(data) {
+    return smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, json.encode(mapToPValueData(data)))
+}
+
+datasetColumnSpecBase := func(blockId, dataset, extension) {
+    return {
+        kind: "PColumn",
+        name: "pl7.app/sequencing/data",
+        domain: maps.clone({
+            "pl7.app/fileExtension": extension,
+            "pl7.app/block": blockId,
+            "pl7.app/dataset": dataset.id
+        }, { removeUndefs: true }),
+        valueType: "File",
+        annotations: {
+            "pl7.app/label": "Sequencing Data",
+            "pl7.app/hideDataFromUi": "true",
+            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))) // axis values for sampleIdAxis or groupIdAxis
+        }
+    }
+}
+
+sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
+    data := {}
+    samples := []
+    for groupId, ss in dataset.content.sampleGroups {
+        for sampleId, sampleName in ss {
+            samples = samples + [sampleId]
+            data[json.encode([groupId, sampleId])] = sampleName
+        }
+    }
+    spec := {
+        kind: "PColumn",
+        name: "pl7.app/sequencing/data/sampleGroups",
+        domain: {
+            "pl7.app/block": blockId,
+            "pl7.app/dataset": dataset.id
+        },
+        valueType: "String",
+        axesSpec: [groupIdAxis, sampleIdAxis],
+        annotations: {
+            "pl7.app/label": "Sample Groups",
+            "pl7.app/isLinkedColumn": "true",
+            "pl7.app/hideDataFromUi": "true",
+            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))), // axis values for groupIdAxis
+            "pl7.app/axisKeys/1": string(json.encode(samples)) // axis values for sampleIdAxis
+        }
+    }
+
+    return {
+        spec: spec,
+        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, json.encode(data))
+    }
+}
+
+
+export {
+    createJsonPColumnData: createJsonPColumnData,
+    datasetColumnSpecBase: datasetColumnSpecBase,
+    sampleGroupsLinkerColumn: sampleGroupsLinkerColumn
+}
