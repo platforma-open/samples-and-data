@@ -137,6 +137,7 @@ export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFil
 
 export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFileHandle | null> {
   type: 'MultiSampleH5AD';
+  sampleColumnName?: string;
 }
 
 /// --------------- End of Datasets --------------- ///
@@ -181,8 +182,10 @@ export function isGroupedDataset(ds: DSAny): boolean {
 export interface BlockArgs {
   blockTitle?: string;
   sampleIds: PlId[];
-  sampleLabelColumnLabel: string;
   sampleLabels: Record<PlId, string>;
   metadata: MTColumn[];
   datasets: DSAny[];
+  sampleLabelColumnLabel: string;
+  availableSampleColumnNames: string[];
+  h5adFilesToPreprocess: ImportFileHandle[];
 }

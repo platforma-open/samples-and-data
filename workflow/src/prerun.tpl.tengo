@@ -2,6 +2,7 @@ wf := import("@platforma-sdk/workflow-tengo:workflow")
 file := import("@platforma-sdk/workflow-tengo:file")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 smart := import("@platforma-sdk/workflow-tengo:smart")
+ll := import("@platforma-sdk/workflow-tengo:ll")
 
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 multiSampleH5AD := import(":ds-multisample-h5ad")
@@ -12,6 +13,17 @@ parsers := {
 }
 
 wf.body(func(args) {
+	ll.print("DBG: Starting PRERUN: %v", string(args))
+	columns := {}
+	// availableColumns["resr"] = "asdasd"
+	for fImport in args.h5adFilesToPreprocess {
+		ll.print("DBG: preprocessing file: %v", string(fImport))
+		parser := parsers["MultiSampleH5AD"]
+        if !is_undefined(parser) {
+            columns[string(fImport)] = parser.getColumns(fImport)
+        }
+	}
+	ll.print("DBG: available columns: %v", string(columns))
     fileImports := {}
     // Import file function; avoid re-importing the same file
 	importFile := func(importHandle) {
@@ -37,7 +49,8 @@ wf.body(func(args) {
             fileImports: maps.mapValues(fileImports, func(im) {
 				return im.handle
 			}),
-            sampleGroups: sampleGroups
+            sampleGroups: sampleGroups,
+			availableColumns: columns
         },
 		exports: {}
 	}
