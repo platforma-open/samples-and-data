@@ -9,7 +9,7 @@ ll := import("@platforma-sdk/workflow-tengo:ll")
 tpl.defineOutputs("content")
 
 tpl.body(func(inputs) {
-    data := inputs.data.getData()    
+    data := inputs.data.getData()
 	lines := text.split(data, "\n")
 	items := []
 	for line in lines {

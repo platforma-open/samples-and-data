@@ -67,7 +67,7 @@ readH5adMetadata := func(args, importFile) {
 				}
 				// Get metadata with sampleIds already mapped
 				fileMetadata := parser.getMetadata(fImport, importFile, selectedColumnsList, sampleColumnName, sampleNameToId)
-				
+
 				extractedMetadata[string(fImport)] = fileMetadata
 				// // Merge into extractedMetadata
 				// for sampleId, columnValues in fileMetadata {
@@ -93,7 +93,7 @@ wf.body(func(args) {
 			return fromMap.file
 		}
 	}
-	
+
     sampleGroups := {}
     for _, dataset in args.datasets {
         parser := parsers[dataset.content.type]
