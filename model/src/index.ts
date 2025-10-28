@@ -19,9 +19,11 @@ export const platforma = BlockModel.create()
     blockTitle: 'Samples & Data',
     sampleIds: [],
     metadata: [],
-    sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
     datasets: [],
+    sampleLabelColumnLabel: 'Sample',
+    availableSampleColumnNames: [],
+    h5adFilesToPreprocess: []
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
@@ -68,6 +70,20 @@ export const platforma = BlockModel.create()
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
         ?.mapFields((datasetId, groups) => [datasetId as PlId, mapGroups(groups)]) ?? []);
+    },
+  )
+
+  .retentiveOutput(
+    'availableColumns',
+    (ctx) => {
+      const mapColumns = (columns: TreeNodeAccessor | undefined) => {
+        return Object.fromEntries(columns?.mapFields((fileName, columnNames) => [
+          fileName as string, columnNames?.getDataAsJson<string[]>()]) ?? []);
+      };
+
+      return Object.fromEntries(ctx.prerun
+        ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
+        ?.mapFields((fileName, columnNames) => [fileName as string, mapColumns(columnNames)]) ?? []);
     },
   )
 
