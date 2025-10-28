@@ -107,6 +107,19 @@ type ImportDatasetDialogData = {
    * Label for the new dataset
    */
   newDatasetLabel: string;
+  /**
+   * Sample column name for MultiSampleH5AD datasets
+   */
+  sampleColumnName: string;
+  /**
+   * Available column names from h5ad file
+   */
+  availableColumns: ListOption<string>[];
+  availableColumnNames: ListOption<string>[];
+  /**
+   * Whether columns are being loaded
+   */
+  loadingColumns: boolean;
 };
 
 const emit = defineEmits<{ onClose: [navigated: boolean] }>();
@@ -162,6 +175,13 @@ const data = reactive<ImportDatasetDialogData>({
   fileDialogOpened: true,
   datasetDialogOpened: false,
   importing: false,
+  sampleColumnName: 'Sample',
+  availableColumns: [
+    { value: 'sample', label: 'Sample' },
+    { value: 'replicate', label: 'Replicate' }
+  ],
+  availableColumnNames: [],
+  loadingColumns: false,
 });
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
@@ -186,6 +206,15 @@ function updateDataFromPattern(v: FileNamePattern | undefined) {
 
 watch(compiledPattern, (v) => updateDataFromPattern(v));
 
+watch(
+  () => data.datasetType,
+  (value) => {
+    if (value !== undefined) {
+      updateDatasetType(value);
+    }
+  }
+);
+
 // Parsed files
 const parsedFiles = useParsedFiles(data, compiledPattern);
 
@@ -205,6 +234,16 @@ const dsTypeOptions = computed(() => {
   return result;
 });
 
+function updateDatasetType(datasetType: DSType | undefined) {
+  console.log('DBG: datasetType changed:', datasetType);
+  if (datasetType === 'MultiSampleH5AD') {
+    console.log('DBG: Processing MultiSampleH5AD');
+    console.log('DBG: data', data);
+    console.log('DBG: parsedFiles', parsedFiles);
+    app.model.args.h5adFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
+  }  
+}
+
 // Add more files to the data
 function addFiles(files: ImportFileHandle[]) {
   const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
@@ -217,6 +256,7 @@ function addFiles(files: ImportFileHandle[]) {
     }
     // @todo add some meaningful notification if failed to infer pattern
   }
+  const datasetType = data.datasetType;
   data.files.push(...files);
   data.datasetDialogOpened = true;
 }
@@ -660,6 +700,7 @@ async function createNewDataset() {
           sampleGroups: undefined,
           data: contentData,
           groupLabels: groupLabels,
+          sampleColumnName: data.sampleColumnName
         },
       });
       break;
@@ -751,6 +792,13 @@ const canCreateOrAdd = computed(
       v-model="data.pattern"
       label="Pattern"
       :error="patternError"
+    />
+
+    <PlDropdown
+      v-if="data.mode === 'create-new-dataset' && data.datasetType === 'MultiSampleH5AD'"
+      v-model="data.sampleColumnName"
+      label="Sample Column Name in anndata.obs"
+      :options="data.availableColumns"
     />
 
     <ParsedFilesList :items="parsedFiles" />
