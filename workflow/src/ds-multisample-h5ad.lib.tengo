@@ -5,22 +5,27 @@ assets := import("@platforma-sdk/workflow-tengo:assets")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
 parseH5adTpl := assets.importTemplate(":parse-multisample-h5ad")
 parseCsvTpl := assets.importTemplate(":parser-csv")
+extractMetadataTpl := assets.importTemplate(":extract-h5ad-metadata")
+parseCsvToMapTpl := assets.importTemplate(":parser-csv-to-map")
 
 util := import(":util")
 
 export {
     isGrouped: true,
 
-    getColumns: func(fImport) {
+    getColumns: func(fImport, importFile) {
         ll.print("DBG: Running get columns for %v", string(fImport))
+        h5adFile := importFile(fImport)
         columnsContent := render.create(parseH5adTpl, {
-            h5adFile: fImport,
+            h5adFile: h5adFile,
             sampleColumnName:  "sample"
         }).output("columnsContent")
         
         columnsResult := render.create(parseCsvTpl, {
             data: columnsContent
         }).output("content")
+
+        ll.print("DBG: Columns result: %v", string(columnsResult))
         
         return columnsResult
     },
@@ -51,6 +56,36 @@ export {
             result[groupId] = samples
         }
         return result
+    },
+
+    getMetadata: func(fImport, importFile, columnNames, sampleColumnName, sampleNameToId) {
+        ll.print("DBG: Running getMetadata for %v with columns %v", string(fImport), string(columnNames))
+        
+        if !sampleColumnName {
+            sampleColumnName = "sample"
+        }
+        
+        if !columnNames || len(columnNames) == 0 {
+            ll.print("DBG: No columns specified, returning empty map")
+            return {}
+        }
+        
+        h5adFile := importFile(fImport)
+        
+        metadataContent := render.create(extractMetadataTpl, {
+            h5adFile: h5adFile,
+            sampleColumnName: sampleColumnName,
+            columnNames: columnNames
+        }).output("metadataContent")
+        
+        metadataMap := render.create(parseCsvToMapTpl, {
+            data: metadataContent,
+            sampleNameToId: sampleNameToId
+        }).output("content")
+        
+        ll.print("DBG: Metadata map: %v", string(metadataMap))
+        
+        return metadataMap
     },
     
     createDataset: func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {

@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import type { Dataset, PlId, WithSampleGroupsData } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { Dataset, PlId, WithSampleGroupsData, MTColumn, MTValueType } from '@platforma-open/milaboratories.samples-and-data.model';
 import { PlAlert, PlBtnPrimary, PlProgressCell } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed } from 'vue';
 import { useApp } from '../app';
 import { setEquals } from '../util';
 import { getOrCreateSample } from './datasets';
+import { uniquePlId } from '@platforma-sdk/model';
 
 const app = useApp();
 
@@ -75,6 +76,24 @@ function syncGroupsToDataset(dataset: Dataset<WithSampleGroupsData<unknown>>): v
       for (const sampleName of sampleNames) {
         const sampleId = getOrCreateSample(app, sampleName);
         mapping[sampleId] = sampleName;
+        // Extract metadata from extractedMetadata output
+        const extractedMeta = app.model.outputs.extractedMetadata;
+        console.log('DBG: extractedMeta', extractedMeta);
+        if (extractedMeta) {
+          // Iterate through all files in extractedMetadata
+          for (const [_, fileSamples] of Object.entries(extractedMeta)) {
+            // const sampleData = fileSamples?.[sampleId];
+            // if (sampleData) {
+            //   // For each column in this sample's metadata
+            //   for (const [columnName, columnData] of Object.entries(sampleData)) {
+            //     if (columnData && typeof columnData === 'object' && 'value' in columnData && 'type' in columnData) {
+            //       const column = getOrCreateMetadataColumn(columnName, columnData.type as MTValueType);
+            //       column.data[sampleId] = columnData.value;
+            //     }
+            //   }
+            // }
+          }
+        }
       }
       groupToSample[groupId as PlId] = mapping;
     }
@@ -102,6 +121,21 @@ async function updateSamples() {
     syncGroupsToDataset(ds);
   }
   await app.allSettled();
+}
+
+function getOrCreateMetadataColumn(label: string, valueType: MTValueType): MTColumn {
+  let column = app.model.args.metadata.find((col) => col.label === label);
+  if (!column) {
+    column = {
+      id: uniquePlId(),
+      label: label,
+      valueType: valueType,
+      global: true,
+      data: {},
+    };
+    app.model.args.metadata.push(column!);
+  }
+  return column!;
 }
 // v-if="loadingDatasets.length > 0"
 </script>

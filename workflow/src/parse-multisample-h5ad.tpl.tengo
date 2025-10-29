@@ -18,6 +18,7 @@ tpl.body(func(inputs) {
 
     parseH5ad := exec.builder().
         software(assets.importSoftware("@platforma-open/milaboratories.samples-and-data.parse-h5ad:main")).
+        arg("parse-file").
         addFile("input.h5ad", h5adFile).
         arg("--input").arg("input.h5ad").
         arg("--sample-output").arg("samples.csv").

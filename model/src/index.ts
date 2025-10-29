@@ -22,8 +22,7 @@ export const platforma = BlockModel.create()
     sampleLabels: {},
     datasets: [],
     sampleLabelColumnLabel: 'Sample',
-    availableSampleColumnNames: [],
-    h5adFilesToPreprocess: []
+    h5adFilesToPreprocess: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
@@ -76,14 +75,21 @@ export const platforma = BlockModel.create()
   .retentiveOutput(
     'availableColumns',
     (ctx) => {
-      const mapColumns = (columns: TreeNodeAccessor | undefined) => {
-        return Object.fromEntries(columns?.mapFields((fileName, columnNames) => [
-          fileName as string, columnNames?.getDataAsJson<string[]>()]) ?? []);
-      };
-
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
-        ?.mapFields((fileName, columnNames) => [fileName as string, mapColumns(columnNames)]) ?? []);
+        ?.mapFields((fileName, columnNames) =>
+          [fileName, columnNames?.getDataAsJson<string[]>()]) ?? []);
+    },
+  )
+
+  .retentiveOutput(
+    'extractedMetadata',
+    // (ctx) => ctx.prerun?.resolve('extractedMetadata')?.getDataAsString(),
+    (ctx) => {
+      return Object.fromEntries(ctx.prerun
+        ?.resolve({ field: 'extractedMetadata', assertFieldType: 'Input' })
+        ?.mapFields((fileName, metadata) =>
+          [fileName, metadata?.getDataAsJson<string[]>()]) ?? []);
     },
   )
 
