@@ -10,7 +10,7 @@ blockTest('empty inputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpe
   const blockState = project.getBlockState(blockId);
   console.dir(await blockState.getValue(), { depth: 5 });
   const stableState = await blockState.awaitStableValue();
-  expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} }, sampleGroups: { ok: true, value: { } } });
+  expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} }, sampleGroups: { ok: true, value: { } }, availableColumns: { ok: true, value: {} } });
 });
 
 blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
