@@ -25,6 +25,7 @@ export {
             data: columnsContent
         }).output("content")
 
+
         ll.print("DBG: Columns result: %v", string(columnsResult))
 
         return columnsResult

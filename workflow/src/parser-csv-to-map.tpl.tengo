@@ -9,7 +9,6 @@ tpl.body(func(inputs) {
     sampleNameToId := inputs.sampleNameToId
     
     if is_undefined(data) {
-        ll.print("DBG: No data to parse, returning empty map")
         return {
             content: {}
         }
@@ -19,7 +18,6 @@ tpl.body(func(inputs) {
     lines := text.split(csvData, "\n")
     
     if len(lines) == 0 {
-        ll.print("DBG: Empty CSV data, returning empty map")
         return {
             content: {}
         }
@@ -28,14 +26,12 @@ tpl.body(func(inputs) {
     // Parse header line
     headerLine := text.trim_space(lines[0])
     if len(headerLine) == 0 {
-        ll.print("DBG: Empty header line, returning empty map")
         return {
             content: {}
         }
     }
     
     headers := text.split(headerLine, ",")
-    ll.print("DBG: CSV headers: %v", string(headers))
     
     // Extract column names and types
     columnNames := []
@@ -52,9 +48,6 @@ tpl.body(func(inputs) {
             columnTypes = append(columnTypes, "String")  // default type
         }
     }
-    
-    ll.print("DBG: Column names: %v", string(columnNames))
-    ll.print("DBG: Column types: %v", string(columnTypes))
     
     // Parse data lines and build nested map
     result := {}
