@@ -1,5 +1,17 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 2.0.0
+
+### Major Changes
+
+- 3518b67: Implementation of grouped data
+
+### Patch Changes
+
+- Updated dependencies [ad22412]
+- Updated dependencies [3518b67]
+  - @platforma-open/milaboratories.samples-and-data.model@2.0.0
+
 ## 1.6.4
 
 ### Patch Changes

@@ -1,5 +1,4 @@
 packages:
-  - software/parse-h5ad
   - workflow
   - model
   - ui
@@ -7,19 +6,16 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': ^2.6.7
-  '@platforma-sdk/model': ^1.43.14
-  '@platforma-sdk/ui-vue': ^1.43.14
-  '@platforma-sdk/tengo-builder': ^2.2.0
-  '@platforma-sdk/workflow-tengo': ^5.2.3
-  '@platforma-sdk/package-builder': ^3.8.0
+  '@platforma-sdk/block-tools': ^2.6.16
+  '@platforma-sdk/model': ^1.44.14
+  '@platforma-sdk/ui-vue': ^1.44.15
+  '@platforma-sdk/tengo-builder': ^2.3.2
+  '@platforma-sdk/workflow-tengo': ^5.4.5
   "@platforma-sdk/blocks-deps-updater": ^2.0.0
   "@platforma-sdk/eslint-config": ^1.1.0
 
   '@platforma-sdk/test': ^1.43.15
   '@milaboratories/helpers': ^1.9.0
-
-  '@platforma-open/milaboratories.runenv-python-3': ^1.4.13
 
   'vue': ^3.5.13
   'vue-tsc': ^2.2.8

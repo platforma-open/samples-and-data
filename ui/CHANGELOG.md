@@ -1,5 +1,22 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.0.0
+
+### Major Changes
+
+- 3518b67: Implementation of grouped data
+
+### Minor Changes
+
+- ad22412: Added CellRanger MTX format support
+
+  - Added new CellRangerMTX dataset type to handle three-file CellRanger output (matrix.mtx, features.tsv, barcodes.tsv)
+  - Removed old unusable MTX format
+  - Added {{CellRangerFileRole}} pattern matcher for file name parsing
+  - Automatic normalization of genes.tsv to features.tsv for backward compatibility
+  - Support for both compressed (.gz) and uncompressed files
+  - Workflow creates PColumn with pl7.app/sc/cellRangerFileRole axis and pl7.app/compression domain
+
 ## 1.18.2
 
 ### Patch Changes
