@@ -27,6 +27,7 @@ import {
   PlCheckbox,
   PlDialogModal,
   PlDropdown,
+  PlDropdownMulti,
   PlFileDialog,
   PlRow,
   PlTextField,
@@ -111,14 +112,7 @@ type ImportDatasetDialogData = {
    * Sample column name for MultiSampleH5AD datasets
    */
   sampleColumnName: string;
-  /**
-   * Available column names from h5ad file
-   */
-  availableColumns: ListOption<string>[];
-  availableColumnNames: ListOption<string>[];
-  /**
-   * Whether columns are being loaded
-   */
+  selectedColumns: string[];
   loadingColumns: boolean;
 };
 
@@ -175,12 +169,8 @@ const data = reactive<ImportDatasetDialogData>({
   fileDialogOpened: true,
   datasetDialogOpened: false,
   importing: false,
-  sampleColumnName: 'Sample',
-  availableColumns: [
-    { value: 'sample', label: 'Sample' },
-    { value: 'replicate', label: 'Replicate' }
-  ],
-  availableColumnNames: [],
+  sampleColumnName: '',
+  selectedColumns: [],
   loadingColumns: false,
 });
 
@@ -241,7 +231,7 @@ function updateDatasetType(datasetType: DSType | undefined) {
     console.log('DBG: data', data);
     console.log('DBG: parsedFiles', parsedFiles);
     app.model.args.h5adFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
-  }  
+  }
 }
 
 // Add more files to the data
@@ -700,7 +690,8 @@ async function createNewDataset() {
           sampleGroups: undefined,
           data: contentData,
           groupLabels: groupLabels,
-          sampleColumnName: data.sampleColumnName
+          sampleColumnName: data.sampleColumnName,
+          selectedColumns: data.selectedColumns,
         },
       });
       break;
@@ -730,6 +721,69 @@ async function createNewDataset() {
   await app.navigateTo(`/dataset?id=${newDatasetId}`);
   navigated.value = true;
 }
+
+const availableColumnsOptions = computed<ListOption<string>[]>(() => {
+  const columns = app.model.outputs.availableColumns;
+  if (!columns) return [];
+
+  // Get all unique column names from all files
+  const columnSet = new Set<string>();
+  for (const columnNames of Object.values(columns)) {
+    if (columnNames) {
+      for (const col of columnNames) {
+        columnSet.add(col);
+      }
+    }
+  }
+
+  return Array.from(columnSet).map((col) => ({ value: col, label: col }));
+});
+
+const metadataColumnsOptions = computed<ListOption<string>[]>(() => {
+  // Filter out the selected sample column name
+  return availableColumnsOptions.value.filter(
+    (opt) => opt.value !== data.sampleColumnName,
+  );
+});
+
+// Watch for when files are selected for MultiSampleH5AD datasets to start parsing
+watch(
+  () => [data.files.length, data.datasetType] as const,
+  ([filesCount, dsType]) => {
+    if (dsType === 'MultiSampleH5AD' && filesCount > 0) {
+      data.loadingColumns = true;
+    }
+  },
+);
+
+// Watch for when columns become available to stop parsing indicator
+watch(
+  availableColumnsOptions,
+  (options) => {
+    if (options.length > 0) {
+      data.loadingColumns = false;
+
+      // Auto-select a default sample column name
+      if (!data.sampleColumnName) {
+        const priorityNames = ['sample', 'samples', 'replicate', 'replicates'];
+        const foundOption = options.find((opt) =>
+          priorityNames.some((name) => opt.value.toLowerCase() === name),
+        );
+        data.sampleColumnName = foundOption ? foundOption.value : options[0].value;
+      }
+    }
+  },
+);
+
+// Watch for changes to sample column name and remove it from selected metadata columns
+watch(
+  () => data.sampleColumnName,
+  (newSampleColumn) => {
+    if (newSampleColumn && data.selectedColumns.includes(newSampleColumn)) {
+      data.selectedColumns = data.selectedColumns.filter((col) => col !== newSampleColumn);
+    }
+  },
+);
 
 const canCreateOrAdd = computed(
   () => {
@@ -794,12 +848,27 @@ const canCreateOrAdd = computed(
       :error="patternError"
     />
 
-    <PlDropdown
-      v-if="data.mode === 'create-new-dataset' && data.datasetType === 'MultiSampleH5AD'"
-      v-model="data.sampleColumnName"
-      label="Sample Column Name in anndata.obs"
-      :options="data.availableColumns"
-    />
+    <div v-if="data.mode === 'create-new-dataset' && data.datasetType === 'MultiSampleH5AD'">
+      <div v-if="data.loadingColumns">
+        Parsing files to extract column information...
+      </div>
+      <PlRow v-else-if="availableColumnsOptions.length > 0" alignCenter>
+        <PlDropdown
+          v-model="data.sampleColumnName"
+          label="Sample Column Name in anndata.obs"
+          :options="availableColumnsOptions"
+          :error="undefined"
+          class="flex-grow-1"
+        />
+
+        <PlDropdownMulti
+          v-model="data.selectedColumns"
+          label="Metadata columns to include"
+          :options="metadataColumnsOptions"
+          class="flex-grow-1"
+        />
+      </PlRow>
+    </div>
 
     <ParsedFilesList :items="parsedFiles" />
 

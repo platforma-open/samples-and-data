@@ -138,6 +138,7 @@ export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFil
 export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFileHandle | null> {
   type: 'MultiSampleH5AD';
   sampleColumnName?: string;
+  selectedColumns: string[];
 }
 
 /// --------------- End of Datasets --------------- ///
@@ -151,7 +152,6 @@ export type DSContent =
   | DSContentTaggedXsv
   | DSContentBulkCountMatrix
   | DSContentCellRangerMtx
-  | DSContentBulkCountMatrix
   | DSContentH5ad
   | DSContentMultiSampleH5ad;
 
@@ -186,6 +186,5 @@ export interface BlockArgs {
   metadata: MTColumn[];
   datasets: DSAny[];
   sampleLabelColumnLabel: string;
-  availableSampleColumnNames: string[];
   h5adFilesToPreprocess: ImportFileHandle[];
 }

@@ -1,0 +1,110 @@
+tpl := import("@platforma-sdk/workflow-tengo:tpl")
+text := import("text")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+
+tpl.defineOutputs("content")
+
+tpl.body(func(inputs) {
+    data := inputs.data
+    sampleNameToId := inputs.sampleNameToId
+    
+    if is_undefined(data) {
+        ll.print("DBG: No data to parse, returning empty map")
+        return {
+            content: {}
+        }
+    }
+    
+    csvData := data.getData()
+    lines := text.split(csvData, "\n")
+    
+    if len(lines) == 0 {
+        ll.print("DBG: Empty CSV data, returning empty map")
+        return {
+            content: {}
+        }
+    }
+    
+    // Parse header line
+    headerLine := text.trim_space(lines[0])
+    if len(headerLine) == 0 {
+        ll.print("DBG: Empty header line, returning empty map")
+        return {
+            content: {}
+        }
+    }
+    
+    headers := text.split(headerLine, ",")
+    ll.print("DBG: CSV headers: %v", string(headers))
+    
+    // Extract column names and types
+    columnNames := []
+    columnTypes := []
+    for header in headers {
+        trimmed := text.trim_space(header)
+        // Split by : to extract type annotation
+        parts := text.split(trimmed, ":")
+        if len(parts) >= 2 {
+            columnNames = append(columnNames, parts[0])
+            columnTypes = append(columnTypes, parts[1])
+        } else {
+            columnNames = append(columnNames, trimmed)
+            columnTypes = append(columnTypes, "String")  // default type
+        }
+    }
+    
+    ll.print("DBG: Column names: %v", string(columnNames))
+    ll.print("DBG: Column types: %v", string(columnTypes))
+    
+    // Parse data lines and build nested map
+    result := {}
+    
+    for i := 1; i < len(lines); i++ {
+        line := text.trim_space(lines[i])
+        if len(line) == 0 {
+            continue
+        }
+        
+        values := text.split(line, ",")
+        if len(values) != len(columnNames) {
+            ll.print("DBG: Warning: line %v has %v values but expected %v, skipping", i, len(values), len(columnNames))
+            continue
+        }
+        
+        // First column is the sample name from CSV
+        sampleName := text.trim_space(values[0])
+        
+        // Map sample name to sample ID if mapping provided
+        sampleKey := sampleName
+        if !is_undefined(sampleNameToId) {
+            mappedId := sampleNameToId[sampleName]
+            if !is_undefined(mappedId) {
+                sampleKey = mappedId
+                ll.print("DBG: Mapped sample name '%v' to ID '%v'", sampleName, sampleKey)
+            } else {
+                ll.print("DBG: Warning - no sampleId found for sample name: %v", sampleName)
+            }
+        }
+        
+        // Create map for this sample with remaining columns
+        sampleData := {}
+        for j := 1; j < len(columnNames); j++ {
+            colName := columnNames[j]
+            value := text.trim_space(values[j])
+            colType := columnTypes[j]
+            sampleData[colName] = {
+                value: value,
+                type: colType
+            }
+        }
+        
+        result[sampleKey] = sampleData
+    }
+    
+    ll.print("DBG: Parsed metadata map: ", string(result))
+    
+    return {
+        content: result
+    }
+})
+
