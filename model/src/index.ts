@@ -22,6 +22,7 @@ export const platforma = BlockModel.create()
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
     datasets: [],
+    h5adFilesToPreprocess: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
@@ -68,6 +69,16 @@ export const platforma = BlockModel.create()
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
         ?.mapFields((datasetId, groups) => [datasetId as PlId, mapGroups(groups)]) ?? []);
+    },
+  )
+
+  .retentiveOutput(
+    'availableColumns',
+    (ctx) => {
+      return Object.fromEntries(ctx.prerun
+        ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
+        ?.mapFields((fileName, columnNames) =>
+          [fileName, columnNames?.getDataAsJson<string[]>()]) ?? []);
     },
   )
 
