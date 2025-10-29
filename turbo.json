@@ -9,7 +9,7 @@
       "dependsOn": ["^build"]
     },
     "test": {
-      "dependsOn": ["^build:dev", "build"],
+      "dependsOn": ["build"],
       "passThroughEnv": ["PL_ADDRESS", "PL_TEST_PASSWORD", "PL_TEST_USER", "PL_TEST_PROXY", "DEBUG"]
     },
     "mark-stable": {
