@@ -18,7 +18,6 @@ tpl.body(func(inputs) {
 			items = append(items, trimmed)
 		}
 	}	
-	ll.print("DBG: CSV data: %v", string(items))
     return {
         content: items
     }

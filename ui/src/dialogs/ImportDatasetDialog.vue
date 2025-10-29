@@ -225,11 +225,7 @@ const dsTypeOptions = computed(() => {
 });
 
 function updateDatasetType(datasetType: DSType | undefined) {
-  console.log('DBG: datasetType changed:', datasetType);
   if (datasetType === 'MultiSampleH5AD') {
-    console.log('DBG: Processing MultiSampleH5AD');
-    console.log('DBG: data', data);
-    console.log('DBG: parsedFiles', parsedFiles);
     app.model.args.h5adFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
   }
 }

@@ -18,7 +18,6 @@ tpl.body(func(inputs) {
     }
 
     if !columnNames || len(columnNames) == 0 {
-        ll.print("DBG: No columns to extract, returning empty content")
         return {
             metadataContent: undefined
         }
