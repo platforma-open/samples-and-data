@@ -12,18 +12,75 @@ parsers := {
 	MultiSampleH5AD: multiSampleH5AD
 }
 
-wf.body(func(args) {
-	ll.print("DBG: Starting PRERUN: %v", string(args))
+readColumns := func(args, importFile) {
 	columns := {}
-	// availableColumns["resr"] = "asdasd"
 	for fImport in args.h5adFilesToPreprocess {
 		ll.print("DBG: preprocessing file: %v", string(fImport))
 		parser := parsers["MultiSampleH5AD"]
         if !is_undefined(parser) {
-            columns[string(fImport)] = parser.getColumns(fImport)
+            columns[string(fImport)] = parser.getColumns(fImport, importFile)
         }
 	}
-	ll.print("DBG: available columns: %v", string(columns))
+	return columns
+}
+
+readH5adMetadata := func(args, importFile) {
+	// Create reverse mapping from sample name to sampleId
+	sampleNameToId := {}
+	if !is_undefined(args.sampleLabels) {
+		for sampleId, sampleName in args.sampleLabels {
+			sampleNameToId[sampleName] = sampleId
+		}
+	}
+	ll.print("DBG: Sample name to ID mapping: %v", string(sampleNameToId))
+
+		// Collect all selected columns from all datasets
+	selectedColumnsList := []
+	for _, dataset in args.datasets {
+		cols := dataset.content.selectedColumns
+		if !is_undefined(cols) && len(cols) > 0 {
+			for _, col in cols {
+				selectedColumnsList = append(selectedColumnsList, col)
+			}
+		}
+	}
+	ll.print("DBG: All selected columns: %v", string(selectedColumnsList))
+		// Extract metadata for each h5ad file with selected columns
+	// The parser will map sample names to IDs, so we merge all results
+	extractedMetadata := {}
+	if len(selectedColumnsList) > 0 {
+		for fImport in args.h5adFilesToPreprocess {
+			ll.print("DBG: extracting metadata for file: %v", string(fImport))
+			parser := parsers["MultiSampleH5AD"]
+			if !is_undefined(parser) {
+				// Use the sample column from the corresponding dataset if available
+				sampleColumnName := "sample"
+				for _, dataset in args.datasets {
+					if dataset.content.type == "MultiSampleH5AD" {
+						for _, importHandle in dataset.content.data {
+							if string(importHandle) == string(fImport) && !is_undefined(dataset.content.sampleColumnName) {
+								sampleColumnName = dataset.content.sampleColumnName
+								break
+							}
+						}
+					}
+				}
+				// Get metadata with sampleIds already mapped
+				fileMetadata := parser.getMetadata(fImport, importFile, selectedColumnsList, sampleColumnName, sampleNameToId)
+				
+				extractedMetadata[string(fImport)] = fileMetadata
+				// // Merge into extractedMetadata
+				// for sampleId, columnValues in fileMetadata {
+				// 	extractedMetadata[sampleId] = columnValues
+				// }
+			}
+		}
+	}
+	ll.print("DBG: Extracted metadata: %v", string(extractedMetadata))
+	return extractedMetadata
+}
+
+wf.body(func(args) {
     fileImports := {}
     // Import file function; avoid re-importing the same file
 	importFile := func(importHandle) {
@@ -36,7 +93,7 @@ wf.body(func(args) {
 			return fromMap.file
 		}
 	}
-
+	
     sampleGroups := {}
     for _, dataset in args.datasets {
         parser := parsers[dataset.content.type]
@@ -50,7 +107,8 @@ wf.body(func(args) {
 				return im.handle
 			}),
             sampleGroups: sampleGroups,
-			availableColumns: columns
+			availableColumns: readColumns(args, importFile),
+			extractedMetadata: readH5adMetadata(args, importFile)
         },
 		exports: {}
 	}
