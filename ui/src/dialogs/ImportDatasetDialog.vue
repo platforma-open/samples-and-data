@@ -768,6 +768,7 @@ const canCreateOrAdd = computed(
     return hasMatchedFiles.value
       && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
       && data.datasetType !== undefined
+      && !data.loadingColumns
     // This prevents selecting fasta as type while having read index matcher in pattern
       && (data.readIndices.length !== 0
         || (compiledPattern.value?.hasReadIndexMatcher === false
