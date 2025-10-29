@@ -107,6 +107,11 @@ type ImportDatasetDialogData = {
    * Label for the new dataset
    */
   newDatasetLabel: string;
+  /**
+   * Sample column name for MultiSampleH5AD datasets
+   */
+  sampleColumnName: string;
+  loadingColumns: boolean;
 };
 
 const emit = defineEmits<{ onClose: [navigated: boolean] }>();
@@ -162,6 +167,8 @@ const data = reactive<ImportDatasetDialogData>({
   fileDialogOpened: true,
   datasetDialogOpened: false,
   importing: false,
+  sampleColumnName: '',
+  loadingColumns: false,
 });
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
@@ -186,6 +193,15 @@ function updateDataFromPattern(v: FileNamePattern | undefined) {
 
 watch(compiledPattern, (v) => updateDataFromPattern(v));
 
+watch(
+  () => data.datasetType,
+  (value) => {
+    if (value !== undefined) {
+      updateDatasetType(value);
+    }
+  }
+);
+
 // Parsed files
 const parsedFiles = useParsedFiles(data, compiledPattern);
 
@@ -205,6 +221,12 @@ const dsTypeOptions = computed(() => {
   return result;
 });
 
+function updateDatasetType(datasetType: DSType | undefined) {
+  if (datasetType === 'MultiSampleH5AD') {
+    app.model.args.h5adFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
+  }
+}
+
 // Add more files to the data
 function addFiles(files: ImportFileHandle[]) {
   const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
@@ -217,6 +239,7 @@ function addFiles(files: ImportFileHandle[]) {
     }
     // @todo add some meaningful notification if failed to infer pattern
   }
+  const datasetType = data.datasetType;
   data.files.push(...files);
   data.datasetDialogOpened = true;
 }
@@ -660,6 +683,7 @@ async function createNewDataset() {
           sampleGroups: undefined,
           data: contentData,
           groupLabels: groupLabels,
+          sampleColumnName: data.sampleColumnName
         },
       });
       break;
@@ -689,6 +713,52 @@ async function createNewDataset() {
   await app.navigateTo(`/dataset?id=${newDatasetId}`);
   navigated.value = true;
 }
+
+const availableColumnsOptions = computed<ListOption<string>[]>(() => {
+  const columns = app.model.outputs.availableColumns;
+  if (!columns) return [];
+
+  // Get all unique column names from all files
+  const columnSet = new Set<string>();
+  for (const columnNames of Object.values(columns)) {
+    if (columnNames) {
+      for (const col of columnNames) {
+        columnSet.add(col);
+      }
+    }
+  }
+
+  return Array.from(columnSet).map((col) => ({ value: col, label: col }));
+});
+
+// Watch for when files are selected for MultiSampleH5AD datasets to start parsing
+watch(
+  () => [data.files.length, data.datasetType] as const,
+  ([filesCount, dsType]) => {
+    if (dsType === 'MultiSampleH5AD' && filesCount > 0) {
+      data.loadingColumns = true;
+    }
+  },
+);
+
+// Watch for when columns become available to stop parsing indicator
+watch(
+  availableColumnsOptions,
+  (options) => {
+    if (options.length > 0) {
+      data.loadingColumns = false;
+
+      // Auto-select a default sample column name
+      if (!data.sampleColumnName) {
+        const priorityNames = ['sample', 'samples', 'replicate', 'replicates'];
+        const foundOption = options.find((opt) =>
+          priorityNames.some((name) => opt.value.toLowerCase() === name),
+        );
+        data.sampleColumnName = foundOption ? foundOption.value : options[0].value;
+      }
+    }
+  },
+);
 
 const canCreateOrAdd = computed(
   () => {
@@ -752,6 +822,21 @@ const canCreateOrAdd = computed(
       label="Pattern"
       :error="patternError"
     />
+
+    <div v-if="data.mode === 'create-new-dataset' && data.datasetType === 'MultiSampleH5AD'">
+      <div v-if="data.loadingColumns">
+        Parsing files to extract column information...
+      </div>
+      <PlRow v-else-if="availableColumnsOptions.length > 0" alignCenter>
+        <PlDropdown
+          v-model="data.sampleColumnName"
+          label="Sample Column Name in anndata.obs"
+          :options="availableColumnsOptions"
+          :error="undefined"
+          class="flex-grow-1"
+        />
+      </PlRow>
+    </div>
 
     <ParsedFilesList :items="parsedFiles" />
 

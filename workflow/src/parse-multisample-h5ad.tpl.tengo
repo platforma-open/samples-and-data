@@ -6,22 +6,32 @@ text := import("text")
 slices := import("@platforma-sdk/workflow-tengo:slices")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 
-tpl.defineOutputs("samplesContent")
+tpl.defineOutputs("samplesContent", "columnsContent")
 
 tpl.body(func(inputs) {
     h5adFile := inputs.h5adFile
+    sampleColumnName := inputs.sampleColumnName
+
+    if !sampleColumnName {
+        sampleColumnName = "sample"
+    }
 
     parseH5ad := exec.builder().
         software(assets.importSoftware("@platforma-open/milaboratories.samples-and-data.parse-h5ad:main")).
+        arg("parse-file").
         addFile("input.h5ad", h5adFile).
         arg("--input").arg("input.h5ad").
-        arg("--output").arg("samples.csv").
+        arg("--sample-output").arg("samples.csv").
+        arg("--column-output").arg("columns.csv").
+        arg("--column").arg(sampleColumnName).
         saveFileContent("samples.csv").
+        saveFileContent("columns.csv").
         printErrStreamToStdout().
         run()
     
     return {
-        samplesContent: parseH5ad.getFileContent("samples.csv")
+        samplesContent: parseH5ad.getFileContent("samples.csv"),
+        columnsContent: parseH5ad.getFileContent("columns.csv")
     }
 })
 
