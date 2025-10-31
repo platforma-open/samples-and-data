@@ -11,6 +11,7 @@
     "format": "/usr/bin/env emacs --script ./format.el"
   },
   "dependencies": {
+    "@platforma-open/milaboratories.samples-and-data.parse-h5ad": "workspace:*",
     "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {

@@ -1,0 +1,25 @@
+tpl := import("@platforma-sdk/workflow-tengo:tpl")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+text := import("text")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+
+tpl.defineOutputs("content")
+
+tpl.body(func(inputs) {
+    data := inputs.data.getData()
+	lines := text.split(data, "\n")
+	items := []
+	for line in lines {
+		trimmed := text.trim_space(line)
+		if len(trimmed) > 0 {
+			items = append(items, trimmed)
+		}
+	}
+    return {
+        content: items
+    }
+})
+

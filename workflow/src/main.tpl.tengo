@@ -20,6 +20,8 @@ dsXsv := import(":ds-xsv")
 dsTaggedXsv := import(":ds-tagged-xsv")
 dsCellRangerMtx := import(":ds-cellranger-mtx")
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
+dsH5ad := import(":ds-h5ad")
+dsMultiSampleH5ad := import(":ds-multisample-h5ad")
 
 dsProcessors := {
 	"Fasta": dsFasta,
@@ -28,6 +30,8 @@ dsProcessors := {
 	"TaggedFastq": dsTaggedFastq,
 	"Xsv": dsXsv,
 	"TaggedXsv": dsTaggedXsv,
+	"H5AD": dsH5ad,
+	"MultiSampleH5AD": dsMultiSampleH5ad,
 	"CellRangerMTX": dsCellRangerMtx,
 	"BulkCountMatrix": dsBulkCountMatrix
 }
@@ -35,7 +39,6 @@ dsProcessors := {
 wf.setPreRun(prerunTpl)
 
 wf.body(func(args) {
-
 	blockId := wf.blockId().getDataAsJson()
 
 	sampleIdAxis := {
@@ -63,6 +66,7 @@ wf.body(func(args) {
 	// Create datasets
 
 	fileImports := {}
+
 
 	// Import file function; avoid re-importing the same file
 	importFile := func(importHandle) {
