@@ -167,7 +167,7 @@ const data = reactive<ImportDatasetDialogData>({
   fileDialogOpened: true,
   datasetDialogOpened: false,
   importing: false,
-  sampleColumnName: '',
+  sampleColumnName: targetDs.value?.content.type === 'MultiSampleH5AD' ? (targetDs.value.content.sampleColumnName ?? '') : '',
   loadingColumns: false,
 });
 
@@ -223,7 +223,12 @@ const dsTypeOptions = computed(() => {
 
 function updateDatasetType(datasetType: DSType | undefined) {
   if (datasetType === 'MultiSampleH5AD') {
-    app.model.args.h5adFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
+    // Add already-loaded files to h5adFilesToPreprocess
+    for (const file of parsedFiles.value.map(f => f.handle)) {
+      if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
+        app.model.args.h5adFilesToPreprocess.push(file);
+      }
+    }
   }
 }
 
@@ -241,6 +246,16 @@ function addFiles(files: ImportFileHandle[]) {
   }
   const datasetType = data.datasetType;
   data.files.push(...files);
+
+  // Add files to h5adFilesToPreprocess for MultiSampleH5AD datasets
+  if (datasetType === 'MultiSampleH5AD') {
+    for (const file of files) {
+      if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
+        app.model.args.h5adFilesToPreprocess.push(file);
+      }
+    }
+  }
+
   data.datasetDialogOpened = true;
 }
 
@@ -521,6 +536,10 @@ async function addToExistingDataset() {
       break;
     case 'MultiSampleH5AD':
       addMultiSampleH5adDatasetContent(dataset.content.groupLabels, dataset.content.data);
+      // Update sample column name if it was changed
+      if (data.sampleColumnName) {
+        dataset.content.sampleColumnName = data.sampleColumnName;
+      }
       break;
     case 'BulkCountMatrix':
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -748,7 +767,8 @@ watch(
     if (options.length > 0) {
       data.loadingColumns = false;
 
-      // Auto-select a default sample column name
+      // Auto-select a default sample column name only if not already set
+      // (e.g., from existing dataset or previous selection)
       if (!data.sampleColumnName) {
         const priorityNames = ['sample', 'samples', 'replicate', 'replicates'];
         const foundOption = options.find((opt) =>
@@ -765,7 +785,8 @@ const canCreateOrAdd = computed(
     console.log('targetDs', targetDs.value);
     console.log('data', data);
     console.log('canCreateOrAdd', hasMatchedFiles.value, data.mode, data.targetAddDataset, data.datasetType, data.readIndices, compiledPattern.value?.hasReadIndexMatcher, compiledPattern.value?.hasLaneMatcher);
-    return hasMatchedFiles.value
+
+    const basicConditions = hasMatchedFiles.value
       && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
       && data.datasetType !== undefined
       && !data.loadingColumns
@@ -773,6 +794,13 @@ const canCreateOrAdd = computed(
       && (data.readIndices.length !== 0
         || (compiledPattern.value?.hasReadIndexMatcher === false
           && compiledPattern.value?.hasLaneMatcher === false));
+
+    // For MultiSampleH5AD datasets, also require sampleColumnName
+    if (data.datasetType === 'MultiSampleH5AD') {
+      return basicConditions && data.sampleColumnName !== '';
+    }
+
+    return basicConditions;
   },
 );
 </script>
@@ -824,7 +852,7 @@ const canCreateOrAdd = computed(
       :error="patternError"
     />
 
-    <div v-if="data.mode === 'create-new-dataset' && data.datasetType === 'MultiSampleH5AD'">
+    <div v-if="data.datasetType === 'MultiSampleH5AD'">
       <div v-if="data.loadingColumns">
         Parsing files to extract column information...
       </div>
