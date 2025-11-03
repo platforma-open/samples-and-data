@@ -3,7 +3,7 @@ import * as _ from 'radashi';
 import { escapeRegExp } from '../util';
 
 /** Derived from file extension */
-export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX' | 'H5AD';
+export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX' | 'H5AD' | 'Seurat';
 
 function extractFileContentType(pattern: string): FileContentType {
   if (pattern.includes('CellRangerFileRole'))
@@ -20,6 +20,8 @@ function extractFileContentType(pattern: string): FileContentType {
     return 'Xsv';
   else if (['h5ad', 'h5'].some((h5) => pt.endsWith(h5)))
     return 'H5AD';
+  else if (['rds', 'RDS'].some((rds) => pt.endsWith(rds)))
+    return 'Seurat';
   else if (pt.endsWith('matrix.mtx') || pt.endsWith('features.tsv') || pt.endsWith('genes.tsv') || pt.endsWith('barcodes.tsv'))
     return 'CellRangerMTX';
   else
@@ -104,6 +106,8 @@ export class FileNamePattern {
         return 'Fasta';
       case 'H5AD':
         return 'H5AD';
+      case 'Seurat':
+        return 'Seurat';
       case 'CellRangerMTX':
         return 'CellRangerMTX';
       default:
@@ -453,6 +457,12 @@ const wellKnownPattern: WellKnownPattern[] = [
     patternWithoutExtension: '{{Sample}}',
     defaultReadIndices: [],
     extensions: ['h5ad'],
+    minimalPercent: 0.9,
+  },
+  {
+    patternWithoutExtension: '{{Sample}}',
+    defaultReadIndices: [],
+    extensions: ['rds', 'RDS'],
     minimalPercent: 0.9,
   },
 ];
