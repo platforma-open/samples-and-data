@@ -118,6 +118,10 @@ export interface DSContentH5ad extends WithPerSampleData<ImportFileHandle | null
   type: 'H5AD';
 }
 
+export interface DSContentSeurat extends WithPerSampleData<ImportFileHandle | null> {
+  type: 'Seurat';
+}
+
 /// --------------- Grouped Datasets --------------- ///
 
 /** Datasets that have data per sample */
@@ -145,6 +149,11 @@ export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFil
   sampleColumnName?: string;
 }
 
+export interface DSContentMultiSampleSeurat extends WithSampleGroupsData<ImportFileHandle | null> {
+  type: 'MultiSampleSeurat';
+  sampleColumnName?: string;
+}
+
 /// --------------- End of Datasets --------------- ///
 
 export type DSContent =
@@ -158,7 +167,9 @@ export type DSContent =
   | DSContentCellRangerMtx
   | DSContentMultiplexedFastq
   | DSContentH5ad
-  | DSContentMultiSampleH5ad;
+  | DSContentSeurat
+  | DSContentMultiSampleH5ad
+  | DSContentMultiSampleSeurat;
 
 export interface Dataset<ContentType> {
   id: PlId;
@@ -177,14 +188,16 @@ export type DSCellRangerMtx = Dataset<DSContentCellRangerMtx>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
 export type DSMultiplexedFastq = Dataset<DSContentMultiplexedFastq>;
 export type DSH5ad = Dataset<DSContentH5ad>;
+export type DSSeurat = Dataset<DSContentSeurat>;
 export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
+export type DSMultiSampleSeurat = Dataset<DSContentMultiSampleSeurat>;
 
 export type DSType = DSAny['content']['type'];
 
-export type DSGrouped = DSBulkCountMatrix | DSMultiSampleH5ad | DSMultiplexedFastq;
+export type DSGrouped = DSBulkCountMatrix | DSMultiSampleH5ad | DSMultiplexedFastq | DSMultiSampleSeurat;
 
 export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
-  return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD' || ds.content.type === 'MultiplexedFastq';
+  return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD' || ds.content.type === 'MultiplexedFastq' || ds.content.type === 'MultiSampleSeurat';
 }
 
 export interface BlockArgs {
@@ -195,4 +208,5 @@ export interface BlockArgs {
   metadata: MTColumn[];
   datasets: DSAny[];
   h5adFilesToPreprocess: ImportFileHandle[];
+  seuratFilesToPreprocess: ImportFileHandle[];
 }

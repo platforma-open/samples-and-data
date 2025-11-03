@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@platforma-open/milaboratories.samples-and-data.parse-h5ad": "workspace:*",
+    "@platforma-open/milaboratories.samples-and-data.parse-seurat": "workspace:*",
     "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {
