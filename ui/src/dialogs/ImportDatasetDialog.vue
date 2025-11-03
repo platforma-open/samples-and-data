@@ -737,10 +737,14 @@ const availableColumnsOptions = computed<ListOption<string>[]>(() => {
   const columns = app.model.outputs.availableColumns;
   if (!columns) return [];
 
-  // Get all unique column names from all files
+  // Get file handles from current dataset
+  const currentFileHandles = new Set(parsedFiles.value.map((f) => f.handle));
+
+  // Get all unique column names from files in current dataset only
   const columnSet = new Set<string>();
-  for (const columnNames of Object.values(columns)) {
-    if (columnNames) {
+  for (const [fileHandle, columnNames] of Object.entries(columns)) {
+    // Only include columns from files in the current dataset
+    if (currentFileHandles.has(fileHandle as ImportFileHandle) && columnNames) {
       for (const col of columnNames) {
         columnSet.add(col);
       }
