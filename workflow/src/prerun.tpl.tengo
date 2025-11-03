@@ -6,10 +6,12 @@ ll := import("@platforma-sdk/workflow-tengo:ll")
 
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 multiSampleH5AD := import(":ds-multisample-h5ad")
+multiSampleSeurat := import(":ds-multisample-seurat")
 
 parsers := {
     BulkCountMatrix: dsBulkCountMatrix,
-	MultiSampleH5AD: multiSampleH5AD
+	MultiSampleH5AD: multiSampleH5AD,
+	MultiSampleSeurat: multiSampleSeurat
 }
 
 readColumns := func(args, importFile) {
@@ -18,6 +20,12 @@ readColumns := func(args, importFile) {
 		parser := parsers["MultiSampleH5AD"]
         if !is_undefined(parser) {
             columns[string(fImport)] = file.exportFile(parser.getColumns(fImport, importFile))
+        }
+	}
+	for fImport in args.seuratFilesToPreprocess {
+		parser := parsers["MultiSampleSeurat"]
+        if !is_undefined(parser) {
+            columns[string(fImport)] = parser.getColumns(fImport, importFile)
         }
 	}
 	return columns

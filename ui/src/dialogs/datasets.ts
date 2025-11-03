@@ -56,9 +56,19 @@ export const datasetTypes: Record<DSType, { label: string; fileType: FileContent
     fileType: 'H5AD',
     hasTags: false,
   },
+  Seurat: {
+    label: 'Seurat RDS',
+    fileType: 'Seurat',
+    hasTags: false,
+  },
   MultiSampleH5AD: {
     label: 'Multisample H5AD',
     fileType: 'H5AD',
+    hasTags: false,
+  },
+  MultiSampleSeurat: {
+    label: 'Multisample Seurat RDS',
+    fileType: 'Seurat',
     hasTags: false,
   },
   BulkCountMatrix: {

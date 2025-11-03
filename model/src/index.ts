@@ -22,6 +22,7 @@ export const platforma = BlockModel.create()
     sampleLabels: {},
     datasets: [],
     h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
