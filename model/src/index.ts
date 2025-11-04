@@ -78,7 +78,7 @@ export const platforma = BlockModel.create()
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
         ?.mapFields((fileName, columnNames) =>
-          [fileName, columnNames?.getDataAsJson<string[]>()]) ?? []);
+          [fileName, columnNames?.getDataAsJson<string[]>() ?? []]) ?? []);
     },
   )
 

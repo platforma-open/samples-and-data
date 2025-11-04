@@ -151,7 +151,6 @@ export type DSContent =
   | DSContentTaggedXsv
   | DSContentBulkCountMatrix
   | DSContentCellRangerMtx
-  | DSContentBulkCountMatrix
   | DSContentH5ad
   | DSContentMultiSampleH5ad;
 
