@@ -120,3 +120,56 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
     sampleGroups: { ok: true, value: { } },
   });
 });
+
+blockTest('multisample h5ad input', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const sample2Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+  const group1Id = uniquePlId();
+
+  const h5adHandle = await helpers.getLocalFileHandle('./assets/test.h5ad');
+
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'H5AD Dataset',
+        content: {
+          type: 'MultiSampleH5AD',
+          sampleColumnName: 'samples',
+          gzipped: false,
+          data: {
+            [group1Id]: h5adHandle,
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 's1',
+              [sample2Id]: 's2',
+            },
+          },
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+        },
+      },
+    ],
+    h5adFilesToPreprocess: [],
+  } satisfies BlockArgs);
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [h5adHandle]: { done: true } } },
+    sampleGroups: { ok: true, value: { [dataset1Id]: { ok: true } } },
+  });
+});
