@@ -37,8 +37,8 @@ import {
 import { computed, reactive, shallowRef, useCssModule } from 'vue';
 import { useApp } from '../app';
 import DatasetCell from '../components/DatasetCell.vue';
-import type { ImportResult } from '../dataimport';
-import { readFileForImport } from '../dataimport';
+import ImportErrorDialog from '../components/ImportErrorDialog.vue';
+import { useTableImport } from '../composables/useTableImport';
 import ImportDatasetDialog from '../dialogs/ImportDatasetDialog.vue';
 import ImportMetadataModal from '../dialogs/ImportMetadataDialog.vue';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
@@ -49,20 +49,18 @@ const app = useApp();
 
 const groupedDatasets = computed(() => app.model.args.datasets.filter(isGroupedDataset));
 
-type ErrorMessage = {
-  title: string;
-  message?: string;
-};
+// Datasets that should have automatic sample extraction (excludes MultiplexedFastq)
+const datasetsWithAutoExtraction = computed(() =>
+  groupedDatasets.value.filter((ds) => ds.content.type !== 'MultiplexedFastq'),
+);
+
+const { state: importState, importTable, clearImportCandidate, clearErrorMessage } = useTableImport();
 
 const data = reactive<{
-  importCandidate: ImportResult | undefined;
-  errorMessage: ErrorMessage | undefined;
   showAddColumnDialog: boolean;
   newColumnName: string;
   newColumnType?: MTValueType;
 }>({
-  importCandidate: undefined,
-  errorMessage: undefined,
   showAddColumnDialog: false,
   newColumnName: '',
 });
@@ -121,30 +119,11 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
 }
 
 async function importMetadata() {
-  const result = await platforma!.lsDriver.showOpenSingleFileDialog({
+  await importTable({
     title: 'Import metadata table',
     buttonLabel: 'Import',
-    filters: [{ extensions: ['xlsx', 'csv', 'tsv', 'txt'], name: 'Table data' }],
+    fileExtensions: ['xlsx', 'csv', 'tsv', 'txt'],
   });
-  const file = result.file;
-  if (!file) return;
-  if ((await platforma!.lsDriver.getLocalFileSize(file)) > 5_000_000) {
-    data.errorMessage = { title: 'File is too big' };
-    return;
-  }
-  const content = await platforma!.lsDriver.getLocalFileContent(file);
-  try {
-    const ic = readFileForImport(content);
-    if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
-      // TODO human readable parsing metrics
-      data.errorMessage = { title: 'Table is empty', message: JSON.stringify(ic) };
-      return;
-    }
-    data.importCandidate = ic;
-  } catch (e) {
-    console.log(e);
-    data.errorMessage = { title: 'Error reading table', message: e instanceof Error ? e.message : String(e) };
-  }
 }
 
 async function deleteSamples(sampleIds: PlId[]) {
@@ -412,7 +391,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
       <PlBtnGhost icon="table-import" @click.stop="importMetadata"> Import metadata </PlBtnGhost>
     </template>
 
-    <SyncDatasetDialog :dataset-ids="groupedDatasets.map((ds) => ds.id)" />
+    <SyncDatasetDialog :dataset-ids="datasetsWithAutoExtraction.map((ds) => ds.id)" />
 
     <div :style="{ flex: 1 }">
       <AgGridVue
@@ -430,9 +409,9 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
   <ImportDatasetDialog v-if="app.showImportDataset" />
 
   <ImportMetadataModal
-    v-if="data.importCandidate !== undefined"
-    :import-candidate="data.importCandidate"
-    @on-close="data.importCandidate = undefined"
+    v-if="importState.importCandidate !== undefined"
+    :import-candidate="importState.importCandidate"
+    @on-close="clearImportCandidate"
   />
 
   <PlDialogModal
@@ -464,19 +443,10 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
     </template>
   </PlDialogModal>
 
-  <PlDialogModal
-    :model-value="data.errorMessage !== undefined"
-    closable
-    @update:model-value="
-      (v) => {
-        if (!v) data.errorMessage = undefined;
-      }
-    "
-  >
-    <div>{{ data.errorMessage?.title }}</div>
-    <pre v-if="data.errorMessage?.message">{{ data.errorMessage?.message }}</pre>
-    <PlBtnPrimary>Ok</PlBtnPrimary>
-  </PlDialogModal>
+  <ImportErrorDialog
+    :error-message="importState.errorMessage"
+    @close="clearErrorMessage"
+  />
 </template>
 
 <style lang="css" module>

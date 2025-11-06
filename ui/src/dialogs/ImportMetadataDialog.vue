@@ -21,6 +21,11 @@ import { computed, reactive, watch } from 'vue';
 import { useApp } from '../app';
 import type { ImportResult } from '../dataimport';
 import { determineBestMatchingAlgorithm } from '../sample_matching';
+import {
+  columnNamesMatch,
+  populateMetadataFromRow,
+  processMetadataColumns,
+} from '../utils/metadata';
 
 const props = defineProps<{ importCandidate: ImportResult }>();
 
@@ -58,9 +63,6 @@ const sampleColumnOptions = computed<ListOption<number>[]>(() =>
   props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })),
 );
 
-function columnNamesMatch(existingColumn: string, importColumn: string): boolean {
-  return existingColumn.toLocaleLowerCase().trim() === importColumn.toLocaleLowerCase().trim();
-}
 
 const colsMatchingExisting = computed(() => {
   let res = 0;
@@ -94,31 +96,15 @@ const tableIssuesText = computed(() => {
 function runImport() {
   const args = app.model.args;
 
-  // undefined for sample name column
-  const modelColumns: (MTColumn | undefined)[] = [];
+  // Process metadata columns using utility function
+  const { modelColumns, newColumns } = processMetadataColumns({
+    importCandidate: props.importCandidate,
+    existingMetadata: args.metadata,
+    skipColumnIndices: [data.sampleNameColumnIdx],
+  });
 
-  // Detecting already existing metadata columns or adding new once
-  for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; ++cIdx) {
-    if (cIdx === data.sampleNameColumnIdx) modelColumns.push(undefined);
-    else {
-      const column = props.importCandidate.data.columns[cIdx];
-      const existing = app.model.args.metadata.find((mc) =>
-        columnNamesMatch(mc.label, column.header),
-      );
-      if (existing) modelColumns.push(existing);
-      else {
-        const mColumn: MTColumn = {
-          id: uniquePlId(),
-          valueType: column.type,
-          label: column.header,
-          global: true,
-          data: {},
-        };
-        args.metadata.push(mColumn);
-        modelColumns.push(mColumn);
-      }
-    }
-  }
+  // Add new columns to the model
+  args.metadata.push(...newColumns);
 
   // Adding data
   const matcher = algo.value.topAlgorithm.matcher;
@@ -140,14 +126,8 @@ function runImport() {
       args.sampleLabels[sampleId] = iSampleName;
     }
 
-    for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; ++cIdx) {
-      const column = modelColumns[cIdx];
-      if (column === undefined) continue; // sample label column
-      const val = row[cIdx];
-      if (val !== undefined && val !== null) {
-        column.data[sampleId] = val;
-      }
-    }
+    // Populate metadata using utility function
+    populateMetadataFromRow(row, sampleId, modelColumns);
   }
 
   emit('onClose');
