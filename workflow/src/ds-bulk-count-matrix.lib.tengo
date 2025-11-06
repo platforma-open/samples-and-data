@@ -9,59 +9,61 @@ parseHeaderTpl := assets.importTemplate(":parse-bulk-count-matrix")
 
 util := import(":util")
 
+getSamples := func(dataset, importFile) {
+
+    result := {}
+    for groupId, importHandle in dataset.content.data {
+        if !importHandle {
+            ll.panic("File handle not set for group %v", groupId)
+        }
+        
+        headerContent := txt.head(importFile(importHandle), {lines: 1})
+
+        separator := "\t"
+        if dataset.content.xsvType == "tsv" {
+            separator = "\t"
+        } else if dataset.content.xsvType == "csv" {
+            separator = ","
+        } else {
+            ll.panic("Unsupported file extension: " + dataset.content.xsvType)
+        }
+        
+        samples := render.create(parseHeaderTpl, {
+            header: headerContent,
+            delimiter: separator
+        }).output("samples")
+        
+        result[groupId] = samples
+    }
+    return result
+}
+
+createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
+    
+    extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
+    
+    spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+    spec.axesSpec = [groupIdAxis]
+
+    data := pColumn.resourceMapBuilder(1)
+    for groupId, importHandle in dataset.content.data {
+        if !importHandle {
+            ll.panic("File handle not set for sample %v", groupId)
+        }
+        data.add([groupId], importFile(importHandle))
+    }
+
+    result := {}
+    result["dataset." + dataset.id] = {
+        spec: spec,
+        data: data.build()
+    }
+
+    return result
+}
+
 export {
     isGrouped: true,
-    
-    getSamples: func(dataset, importFile) {
-
-        result := {}
-        for groupId, importHandle in dataset.content.data {
-            if !importHandle {
-                ll.panic("File handle not set for group %v", groupId)
-            }
-            
-            headerContent := txt.head(importFile(importHandle), {lines: 1})
-
-            separator := "\t"
-            if dataset.content.xsvType == "tsv" {
-                separator = "\t"
-            } else if dataset.content.xsvType == "csv" {
-                separator = ","
-            } else {
-                ll.panic("Unsupported file extension: " + dataset.content.xsvType)
-            }
-            
-            samples := render.create(parseHeaderTpl, {
-                header: headerContent,
-                delimiter: separator
-            }).output("samples")
-            
-            result[groupId] = samples
-        }
-        return result
-    },
-
-    createDataset: func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
-        
-        extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
-        
-        spec := util.datasetColumnSpecBase(blockId, dataset, extension)
-        spec.axesSpec = [groupIdAxis]
-
-        data := pColumn.resourceMapBuilder(1)
-        for groupId, importHandle in dataset.content.data {
-            if !importHandle {
-                ll.panic("File handle not set for sample %v", groupId)
-            }
-            data.add([groupId], importFile(importHandle))
-        }
-
-        result := {}
-        result["dataset." + dataset.id] = {
-            spec: spec,
-            data: data.build()
-        }
-
-        return result
-    }
+    getSamples: getSamples,
+    createDataset: createDataset
 }

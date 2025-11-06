@@ -4,58 +4,59 @@ pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
 json := import("json")
 util := import(":util")
 
-export {
-    isGrouped: false,
+createDataset := func(blockId, sampleIdAxis, dataset, importFile) {
+    extension :=  dataset.content.gzipped ? "fastq.gz" : "fastq"
     
-    createDataset: func(blockId, sampleIdAxis, dataset, importFile) {
-        extension :=  dataset.content.gzipped ? "fastq.gz" : "fastq"
-        
-        spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+    spec := util.datasetColumnSpecBase(blockId, dataset, extension)
 
-		laneAxisSpec := {
-			type: "String",
-			name: "pl7.app/sequencing/lane",
-			annotations: {
-				"pl7.app/label": "Lane"
-			}
+	laneAxisSpec := {
+		type: "String",
+		name: "pl7.app/sequencing/lane",
+		annotations: {
+			"pl7.app/label": "Lane"
 		}
+	}
 
-        readIndexAxisSpec := {
-			type: "String",
-			name: "pl7.app/sequencing/readIndex",
-			annotations: {
-				"pl7.app/label": "Read Index"
-			},
-			domain: {
-				// Actually this is a special case of a more generic notion of
-				// a "dense" axis with specified key value list.
-				// When this concept will be fully defined, the domain most
-				// probably should be renamed to "pl7.app/dense"
-				"pl7.app/readIndices": string(json.encode(dataset.content.readIndices))
-			}
+    readIndexAxisSpec := {
+		type: "String",
+		name: "pl7.app/sequencing/readIndex",
+		annotations: {
+			"pl7.app/label": "Read Index"
+		},
+		domain: {
+			// Actually this is a special case of a more generic notion of
+			// a "dense" axis with specified key value list.
+			// When this concept will be fully defined, the domain most
+			// probably should be renamed to "pl7.app/dense"
+			"pl7.app/readIndices": string(json.encode(dataset.content.readIndices))
 		}
+	}
 
-        spec.axesSpec = [sampleIdAxis, laneAxisSpec, readIndexAxisSpec]
+    spec.axesSpec = [sampleIdAxis, laneAxisSpec, readIndexAxisSpec]
 
-        data := pColumn.resourceMapBuilder(3)
-        for sampleId, laneData in dataset.content.data {
-            for laneId, fileGroup in laneData {
-                for _, readIndex in dataset.content.readIndices {
-                    importHandle := fileGroup[readIndex]
-                    if !importHandle {
-                        ll.panic("File handle not set for %v, lane %v in sample %v", readIndex, laneId, sampleId)
-                    }
-                    data.add([sampleId, laneId, readIndex], importFile(importHandle))
+    data := pColumn.resourceMapBuilder(3)
+    for sampleId, laneData in dataset.content.data {
+        for laneId, fileGroup in laneData {
+            for _, readIndex in dataset.content.readIndices {
+                importHandle := fileGroup[readIndex]
+                if !importHandle {
+                    ll.panic("File handle not set for %v, lane %v in sample %v", readIndex, laneId, sampleId)
                 }
+                data.add([sampleId, laneId, readIndex], importFile(importHandle))
             }
         }
-
-        result := {}
-        result["dataset." + dataset.id] = {
-            spec: spec,
-            data: data.build()
-        }
-
-        return result
     }
+
+    result := {}
+    result["dataset." + dataset.id] = {
+        spec: spec,
+        data: data.build()
+    }
+
+    return result
+}
+
+export {
+    isGrouped: false,
+    createDataset: createDataset
 }

@@ -786,10 +786,6 @@ watch(
 
 const canCreateOrAdd = computed(
   () => {
-    console.log('targetDs', targetDs.value);
-    console.log('data', data);
-    console.log('canCreateOrAdd', hasMatchedFiles.value, data.mode, data.targetAddDataset, data.datasetType, data.readIndices, compiledPattern.value?.hasReadIndexMatcher, compiledPattern.value?.hasLaneMatcher);
-
     const basicConditions = hasMatchedFiles.value
       && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
       && data.datasetType !== undefined
