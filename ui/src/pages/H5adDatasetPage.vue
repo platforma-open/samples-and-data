@@ -24,7 +24,7 @@ ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, Menu
 
 type H5adDatasetRow = {
   readonly sample: PlId;
-  readonly data?: ImportFileHandle | null;
+  readonly data: ImportFileHandle | null;
 };
 
 const app = useApp();

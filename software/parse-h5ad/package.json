@@ -5,9 +5,7 @@
   "description": "Samples and Data software package",
   "scripts": {
     "do-pack": "rm -f *.tgz && pl-pkg build && pnpm pack && mv platforma-open*.tgz package.tgz",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "build": "pl-pkg build",
+    "build": "rm -f *.tgz && rm -r dist && pl-pkg build",
     "prepublishOnly": "pl-pkg prepublish"
   },
   "block-software": {

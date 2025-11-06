@@ -37,7 +37,7 @@ type DatasetRow = {
   readonly groupId: PlId;
   readonly groupLabel: string;
   readonly nSamples: number | undefined;
-  readonly data?: ImportFileHandle | null;
+  readonly data: ImportFileHandle | null;
 };
 
 const rowData = computed(() => {
@@ -100,27 +100,7 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
           : undefined,
       valueSetter: (params) => {
         const group = params.data.groupId;
-        const oldValue = dataset.value.content.data[group];
-        const newValue = params.newValue ?? null;
-
-        // Update the dataset data
-        dataset.value.content.data[group] = newValue;
-
-        // Update h5adFilesToPreprocess
-        if (oldValue && oldValue !== newValue) {
-          // Remove old file from h5adFilesToPreprocess
-          const index = app.model.args.h5adFilesToPreprocess.indexOf(oldValue);
-          if (index !== -1) {
-            app.model.args.h5adFilesToPreprocess.splice(index, 1);
-          }
-        }
-        if (newValue && newValue !== oldValue) {
-          // Add new file to h5adFilesToPreprocess if not already present
-          if (!app.model.args.h5adFilesToPreprocess.includes(newValue)) {
-            app.model.args.h5adFilesToPreprocess.push(newValue);
-          }
-        }
-
+        dataset.value.content.data[group] = params.newValue ?? null;
         return true;
       },
     }];
