@@ -1,24 +1,12 @@
 <script setup lang="ts">
-import type {
-  ColDef,
-  GridApi,
-  GridOptions,
-  GridReadyEvent,
-} from 'ag-grid-enterprise';
-import {
-  ClientSideRowModelModule,
-  MenuModule,
-  ModuleRegistry,
-  RichSelectModule,
-} from 'ag-grid-enterprise';
-
+import type { ColDef, GridApi, GridOptions, GridReadyEvent } from 'ag-grid-enterprise';
+import { ClientSideRowModelModule, MenuModule, ModuleRegistry, RichSelectModule } from 'ag-grid-enterprise';
 import { AgGridVue } from 'ag-grid-vue3';
-
 import type { DSMultiplexedFastq, PlId, ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, PlBtnGhost } from '@platforma-sdk/ui-vue';
-import { computed, nextTick, shallowRef, watch } from 'vue';
+import { computed, shallowRef } from 'vue';
 import { useApp } from '../app';
 import ImportErrorDialog from '../components/ImportErrorDialog.vue';
 import { useTableImport } from '../composables/useTableImport';
@@ -46,8 +34,6 @@ const gridApi = shallowRef<GridApi<DatasetRow>>();
 const onGridReady = (params: GridReadyEvent) => {
   gridApi.value = params.api;
 };
-
-
 
 async function importSamplesheet() {
   await importTable({
@@ -134,6 +120,10 @@ const rowData = computed(() => {
   );
 });
 
+const hasRowsWithoutSamples = computed(() => {
+  return rowData.value.some((row) => row.nSamples === 0);
+});
+
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true,
 };
@@ -218,7 +208,11 @@ const gridOptions: GridOptions<DatasetRow> = {
 <template>
   <div :style="{ display: 'flex', flexDirection: 'column', height: '100%' }">
     <div :style="{ display: 'flex', justifyContent: 'flex-end', padding: '12px', borderBottom: '1px solid #e0e0e0' }">
-      <PlBtnGhost icon="table-import" @click="importSamplesheet">
+      <PlBtnGhost
+        icon="table-import"
+        :style="{ backgroundColor: hasRowsWithoutSamples ? '#FAF5AA' : undefined }"
+        @click="importSamplesheet"
+      >
         Import samplesheet
       </PlBtnGhost>
     </div>
