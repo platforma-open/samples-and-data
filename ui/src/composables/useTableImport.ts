@@ -52,7 +52,6 @@ export function useTableImport(initialState?: Partial<TableImportState>) {
       }
       state.importCandidate = ic;
     } catch (e) {
-      console.log(e);
       state.errorMessage = {
         title: 'Error reading table',
         message: e instanceof Error ? e.message : String(e),
