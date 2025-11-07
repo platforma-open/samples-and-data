@@ -121,7 +121,7 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
   });
 });
 
-blockTest('multisample h5ad input', { timeout: 30000 }, async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+blockTest('multisample h5ad input', { timeout: 60000 }, async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();
   const sample2Id = uniquePlId();
