@@ -1,7 +1,7 @@
 import type { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { PlId } from '@platforma-sdk/model';
+import type { LocalBlobHandleAndSize, PlId, RemoteBlobHandleAndSize } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { PlAgColumnHeader, type AppV2 } from '@platforma-sdk/ui-vue';
+import { PlAgColumnHeader, type AppV2, type ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
 
 export function escapeRegExp(str: string) {
@@ -90,4 +90,82 @@ export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(appU
     headerComponent: PlAgColumnHeader,
     headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
   };
+}
+
+/**
+ * Parse CSV content from a blob handle.
+ * Returns an array of trimmed non-empty lines.
+ */
+export function parseCsvFromHandle(
+  reactiveFileContent: ReactiveFileContent,
+  fileHandleAndSize: LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined,
+): string[] | undefined {
+  if (!fileHandleAndSize) return undefined;
+
+  const csvContent = reactiveFileContent.getContentString(fileHandleAndSize.handle)?.value;
+  if (!csvContent) return undefined;
+
+  return csvContent
+    .split('\n')
+    .map((line: string) => line.trim())
+    .filter((line: string) => line.length > 0);
+}
+
+/**
+ * Parse a map of file handles to CSV content.
+ * Used for availableColumns: Record<ImportFileHandle, LocalBlobHandleAndSize> -> Record<string, string[]>
+ */
+export function parseCsvMapFromHandles<K extends string = string>(
+  reactiveFileContent: ReactiveFileContent,
+  fileHandlesMap: Record<K, LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined> | undefined,
+): Record<K, string[]> | undefined {
+  if (!fileHandlesMap) return undefined;
+
+  const result: Record<string, string[]> = {};
+  for (const [key, fileHandleAndSize] of Object.entries(fileHandlesMap)) {
+    if (fileHandleAndSize && typeof fileHandleAndSize === 'object' && 'handle' in fileHandleAndSize && 'size' in fileHandleAndSize) {
+      const parsed = parseCsvFromHandle(
+        reactiveFileContent,
+        fileHandleAndSize as LocalBlobHandleAndSize | RemoteBlobHandleAndSize,
+      );
+      if (parsed) {
+        result[key] = parsed;
+      }
+    }
+  }
+  return result as Record<K, string[]>;
+}
+
+/**
+ * Parse nested map of file handles (e.g., sampleGroups).
+ * Used for: Record<DatasetId, Record<GroupId, LocalBlobHandleAndSize>> -> Record<DatasetId, Record<GroupId, PlId[]>>
+ */
+export function parseCsvNestedMapFromHandles<
+  OuterK extends string = string,
+  InnerK extends string = string,
+  ValueT extends string = string,
+>(
+  reactiveFileContent: ReactiveFileContent,
+  nestedMap: Record<OuterK, Record<InnerK, LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined>> | undefined,
+): Record<OuterK, Record<InnerK, ValueT[]>> | undefined {
+  if (!nestedMap) return undefined;
+
+  const result: Record<string, Record<string, ValueT[]>> = {};
+  for (const [outerKey, innerMap] of Object.entries(nestedMap)) {
+    if (innerMap && typeof innerMap === 'object') {
+      result[outerKey] = {};
+      for (const [innerKey, fileHandleAndSize] of Object.entries(innerMap)) {
+        if (fileHandleAndSize && typeof fileHandleAndSize === 'object' && 'handle' in fileHandleAndSize && 'size' in fileHandleAndSize) {
+          const parsed = parseCsvFromHandle(
+            reactiveFileContent,
+            fileHandleAndSize as LocalBlobHandleAndSize | RemoteBlobHandleAndSize,
+          );
+          if (parsed) {
+            result[outerKey][innerKey] = parsed as ValueT[];
+          }
+        }
+      }
+    }
+  }
+  return result as Record<OuterK, Record<InnerK, ValueT[]>>;
 }

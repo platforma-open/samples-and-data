@@ -30,6 +30,7 @@ import {
   PlFileDialog,
   PlRow,
   PlTextField,
+  ReactiveFileContent,
 } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed, reactive, ref, watch } from 'vue';
@@ -43,6 +44,7 @@ import {
   useParsedFiles,
   usePatternCompilation,
 } from './datasets';
+import { parseCsvMapFromHandles } from '../util';
 import type {
   FileContentType,
   FileNamePattern,
@@ -142,6 +144,7 @@ const targetDsReadIndices = computed(() => {
 });
 
 const app = useApp();
+const reactiveFileContent = ReactiveFileContent.useGlobal();
 
 /**
  * Whether the user has navigated to the dataset page
@@ -740,11 +743,15 @@ const availableColumnsOptions = computed<ListOption<string>[]>(() => {
   // Get file handles from current dataset
   const currentFileHandles = new Set(parsedFiles.value.map((f) => f.handle));
 
+  // Parse all CSV files
+  const parsedColumns = parseCsvMapFromHandles(reactiveFileContent, columns);
+  if (!parsedColumns) return [];
+
   // Get all unique column names from files in current dataset only
   const columnSet = new Set<string>();
-  for (const [fileHandle, columnNames] of Object.entries(columns)) {
+  for (const [fileHandle, columnNames] of Object.entries(parsedColumns)) {
     // Only include columns from files in the current dataset
-    if (currentFileHandles.has(fileHandle as ImportFileHandle) && columnNames) {
+    if (currentFileHandles.has(fileHandle as ImportFileHandle)) {
       for (const col of columnNames) {
         columnSet.add(col);
       }

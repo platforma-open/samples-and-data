@@ -28,12 +28,12 @@ getSamples := func(dataset, importFile) {
             ll.panic("Unsupported file extension: " + dataset.content.xsvType)
         }
         
-        samples := render.create(parseHeaderTpl, {
+        samplesCsv := render.create(parseHeaderTpl, {
             header: headerContent,
             delimiter: separator
-        }).output("samples")
+        }).output("samplesCsv")
         
-        result[groupId] = samples
+        result[groupId] = samplesCsv
     }
     return result
 }

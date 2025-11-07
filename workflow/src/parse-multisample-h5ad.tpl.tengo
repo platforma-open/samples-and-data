@@ -1,12 +1,9 @@
 tpl := import("@platforma-sdk/workflow-tengo:tpl")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
-smart := import("@platforma-sdk/workflow-tengo:smart")
-text := import("text")
-slices := import("@platforma-sdk/workflow-tengo:slices")
-ll := import("@platforma-sdk/workflow-tengo:ll")
+file := import("@platforma-sdk/workflow-tengo:file")
 
-tpl.defineOutputs("samplesContent", "columnsContent")
+tpl.defineOutputs("samplesCsv", "columnsCsv")
 
 tpl.body(func(inputs) {
     h5adFile := inputs.h5adFile
@@ -24,14 +21,14 @@ tpl.body(func(inputs) {
         arg("--sample-output").arg("samples.csv").
         arg("--column-output").arg("columns.csv").
         arg("--column").arg(sampleColumnName).
-        saveFileContent("samples.csv").
-        saveFileContent("columns.csv").
+        saveFile("columns.csv").
+        saveFile("samples.csv").
         printErrStreamToStdout().
         run()
     
     return {
-        samplesContent: parseH5ad.getFileContent("samples.csv"),
-        columnsContent: parseH5ad.getFileContent("columns.csv")
+        samplesCsv: file.exportFile(parseH5ad.getFile("samples.csv")),
+        columnsCsv: file.exportFile(parseH5ad.getFile("columns.csv"))
     }
 })
 

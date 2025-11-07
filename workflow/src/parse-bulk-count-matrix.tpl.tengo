@@ -1,9 +1,10 @@
 tpl := import("@platforma-sdk/workflow-tengo:tpl")
 text := import("text")
 slices := import("@platforma-sdk/workflow-tengo:slices")
-smart := import("@platforma-sdk/workflow-tengo:smart")
+file := import("@platforma-sdk/workflow-tengo:file")
+exec := import("@platforma-sdk/workflow-tengo:exec")
 
-tpl.defineOutputs("samples")
+tpl.defineOutputs("samplesCsv")
 
 tpl.body(func(inputs) {
     header := text.trim_space(string(inputs.header.getData()))
@@ -11,10 +12,17 @@ tpl.body(func(inputs) {
     samples := text.split(header, delimiter)
 
     splice(samples, 0, 1)
-    
     slices.quickSortInPlace(samples)
+    csvContent := text.join(samples, "\n")
+
+    //TODO: what dummy command should be used?
+    writeFile := exec.builder().
+        cmd("ls").
+        writeFile("samples.csv", csvContent).
+        saveFile("samples.csv").
+        run()
 
     return {
-        samples: smart.createJsonResource(samples)
+        samplesCsv: file.exportFile(writeFile.getFile("samples.csv"))
     }
 })

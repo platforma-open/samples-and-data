@@ -62,8 +62,8 @@ export const platforma = BlockModel.create()
     'sampleGroups',
     (ctx) => {
       const mapGroups = (groups: TreeNodeAccessor | undefined) => {
-        return Object.fromEntries(groups?.mapFields((groupId, samples) => [
-          groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
+        return Object.fromEntries(groups?.mapFields((groupId, samplesCsv) => [
+          groupId as PlId, samplesCsv?.getFileHandle()]) ?? []);
       };
 
       return Object.fromEntries(ctx.prerun
@@ -77,8 +77,8 @@ export const platforma = BlockModel.create()
     (ctx) => {
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
-        ?.mapFields((fileName, columnNames) =>
-          [fileName, columnNames?.getDataAsJson<string[]>() ?? []]) ?? []);
+        ?.mapFields((fileName, columnsCsv) =>
+          [fileName, columnsCsv?.getRemoteFileHandle() ?? undefined]) ?? []);
     },
   )
 

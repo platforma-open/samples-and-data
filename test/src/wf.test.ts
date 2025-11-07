@@ -170,6 +170,14 @@ blockTest('multisample h5ad input', { timeout: 60000 }, async ({ rawPrj: project
 
   expect(stableState.outputs).toMatchObject({
     fileImports: { ok: true, value: { [h5adHandle]: { done: true } } },
-    sampleGroups: { ok: true, value: { [dataset1Id]: { [group1Id]: ['s1', 's2'] } } },
   });
+
+  // sampleGroups now is a csv file generated during block execution,
+  // so we just validate, that it is present
+  expect(stableState.outputs?.sampleGroups?.ok).toBe(true);
+  const sampleGroupsValue = stableState.outputs?.sampleGroups?.value as
+   Record<string, Record<string, { handle: string; size: number }>>;
+  expect(sampleGroupsValue).toBeDefined();
+  expect(sampleGroupsValue[dataset1Id]).toBeDefined();
+  expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
 });
