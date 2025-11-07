@@ -170,6 +170,6 @@ blockTest('multisample h5ad input', async ({ rawPrj: project, ml: _ml, helpers, 
 
   expect(stableState.outputs).toMatchObject({
     fileImports: { ok: true, value: { [h5adHandle]: { done: true } } },
-    sampleGroups: { ok: true, value: { [dataset1Id]: { ok: true } } },
+    sampleGroups: { ok: true, value: { [dataset1Id]: { [group1Id]: ['s1', 's2'] } } },
   });
 });
