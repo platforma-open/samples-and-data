@@ -46,6 +46,7 @@ const app = useApp();
 const data = reactive({
   fileIdColumnIdx: -1,
   sampleIdColumnIdx: -1,
+  barcodeIdColumnIdx: -1,
 });
 
 watch(
@@ -63,6 +64,11 @@ watch(
       // If sample column not found, try to use second column if different from file column
       data.sampleIdColumnIdx = data.fileIdColumnIdx === 0 ? 1 : 0;
     }
+
+    // Try to find barcode_id column
+    data.barcodeIdColumnIdx = ic.data.columns.findIndex((c) =>
+      c.header.toLowerCase().includes('barcode'));
+    // If not found, leave it as -1 (must be selected manually)
   },
   { immediate: true },
 );
@@ -71,18 +77,18 @@ const sampleColumnOptions = computed<ListOption<number>[]>(() =>
   props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })),
 );
 
-// Count metadata columns (all columns except file ID and sample ID)
+// Count metadata columns (all columns except file ID, sample ID, and barcode ID)
 const metadataColumnsCount = computed(() => {
-  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) {
+  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1 || data.barcodeIdColumnIdx === -1) {
     return 0;
   }
-  return props.importCandidate.data.columns.length - 2; // Exclude file ID and sample ID
+  return props.importCandidate.data.columns.length - 3; // Exclude file ID, sample ID, and barcode ID
 });
 
 const colsMatchingExisting = computed(() => {
   let res = 0;
   for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; cIdx++) {
-    if (cIdx === data.fileIdColumnIdx || cIdx === data.sampleIdColumnIdx) continue;
+    if (cIdx === data.fileIdColumnIdx || cIdx === data.sampleIdColumnIdx || cIdx === data.barcodeIdColumnIdx) continue;
     const c = props.importCandidate.data.columns[cIdx];
     if (app.model.args.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
   }
@@ -176,7 +182,7 @@ function runImport() {
   const { modelColumns, newColumns } = processMetadataColumns({
     importCandidate: props.importCandidate,
     existingMetadata: args.metadata,
-    skipColumnIndices: [data.fileIdColumnIdx, data.sampleIdColumnIdx],
+    skipColumnIndices: [data.fileIdColumnIdx, data.sampleIdColumnIdx, data.barcodeIdColumnIdx],
   });
 
   // Add new columns to the model
@@ -185,12 +191,30 @@ function runImport() {
   // Get all metadata columns (existing + new)
   const metadataColumns = modelColumns.filter((col): col is MTColumn => col !== undefined);
 
+  // Find or create "Barcode ID" metadata column
+  let barcodeIdColumn = args.metadata.find((col) => col.label === 'Barcode ID');
+  if (!barcodeIdColumn) {
+    barcodeIdColumn = {
+      id: uniquePlId(),
+      label: 'Barcode ID',
+      valueType: 'String',
+      global: true,
+      data: {},
+    };
+    args.metadata.push(barcodeIdColumn);
+    metadataColumns.push(barcodeIdColumn);
+  } else if (!metadataColumns.includes(barcodeIdColumn)) {
+    // Add barcode ID column to metadata columns list if it already existed
+    metadataColumns.push(barcodeIdColumn);
+  }
+
   // Process rows with forward-fill for merged cells
   let lastFileId: string | null = null;
 
   for (const row of props.importCandidate.data.rows) {
     const fileIdValue = row[data.fileIdColumnIdx];
     const sampleIdValue = row[data.sampleIdColumnIdx];
+    const barcodeIdValue = row[data.barcodeIdColumnIdx];
 
     // Update lastFileId if current cell has a value
     if (fileIdValue) {
@@ -205,6 +229,11 @@ function runImport() {
 
     // Extract metadata using utility function
     const metadata = extractMetadataFromRow(row, modelColumns);
+
+    // Add barcode ID to metadata if present
+    if (barcodeIdValue) {
+      metadata[barcodeIdColumn.id] = String(barcodeIdValue);
+    }
 
     rows.push({
       fileId: lastFileId,
@@ -247,6 +276,11 @@ function runImport() {
       label="Sample ID column"
       :options="sampleColumnOptions"
     />
+    <PlDropdown
+      v-model="data.barcodeIdColumnIdx"
+      label="Barcode ID column"
+      :options="sampleColumnOptions"
+    />
     <PlLogView :value="tableDataText" label="Import information" />
     <template v-if="tableIssuesText">
       <PlTextArea
@@ -260,7 +294,7 @@ function runImport() {
 
     <template #actions>
       <PlBtnPrimary
-        :disabled="data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1"
+        :disabled="data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1 || data.barcodeIdColumnIdx === -1"
         @click="runImport"
       >
         Import
