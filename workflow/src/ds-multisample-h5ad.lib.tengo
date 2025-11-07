@@ -1,23 +1,19 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
-pt := import("@platforma-sdk/workflow-tengo:pt")
 render := import("@platforma-sdk/workflow-tengo:render")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
 parseH5adTpl := assets.importTemplate(":parse-multisample-h5ad")
-parseCsvTpl := assets.importTemplate(":parser-csv")
 
 util := import(":util")
 
 getColumns := func(fImport, importFile) {
     h5adFile := importFile(fImport)
-    columnsContent := render.create(parseH5adTpl, {
+    columnsCsv := render.create(parseH5adTpl, {
         h5adFile: h5adFile,
         sampleColumnName:  "sample"
-    }).output("columnsContent")
-    columnsResult := render.create(parseCsvTpl, {
-        data: columnsContent
-    }).output("content")
-    return columnsResult
+    }).output("columnsCsv")
+
+    return columnsCsv
 }
 
 getSamples := func(dataset, importFile) {
@@ -31,14 +27,11 @@ getSamples := func(dataset, importFile) {
             ll.panic("File handle not set for group %v", groupId)
         }
         h5adFile := importFile(importHandle)
-        samplesContent := render.create(parseH5adTpl, {
+        samplesCsv := render.create(parseH5adTpl, {
             h5adFile: h5adFile,
             sampleColumnName: sampleColumnName
-        }).output("samplesContent")
-        samples := render.create(parseCsvTpl, {
-            data: samplesContent
-        }).output("content")
-        result[groupId] = samples
+        }).output("samplesCsv")
+        result[groupId] = samplesCsv
     }
     return result
 }
