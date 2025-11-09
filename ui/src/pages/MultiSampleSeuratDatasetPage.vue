@@ -14,15 +14,16 @@ import { AgGridVue } from 'ag-grid-vue3';
 
 import type { DSMultiSampleSeurat, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from '../app';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
-import { agGroupIdColumnDef } from '../util';
+import { agGroupIdColumnDef, parseCsvMapFromHandles } from '../util';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
 const app = useApp();
+const reactiveFileContent = ReactiveFileContent.useGlobal();
 
 const datasetId = app.queryParams.id;
 
@@ -37,11 +38,16 @@ type DatasetRow = {
   readonly groupId: PlId;
   readonly groupLabel: string;
   readonly nSamples: number | undefined;
-  readonly data?: ImportFileHandle | null;
+  readonly data: ImportFileHandle | null;
 };
 
+const parsedSampleGroups = computed(() => {
+  const fileHandles = app.model.outputs.sampleGroups?.[dataset.value.id];
+  return parseCsvMapFromHandles<PlId>(reactiveFileContent, fileHandles) as Record<PlId, PlId[]> | undefined;
+});
+
 const rowData = computed(() => {
-  const groupToSample = app.model.outputs.sampleGroups?.[dataset.value.id];
+  const groupToSample = parsedSampleGroups.value;
   return Object.entries(dataset.value.content.data).flatMap(
     ([groupId, data]) => (
       {
