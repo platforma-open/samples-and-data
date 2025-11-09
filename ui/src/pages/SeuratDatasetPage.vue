@@ -84,7 +84,27 @@ const columnDefs = computed(() => {
     valueGetter: (params) => params.data?.sample ? dataset.content.data[params.data.sample] : undefined,
     valueSetter: (params) => {
       const sample = params.data.sample;
-      dataset.content.data[sample] = params.newValue ?? null;
+      const oldValue = dataset.content.data[sample];
+      const newValue = params.newValue ?? null;
+
+      // Update the dataset data
+      dataset.content.data[sample] = newValue;
+
+      // Update seuratFilesToPreprocess
+      if (oldValue && oldValue !== newValue) {
+        // Remove old file from seuratFilesToPreprocess
+        const index = app.model.args.seuratFilesToPreprocess.indexOf(oldValue);
+        if (index !== -1) {
+          app.model.args.seuratFilesToPreprocess.splice(index, 1);
+        }
+      }
+      if (newValue && newValue !== oldValue) {
+        // Add new file to seuratFilesToPreprocess if not already present
+        if (!app.model.args.seuratFilesToPreprocess.includes(newValue)) {
+          app.model.args.seuratFilesToPreprocess.push(newValue);
+        }
+      }
+
       return true;
     },
   } as ColDef<SeuratDatasetRow, ImportFileHandle>);
@@ -110,8 +130,21 @@ const gridOptions: GridOptions<SeuratDatasetRow> = {
         name: 'Delete',
         action: (params) => {
           const samplesToDelete = getSelectedSamples(params.api, params.node);
-          for (const s of samplesToDelete)
+          for (const s of samplesToDelete) {
+            // Get the file handle before deleting
+            const fileHandle = dataset.content.data[s];
+            
+            // Delete from dataset
             delete dataset.content.data[s];
+            
+            // Remove from seuratFilesToPreprocess if present
+            if (fileHandle) {
+              const index = app.model.args.seuratFilesToPreprocess.indexOf(fileHandle);
+              if (index !== -1) {
+                app.model.args.seuratFilesToPreprocess.splice(index, 1);
+              }
+            }
+          }
         },
       },
     ];
