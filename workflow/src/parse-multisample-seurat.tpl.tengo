@@ -1,7 +1,6 @@
 tpl := import("@platforma-sdk/workflow-tengo:tpl")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 assets := import("@platforma-sdk/workflow-tengo:assets")
-file := import("@platforma-sdk/workflow-tengo:file")
 
 tpl.defineOutputs("samplesCsv", "columnsCsv")
 
@@ -26,8 +25,8 @@ tpl.body(func(inputs) {
         run()
     
     return {
-        samplesCsv: file.exportFile(parseExec.getFile("samples.csv")),
-        columnsCsv: file.exportFile(parseExec.getFile("columns.csv"))
+        samplesCsv: parseExec.getFile("samples.csv"),
+        columnsCsv: parseExec.getFile("columns.csv")
     }
 })
 
