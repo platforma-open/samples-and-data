@@ -6,16 +6,16 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': ^2.6.16
-  '@platforma-sdk/model': ^1.45.17
-  '@platforma-sdk/ui-vue': ^1.45.21
-  '@platforma-sdk/tengo-builder': ^2.3.3
-  '@platforma-sdk/workflow-tengo': ^5.5.15
-  "@platforma-sdk/blocks-deps-updater": ^2.0.0
+  '@platforma-sdk/block-tools': 2.6.16
+  '@platforma-sdk/model': 1.45.17
+  '@platforma-sdk/ui-vue': 1.45.21
+  '@platforma-sdk/tengo-builder': 2.3.3
+  '@platforma-sdk/workflow-tengo': 5.5.15
+  "@platforma-sdk/blocks-deps-updater": 2.0.0
   "@platforma-sdk/eslint-config": ^1.1.0
 
-  '@platforma-sdk/test': 1.45.15
-  '@milaboratories/helpers': ^1.12.0
+  '@platforma-sdk/test': 1.45.21
+  '@milaboratories/helpers': 1.12.0
 
   'vue': ^3.5.13
   'vue-tsc': ^2.2.8
@@ -26,10 +26,10 @@ catalog:
 
   'typescript': ~5.6.3
   'tsup': ~8.4.0
-  'turbo': ^2.4.4
+  'turbo': ^2.6.0
 
   'vite': ^6.0.6
-  'vitest': ^2.1.9
+  'vitest': ^4.0.8
   '@vitejs/plugin-vue': ^5.2.1
   'vite-plugin-dts': ^4.3.0
 
@@ -38,6 +38,6 @@ catalog:
   'ag-grid-enterprise': &ag-grid ^34.1.2
   'ag-grid-vue3': *ag-grid
 
-  '@changesets/cli': ^2.27.11
+  '@changesets/cli': ^2.29.7
 
   '@types/node': ~20.16.15
