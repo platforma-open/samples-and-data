@@ -1,9 +1,9 @@
 tpl := import("@platforma-sdk/workflow-tengo:tpl")
 text := import("text")
 slices := import("@platforma-sdk/workflow-tengo:slices")
-exec := import("@platforma-sdk/workflow-tengo:exec")
+smart := import("@platforma-sdk/workflow-tengo:smart")
 
-tpl.defineOutputs("samplesCsv")
+tpl.defineOutputs("samples")
 
 tpl.body(func(inputs) {
     header := text.trim_space(string(inputs.header.getData()))
@@ -11,16 +11,10 @@ tpl.body(func(inputs) {
     samples := text.split(header, delimiter)
 
     splice(samples, 0, 1)
+    
     slices.quickSortInPlace(samples)
-    csvContent := text.join(samples, "\n")
-
-    writeFile := exec.builder().
-        cmd("echo").
-        writeFile("samples.csv", csvContent).
-        saveFile("samples.csv").
-        run()
 
     return {
-        samplesCsv: writeFile.getFile("samples.csv")
+        samples: smart.createJsonResource(samples)
     }
 })

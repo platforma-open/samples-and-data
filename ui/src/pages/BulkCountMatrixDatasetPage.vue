@@ -14,16 +14,15 @@ import { AgGridVue } from 'ag-grid-vue3';
 
 import type { DSBulkCountMatrix, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, ReactiveFileContent } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from '../app';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
-import { agGroupIdColumnDef, parseCsvMapFromHandles } from '../util';
+import { agGroupIdColumnDef } from '../util';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
 const app = useApp();
-const reactiveFileContent = ReactiveFileContent.useGlobal();
 
 const datasetId = app.queryParams.id;
 
@@ -43,8 +42,8 @@ type DatasetRow = {
 };
 
 const parsedSampleGroups = computed(() => {
-  const fileHandles = app.model.outputs.sampleGroups?.[dataset.value.id];
-  return parseCsvMapFromHandles<PlId>(reactiveFileContent, fileHandles) as Record<PlId, PlId[]> | undefined;
+  // For BulkCountMatrix, data is already deserialized as Record<PlId, PlId[]>
+  return app.model.outputs.sampleGroups?.[dataset.value.id] as Record<PlId, PlId[]> | undefined;
 });
 
 const rowData = computed(() => {

@@ -42,11 +42,20 @@ wf.body(func(args) {
         parser := parsers[dataset.content.type]
         if !is_undefined(parser) {
             samplesMap := parser.getSamples(dataset, importFile)
-            exportedMap := {}
-            for groupId, sampleFile in samplesMap {
-                exportedMap[groupId] = file.exportFile(sampleFile)
+            
+            // BulkCountMatrix returns JSON objects
+            // MultiSampleH5AD returns CSV files
+            if dataset.content.type == "BulkCountMatrix" {
+                // JSON objects: return directly without file.exportFile
+                sampleGroups[dataset.id] = samplesMap
+            } else if dataset.content.type == "MultiSampleH5AD" {
+                // Files: export them so they can be accessed by UI
+                exportedMap := {}
+                for groupId, sampleFile in samplesMap {
+                    exportedMap[groupId] = file.exportFile(sampleFile)
+                }
+                sampleGroups[dataset.id] = exportedMap
             }
-            sampleGroups[dataset.id] = exportedMap
         }
     }
     columns := readColumns(args, importFile)

@@ -1,4 +1,3 @@
-
 ll := import("@platforma-sdk/workflow-tengo:ll")
 pt := import("@platforma-sdk/workflow-tengo:pt")
 render := import("@platforma-sdk/workflow-tengo:render")
@@ -28,12 +27,12 @@ getSamples := func(dataset, importFile) {
             ll.panic("Unsupported file extension: " + dataset.content.xsvType)
         }
         
-        samplesCsv := render.create(parseHeaderTpl, {
+        samples := render.create(parseHeaderTpl, {
             header: headerContent,
             delimiter: separator
-        }).output("samplesCsv")
+        }).output("samples")
         
-        result[groupId] = samplesCsv
+        result[groupId] = samples
     }
     return result
 }
