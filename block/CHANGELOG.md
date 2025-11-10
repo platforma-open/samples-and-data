@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.10.17
+
+### Patch Changes
+
+- Updated dependencies [8cb1841]
+  - @platforma-open/milaboratories.samples-and-data.workflow@2.2.0
+  - @platforma-open/milaboratories.samples-and-data.model@2.2.0
+  - @platforma-open/milaboratories.samples-and-data.ui@2.2.0
+
 ## 1.10.16
 
 ### Patch Changes
