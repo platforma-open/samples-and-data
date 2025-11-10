@@ -17,7 +17,7 @@ readColumns := func(args, importFile) {
 	for fImport in args.h5adFilesToPreprocess {
 		parser := parsers["MultiSampleH5AD"]
         if !is_undefined(parser) {
-            columns[string(fImport)] = parser.getColumns(fImport, importFile)
+            columns[string(fImport)] = file.exportFile(parser.getColumns(fImport, importFile))
         }
 	}
 	return columns
@@ -41,7 +41,12 @@ wf.body(func(args) {
     for _, dataset in args.datasets {
         parser := parsers[dataset.content.type]
         if !is_undefined(parser) {
-            sampleGroups[dataset.id] = parser.getSamples(dataset, importFile)
+            samplesMap := parser.getSamples(dataset, importFile)
+            exportedMap := {}
+            for groupId, sampleFile in samplesMap {
+                exportedMap[groupId] = file.exportFile(sampleFile)
+            }
+            sampleGroups[dataset.id] = exportedMap
         }
     }
     columns := readColumns(args, importFile)
