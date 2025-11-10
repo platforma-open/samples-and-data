@@ -70,8 +70,8 @@ export const platforma = BlockModel.create()
               groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
             return [datasetId as PlId, result];
           } 
-          // MultiSampleH5AD uses file handles
-          else if (dataset.content.type === 'MultiSampleH5AD') {
+          // MultiSampleH5AD and MultiSampleSeurat use file handles
+          else if (dataset.content.type === 'MultiSampleH5AD' || dataset.content.type === 'MultiSampleSeurat') {
             const result = Object.fromEntries(groups?.mapFields((groupId, samplesFile) => [
               groupId as PlId, samplesFile?.getFileHandle()]) ?? []);
             return [datasetId as PlId, result];
