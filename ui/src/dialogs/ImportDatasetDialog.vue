@@ -5,6 +5,7 @@ import type {
   DSContentFasta,
   DSContentFastq,
   DSContentMultilaneFastq,
+  DSContentMultiplexedFastq,
   DSContentH5ad,
   DSContentMultiSampleH5ad,
   DSContentTaggedFastq,
@@ -496,6 +497,28 @@ function addBulkCountMatrixDatasetContent(
   }
 }
 
+/** Multiplexed FASTQ */
+function addMultiplexedFastqDatasetContent(
+  groupLabels: Record<PlId, string>,
+  contentData: DSContentMultiplexedFastq['data'],
+) {
+  if (compiledPattern.value?.hasLaneMatcher)
+    throw new Error('Dataset has no lanes, trying to add data with lanes');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const group = f.match.sample.value;
+    const groupId = getOrCreateGroup(groupLabels, group);
+    const readIndex = getWellFormattedReadIndex(f.match);
+    let fileGroup = contentData[groupId];
+    if (!fileGroup) {
+      fileGroup = {};
+      contentData[groupId] = fileGroup;
+    }
+    fileGroup[readIndex] = f.handle;
+  }
+}
+
 async function createOrAdd() {
   try {
     data.importing = true;
@@ -524,6 +547,9 @@ async function addToExistingDataset() {
       break;
     case 'MultilaneFastq':
       addMultilaneFastqDatasetContent(dataset.content.data);
+      break;
+    case 'MultiplexedFastq':
+      addMultiplexedFastqDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
     case 'Xsv':
       addXsvDatasetContent(dataset.content.data);
@@ -722,6 +748,28 @@ async function createNewDataset() {
           gzipped: data.gzipped,
           xsvType: xsvType(),
           sampleGroups: undefined,
+          data: contentData,
+          groupLabels: groupLabels,
+        },
+      });
+      break;
+    } case 'MultiplexedFastq': {
+      const groupLabels: Record<PlId, string> = {};
+      const contentData: DSContentMultiplexedFastq['data'] = {};
+      addMultiplexedFastqDatasetContent(groupLabels, contentData);
+
+      // For MultiplexedFastq, initialize with completely empty sampleGroups
+      // Samples will be imported later via the samplesheet import dialog
+      const sampleGroups: Record<PlId, Record<PlId, string>> = {};
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'MultiplexedFastq',
+          gzipped: data.gzipped,
+          readIndices: data.readIndices as ReadIndices,
+          sampleGroups: sampleGroups,
           data: contentData,
           groupLabels: groupLabels,
         },

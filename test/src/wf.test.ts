@@ -181,3 +181,71 @@ blockTest('multisample h5ad input', { timeout: 70000 }, async ({ rawPrj: project
   expect(sampleGroupsValue[dataset1Id]).toBeDefined();
   expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
 });
+
+blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const sample2Id = uniquePlId();
+  const metaColumn1Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+  const group1Id = uniquePlId();
+
+  const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
+  const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
+
+  await project.setBlockArgs(blockId, {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'MetaColumn1',
+        global: false,
+        valueType: 'Long',
+        data: {
+          [sample1Id]: 2345,
+          [sample2Id]: 3456,
+        },
+      },
+    ],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'MultiplexedFastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 'sample1',
+              [sample2Id]: 'sample2',
+            },
+          },
+          data: {
+            [group1Id]: {
+              R1: r1Handle,
+              R2: r2Handle,
+            },
+          },
+        },
+      },
+    ],
+  } satisfies BlockArgs);
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
+    sampleGroups: { ok: true, value: { } },
+  });
+});

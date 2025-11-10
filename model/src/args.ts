@@ -135,6 +135,11 @@ export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFil
   xsvType: 'csv' | 'tsv';
 }
 
+export interface DSContentMultiplexedFastq extends WithSampleGroupsData<FastqFileGroup> {
+  type: 'MultiplexedFastq';
+  readIndices: ReadIndex[];
+}
+
 export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFileHandle | null> {
   type: 'MultiSampleH5AD';
   sampleColumnName?: string;
@@ -151,6 +156,7 @@ export type DSContent =
   | DSContentTaggedXsv
   | DSContentBulkCountMatrix
   | DSContentCellRangerMtx
+  | DSContentMultiplexedFastq
   | DSContentH5ad
   | DSContentMultiSampleH5ad;
 
@@ -169,15 +175,16 @@ export type DSXsv = Dataset<DSContentXsv>;
 export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
 export type DSCellRangerMtx = Dataset<DSContentCellRangerMtx>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
+export type DSMultiplexedFastq = Dataset<DSContentMultiplexedFastq>;
 export type DSH5ad = Dataset<DSContentH5ad>;
 export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
 
 export type DSType = DSAny['content']['type'];
 
-export type DSGrouped = DSBulkCountMatrix | DSMultiSampleH5ad;
+export type DSGrouped = DSBulkCountMatrix | DSMultiSampleH5ad | DSMultiplexedFastq;
 
 export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
-  return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD';
+  return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD' || ds.content.type === 'MultiplexedFastq';
 }
 
 export interface BlockArgs {

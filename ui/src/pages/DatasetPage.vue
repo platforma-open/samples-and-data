@@ -15,6 +15,7 @@ import ImportDatasetDialog from '../dialogs/ImportDatasetDialog.vue';
 import FastaDatasetPage from '../pages/FastaDatasetPage.vue';
 import FastqDatasetPage from '../pages/FastqDatasetPage.vue';
 import MultilaneFastqDatasetPage from '../pages/MultilaneFastqDatasetPage.vue';
+import MultiplexedFastqDatasetPage from '../pages/MultiplexedFastqDatasetPage.vue';
 import TaggedFastqDatasetPage from '../pages/TaggedFastqDatasetPage.vue';
 import TaggedXsvDatasetPage from '../pages/TaggedXsvDatasetPage.vue';
 import XsvDatasetPage from '../pages/XsvDatasetPage.vue';
@@ -85,6 +86,9 @@ const datasetTypeLabel = datasetTypeLabels[dataset.content.type];
     </template>
     <template v-else-if="dataset.content.type === 'MultilaneFastq'">
       <MultilaneFastqDatasetPage />
+    </template>
+    <template v-else-if="dataset.content.type === 'MultiplexedFastq'">
+      <MultiplexedFastqDatasetPage />
     </template>
     <template v-else-if="dataset.content.type === 'Fasta'">
       <FastaDatasetPage />
