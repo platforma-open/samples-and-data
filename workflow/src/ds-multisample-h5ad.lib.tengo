@@ -1,45 +1,44 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
-pt := import("@platforma-sdk/workflow-tengo:pt")
 render := import("@platforma-sdk/workflow-tengo:render")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
-txt := import("@platforma-sdk/workflow-tengo:txt")
-parseHeaderTpl := assets.importTemplate(":parse-bulk-count-matrix")
+parseH5adTpl := assets.importTemplate(":parse-multisample-h5ad")
 
 util := import(":util")
 
-getSamples := func(dataset, importFile) {
+getColumns := func(fImport, importFile) {
+    h5adFile := importFile(fImport)
+    columnsCsv := render.create(parseH5adTpl, {
+        h5adFile: h5adFile,
+        sampleColumnName:  "sample"
+    }).output("columnsCsv")
 
+    return columnsCsv
+}
+
+getSamples := func(dataset, importFile) {
     result := {}
+    sampleColumnName := dataset.content.sampleColumnName
+    if !sampleColumnName {
+        sampleColumnName = "sample"
+    }
     for groupId, importHandle in dataset.content.data {
         if !importHandle {
             ll.panic("File handle not set for group %v", groupId)
         }
-        
-        headerContent := txt.head(importFile(importHandle), {lines: 1})
-
-        separator := "\t"
-        if dataset.content.xsvType == "tsv" {
-            separator = "\t"
-        } else if dataset.content.xsvType == "csv" {
-            separator = ","
-        } else {
-            ll.panic("Unsupported file extension: " + dataset.content.xsvType)
-        }
-        
-        samples := render.create(parseHeaderTpl, {
-            header: headerContent,
-            delimiter: separator
-        }).output("samples")
-        
-        result[groupId] = samples
+        h5adFile := importFile(importHandle)
+        samplesCsv := render.create(parseH5adTpl, {
+            h5adFile: h5adFile,
+            sampleColumnName: sampleColumnName
+        }).output("samplesCsv")
+        result[groupId] = samplesCsv
     }
     return result
 }
 
 createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
-    
-    extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
+        
+    extension := "h5ad"
     
     spec := util.datasetColumnSpecBase(blockId, dataset, extension)
     spec.axesSpec = [groupIdAxis]
@@ -63,6 +62,8 @@ createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
 
 export {
     isGrouped: true,
+    getColumns: getColumns,
     getSamples: getSamples,
     createDataset: createDataset
 }
+

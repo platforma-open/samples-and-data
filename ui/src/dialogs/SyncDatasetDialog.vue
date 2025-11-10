@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import type { Dataset, PlId, WithSampleGroupsData } from '@platforma-open/milaboratories.samples-and-data.model';
-import { PlAlert, PlBtnPrimary, PlProgressCell } from '@platforma-sdk/ui-vue';
+import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed } from 'vue';
 import { useApp } from '../app';
-import { setEquals } from '../util';
+import { parseCsvNestedMapFromHandles, setEquals } from '../util';
 import { getOrCreateSample } from './datasets';
 
 const app = useApp();
+const reactiveFileContent = ReactiveFileContent.useGlobal();
 
 const props = defineProps<{
   datasetIds: PlId[];
@@ -22,11 +23,40 @@ const datasets = computed(() => {
   });
 });
 
+// Parse all sample groups from file handles or use direct data for JSON
+const parsedSampleGroups = computed(() => {
+  const sampleGroups = app.model.outputs.sampleGroups;
+  if (!sampleGroups) return undefined;
+
+  const result: Record<PlId, Record<PlId, PlId[]>> = {};
+
+  for (const [datasetId, groups] of Object.entries(sampleGroups)) {
+    const dataset = app.model.args.datasets.find((ds) => ds.id === datasetId);
+    if (!dataset) continue;
+
+    // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
+    if (dataset.content.type === 'BulkCountMatrix') {
+      result[datasetId as PlId] = groups as Record<PlId, PlId[]>;
+    } else if (dataset.content.type === 'MultiSampleH5AD') {
+      // MultiSampleH5AD: need to parse CSV files
+      const parsedGroups = parseCsvNestedMapFromHandles<PlId, PlId, PlId>(
+        reactiveFileContent,
+        { [datasetId as PlId]: groups } as Parameters<typeof parseCsvNestedMapFromHandles>[1],
+      );
+      if (parsedGroups && parsedGroups[datasetId as PlId]) {
+        result[datasetId as PlId] = parsedGroups[datasetId as PlId];
+      }
+    }
+  }
+
+  return result;
+});
+
 /**
  * Check if all samples are loaded for all groups from the prerun
  */
 function sampleGroupsAreCalculated(dataset: Dataset<WithSampleGroupsData<unknown>>): boolean {
-  const sg = app.model.outputs.sampleGroups?.[dataset.id];
+  const sg = parsedSampleGroups.value?.[dataset.id];
   if (!sg)
     return false;
 
@@ -42,7 +72,7 @@ function sampleGroupsAreCalculated(dataset: Dataset<WithSampleGroupsData<unknown
  * Check if all samples are loaded for all groups from the prerun and already saved in the dataset
  */
 function sampleGroupsAreSynced(dataset: Dataset<WithSampleGroupsData<unknown>>): boolean {
-  const calculatedGroups = app.model.outputs.sampleGroups?.[dataset.id];
+  const calculatedGroups = parsedSampleGroups.value?.[dataset.id];
   if (!calculatedGroups)
     return false;
 
@@ -64,7 +94,7 @@ function sampleGroupsAreSynced(dataset: Dataset<WithSampleGroupsData<unknown>>):
 function syncGroupsToDataset(dataset: Dataset<WithSampleGroupsData<unknown>>): void {
   const datasetId = dataset.id;
 
-  const calculatedGroups = app.model.outputs.sampleGroups?.[datasetId];
+  const calculatedGroups = parsedSampleGroups.value?.[datasetId];
   if (calculatedGroups) {
     // update data
     const groupToSample = {} as Record<PlId, Record<PlId, string>>;
@@ -93,7 +123,7 @@ const nSamples = computed(() =>
   datasetsToUpdate.value
     .flatMap((ds) =>
       Object
-        .values(app.model.outputs.sampleGroups?.[ds.id] ?? {})
+        .values(parsedSampleGroups.value?.[ds.id] ?? {})
         .map((s) => s?.length ?? 0),
     ).reduce((a, b) => a + b, 0));
 

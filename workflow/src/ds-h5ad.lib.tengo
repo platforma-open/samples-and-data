@@ -5,8 +5,7 @@ pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
 util := import(":util")
 
 createDataset := func(blockId, sampleIdAxis, dataset, importFile) {
-    
-    extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
+    extension := "h5ad"
     
     spec := util.datasetColumnSpecBase(blockId, dataset, extension)
     spec.axesSpec = [sampleIdAxis]
@@ -32,3 +31,4 @@ export {
     isGrouped: false,
     createDataset: createDataset
 }
+

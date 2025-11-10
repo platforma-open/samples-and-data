@@ -12,17 +12,18 @@ import {
 
 import { AgGridVue } from 'ag-grid-vue3';
 
-import type { DSBulkCountMatrix, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { DSMultiSampleH5ad, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import { computed } from 'vue';
 import { useApp } from '../app';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
-import { agGroupIdColumnDef } from '../util';
+import { agGroupIdColumnDef, parseCsvMapFromHandles } from '../util';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
 const app = useApp();
+const reactiveFileContent = ReactiveFileContent.useGlobal();
 
 const datasetId = app.queryParams.id;
 
@@ -30,20 +31,19 @@ const dataset = computed(() => {
   const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
   if (!ds)
     throw new Error('Dataset not found');
-  return ds as DSBulkCountMatrix;
+  return ds as DSMultiSampleH5ad;
 });
 
 type DatasetRow = {
   readonly groupId: PlId;
   readonly groupLabel: string;
-  // number of samples in the group
   readonly nSamples: number | undefined;
-  readonly data?: ImportFileHandle | null;
+  readonly data: ImportFileHandle | null;
 };
 
 const parsedSampleGroups = computed(() => {
-  // For BulkCountMatrix, data is already deserialized as Record<PlId, PlId[]>
-  return app.model.outputs.sampleGroups?.[dataset.value.id] as Record<PlId, PlId[]> | undefined;
+  const fileHandles = app.model.outputs.sampleGroups?.[dataset.value.id];
+  return parseCsvMapFromHandles<PlId>(reactiveFileContent, fileHandles) as Record<PlId, PlId[]> | undefined;
 });
 
 const rowData = computed(() => {
@@ -77,7 +77,7 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
     },
     agGroupIdColumnDef(),
     {
-      headerName: 'Data',
+      headerName: 'H5AD file',
       flex: 2,
       cellStyle: { padding: 0 },
       spanRows: true,
@@ -97,7 +97,7 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
         ({
           component: 'PlAgCellFile',
           params: {
-            extensions: dataset.value.content.gzipped ? (dataset.value.content.xsvType ? [dataset.value.content.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dataset.value.content.xsvType ? [dataset.value.content.xsvType] : ['csv', 'tsv']),
+            extensions: ['h5ad'],
           },
         }),
       valueGetter: (params) =>
@@ -123,19 +123,6 @@ const gridOptions: GridOptions<DatasetRow> = {
   getMainMenuItems: () => {
     return [];
   },
-  // getContextMenuItems: (params) => {
-  // if (getSelectedSamples(params.api, params.node).length === 0) return [];
-  // return [
-  //   {
-  //     name: 'Delete',
-  //     action: (params) => {
-  //       const samplesToDelete = getSelectedSamples(params.api, params.node);
-  //       for (const s of samplesToDelete)
-  //         delete dataset.content.data[s];
-  //     },
-  //   },
-  // ];
-  // },
   components: {
     PlAgCellFile,
   },
@@ -155,3 +142,4 @@ const gridOptions: GridOptions<DatasetRow> = {
     :gridOptions="gridOptions"
   />
 </template>
+

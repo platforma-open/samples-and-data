@@ -5,6 +5,8 @@ import type {
   DSContentFasta,
   DSContentFastq,
   DSContentMultilaneFastq,
+  DSContentH5ad,
+  DSContentMultiSampleH5ad,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
   DSContentXsv,
@@ -28,6 +30,7 @@ import {
   PlFileDialog,
   PlRow,
   PlTextField,
+  ReactiveFileContent,
 } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed, reactive, ref, watch } from 'vue';
@@ -41,6 +44,7 @@ import {
   useParsedFiles,
   usePatternCompilation,
 } from './datasets';
+import { parseCsvMapFromHandles } from '../util';
 import type {
   FileContentType,
   FileNamePattern,
@@ -105,6 +109,11 @@ type ImportDatasetDialogData = {
    * Label for the new dataset
    */
   newDatasetLabel: string;
+  /**
+   * Sample column name for MultiSampleH5AD datasets
+   */
+  sampleColumnName: string;
+  loadingColumns: boolean;
 };
 
 const emit = defineEmits<{ onClose: [navigated: boolean] }>();
@@ -135,6 +144,7 @@ const targetDsReadIndices = computed(() => {
 });
 
 const app = useApp();
+const reactiveFileContent = ReactiveFileContent.useGlobal();
 
 /**
  * Whether the user has navigated to the dataset page
@@ -160,6 +170,8 @@ const data = reactive<ImportDatasetDialogData>({
   fileDialogOpened: true,
   datasetDialogOpened: false,
   importing: false,
+  sampleColumnName: targetDs.value?.content.type === 'MultiSampleH5AD' ? (targetDs.value.content.sampleColumnName ?? '') : '',
+  loadingColumns: false,
 });
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
@@ -184,6 +196,15 @@ function updateDataFromPattern(v: FileNamePattern | undefined) {
 
 watch(compiledPattern, (v) => updateDataFromPattern(v));
 
+watch(
+  () => data.datasetType,
+  (value) => {
+    if (value !== undefined) {
+      updateDatasetType(value);
+    }
+  }
+);
+
 // Parsed files
 const parsedFiles = useParsedFiles(data, compiledPattern);
 
@@ -203,6 +224,17 @@ const dsTypeOptions = computed(() => {
   return result;
 });
 
+function updateDatasetType(datasetType: DSType | undefined) {
+  if (datasetType === 'MultiSampleH5AD') {
+    // Add already-loaded files to h5adFilesToPreprocess
+    for (const file of parsedFiles.value.map(f => f.handle)) {
+      if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
+        app.model.args.h5adFilesToPreprocess.push(file);
+      }
+    }
+  }
+}
+
 // Add more files to the data
 function addFiles(files: ImportFileHandle[]) {
   const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
@@ -215,7 +247,18 @@ function addFiles(files: ImportFileHandle[]) {
     }
     // @todo add some meaningful notification if failed to infer pattern
   }
+  const datasetType = data.datasetType;
   data.files.push(...files);
+
+  // Add files to h5adFilesToPreprocess for MultiSampleH5AD datasets
+  if (datasetType === 'MultiSampleH5AD') {
+    for (const file of files) {
+      if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
+        app.model.args.h5adFilesToPreprocess.push(file);
+      }
+    }
+  }
+
   data.datasetDialogOpened = true;
 }
 
@@ -409,6 +452,34 @@ function addCellRangerMtxDatasetContent(
   }
 }
 
+/** H5AD */
+function addH5adDatasetContent(
+  contentData: DSContentH5ad['data'],
+) {
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
+/** Multi-Sample H5AD */
+function addMultiSampleH5adDatasetContent(
+  groupLabels: Record<PlId, string>,
+  contentData: DSContentMultiSampleH5ad['data'],
+) {
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error('Dataset has read or lane matcher, trying to add H5AD dataset');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const group = f.match.sample.value;
+    const sampleId = getOrCreateGroup(groupLabels, group);
+    contentData[sampleId] = f.handle;
+  }
+}
+
 /** Bulk Count Matrix */
 function addBulkCountMatrixDatasetContent(
   groupLabels: Record<PlId, string>,
@@ -462,6 +533,16 @@ async function addToExistingDataset() {
       break;
     case 'CellRangerMTX':
       addCellRangerMtxDatasetContent(dataset.content.data);
+      break;
+    case 'H5AD':
+      addH5adDatasetContent(dataset.content.data);
+      break;
+    case 'MultiSampleH5AD':
+      addMultiSampleH5adDatasetContent(dataset.content.groupLabels, dataset.content.data);
+      // Update sample column name if it was changed
+      if (data.sampleColumnName) {
+        dataset.content.sampleColumnName = data.sampleColumnName;
+      }
       break;
     case 'BulkCountMatrix':
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -596,6 +677,38 @@ async function createNewDataset() {
         },
       });
       break;
+    } case 'H5AD': {
+      const contentData: DSContentH5ad['data'] = {};
+      addH5adDatasetContent(contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'H5AD',
+          gzipped: false,
+          data: contentData,
+        },
+      });
+      break;
+    } case 'MultiSampleH5AD': {
+      const groupLabels: Record<PlId, string> = {};
+      const contentData: DSContentMultiSampleH5ad['data'] = {};
+      addMultiSampleH5adDatasetContent(groupLabels, contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'MultiSampleH5AD',
+          gzipped: false,
+          sampleGroups: undefined,
+          data: contentData,
+          groupLabels: groupLabels,
+          sampleColumnName: data.sampleColumnName
+        },
+      });
+      break;
     } case 'BulkCountMatrix': {
       const groupLabels: Record<PlId, string> = {};
       const contentData: DSContentBulkCountMatrix['data'] = {};
@@ -623,18 +736,78 @@ async function createNewDataset() {
   navigated.value = true;
 }
 
+const availableColumnsOptions = computed<ListOption<string>[]>(() => {
+  const columns = app.model.outputs.availableColumns;
+  if (!columns) return [];
+
+  // Get file handles from current dataset
+  const currentFileHandles = new Set(parsedFiles.value.map((f) => f.handle));
+
+  // Parse all CSV files
+  const parsedColumns = parseCsvMapFromHandles(reactiveFileContent, columns);
+  if (!parsedColumns) return [];
+
+  // Get all unique column names from files in current dataset only
+  const columnSet = new Set<string>();
+  for (const [fileHandle, columnNames] of Object.entries(parsedColumns)) {
+    // Only include columns from files in the current dataset
+    if (currentFileHandles.has(fileHandle as ImportFileHandle)) {
+      for (const col of columnNames) {
+        columnSet.add(col);
+      }
+    }
+  }
+
+  return Array.from(columnSet).map((col) => ({ value: col, label: col }));
+});
+
+// Watch for when files are selected for MultiSampleH5AD datasets to start parsing
+watch(
+  () => [data.files.length, data.datasetType] as const,
+  ([filesCount, dsType]) => {
+    if (dsType === 'MultiSampleH5AD' && filesCount > 0) {
+      data.loadingColumns = true;
+    }
+  },
+);
+
+// Watch for when columns become available to stop parsing indicator
+watch(
+  availableColumnsOptions,
+  (options) => {
+    if (options.length > 0) {
+      data.loadingColumns = false;
+
+      // Auto-select a default sample column name only if not already set
+      // (e.g., from existing dataset or previous selection)
+      if (!data.sampleColumnName) {
+        const priorityNames = ['sample', 'samples', 'replicate', 'replicates'];
+        const foundOption = options.find((opt) =>
+          priorityNames.some((name) => opt.value.toLowerCase() === name),
+        );
+        data.sampleColumnName = foundOption ? foundOption.value : options[0].value;
+      }
+    }
+  },
+);
+
 const canCreateOrAdd = computed(
   () => {
-    console.log('targetDs', targetDs.value);
-    console.log('data', data);
-    console.log('canCreateOrAdd', hasMatchedFiles.value, data.mode, data.targetAddDataset, data.datasetType, data.readIndices, compiledPattern.value?.hasReadIndexMatcher, compiledPattern.value?.hasLaneMatcher);
-    return hasMatchedFiles.value
+    const basicConditions = hasMatchedFiles.value
       && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
       && data.datasetType !== undefined
+      && !data.loadingColumns
     // This prevents selecting fasta as type while having read index matcher in pattern
       && (data.readIndices.length !== 0
         || (compiledPattern.value?.hasReadIndexMatcher === false
           && compiledPattern.value?.hasLaneMatcher === false));
+
+    // For MultiSampleH5AD datasets, also require sampleColumnName
+    if (data.datasetType === 'MultiSampleH5AD') {
+      return basicConditions && data.sampleColumnName !== '';
+    }
+
+    return basicConditions;
   },
 );
 </script>
@@ -685,6 +858,21 @@ const canCreateOrAdd = computed(
       label="Pattern"
       :error="patternError"
     />
+
+    <div v-if="data.datasetType === 'MultiSampleH5AD'">
+      <div v-if="data.loadingColumns">
+        Parsing files to extract column information...
+      </div>
+      <PlRow v-else-if="availableColumnsOptions.length > 0" alignCenter>
+        <PlDropdown
+          v-model="data.sampleColumnName"
+          label="Sample Column Name in anndata.obs"
+          :options="availableColumnsOptions"
+          :error="undefined"
+          class="flex-grow-1"
+        />
+      </PlRow>
+    </div>
 
     <ParsedFilesList :items="parsedFiles" />
 

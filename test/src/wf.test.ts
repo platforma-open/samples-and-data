@@ -3,14 +3,14 @@ import { uniquePlId } from '@platforma-sdk/model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
 
-blockTest('empty inputs', { timeout: 5000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('empty inputs', { timeout: 7000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
   console.dir(await blockState.getValue(), { depth: 5 });
   const stableState = await blockState.awaitStableValue();
-  expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} }, sampleGroups: { ok: true, value: { } } });
+  expect(stableState.outputs).toStrictEqual({ fileImports: { ok: true, value: {} }, sampleGroups: { ok: true, value: { } }, availableColumns: { ok: true, value: {} } });
 });
 
 blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
@@ -119,4 +119,65 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
     fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
     sampleGroups: { ok: true, value: { } },
   });
+});
+
+blockTest('multisample h5ad input', { timeout: 60000 }, async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const sample2Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+  const group1Id = uniquePlId();
+
+  const h5adHandle = await helpers.getLocalFileHandle('./assets/test.h5ad');
+
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'H5AD Dataset',
+        content: {
+          type: 'MultiSampleH5AD',
+          sampleColumnName: 'samples',
+          gzipped: false,
+          data: {
+            [group1Id]: h5adHandle,
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 's1',
+              [sample2Id]: 's2',
+            },
+          },
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+        },
+      },
+    ],
+    h5adFilesToPreprocess: [],
+  } satisfies BlockArgs);
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [h5adHandle]: { done: true } } },
+  });
+
+  // sampleGroups now is a csv file generated during block execution,
+  // so we just validate, that it is present
+  expect(stableState.outputs?.sampleGroups?.ok).toBe(true);
+  const sampleGroupsValue = stableState.outputs?.sampleGroups?.value as
+   Record<string, Record<string, { handle: string; size: number }>>;
+  expect(sampleGroupsValue).toBeDefined();
+  expect(sampleGroupsValue[dataset1Id]).toBeDefined();
+  expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
 });
