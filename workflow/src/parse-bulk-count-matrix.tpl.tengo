@@ -1,7 +1,6 @@
 tpl := import("@platforma-sdk/workflow-tengo:tpl")
 text := import("text")
 slices := import("@platforma-sdk/workflow-tengo:slices")
-file := import("@platforma-sdk/workflow-tengo:file")
 exec := import("@platforma-sdk/workflow-tengo:exec")
 
 tpl.defineOutputs("samplesCsv")
@@ -23,6 +22,6 @@ tpl.body(func(inputs) {
         run()
 
     return {
-        samplesCsv: file.exportFile(writeFile.getFile("samples.csv"))
+        samplesCsv: writeFile.getFile("samples.csv")
     }
 })
