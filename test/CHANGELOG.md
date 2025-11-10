@@ -1,5 +1,23 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 2.2.0
+
+### Minor Changes
+
+- 8cb1841: Multiplexed FASTQ format support
+
+  Added support for multiplexed FASTQ datasets where multiple samples are sequenced together in a single file set. This format is commonly used in barcoded sequencing experiments.
+
+  Key features:
+
+  - Group-based organization with read indices (R1, R2, etc.) per file group
+  - Samplesheet import with file ID, sample ID, and barcode ID columns
+
+### Patch Changes
+
+- Updated dependencies [8cb1841]
+  - @platforma-open/milaboratories.samples-and-data.model@2.2.0
+
 ## 2.1.0
 
 ### Minor Changes
