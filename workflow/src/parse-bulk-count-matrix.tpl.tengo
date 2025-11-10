@@ -14,9 +14,8 @@ tpl.body(func(inputs) {
     slices.quickSortInPlace(samples)
     csvContent := text.join(samples, "\n")
 
-    //TODO: what dummy command should be used?
     writeFile := exec.builder().
-        cmd("ls").
+        cmd("echo").
         writeFile("samples.csv", csvContent).
         saveFile("samples.csv").
         run()
