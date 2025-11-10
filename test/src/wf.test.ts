@@ -208,7 +208,7 @@ blockTest('multisample seurat input', { timeout: 30000 }, async ({ rawPrj: proje
         label: 'Seurat Dataset',
         content: {
           type: 'MultiSampleSeurat',
-          sampleColumnName: 'samples',
+          sampleColumnName: 'sample',
           gzipped: false,
           data: {
             [group1Id]: seuratHandle,

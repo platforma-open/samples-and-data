@@ -37,8 +37,8 @@ const parsedSampleGroups = computed(() => {
     // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
     if (dataset.content.type === 'BulkCountMatrix') {
       result[datasetId as PlId] = groups as Record<PlId, PlId[]>;
-    } else if (dataset.content.type === 'MultiSampleH5AD') {
-      // MultiSampleH5AD: need to parse CSV files
+    } else if (dataset.content.type === 'MultiSampleH5AD' || dataset.content.type === 'MultiSampleSeurat') {
+      // MultiSampleH5AD and MultiSampleSeurat: need to parse CSV files
       const parsedGroups = parseCsvNestedMapFromHandles<PlId, PlId, PlId>(
         reactiveFileContent,
         { [datasetId as PlId]: groups } as Parameters<typeof parseCsvNestedMapFromHandles>[1],
