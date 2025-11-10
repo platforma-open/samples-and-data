@@ -57,14 +57,27 @@ export const platforma = BlockModel.create()
   .retentiveOutput(
     'sampleGroups',
     (ctx) => {
-      const mapGroups = (groups: TreeNodeAccessor | undefined) => {
-        return Object.fromEntries(groups?.mapFields((groupId, samplesCsv) => [
-          groupId as PlId, samplesCsv?.getFileHandle()]) ?? []);
-      };
-
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
-        ?.mapFields((datasetId, groups) => [datasetId as PlId, mapGroups(groups)]) ?? []);
+        ?.mapFields((datasetId, groups) => {
+          const dataset = ctx.args.datasets.find(ds => ds.id === datasetId);
+          if (!dataset) return [datasetId as PlId, undefined];
+          
+          // BulkCountMatrix uses JSON objects
+          if (dataset.content.type === 'BulkCountMatrix') {
+            const result = Object.fromEntries(groups?.mapFields((groupId, samples) => [
+              groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
+            return [datasetId as PlId, result];
+          } 
+          // MultiSampleH5AD uses file handles
+          else if (dataset.content.type === 'MultiSampleH5AD') {
+            const result = Object.fromEntries(groups?.mapFields((groupId, samplesFile) => [
+              groupId as PlId, samplesFile?.getFileHandle()]) ?? []);
+            return [datasetId as PlId, result];
+          }
+          
+          return [datasetId as PlId, undefined];
+        }) ?? []);
     },
   )
 

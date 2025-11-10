@@ -23,12 +23,33 @@ const datasets = computed(() => {
   });
 });
 
-// Parse all sample groups from file handles
+// Parse all sample groups from file handles or use direct data for JSON
 const parsedSampleGroups = computed(() => {
-  return parseCsvNestedMapFromHandles<PlId, PlId, PlId>(
-    reactiveFileContent,
-    app.model.outputs.sampleGroups,
-  );
+  const sampleGroups = app.model.outputs.sampleGroups;
+  if (!sampleGroups) return undefined;
+
+  const result: Record<PlId, Record<PlId, PlId[]>> = {};
+
+  for (const [datasetId, groups] of Object.entries(sampleGroups)) {
+    const dataset = app.model.args.datasets.find((ds) => ds.id === datasetId);
+    if (!dataset) continue;
+
+    // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
+    if (dataset.content.type === 'BulkCountMatrix') {
+      result[datasetId as PlId] = groups as Record<PlId, PlId[]>;
+    } else if (dataset.content.type === 'MultiSampleH5AD') {
+      // MultiSampleH5AD: need to parse CSV files
+      const parsedGroups = parseCsvNestedMapFromHandles<PlId, PlId, PlId>(
+        reactiveFileContent,
+        { [datasetId as PlId]: groups } as Parameters<typeof parseCsvNestedMapFromHandles>[1],
+      );
+      if (parsedGroups && parsedGroups[datasetId as PlId]) {
+        result[datasetId as PlId] = parsedGroups[datasetId as PlId];
+      }
+    }
+  }
+
+  return result;
 });
 
 /**
