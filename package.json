@@ -3,7 +3,8 @@
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "turbo run build",
-    "test": "turbo run test --concurrency 1 --env-mode=loose",
+    "build:dev": "env PL_PKG_DEV=local turbo run build",
+    "test": "env PL_PKG_DEV=local turbo run test --concurrency 1 --env-mode=loose",
     "test:dry-run": "PL_PKG_DEV=local turbo run test --dry-run=json",
     "mark-stable": "turbo run mark-stable",
     "watch": "turbo watch build",

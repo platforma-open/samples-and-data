@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "inputs": ["$TURBO_DEFAULT$"],
-      "outputs": ["./dist/**", "./block-pack/**"],
+      "env": ["PL_PKG_DEV"],
+      "outputs": ["./dist/**", "./block-pack/**", "./pkg-*.tgz"],
       "dependsOn": ["^build"]
     },
     "test": {

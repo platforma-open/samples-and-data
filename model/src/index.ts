@@ -8,7 +8,6 @@ import {
   BlockModel,
   type InferOutputsType,
 } from '@platforma-sdk/model';
-import type { WithSampleGroupsData } from './args';
 import { isGroupedDataset, type BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
@@ -22,6 +21,7 @@ export const platforma = BlockModel.create()
     sampleLabelColumnLabel: 'Sample',
     sampleLabels: {},
     datasets: [],
+    h5adFilesToPreprocess: [],
   })
 
   .withUiState<BlockUiState>({ suggestedImport: false })
@@ -29,11 +29,8 @@ export const platforma = BlockModel.create()
   .argsValid((ctx) => ctx.args.datasets.every((ds) => {
     if (!isGroupedDataset(ds))
       return true;
-
-    const content = ds.content as WithSampleGroupsData<unknown>;
-
     // samples are saved for each group
-    return Object.keys(content.sampleGroups ?? {}).length === Object.keys(content.data).length;
+    return Object.keys(ds.content.sampleGroups ?? {}).length === Object.keys(ds.content.data).length;
   }))
 
   .output(
@@ -60,14 +57,37 @@ export const platforma = BlockModel.create()
   .retentiveOutput(
     'sampleGroups',
     (ctx) => {
-      const mapGroups = (groups: TreeNodeAccessor | undefined) => {
-        return Object.fromEntries(groups?.mapFields((groupId, samples) => [
-          groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
-      };
-
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
-        ?.mapFields((datasetId, groups) => [datasetId as PlId, mapGroups(groups)]) ?? []);
+        ?.mapFields((datasetId, groups) => {
+          const dataset = ctx.args.datasets.find(ds => ds.id === datasetId);
+          if (!dataset) return [datasetId as PlId, undefined];
+          
+          // BulkCountMatrix uses JSON objects
+          if (dataset.content.type === 'BulkCountMatrix') {
+            const result = Object.fromEntries(groups?.mapFields((groupId, samples) => [
+              groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
+            return [datasetId as PlId, result];
+          } 
+          // MultiSampleH5AD uses file handles
+          else if (dataset.content.type === 'MultiSampleH5AD') {
+            const result = Object.fromEntries(groups?.mapFields((groupId, samplesFile) => [
+              groupId as PlId, samplesFile?.getFileHandle()]) ?? []);
+            return [datasetId as PlId, result];
+          }
+          
+          return [datasetId as PlId, undefined];
+        }) ?? []);
+    },
+  )
+
+  .retentiveOutput(
+    'availableColumns',
+    (ctx) => {
+      return Object.fromEntries(ctx.prerun
+        ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
+        ?.mapFields((fileName, columnsCsv) =>
+          [fileName, columnsCsv?.getRemoteFileHandle() ?? undefined]) ?? []);
     },
   )
 

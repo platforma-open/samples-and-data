@@ -41,8 +41,13 @@ type DatasetRow = {
   readonly data?: ImportFileHandle | null;
 };
 
+const parsedSampleGroups = computed(() => {
+  // For BulkCountMatrix, data is already deserialized as Record<PlId, PlId[]>
+  return app.model.outputs.sampleGroups?.[dataset.value.id] as Record<PlId, PlId[]> | undefined;
+});
+
 const rowData = computed(() => {
-  const groupToSample = app.model.outputs.sampleGroups?.[dataset.value.id];
+  const groupToSample = parsedSampleGroups.value;
   return Object.entries(dataset.value.content.data).flatMap(
     ([groupId, data]) => (
       {
