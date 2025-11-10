@@ -174,7 +174,9 @@ export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
 
 export type DSType = DSAny['content']['type'];
 
-export function isGroupedDataset(ds: DSAny): boolean {
+export type DSGrouped = DSBulkCountMatrix | DSMultiSampleH5ad;
+
+export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
   return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD';
 }
 

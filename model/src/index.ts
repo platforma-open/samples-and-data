@@ -8,7 +8,6 @@ import {
   BlockModel,
   type InferOutputsType,
 } from '@platforma-sdk/model';
-import type { WithSampleGroupsData } from './args';
 import { isGroupedDataset, type BlockArgs } from './args';
 
 export type BlockUiState = { suggestedImport: boolean };
@@ -30,11 +29,8 @@ export const platforma = BlockModel.create()
   .argsValid((ctx) => ctx.args.datasets.every((ds) => {
     if (!isGroupedDataset(ds))
       return true;
-
-    const content = ds.content as WithSampleGroupsData<unknown>;
-
     // samples are saved for each group
-    return Object.keys(content.sampleGroups ?? {}).length === Object.keys(content.data).length;
+    return Object.keys(ds.content.sampleGroups ?? {}).length === Object.keys(ds.content.data).length;
   }))
 
   .output(
