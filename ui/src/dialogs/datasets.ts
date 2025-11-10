@@ -21,6 +21,11 @@ export const datasetTypes: Record<DSType, { label: string; fileType: FileContent
     fileType: 'Fastq',
     hasTags: false,
   },
+  MultiplexedFastq: {
+    label: 'Multiplexed FASTQ',
+    fileType: 'Fastq',
+    hasTags: false,
+  },
   TaggedFastq: {
     label: 'Tagged FASTQ',
     fileType: 'Fastq',
