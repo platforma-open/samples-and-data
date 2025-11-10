@@ -15,6 +15,9 @@ catalogs:
     '@platforma-open/milaboratories.runenv-python-3':
       specifier: ^1.6.2
       version: 1.6.2
+    '@platforma-open/milaboratories.runenv-r-samples-and-data':
+      specifier: ^1.0.1
+      version: 1.0.1
     '@platforma-sdk/block-tools':
       specifier: 2.6.16
       version: 2.6.16
@@ -155,6 +158,15 @@ importers:
         specifier: 'catalog:'
         version: 3.10.7
 
+  software/parse-seurat:
+    devDependencies:
+      '@platforma-open/milaboratories.runenv-r-samples-and-data':
+        specifier: 'catalog:'
+        version: 1.0.1
+      '@platforma-sdk/package-builder':
+        specifier: 'catalog:'
+        version: 3.10.7
+
   test:
     dependencies:
       '@platforma-open/milaboratories.samples-and-data.model':
@@ -245,6 +257,9 @@ importers:
       '@platforma-open/milaboratories.samples-and-data.parse-h5ad':
         specifier: workspace:*
         version: link:../software/parse-h5ad
+      '@platforma-open/milaboratories.samples-and-data.parse-seurat':
+        specifier: workspace:*
+        version: link:../software/parse-seurat
       '@platforma-sdk/workflow-tengo':
         specifier: 'catalog:'
         version: 5.5.15
@@ -968,6 +983,9 @@ packages:
 
   '@platforma-open/milaboratories.runenv-python-3@1.6.2':
     resolution: {integrity: sha512-jlj7ZyS51L6iyBZw0hgN1bG0sGBtJwDpKGqcFpxli4hNQEKnVVb9bdWdI/GuBEs7VbTjTgJMN5GOaSiMi0UM/A==}
+
+  '@platforma-open/milaboratories.runenv-r-samples-and-data@1.0.1':
+    resolution: {integrity: sha512-uO8SXeZGpN27IAdUwbjAiDO7dPXTO3/7w8am7mIaKJjJQrOLI31MSuN0/r5ZG4ZU2JCJESmJHl9XMCBaYWQ82Q==}
 
   '@platforma-open/milaboratories.software-ptabler.schema@1.12.0':
     resolution: {integrity: sha512-tQw07omRWh7XFNyGDZz1VeiRxjzprvXWxhJI3git3Yf0GlgsCMmdxwSd1gpeORwFU9ggvLTGwdlAMN5KkfFwAw==}
@@ -6626,6 +6644,8 @@ snapshots:
       '@platforma-open/milaboratories.runenv-python-3.12.10-h5ad': 1.0.2
       '@platforma-open/milaboratories.runenv-python-3.12.10-rapids': 1.3.14
       '@platforma-open/milaboratories.runenv-python-3.12.10-sccoda': 1.2.27
+
+  '@platforma-open/milaboratories.runenv-r-samples-and-data@1.0.1': {}
 
   '@platforma-open/milaboratories.software-ptabler.schema@1.12.0': {}
 

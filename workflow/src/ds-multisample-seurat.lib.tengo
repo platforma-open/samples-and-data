@@ -1,0 +1,70 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+render := import("@platforma-sdk/workflow-tengo:render")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+parseSeuratTpl := assets.importTemplate(":parse-multisample-seurat")
+
+util := import(":util")
+
+getColumns := func(fImport, importFile) {
+    seuratFile := importFile(fImport)
+    columnsCsv := render.create(parseSeuratTpl, {
+        seuratFile: seuratFile,
+        sampleColumnName:  "sample"
+    }).output("columnsCsv")
+
+    return columnsCsv
+}
+
+getSamples := func(dataset, importFile) {
+    result := {}
+    sampleColumnName := dataset.content.sampleColumnName
+    if !sampleColumnName {
+        sampleColumnName = "sample"
+    }
+    for groupId, importHandle in dataset.content.data {
+        if !importHandle {
+            ll.panic("File handle not set for group %v", groupId)
+        }
+        seuratFile := importFile(importHandle)
+        samplesCsv := render.create(parseSeuratTpl, {
+            seuratFile: seuratFile,
+            sampleColumnName: sampleColumnName
+        }).output("samplesCsv")
+        result[groupId] = samplesCsv
+    }
+    return result
+}
+
+createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
+    
+    extension := "rds"
+    
+    spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+    spec.axesSpec = [groupIdAxis]
+
+    data := pColumn.resourceMapBuilder(1)
+    for groupId, importHandle in dataset.content.data {
+        if !importHandle {
+            ll.panic("File handle not set for sample %v", groupId)
+        }
+        data.add([groupId], importFile(importHandle))
+    }
+
+    result := {}
+    result["dataset." + dataset.id] = {
+        spec: spec,
+        data: data.build()
+    }
+
+    return result
+}
+
+export {
+    isGrouped: true,
+    getColumns: getColumns,
+    getSamples: getSamples,
+    createDataset: createDataset
+}
+
+
