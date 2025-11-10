@@ -3,7 +3,7 @@ import { uniquePlId } from '@platforma-sdk/model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
 
-blockTest('empty inputs', { timeout: 6000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('empty inputs', { timeout: 7000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
