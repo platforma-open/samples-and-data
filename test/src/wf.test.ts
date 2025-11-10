@@ -226,7 +226,7 @@ blockTest('multisample seurat input', { timeout: 30000 }, async ({ rawPrj: proje
       },
     ],
     h5adFilesToPreprocess: [],
-    seuratFilesToPreprocess: [],
+    seuratFilesToPreprocess: [seuratHandle],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
