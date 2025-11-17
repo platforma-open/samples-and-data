@@ -194,7 +194,7 @@ function updateDataFromPattern(v: FileNamePattern | undefined) {
     data.hasTags = v.hasTagMatchers;
     data.gzipped = v.gzipped;
 
-    const fileNames = data.files.map((handle) => extractFileName(getFileNameFromHandle(handle)));
+    const fileNames = parsedFiles.value.map((f) => f.fileName);
     data.readIndices = collectReadIndices(v, fileNames);
   }
 }
@@ -586,7 +586,7 @@ async function addToExistingDataset() {
 }
 
 const xsvType = (): 'csv' | 'tsv' => {
-  const fileNames = data.files.map((f) => getFileNameFromHandle(f));
+  const fileNames = parsedFiles.value.map((f) => f.fileName);
   if (fileNames.every((f) => f.endsWith('.csv') || f.endsWith('.csv.gz'))) return 'csv';
   if (fileNames.every((f) => f.endsWith('.tsv') || f.endsWith('.tsv.gz'))) return 'tsv';
   throw new Error('Files are not all csv or tsv');
