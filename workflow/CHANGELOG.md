@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 2.2.1
+
+### Patch Changes
+
+- 6c07919: Filter out NaN values from sample list for h5ad files
+- Updated dependencies [6c07919]
+  - @platforma-open/milaboratories.samples-and-data.parse-h5ad@1.1.1
+
 ## 2.2.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.parse-h5ad
 
+## 1.1.1
+
+### Patch Changes
+
+- 6c07919: Filter out NaN values from sample list for h5ad files
+
 ## 1.1.0
 
 ### Minor Changes
