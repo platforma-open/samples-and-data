@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.2.2
+
+### Patch Changes
+
+- 5a2804c: Add helper to collect read indices from manual patterns and automatically sync `readIndices` when the compiled pattern changes in the import dialog.
+
 ## 2.2.1
 
 ### Patch Changes
