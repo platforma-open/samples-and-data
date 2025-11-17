@@ -9,3 +9,5 @@ vite.config.*.timestamp-*
 log/
 *.idea
 *.tsbuildinfo
+*.tgz
+
