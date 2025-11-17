@@ -8,7 +8,7 @@ export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX' | 'H5A
 function extractFileContentType(pattern: string): FileContentType {
   if (pattern.includes('CellRangerFileRole'))
     return 'CellRangerMTX';
-  
+
   let pt = pattern;
   if (pt.endsWith('.gz'))
     pt = pt.substring(0, pt.length - 3);
@@ -142,7 +142,7 @@ export class FileNamePattern {
   }
 
   private static patternElement
-    = /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?\:(?<anytag>[a-zA-Z0-9_]+)|n\:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
+    = /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?:(?<anytag>[a-zA-Z0-9_]+)|n:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
 
   static parse(
     fileNamePattern: string,
@@ -328,6 +328,26 @@ export function getWellFormattedReadIndex(match: FileNameGroups<Match>): 'R1' | 
   const readIndex = match.readIndex.value.toUpperCase();
   if (readIndex.length === 1) return ('R' + readIndex) as 'R1' | 'R2';
   else return readIndex as 'R1' | 'R2';
+}
+
+/**
+ * Collects read indices matched by a compiled pattern across provided file names.
+ */
+export function collectReadIndices(
+  pattern: FileNamePattern,
+  fileNames: string[],
+): string[] {
+  if (!pattern.hasReadIndexMatcher || pattern.fileContentType !== 'Fastq') return [];
+
+  const readIndices = new Set<string>();
+  for (const fileName of fileNames) {
+    const match = pattern.match(fileName);
+    if (match?.readIndex) readIndices.add(getWellFormattedReadIndex(match));
+  }
+
+  if (readIndices.size === 0) return ['R1'];
+
+  return [...readIndices].sort();
 }
 
 export function normalizeCellRangerFileRole(role: string): 'matrix.mtx' | 'features.tsv' | 'barcodes.tsv' {

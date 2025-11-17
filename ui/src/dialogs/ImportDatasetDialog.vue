@@ -51,6 +51,7 @@ import type {
   FileNamePattern,
 } from './file_name_parser';
 import {
+  collectReadIndices,
   getWellFormattedReadIndex,
   inferFileNamePattern,
   normalizeCellRangerFileRole,
@@ -192,6 +193,9 @@ function updateDataFromPattern(v: FileNamePattern | undefined) {
     data.fileType = v.fileContentType;
     data.hasTags = v.hasTagMatchers;
     data.gzipped = v.gzipped;
+
+    const fileNames = parsedFiles.value.map((f) => f.fileName);
+    data.readIndices = collectReadIndices(v, fileNames);
   }
 }
 
@@ -203,7 +207,7 @@ watch(
     if (value !== undefined) {
       updateDatasetType(value);
     }
-  }
+  },
 );
 
 // Parsed files
@@ -228,7 +232,7 @@ const dsTypeOptions = computed(() => {
 function updateDatasetType(datasetType: DSType | undefined) {
   if (datasetType === 'MultiSampleH5AD') {
     // Add already-loaded files to h5adFilesToPreprocess
-    for (const file of parsedFiles.value.map(f => f.handle)) {
+    for (const file of parsedFiles.value.map((f) => f.handle)) {
       if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
         app.model.args.h5adFilesToPreprocess.push(file);
       }
@@ -443,7 +447,7 @@ function addCellRangerMtxDatasetContent(
     const sample = f.match.sample.value;
     const sampleId = getOrCreateSample(app, sample);
     const role = normalizeCellRangerFileRole(f.match.cellRangerFileRole.value);
-    
+
     let fileGroup = contentData[sampleId];
     if (!fileGroup) {
       fileGroup = {};
@@ -582,7 +586,7 @@ async function addToExistingDataset() {
 }
 
 const xsvType = (): 'csv' | 'tsv' => {
-  const fileNames = data.files.map((f) => getFileNameFromHandle(f));
+  const fileNames = parsedFiles.value.map((f) => f.fileName);
   if (fileNames.every((f) => f.endsWith('.csv') || f.endsWith('.csv.gz'))) return 'csv';
   if (fileNames.every((f) => f.endsWith('.tsv') || f.endsWith('.tsv.gz'))) return 'tsv';
   throw new Error('Files are not all csv or tsv');
@@ -731,7 +735,7 @@ async function createNewDataset() {
           sampleGroups: undefined,
           data: contentData,
           groupLabels: groupLabels,
-          sampleColumnName: data.sampleColumnName
+          sampleColumnName: data.sampleColumnName,
         },
       });
       break;
