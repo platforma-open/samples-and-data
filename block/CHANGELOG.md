@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.10.19
+
+### Patch Changes
+
+- Updated dependencies [5a2804c]
+  - @platforma-open/milaboratories.samples-and-data.ui@2.2.2
+
 ## 1.10.18
 
 ### Patch Changes
