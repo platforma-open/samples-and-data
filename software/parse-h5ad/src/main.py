@@ -59,19 +59,17 @@ def parse_file_mode(args):
                     print(f"Using fallback column '{sample_column}'", file=sys.stderr)
                     break
         
-        # Extract samples based on available column or use obs_names
+        # Extract samples based on available column
         if sample_column is None:
-            # If no column found, still create a CSV with all cell barcodes
-            print(f"Warning: No supported sample column found in anndata.obs", file=sys.stderr)
-            print(f"Supported column names (case-insensitive): {supported_names}", file=sys.stderr)
+            # If no column found, throw an error
+            print(f"Error: No supported sample column found in anndata.obs", file=sys.stderr)
             print(f"Available columns: {list(adata.obs.columns)}", file=sys.stderr)
-            print(f"Using cell barcodes as sample identifiers", file=sys.stderr)
-            samples = list(adata.obs_names)
+            samples = []
         else:
-            # Extract unique sample IDs from the column
-            samples = adata.obs[sample_column].unique().tolist()
+            # Extract unique sample IDs from the column, filtering out NaN and null values
+            samples = adata.obs[sample_column].dropna().unique().tolist()
             print(f"Found {len(samples)} unique samples in column '{sample_column}'", file=sys.stderr)
-        
+
         # Write samples to CSV, one per line
         with open(args.sample_output, 'w', newline='') as csvfile:
             writer = csv.writer(csvfile)
@@ -117,9 +115,9 @@ def extract_columns_mode(args):
             print(f"Available columns: {available_columns}", file=sys.stderr)
             sys.exit(1)
 
-        # Get unique samples from the specified column
+        # Get unique samples from the specified column, filtering out NaN and null values
         print(f"Using column '{args.column}' to identify samples", file=sys.stderr)
-        unique_samples = adata.obs[args.column].unique()
+        unique_samples = adata.obs[args.column].dropna().unique()
         print(f"Found {len(unique_samples)} unique samples", file=sys.stderr)
 
         # Extract the requested columns for each unique sample
