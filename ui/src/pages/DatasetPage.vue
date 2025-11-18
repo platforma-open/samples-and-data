@@ -21,7 +21,9 @@ import TaggedXsvDatasetPage from '../pages/TaggedXsvDatasetPage.vue';
 import XsvDatasetPage from '../pages/XsvDatasetPage.vue';
 import BulkCountMatrixDatasetPage from './BulkCountMatrixDatasetPage.vue';
 import H5adDatasetPage from './H5adDatasetPage.vue';
+import SeuratDatasetPage from './SeuratDatasetPage.vue';
 import MultiSampleH5adDatasetPage from './MultiSampleH5adDatasetPage.vue';
+import MultiSampleSeuratDatasetPage from './MultiSampleSeuratDatasetPage.vue';
 import CellRangerMtxDatasetPage from './CellRangerMtxDatasetPage.vue';
 
 const app = useApp();
@@ -42,16 +44,24 @@ async function deleteTheDataset() {
   if (index === -1)
     throw new Error('Dataset not found');
 
-  // Collect file handles from the dataset to remove them from h5adFilesToPreprocess
+  // Collect file handles from the dataset to remove them from h5adFilesToPreprocess or seuratFilesToPreprocess
   const datasetContent = dataset.content;
+  // Extract all file handles from the dataset
+  const filesToRemove = Object.values(datasetContent.data).filter((fh) => fh !== null);
 
   if (datasetContent.type === 'H5AD' || datasetContent.type === 'MultiSampleH5AD') {
-    // Extract all file handles from the dataset
-    const filesToRemove = Object.values(datasetContent.data).filter((fh) => fh !== null);
-
     // Remove these files from h5adFilesToPreprocess
     if (filesToRemove.length > 0) {
       app.model.args.h5adFilesToPreprocess = app.model.args.h5adFilesToPreprocess.filter(
+        (fileHandle) => !filesToRemove.includes(fileHandle),
+      );
+    }
+  }
+
+  if (datasetContent.type === 'Seurat' || datasetContent.type === 'MultiSampleSeurat') {
+    // Remove these files from seuratFilesToPreprocess
+    if (filesToRemove.length > 0) {
+      app.model.args.seuratFilesToPreprocess = app.model.args.seuratFilesToPreprocess.filter(
         (fileHandle) => !filesToRemove.includes(fileHandle),
       );
     }
@@ -108,8 +118,14 @@ const datasetTypeLabel = datasetTypeLabels[dataset.content.type];
     <template v-else-if="dataset.content.type === 'H5AD'">
       <H5adDatasetPage />
     </template>
+    <template v-else-if="dataset.content.type === 'Seurat'">
+      <SeuratDatasetPage />
+    </template>
     <template v-else-if="dataset.content.type === 'MultiSampleH5AD'">
       <MultiSampleH5adDatasetPage />
+    </template>
+    <template v-else-if="dataset.content.type === 'MultiSampleSeurat'">
+      <MultiSampleSeuratDatasetPage />
     </template>
     <template v-else-if="dataset.content.type === 'BulkCountMatrix'">
       <BulkCountMatrixDatasetPage />

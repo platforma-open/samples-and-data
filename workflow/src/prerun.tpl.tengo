@@ -6,16 +6,24 @@ ll := import("@platforma-sdk/workflow-tengo:ll")
 
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 multiSampleH5AD := import(":ds-multisample-h5ad")
+multiSampleSeurat := import(":ds-multisample-seurat")
 
 parsers := {
     BulkCountMatrix: dsBulkCountMatrix,
-	MultiSampleH5AD: multiSampleH5AD
+	MultiSampleH5AD: multiSampleH5AD,
+	MultiSampleSeurat: multiSampleSeurat
 }
 
 readColumns := func(args, importFile) {
 	columns := {}
 	for fImport in args.h5adFilesToPreprocess {
 		parser := parsers["MultiSampleH5AD"]
+        if !is_undefined(parser) {
+            columns[string(fImport)] = file.exportFile(parser.getColumns(fImport, importFile))
+        }
+	}
+	for fImport in args.seuratFilesToPreprocess {
+		parser := parsers["MultiSampleSeurat"]
         if !is_undefined(parser) {
             columns[string(fImport)] = file.exportFile(parser.getColumns(fImport, importFile))
         }
@@ -44,11 +52,11 @@ wf.body(func(args) {
             samplesMap := parser.getSamples(dataset, importFile)
             
             // BulkCountMatrix returns JSON objects
-            // MultiSampleH5AD returns CSV files
+            // MultiSampleH5AD and MultiSampleSeurat return CSV files
             if dataset.content.type == "BulkCountMatrix" {
                 // JSON objects: return directly without file.exportFile
                 sampleGroups[dataset.id] = samplesMap
-            } else if dataset.content.type == "MultiSampleH5AD" {
+            } else if dataset.content.type == "MultiSampleH5AD" || dataset.content.type == "MultiSampleSeurat" {
                 // Files: export them so they can be accessed by UI
                 exportedMap := {}
                 for groupId, sampleFile in samplesMap {
