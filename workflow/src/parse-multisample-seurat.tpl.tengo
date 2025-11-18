@@ -1,0 +1,33 @@
+tpl := import("@platforma-sdk/workflow-tengo:tpl")
+exec := import("@platforma-sdk/workflow-tengo:exec")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+
+tpl.defineOutputs("samplesCsv", "columnsCsv")
+
+tpl.body(func(inputs) {
+    seuratFile := inputs.seuratFile
+    sampleColumnName := inputs.sampleColumnName
+    
+    if !sampleColumnName {
+        sampleColumnName = "sample"
+    }
+
+    parseExec := exec.builder().
+        software(assets.importSoftware("@platforma-open/milaboratories.samples-and-data.parse-seurat:main")).
+        addFile("input.rds", seuratFile).
+        arg("--input").arg("input.rds").
+        arg("--output").arg("samples.csv").
+        arg("--columns-output").arg("columns.csv").
+        arg("--column").arg(sampleColumnName).
+        saveFile("samples.csv").
+        saveFile("columns.csv").
+        printErrStreamToStdout().
+        run()
+    
+    return {
+        samplesCsv: parseExec.getFile("samples.csv"),
+        columnsCsv: parseExec.getFile("columns.csv")
+    }
+})
+
+

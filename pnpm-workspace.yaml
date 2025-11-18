@@ -1,5 +1,6 @@
 packages:
   - software/parse-h5ad
+  - software/parse-seurat
   - workflow
   - model
   - ui
@@ -17,6 +18,7 @@ catalog:
   '@platforma-sdk/package-builder': 3.10.7
 
   '@platforma-open/milaboratories.runenv-python-3': ^1.6.2
+  '@platforma-open/milaboratories.runenv-r-samples-and-data': ^1.0.1
 
   '@platforma-sdk/test': 1.45.35
   '@milaboratories/helpers': 1.12.0

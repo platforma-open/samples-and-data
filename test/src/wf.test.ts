@@ -109,6 +109,8 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
         },
       },
     ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -161,7 +163,7 @@ blockTest('multisample h5ad input', { timeout: 70000 }, async ({ rawPrj: project
         },
       },
     ],
-    h5adFilesToPreprocess: [],
+    h5adFilesToPreprocess: [h5adHandle],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -172,14 +174,77 @@ blockTest('multisample h5ad input', { timeout: 70000 }, async ({ rawPrj: project
     fileImports: { ok: true, value: { [h5adHandle]: { done: true } } },
   });
 
-  // sampleGroups now is a csv file generated during block execution,
-  // so we just validate, that it is present
   expect(stableState.outputs?.sampleGroups?.ok).toBe(true);
-  const sampleGroupsValue = stableState.outputs?.sampleGroups?.value as
-   Record<string, Record<string, { handle: string; size: number }>>;
-  expect(sampleGroupsValue).toBeDefined();
-  expect(sampleGroupsValue[dataset1Id]).toBeDefined();
-  expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
+  if (stableState.outputs?.sampleGroups?.ok) {
+    const sampleGroupsValue = stableState.outputs.sampleGroups.value as
+      Record<string, Record<string, { handle: string; size: number }>>;
+    expect(sampleGroupsValue).toBeDefined();
+    expect(sampleGroupsValue[dataset1Id]).toBeDefined();
+    expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
+  }
+});
+
+blockTest('multisample seurat input', { timeout: 30000 }, async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const sample2Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+  const group1Id = uniquePlId();
+
+  // TODO: Add test.rds file to assets directory
+  const seuratHandle = await helpers.getLocalFileHandle('./assets/test.rds');
+
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Seurat Dataset',
+        content: {
+          type: 'MultiSampleSeurat',
+          sampleColumnName: 'sample',
+          gzipped: false,
+          data: {
+            [group1Id]: seuratHandle,
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 's1',
+              [sample2Id]: 's2',
+            },
+          },
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+        },
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [seuratHandle],
+  } satisfies BlockArgs);
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [seuratHandle]: { done: true } } },
+  });
+
+  expect(stableState.outputs?.sampleGroups?.ok).toBe(true);
+  if (stableState.outputs?.sampleGroups?.ok) {
+    const sampleGroupsValue = stableState.outputs.sampleGroups.value as
+      Record<string, Record<string, { handle: string; size: number }>>;
+    expect(sampleGroupsValue).toBeDefined();
+    expect(sampleGroupsValue[dataset1Id]).toBeDefined();
+    expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
+  }
 });
 
 blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {

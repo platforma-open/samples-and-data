@@ -7,7 +7,9 @@ import type {
   DSContentMultilaneFastq,
   DSContentMultiplexedFastq,
   DSContentH5ad,
+  DSContentSeurat,
   DSContentMultiSampleH5ad,
+  DSContentMultiSampleSeurat,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
   DSContentXsv,
@@ -237,6 +239,8 @@ function updateDatasetType(datasetType: DSType | undefined) {
         app.model.args.h5adFilesToPreprocess.push(file);
       }
     }
+  } else if (datasetType === 'MultiSampleSeurat') {
+    app.model.args.seuratFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
   }
 }
 
@@ -469,6 +473,18 @@ function addH5adDatasetContent(
   }
 }
 
+/** Seurat */
+function addSeuratDatasetContent(
+  contentData: DSContentSeurat['data'],
+) {
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
 /** Multi-Sample H5AD */
 function addMultiSampleH5adDatasetContent(
   groupLabels: Record<PlId, string>,
@@ -476,6 +492,22 @@ function addMultiSampleH5adDatasetContent(
 ) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
     throw new Error('Dataset has read or lane matcher, trying to add H5AD dataset');
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const group = f.match.sample.value;
+    const sampleId = getOrCreateGroup(groupLabels, group);
+    contentData[sampleId] = f.handle;
+  }
+}
+
+/** Multi-Sample Seurat */
+function addMultiSampleSeuratDatasetContent(
+  groupLabels: Record<PlId, string>,
+  contentData: DSContentMultiSampleSeurat['data'],
+) {
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error('Dataset has read or lane matcher, trying to add Seurat dataset');
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -567,12 +599,18 @@ async function addToExistingDataset() {
     case 'H5AD':
       addH5adDatasetContent(dataset.content.data);
       break;
+    case 'Seurat':
+      addSeuratDatasetContent(dataset.content.data);
+      break;
     case 'MultiSampleH5AD':
       addMultiSampleH5adDatasetContent(dataset.content.groupLabels, dataset.content.data);
       // Update sample column name if it was changed
       if (data.sampleColumnName) {
         dataset.content.sampleColumnName = data.sampleColumnName;
       }
+      break;
+    case 'MultiSampleSeurat':
+      addMultiSampleSeuratDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
     case 'BulkCountMatrix':
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -721,6 +759,20 @@ async function createNewDataset() {
         },
       });
       break;
+    } case 'Seurat': {
+      const contentData: DSContentSeurat['data'] = {};
+      addSeuratDatasetContent(contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'Seurat',
+          gzipped: false,
+          data: contentData,
+        },
+      });
+      break;
     } case 'MultiSampleH5AD': {
       const groupLabels: Record<PlId, string> = {};
       const contentData: DSContentMultiSampleH5ad['data'] = {};
@@ -736,6 +788,24 @@ async function createNewDataset() {
           data: contentData,
           groupLabels: groupLabels,
           sampleColumnName: data.sampleColumnName,
+        },
+      });
+      break;
+    } case 'MultiSampleSeurat': {
+      const groupLabels: Record<PlId, string> = {};
+      const contentData: DSContentMultiSampleSeurat['data'] = {};
+      addMultiSampleSeuratDatasetContent(groupLabels, contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'MultiSampleSeurat',
+          gzipped: false,
+          sampleGroups: undefined,
+          data: contentData,
+          groupLabels: groupLabels,
+          sampleColumnName: data.sampleColumnName
         },
       });
       break;
@@ -813,11 +883,11 @@ const availableColumnsOptions = computed<ListOption<string>[]>(() => {
   return Array.from(columnSet).map((col) => ({ value: col, label: col }));
 });
 
-// Watch for when files are selected for MultiSampleH5AD datasets to start parsing
+// Watch for when files are selected for MultiSampleH5AD or MultiSampleSeurat datasets to start parsing
 watch(
   () => [data.files.length, data.datasetType] as const,
   ([filesCount, dsType]) => {
-    if (dsType === 'MultiSampleH5AD' && filesCount > 0) {
+    if ((dsType === 'MultiSampleH5AD' || dsType === 'MultiSampleSeurat') && filesCount > 0) {
       data.loadingColumns = true;
     }
   },
@@ -911,14 +981,14 @@ const canCreateOrAdd = computed(
       :error="patternError"
     />
 
-    <div v-if="data.datasetType === 'MultiSampleH5AD'">
+    <div v-if="data.datasetType === 'MultiSampleH5AD' || data.datasetType === 'MultiSampleSeurat'">
       <div v-if="data.loadingColumns">
         Parsing files to extract column information...
       </div>
       <PlRow v-else-if="availableColumnsOptions.length > 0" alignCenter>
         <PlDropdown
           v-model="data.sampleColumnName"
-          label="Sample Column Name in anndata.obs"
+          :label="data.datasetType === 'MultiSampleH5AD' ? 'Sample Column Name in anndata.obs' : 'Sample Column Name in Seurat metadata'"
           :options="availableColumnsOptions"
           :error="undefined"
           class="flex-grow-1"
