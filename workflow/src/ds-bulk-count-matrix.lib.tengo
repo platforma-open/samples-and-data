@@ -37,6 +37,10 @@ getSamples := func(dataset, importFile) {
     return result
 }
 
+createGroupAxis := func(groupIdAxis, dataset) {
+    return copy(groupIdAxis)
+}
+
 createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
     
     extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
@@ -64,5 +68,6 @@ createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
 export {
     isGrouped: true,
     getSamples: getSamples,
+    createGroupAxis: createGroupAxis,
     createDataset: createDataset
 }
