@@ -36,6 +36,16 @@ getSamples := func(dataset, importFile) {
     return result
 }
 
+createGroupAxis := func(groupIdAxis, dataset) {
+    sampleColumnName := dataset.content.sampleColumnName
+    if !sampleColumnName {
+        sampleColumnName = "sample"
+    }
+    result := copy(groupIdAxis)
+    result.annotations["pl7.app/sampleColumnName"] = sampleColumnName
+    return result
+}
+
 createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
     
     extension := "rds"
@@ -64,6 +74,7 @@ export {
     isGrouped: true,
     getColumns: getColumns,
     getSamples: getSamples,
+    createGroupAxis: createGroupAxis,
     createDataset: createDataset
 }
 
