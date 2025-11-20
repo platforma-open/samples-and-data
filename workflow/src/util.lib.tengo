@@ -72,9 +72,18 @@ sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     }
 }
 
+getSampleColumnName := func(dataset) {
+    sampleColumnName := dataset.content.sampleColumnName
+    if !sampleColumnName {
+        return "sample"
+    }
+    return sampleColumnName
+}
+
 
 export {
     createJsonPColumnData: createJsonPColumnData,
     datasetColumnSpecBase: datasetColumnSpecBase,
-    sampleGroupsLinkerColumn: sampleGroupsLinkerColumn
+    sampleGroupsLinkerColumn: sampleGroupsLinkerColumn,
+    getSampleColumnName: getSampleColumnName
 }

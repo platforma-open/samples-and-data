@@ -5,7 +5,7 @@ json := import("json")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 util := import(":util")
 
-createGroupAxis := func(groupIdAxis, dataset) {
+createGroupAxis := func(groupIdAxis, _) {
     return copy(groupIdAxis)
 }
 

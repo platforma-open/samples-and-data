@@ -18,10 +18,7 @@ getColumns := func(fImport, importFile) {
 
 getSamples := func(dataset, importFile) {
     result := {}
-    sampleColumnName := dataset.content.sampleColumnName
-    if !sampleColumnName {
-        sampleColumnName = "sample"
-    }
+    sampleColumnName := util.getSampleColumnName(dataset)
     for groupId, importHandle in dataset.content.data {
         if !importHandle {
             ll.panic("File handle not set for group %v", groupId)
@@ -37,10 +34,7 @@ getSamples := func(dataset, importFile) {
 }
 
 createGroupAxis := func(groupIdAxis, dataset) {
-    sampleColumnName := dataset.content.sampleColumnName
-    if !sampleColumnName {
-        sampleColumnName = "sample"
-    }
+    sampleColumnName := util.getSampleColumnName(dataset)
     result := copy(groupIdAxis)
     result.annotations["pl7.app/sampleColumnName"] = sampleColumnName
     return result

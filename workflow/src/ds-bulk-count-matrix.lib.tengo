@@ -37,7 +37,7 @@ getSamples := func(dataset, importFile) {
     return result
 }
 
-createGroupAxis := func(groupIdAxis, dataset) {
+createGroupAxis := func(groupIdAxis, _) {
     return copy(groupIdAxis)
 }
 
