@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 2.3.1
+
+### Patch Changes
+
+- 94af1ab: Add 'sampleColumnName' annotation to sample group axes annotation
+
 ## 2.3.0
 
 ### Minor Changes
