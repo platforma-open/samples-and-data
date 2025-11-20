@@ -104,10 +104,11 @@ wf.body(func(args) {
 		
 		ds := undefined 
 		if proc.isGrouped {
-			ds = proc.createDataset(blockId, sampleIdAxis, groupIdAxis, dataset, importFile)
+			datasetGroupIdAxis := proc.createGroupAxis(groupIdAxis, dataset)
+			ds = proc.createDataset(blockId, sampleIdAxis, datasetGroupIdAxis, dataset, importFile)
 			
 			// linker column
-			linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, groupIdAxis)
+			linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
 
 			ds["dataset." + dataset.id + ".linker"] = {
 				spec: linker.spec,
@@ -128,7 +129,7 @@ wf.body(func(args) {
 						"pl7.app/label": "Sample Group",
 						"pl7.app/isLabel": "true"
 					},
-					axesSpec: [groupIdAxis]
+					axesSpec: [datasetGroupIdAxis]
 				},
 				data: util.createJsonPColumnData(dataset.groupLabels)
 			}

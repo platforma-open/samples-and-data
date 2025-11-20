@@ -5,6 +5,10 @@ json := import("json")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 util := import(":util")
 
+createGroupAxis := func(groupIdAxis, _) {
+    return copy(groupIdAxis)
+}
+
 createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
 	extension :=  dataset.content.gzipped ? "fastq.gz" : "fastq"
 	
@@ -50,6 +54,7 @@ getSamples := func(dataset, importFile) {
 
 export {
     isGrouped: true,
+    createGroupAxis: createGroupAxis,
     createDataset: createDataset,
 	getSamples: getSamples
 }
