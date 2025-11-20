@@ -118,6 +118,10 @@ export interface DSContentH5ad extends WithPerSampleData<ImportFileHandle | null
   type: 'H5AD';
 }
 
+export interface DSContentH5 extends WithPerSampleData<ImportFileHandle | null> {
+  type: 'H5';
+}
+
 export interface DSContentSeurat extends WithPerSampleData<ImportFileHandle | null> {
   type: 'Seurat';
 }
@@ -167,6 +171,7 @@ export type DSContent =
   | DSContentCellRangerMtx
   | DSContentMultiplexedFastq
   | DSContentH5ad
+  | DSContentH5
   | DSContentSeurat
   | DSContentMultiSampleH5ad
   | DSContentMultiSampleSeurat;
@@ -188,6 +193,7 @@ export type DSCellRangerMtx = Dataset<DSContentCellRangerMtx>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
 export type DSMultiplexedFastq = Dataset<DSContentMultiplexedFastq>;
 export type DSH5ad = Dataset<DSContentH5ad>;
+export type DSH5 = Dataset<DSContentH5>;
 export type DSSeurat = Dataset<DSContentSeurat>;
 export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
 export type DSMultiSampleSeurat = Dataset<DSContentMultiSampleSeurat>;
