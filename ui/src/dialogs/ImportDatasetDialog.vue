@@ -7,6 +7,7 @@ import type {
   DSContentMultilaneFastq,
   DSContentMultiplexedFastq,
   DSContentH5ad,
+  DSContentH5,
   DSContentSeurat,
   DSContentMultiSampleH5ad,
   DSContentMultiSampleSeurat,
@@ -473,6 +474,18 @@ function addH5adDatasetContent(
   }
 }
 
+/** H5 */
+function addH5DatasetContent(
+  contentData: DSContentH5['data'],
+) {
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    contentData[sampleId] = f.handle;
+  }
+}
+
 /** Seurat */
 function addSeuratDatasetContent(
   contentData: DSContentSeurat['data'],
@@ -598,6 +611,9 @@ async function addToExistingDataset() {
       break;
     case 'H5AD':
       addH5adDatasetContent(dataset.content.data);
+      break;
+    case 'H5':
+      addH5DatasetContent(dataset.content.data);
       break;
     case 'Seurat':
       addSeuratDatasetContent(dataset.content.data);
@@ -754,6 +770,20 @@ async function createNewDataset() {
         id: newDatasetId,
         content: {
           type: 'H5AD',
+          gzipped: false,
+          data: contentData,
+        },
+      });
+      break;
+    } case 'H5': {
+      const contentData: DSContentH5['data'] = {};
+      addH5DatasetContent(contentData);
+
+      app.model.args.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: 'H5',
           gzipped: false,
           data: contentData,
         },

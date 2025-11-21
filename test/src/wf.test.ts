@@ -247,6 +247,48 @@ blockTest('multisample seurat input', { timeout: 30000 }, async ({ rawPrj: proje
   }
 });
 
+blockTest('simple h5 input', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+
+  // TODO: Add test.h5 file to assets directory
+  const h5Handle = await helpers.getLocalFileHandle('./assets/test.h5');
+
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'H5 Dataset',
+        content: {
+          type: 'H5',
+          gzipped: false,
+          data: {
+            [sample1Id]: h5Handle,
+          },
+        },
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
+  } satisfies BlockArgs);
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [h5Handle]: { done: true } } },
+    sampleGroups: { ok: true, value: {} },
+  });
+});
+
 blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();

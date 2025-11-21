@@ -56,6 +56,11 @@ export const datasetTypes: Record<DSType, { label: string; fileType: FileContent
     fileType: 'H5AD',
     hasTags: false,
   },
+  H5: {
+    label: 'H5',
+    fileType: 'H5',
+    hasTags: false,
+  },
   Seurat: {
     label: 'Seurat RDS',
     fileType: 'Seurat',

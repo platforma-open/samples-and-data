@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { AgGridVue } from 'ag-grid-vue3';
 
-import type { DSH5ad } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { DSH5 } from '@platforma-open/milaboratories.samples-and-data.model';
 import { AgGridTheme } from '@platforma-sdk/ui-vue';
 import { useFileDatasetPage } from '../composables/useFileDatasetPage';
 
-const { rowData, defaultColDef, columnDefs, gridOptions } = useFileDatasetPage<DSH5ad>({
-  headerName: 'H5AD file',
-  extensions: ['h5ad'],
+const { rowData, defaultColDef, columnDefs, gridOptions } = useFileDatasetPage<DSH5>({
+  headerName: 'H5 file',
+  extensions: ['h5'],
 });
 </script>
 
