@@ -38,9 +38,7 @@ const multiplexedFastqDatasets = computed(() =>
 // Datasets that support auto-extraction (BulkCountMatrix, MultiSampleH5AD, MultiSampleSeurat)
 const autoExtractDatasets = computed(() =>
   datasets.value.filter((ds) =>
-    ds.content.type === 'BulkCountMatrix'
-    || ds.content.type === 'MultiSampleH5AD'
-    || ds.content.type === 'MultiSampleSeurat',
+    ['BulkCountMatrix', 'MultiSampleH5AD', 'MultiSampleSeurat'].includes(ds.content.type),
   ),
 );
 
@@ -58,29 +56,31 @@ async function importSamplesheet() {
 async function handleSamplesheetImport(importData: SamplesheetImportData) {
   const args = app.model.args;
 
+  // Create metadata columns lookup map for O(1) access
+  const metadataColumnsMap = new Map(importData.metadataColumns.map((col) => [col.id, col]));
+
   for (const dataset of multiplexedFastqDatasets.value) {
+    // Create group label to groupId lookup map for O(1) access
+    const groupLabelToId = new Map(
+      Object.entries(dataset.content.groupLabels).map(([groupId, label]) => [label, groupId as PlId]),
+    );
+
     // Clone the existing sampleGroups to trigger Vue reactivity
     const updatedSampleGroups = { ...(dataset.content.sampleGroups || {}) };
 
     // Process each row and match fileId to groupLabel
     for (const row of importData.rows) {
-      // Find the group that matches this fileId
-      const matchedGroupEntry = Object.entries(dataset.content.groupLabels).find(
-        ([_groupId, groupLabel]) => groupLabel === row.fileId,
-      );
-
-      if (!matchedGroupEntry) {
+      // Find the group that matches this fileId using lookup map
+      const groupId = groupLabelToId.get(row.fileId);
+      if (!groupId) {
         continue;
       }
 
-      const [groupId, _groupLabel] = matchedGroupEntry;
-      const groupIdTyped = groupId as PlId;
-
       // Clone the group's sample mapping
-      if (!updatedSampleGroups[groupIdTyped]) {
-        updatedSampleGroups[groupIdTyped] = {};
+      if (!updatedSampleGroups[groupId]) {
+        updatedSampleGroups[groupId] = {};
       } else {
-        updatedSampleGroups[groupIdTyped] = { ...updatedSampleGroups[groupIdTyped] };
+        updatedSampleGroups[groupId] = { ...updatedSampleGroups[groupId] };
       }
 
       // Use the samplePlId from import data
@@ -91,11 +91,11 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       args.sampleLabels[sampleId] = row.sampleId;
 
       // Add the sample to the matched group
-      updatedSampleGroups[groupIdTyped][sampleId] = row.sampleId;
+      updatedSampleGroups[groupId][sampleId] = row.sampleId;
 
-      // Populate metadata for this sample
+      // Populate metadata for this sample using lookup map
       for (const [columnId, value] of Object.entries(row.metadata)) {
-        const column = importData.metadataColumns.find((col) => col.id === columnId);
+        const column = metadataColumnsMap.get(columnId);
         if (column && (typeof value === 'string' || typeof value === 'number')) {
           column.data[sampleId] = value;
         }
