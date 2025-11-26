@@ -1,4 +1,4 @@
-import { escapeRegExp } from './util';
+import { escapeRegExp } from './string_utils';
 
 type MatcherFunction = (existingSample: string, importSample: string) => boolean;
 export type SampleMatchingAlgorithm = {

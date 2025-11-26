@@ -127,10 +127,16 @@ test('collectReadIndices with manual pattern', ({ expect }) => {
   expect(readIndices).to.toEqual(['R1', 'R2']);
 });
 
-test('collectReadIndices without read matcher returns empty', ({ expect }) => {
+test('collectReadIndices without read matcher returns empty for fasta', ({ expect }) => {
   const pattern = FileNamePattern.parse('{{Sample}}.fasta');
   const readIndices = collectReadIndices(pattern, ['SampleA.fasta', 'SampleB.fasta']);
   expect(readIndices).to.toEqual([]);
+});
+
+test('collectReadIndices without read matcher returns R1 for single fastq file', ({ expect }) => {
+  const pattern = FileNamePattern.parse('{{Sample}}.fastq.gz');
+  const readIndices = collectReadIndices(pattern, ['SampleA.fastq.gz']);
+  expect(readIndices).to.toEqual(['R1']);
 });
 
 test('collectReadIndices returns default when no read matches found', ({ expect }) => {
