@@ -17,7 +17,7 @@ catalog:
   "@platforma-sdk/eslint-config": ^1.1.0
   '@platforma-sdk/package-builder': 3.10.7
 
-  '@platforma-open/milaboratories.runenv-python-3': ^1.6.2
+  '@platforma-open/milaboratories.runenv-python-3': ^1.7.4
   '@platforma-open/milaboratories.runenv-r-samples-and-data': ^1.0.1
 
   '@platforma-sdk/test': 1.45.35
