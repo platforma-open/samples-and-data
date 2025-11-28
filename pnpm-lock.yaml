@@ -6508,7 +6508,7 @@ snapshots:
       '@milaboratories/ts-helpers': 1.5.4
       '@platforma-sdk/block-tools': 2.6.22
       '@platforma-sdk/model': 1.45.35
-      '@platforma-sdk/workflow-tengo': ^5.6.3
+      '@platforma-sdk/workflow-tengo': 5.6.1
       canonicalize: 2.1.0
       denque: 2.1.0
       lru-cache: 11.2.2
