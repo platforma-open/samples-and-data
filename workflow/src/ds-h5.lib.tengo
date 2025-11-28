@@ -1,7 +1,7 @@
 util := import(":util")
 
 createDataset := func(blockId, sampleIdAxis, dataset, importFile) {
-    return util.createFileDataset(blockId, sampleIdAxis, dataset, importFile, "rds")
+    return util.createFileDataset(blockId, sampleIdAxis, dataset, importFile, "h5")
 }
 
 export {
