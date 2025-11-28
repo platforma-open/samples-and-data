@@ -1,0 +1,10 @@
+util := import(":util")
+
+createDataset := func(blockId, sampleIdAxis, dataset, importFile) {
+    return util.createFileDataset(blockId, sampleIdAxis, dataset, importFile, "h5")
+}
+
+export {
+    isGrouped: false,
+    createDataset: createDataset
+}
