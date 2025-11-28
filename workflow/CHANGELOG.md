@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 2.4.0
+
+### Minor Changes
+
+- 4a2bbae: h5 file format support implemented
+
 ## 2.3.1
 
 ### Patch Changes
