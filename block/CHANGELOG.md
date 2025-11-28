@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.12.0
+
+### Minor Changes
+
+- 4a2bbae: h5 file format support implemented
+
+### Patch Changes
+
+- Updated dependencies [4a2bbae]
+  - @platforma-open/milaboratories.samples-and-data.workflow@2.4.0
+  - @platforma-open/milaboratories.samples-and-data.model@2.4.0
+  - @platforma-open/milaboratories.samples-and-data.ui@2.4.0
+
 ## 1.11.1
 
 ### Patch Changes
