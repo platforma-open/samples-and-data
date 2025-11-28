@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.4.1
+
+### Patch Changes
+
+- 9facd6f: Update UI for samplesheet upload for multiplexed fastq datasets
+
 ## 2.4.0
 
 ### Minor Changes
