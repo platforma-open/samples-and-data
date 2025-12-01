@@ -1,5 +1,23 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.4.2
+
+### Patch Changes
+
+- 7c0b1c2: Fix import of single read fastq datasets without index pattern
+
+## 2.4.1
+
+### Patch Changes
+
+- 9facd6f: Update UI for samplesheet upload for multiplexed fastq datasets
+
+## 2.4.0
+
+### Minor Changes
+
+- 4a2bbae: h5 file format support implemented
+
 ## 2.3.0
 
 ### Minor Changes

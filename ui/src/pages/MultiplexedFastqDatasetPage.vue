@@ -5,13 +5,10 @@ import { AgGridVue } from 'ag-grid-vue3';
 import type { DSMultiplexedFastq, PlId, ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, PlBtnGhost } from '@platforma-sdk/ui-vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
 import { computed, shallowRef } from 'vue';
 import { useApp } from '../app';
-import ImportErrorDialog from '../components/ImportErrorDialog.vue';
-import { useTableImport } from '../composables/useTableImport';
-import type { SamplesheetImportData } from '../dialogs/ImportSamplesheetDialog.vue';
-import ImportSamplesheetDialog from '../dialogs/ImportSamplesheetDialog.vue';
+import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
 import { agGroupIdColumnDef } from '../util';
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
@@ -27,75 +24,11 @@ const dataset = computed(() => {
   return ds as DSMultiplexedFastq;
 });
 
-const { state: importState, importTable, clearImportCandidate, clearErrorMessage } = useTableImport();
-
 const gridApi = shallowRef<GridApi<DatasetRow>>();
 
 const onGridReady = (params: GridReadyEvent) => {
   gridApi.value = params.api;
 };
-
-async function importSamplesheet() {
-  await importTable({
-    title: 'Import samplesheet',
-    buttonLabel: 'Import',
-    fileExtensions: ['xlsx'],
-  });
-}
-
-async function handleSamplesheetImport(importData: SamplesheetImportData) {
-  const args = app.model.args;
-
-  // Clone the existing sampleGroups to trigger Vue reactivity
-  const updatedSampleGroups = { ...(dataset.value.content.sampleGroups || {}) };
-
-  // Process each row and match fileId to groupLabel
-  for (const row of importData.rows) {
-    // Find the group that matches this fileId
-    const matchedGroupEntry = Object.entries(dataset.value.content.groupLabels).find(
-      ([_groupId, groupLabel]) => groupLabel === row.fileId,
-    );
-
-    if (!matchedGroupEntry) {
-      console.warn(`No group found matching file_id: ${row.fileId}`);
-      continue;
-    }
-
-    const [groupId, _groupLabel] = matchedGroupEntry;
-    const groupIdTyped = groupId as PlId;
-
-    // Clone the group's sample mapping
-    if (!updatedSampleGroups[groupIdTyped]) {
-      updatedSampleGroups[groupIdTyped] = {};
-    } else {
-      updatedSampleGroups[groupIdTyped] = { ...updatedSampleGroups[groupIdTyped] };
-    }
-
-    // Use the samplePlId from import data
-    const sampleId = row.samplePlId;
-
-    // Add sample to global sample lists
-    args.sampleIds.push(sampleId);
-    args.sampleLabels[sampleId] = row.sampleId;
-
-    // Add the sample to the matched group
-    updatedSampleGroups[groupIdTyped][sampleId] = row.sampleId;
-
-    // Populate metadata for this sample
-    for (const [columnId, value] of Object.entries(row.metadata)) {
-      const column = importData.metadataColumns.find((col) => col.id === columnId);
-      if (column && (typeof value === 'string' || typeof value === 'number')) {
-        column.data[sampleId] = value;
-      }
-    }
-  }
-
-  // Replace the entire sampleGroups object to trigger Vue reactivity
-  dataset.value.content.sampleGroups = updatedSampleGroups;
-
-  clearImportCandidate();
-  await app.allSettled();
-}
 
 type DatasetRow = {
   readonly groupId: PlId;
@@ -118,10 +51,6 @@ const rowData = computed(() => {
       reads: fileGroup,
     }),
   );
-});
-
-const hasRowsWithoutSamples = computed(() => {
-  return rowData.value.some((row) => row.nSamples === 0);
 });
 
 const defaultColDef: ColDef = {
@@ -206,38 +135,15 @@ const gridOptions: GridOptions<DatasetRow> = {
 </script>
 
 <template>
-  <div :style="{ display: 'flex', flexDirection: 'column', height: '100%' }">
-    <div :style="{ display: 'flex', justifyContent: 'flex-end', padding: '12px', borderBottom: '1px solid #e0e0e0' }">
-      <PlBtnGhost
-        icon="table-import"
-        :style="{ backgroundColor: hasRowsWithoutSamples ? '#FAF5AA' : undefined }"
-        @click="importSamplesheet"
-      >
-        Import samplesheet
-      </PlBtnGhost>
-    </div>
+  <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
 
-    <AgGridVue
-      :theme="AgGridTheme"
-      :style="{ flex: '1' }"
-      :rowData="rowData"
-      :defaultColDef="defaultColDef"
-      :columnDefs="columnDefs"
-      :gridOptions="gridOptions"
-      @grid-ready="onGridReady"
-    />
-
-    <ImportSamplesheetDialog
-      v-if="importState.importCandidate !== undefined"
-      :import-candidate="importState.importCandidate"
-      :available-group-labels="Object.values(dataset.content.groupLabels)"
-      @on-close="clearImportCandidate"
-      @on-import="handleSamplesheetImport"
-    />
-
-    <ImportErrorDialog
-      :error-message="importState.errorMessage"
-      @close="clearErrorMessage"
-    />
-  </div>
+  <AgGridVue
+    :theme="AgGridTheme"
+    :style="{ height: '100%' }"
+    :rowData="rowData"
+    :defaultColDef="defaultColDef"
+    :columnDefs="columnDefs"
+    :gridOptions="gridOptions"
+    @grid-ready="onGridReady"
+  />
 </template>
