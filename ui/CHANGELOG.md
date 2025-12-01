@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.4.2
+
+### Patch Changes
+
+- 7c0b1c2: Fix import of single read fastq datasets without index pattern
+
 ## 2.4.1
 
 ### Patch Changes
