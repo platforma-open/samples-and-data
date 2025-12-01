@@ -22,6 +22,7 @@ dsCellRangerMtx := import(":ds-cellranger-mtx")
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 dsMultiplexedFastq := import(":ds-multiplexed-fastq")
 dsH5ad := import(":ds-h5ad")
+dsH5 := import(":ds-h5")
 dsSeurat := import(":ds-seurat")
 dsMultiSampleH5ad := import(":ds-multisample-h5ad")
 dsMultiSampleSeurat := import(":ds-multisample-seurat")
@@ -34,6 +35,7 @@ dsProcessors := {
 	"Xsv": dsXsv,
 	"TaggedXsv": dsTaggedXsv,
 	"H5AD": dsH5ad,
+	"H5": dsH5,
 	"Seurat": dsSeurat,
 	"MultiSampleH5AD": dsMultiSampleH5ad,
 	"MultiSampleSeurat": dsMultiSampleSeurat,
