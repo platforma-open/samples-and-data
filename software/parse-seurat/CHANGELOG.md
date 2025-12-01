@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.parse-seurat
 
+## 1.1.1
+
+### Patch Changes
+
+- dc479f3: technical release
+
 ## 1.1.0
 
 ### Minor Changes

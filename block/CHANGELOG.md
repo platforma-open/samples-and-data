@@ -1,5 +1,15 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.12.3
+
+### Patch Changes
+
+- dc479f3: technical release
+- Updated dependencies [dc479f3]
+  - @platforma-open/milaboratories.samples-and-data.model@2.4.1
+  - @platforma-open/milaboratories.samples-and-data.ui@2.4.3
+  - @platforma-open/milaboratories.samples-and-data.workflow@2.4.1
+
 ## 1.12.2
 
 ### Patch Changes
