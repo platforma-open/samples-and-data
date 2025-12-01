@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.4.3
+
+### Patch Changes
+
+- dc479f3: technical release
+
 ## 2.4.2
 
 ### Patch Changes

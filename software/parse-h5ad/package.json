@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "type": "module",
   "description": "Samples and Data software package",
   "scripts": {

@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 2.4.1
+
+### Patch Changes
+
+- dc479f3: technical release
+- Updated dependencies [dc479f3]
+  - @platforma-open/milaboratories.samples-and-data.parse-h5ad@1.1.2
+  - @platforma-open/milaboratories.samples-and-data.parse-seurat@1.1.1
+
 ## 2.4.0
 
 ### Minor Changes

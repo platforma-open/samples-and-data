@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "Seurat RDS file parser for Samples and Data",
   "scripts": {

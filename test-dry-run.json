@@ -3,7 +3,7 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "36FPAPK07ZKLTeQRvjP1e9zmIii",
+  "id": "36FhQrnFtdtIRjB3dYr98ty6ueW",
   "version": "1",
   "turboVersion": "2.6.1",
   "monorepo": true,
@@ -39,12 +39,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "ebdf85400e659614",
+      "hash": "64193639874dba28",
       "inputs": {
-        "CHANGELOG.md": "5a4b899758d02211f42abd5986af8f02a77eb797",
+        "CHANGELOG.md": "22ac1b7365bce35898fc91d96ae949d33b9d5a8d",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "9bd830b8010275b4bcf21e85a54d7bfc004b58ac"
+        "package.json": "91b4c0e2d6f4d75126aad16cb2dc0f80ef9aed09"
       },
       "hashOfExternalDependencies": "3967facaf7e4da4b",
       "cache": {
@@ -116,12 +116,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "9764aa3281cde0cc",
+      "hash": "06307a49c5084e48",
       "inputs": {
-        "CHANGELOG.md": "5a4b899758d02211f42abd5986af8f02a77eb797",
+        "CHANGELOG.md": "22ac1b7365bce35898fc91d96ae949d33b9d5a8d",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "9bd830b8010275b4bcf21e85a54d7bfc004b58ac"
+        "package.json": "91b4c0e2d6f4d75126aad16cb2dc0f80ef9aed09"
       },
       "hashOfExternalDependencies": "3967facaf7e4da4b",
       "cache": {
@@ -188,11 +188,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.model#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.model",
-      "hash": "904136a8269ff8bc",
+      "hash": "ae1eca2a9338f9a0",
       "inputs": {
-        "CHANGELOG.md": "ec8d92952b786e5d641ebfde1d9925aaa58cf0a0",
+        "CHANGELOG.md": "03051c762bc36dc00461aec1ecec6eeff6dcdc40",
         "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "4317992c641f31d83d140779602b2bcbb73e5be7",
+        "package.json": "d56266815b7c62c3c614a12e3c93e5e9d57d6af3",
         "src/args.ts": "917f3833c82e87b3c75d53a80de6abc20cdce9fb",
         "src/index.ts": "342a148651634894a5ff6b9b75065c9b48f43771",
         "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
@@ -266,11 +266,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.model#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.model",
-      "hash": "f58533f9389e37b3",
+      "hash": "ef2ee03ec78cdefd",
       "inputs": {
-        "CHANGELOG.md": "ec8d92952b786e5d641ebfde1d9925aaa58cf0a0",
+        "CHANGELOG.md": "03051c762bc36dc00461aec1ecec6eeff6dcdc40",
         "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "4317992c641f31d83d140779602b2bcbb73e5be7",
+        "package.json": "d56266815b7c62c3c614a12e3c93e5e9d57d6af3",
         "src/args.ts": "917f3833c82e87b3c75d53a80de6abc20cdce9fb",
         "src/index.ts": "342a148651634894a5ff6b9b75065c9b48f43771",
         "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
@@ -341,15 +341,15 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
-      "hash": "1326b036e3f971ac",
+      "hash": "9ac55c0ed2e3b3c5",
       "inputs": {
-        "CHANGELOG.md": "1ee35d8dfef6c055ef58bcb19373ff3534ef854f",
-        "package.json": "2cf0f98d70c56c4da83bd2f14ea1a96a83a85af4",
+        "CHANGELOG.md": "ba55f7eb5363a7a408d4738f9205b168e21e2d09",
+        "package.json": "5939f4e76f7bb6e3b1a08a269939a9be3a8bf6f5",
         "src/README.md": "c567449f53d8c70c0f01b282710a46e81815c5be",
         "src/main.py": "4e418b8e3e58fba3fcd18c3d4efe17e7b3d47921",
         "src/requirements.txt": "7b2de052f4a27aa29f3b6083dbe7594eab2578dd"
       },
-      "hashOfExternalDependencies": "57cff717ed1394ab",
+      "hashOfExternalDependencies": "ce1ff92d8ad9ee0e",
       "cache": {
         "local": false,
         "remote": false,
@@ -415,15 +415,15 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-h5ad#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
-      "hash": "db7f57e6391940f3",
+      "hash": "1f01ffa6fd03cd33",
       "inputs": {
-        "CHANGELOG.md": "1ee35d8dfef6c055ef58bcb19373ff3534ef854f",
-        "package.json": "2cf0f98d70c56c4da83bd2f14ea1a96a83a85af4",
+        "CHANGELOG.md": "ba55f7eb5363a7a408d4738f9205b168e21e2d09",
+        "package.json": "5939f4e76f7bb6e3b1a08a269939a9be3a8bf6f5",
         "src/README.md": "c567449f53d8c70c0f01b282710a46e81815c5be",
         "src/main.py": "4e418b8e3e58fba3fcd18c3d4efe17e7b3d47921",
         "src/requirements.txt": "7b2de052f4a27aa29f3b6083dbe7594eab2578dd"
       },
-      "hashOfExternalDependencies": "57cff717ed1394ab",
+      "hashOfExternalDependencies": "ce1ff92d8ad9ee0e",
       "cache": {
         "local": false,
         "remote": false,
@@ -488,11 +488,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-      "hash": "12126ffab6044c34",
+      "hash": "7228cb3960ee4de3",
       "inputs": {
-        "CHANGELOG.md": "d893f45b22a34ccc64ba401832b63dde6b568619",
+        "CHANGELOG.md": "a2f01832a95d623f8e51afe6e0ad2ad450faa5f3",
         "Dockerfile": "bdc11787e4b20488e5c11fbcd7cfecf0b0f171da",
-        "package.json": "f9188e89abbbdf0de2ff6cd8106f1f34f55cf6c8",
+        "package.json": "bd29f1a058cd78446516b2b691be52f6fb16de6b",
         "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
         "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
         "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
@@ -564,11 +564,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-      "hash": "f90afa7487e2b154",
+      "hash": "1e0d72440c1e43b2",
       "inputs": {
-        "CHANGELOG.md": "d893f45b22a34ccc64ba401832b63dde6b568619",
+        "CHANGELOG.md": "a2f01832a95d623f8e51afe6e0ad2ad450faa5f3",
         "Dockerfile": "bdc11787e4b20488e5c11fbcd7cfecf0b0f171da",
-        "package.json": "f9188e89abbbdf0de2ff6cd8106f1f34f55cf6c8",
+        "package.json": "bd29f1a058cd78446516b2b691be52f6fb16de6b",
         "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
         "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
         "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
@@ -639,9 +639,9 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "16fc4461892eeb5e",
+      "hash": "a3771bcb247961fb",
       "inputs": {
-        "CHANGELOG.md": "13386f021be128fa549fd774d09d4aa6ffa0431b",
+        "CHANGELOG.md": "321d9e3ea223cf3effbd8db94b9586e36255374e",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "assets/small_data_R1.fastq.gz": "78e126e7f7d6a5a21dff0ce18334fe5cf0cce622",
         "assets/small_data_R2.fastq.gz": "0f80a37feffeba95e018ef60ff1dde37e1ba68f4",
@@ -649,7 +649,7 @@
         "assets/test.h5ad": "13adc1dc4ad66578b1df6c3a58ccb2cb3a833b3a",
         "assets/test.rds": "926386adc628d1f64597e5411633267d517356d2",
         "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "20b38f7001b67079bd6556ebf9380a39d8af8a53",
+        "package.json": "4d0e4523d08bc2ecf5ec98fde6bd210af2afd57d",
         "src/wf.test.ts": "5a84896308ff07253a9cb542ed7efc1d4284980e",
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "c4ce64590b6453ee6d197ee2322c9e7d564410d5"
@@ -722,9 +722,9 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "1d190819a33d0a77",
+      "hash": "5ceade0049c57224",
       "inputs": {
-        "CHANGELOG.md": "13386f021be128fa549fd774d09d4aa6ffa0431b",
+        "CHANGELOG.md": "321d9e3ea223cf3effbd8db94b9586e36255374e",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "assets/small_data_R1.fastq.gz": "78e126e7f7d6a5a21dff0ce18334fe5cf0cce622",
         "assets/small_data_R2.fastq.gz": "0f80a37feffeba95e018ef60ff1dde37e1ba68f4",
@@ -732,7 +732,7 @@
         "assets/test.h5ad": "13adc1dc4ad66578b1df6c3a58ccb2cb3a833b3a",
         "assets/test.rds": "926386adc628d1f64597e5411633267d517356d2",
         "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "20b38f7001b67079bd6556ebf9380a39d8af8a53",
+        "package.json": "4d0e4523d08bc2ecf5ec98fde6bd210af2afd57d",
         "src/wf.test.ts": "5a84896308ff07253a9cb542ed7efc1d4284980e",
         "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
         "vitest.config.mts": "c4ce64590b6453ee6d197ee2322c9e7d564410d5"
@@ -802,12 +802,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.ui#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.ui",
-      "hash": "ca30960e4a77a322",
+      "hash": "d2dd8091a4cf2308",
       "inputs": {
-        "CHANGELOG.md": "194c54590903103a909c8e9f55203bfa865863ef",
+        "CHANGELOG.md": "fde0bd9970d8914d538a9c873c0fe34224d74405",
         "eslint.config.mjs": "30e2871b6d4cc4776ac969c3a0e034a23e2fe766",
         "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "a58319b2db0bcc78c467499478b9b1adbec0793c",
+        "package.json": "f70d6bce9b09564aa4690306eec50407f533ff0c",
         "src/app.ts": "aac34bd296a0c118ea29ce3958a972162b2d393e",
         "src/components/DatasetCell.vue": "8b635120fd9ccaabe98e429425b5162c25e6273d",
         "src/components/ImportErrorDialog.vue": "86a8df112092ef1ce5f820791fbab75fed894d03",
@@ -929,12 +929,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.ui#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.ui",
-      "hash": "fab1d69be10831fc",
+      "hash": "ccd4cd7909d1b7e0",
       "inputs": {
-        "CHANGELOG.md": "194c54590903103a909c8e9f55203bfa865863ef",
+        "CHANGELOG.md": "fde0bd9970d8914d538a9c873c0fe34224d74405",
         "eslint.config.mjs": "30e2871b6d4cc4776ac969c3a0e034a23e2fe766",
         "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "a58319b2db0bcc78c467499478b9b1adbec0793c",
+        "package.json": "f70d6bce9b09564aa4690306eec50407f533ff0c",
         "src/app.ts": "aac34bd296a0c118ea29ce3958a972162b2d393e",
         "src/components/DatasetCell.vue": "8b635120fd9ccaabe98e429425b5162c25e6273d",
         "src/components/ImportErrorDialog.vue": "86a8df112092ef1ce5f820791fbab75fed894d03",
@@ -1053,11 +1053,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "056dcfa7de29c4fe",
+      "hash": "32c16cc030158a84",
       "inputs": {
-        "CHANGELOG.md": "133cbee31d577afe4766b911c746e54e3dcc9a62",
+        "CHANGELOG.md": "5f24ef8dd6df524682feadf28a38d55a16c586ec",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "506f96b4bbbff05bf9a719fb0d35ce0d1529557f",
+        "package.json": "de6974d745b69dfd6937607dfa621882e88af95c",
         "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
         "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
         "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
@@ -1149,11 +1149,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "5b70737ae36a98eb",
+      "hash": "32321a1a3a74d41c",
       "inputs": {
-        "CHANGELOG.md": "133cbee31d577afe4766b911c746e54e3dcc9a62",
+        "CHANGELOG.md": "5f24ef8dd6df524682feadf28a38d55a16c586ec",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "506f96b4bbbff05bf9a719fb0d35ce0d1529557f",
+        "package.json": "de6974d745b69dfd6937607dfa621882e88af95c",
         "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
         "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
         "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
@@ -1241,7 +1241,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "c9d996cb38c7331ab18ef89ec709c639176861da",
+    "sha": "36e820077da70aee43f5303b9a5697a4a159b2ca",
     "branch": "main"
   }
 }
