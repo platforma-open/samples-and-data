@@ -1,6 +1,6 @@
 import type { DSType } from '@platforma-open/milaboratories.samples-and-data.model';
 import * as _ from 'radashi';
-import { escapeRegExp } from '../util';
+import { escapeRegExp } from '../string_utils';
 
 /** Derived from file extension */
 export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX' | 'H5AD' | 'H5' | 'Seurat';
@@ -345,7 +345,9 @@ export function collectReadIndices(
   pattern: FileNamePattern,
   fileNames: string[],
 ): string[] {
-  if (!pattern.hasReadIndexMatcher || pattern.fileContentType !== 'Fastq') return [];
+  if (pattern.fileContentType !== 'Fastq') return [];
+
+  if (!pattern.hasReadIndexMatcher) return ['R1'];
 
   const readIndices = new Set<string>();
   for (const fileName of fileNames) {
