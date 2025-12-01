@@ -4,10 +4,6 @@ import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
 import { PlAgColumnHeader, type AppV2, type ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
 
-export function escapeRegExp(str: string) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 export function setEquals(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false;
   const aSet = new Set(a);
