@@ -1,11 +1,11 @@
-import { platforma } from '@platforma-open/milaboratories.samples-and-data.model';
+import { platforma, type Platforma } from '@platforma-open/milaboratories.samples-and-data.model';
 import { defineApp } from '@platforma-sdk/ui-vue';
 import { computed, ref } from 'vue';
 import DatasetPage from './pages/DatasetPage.vue';
 import MetadataPage from './pages/MetadataPage.vue';
 import NewDatasetPage from './pages/NewDatasetPage.vue';
 
-export const sdkPlugin = defineApp(platforma, (app) => {
+export const sdkPlugin = defineApp(platforma as Platforma, (app) => {
   const showImportDataset = ref(false);
 
   if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {

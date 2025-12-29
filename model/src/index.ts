@@ -58,27 +58,27 @@ export const platforma = BlockModel.create()
   .retentiveOutput(
     'sampleGroups',
     (ctx) => {
-      return Object.fromEntries(ctx.prerun
+      const entries = ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
         ?.mapFields((datasetId, groups) => {
-          const dataset = ctx.args.datasets.find(ds => ds.id === datasetId);
+          const dataset = ctx.args.datasets.find((ds) => ds.id === datasetId);
           if (!dataset) return [datasetId as PlId, undefined];
-          
+
           // BulkCountMatrix uses JSON objects
           if (dataset.content.type === 'BulkCountMatrix') {
             const result = Object.fromEntries(groups?.mapFields((groupId, samples) => [
               groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
             return [datasetId as PlId, result];
-          } 
+          } else if (dataset.content.type === 'MultiSampleH5AD' || dataset.content.type === 'MultiSampleSeurat') {
           // MultiSampleH5AD and MultiSampleSeurat use file handles
-          else if (dataset.content.type === 'MultiSampleH5AD' || dataset.content.type === 'MultiSampleSeurat') {
             const result = Object.fromEntries(groups?.mapFields((groupId, samplesFile) => [
               groupId as PlId, samplesFile?.getFileHandle()]) ?? []);
             return [datasetId as PlId, result];
           }
-          
+
           return [datasetId as PlId, undefined];
-        }) ?? []);
+        }) ?? [];
+      return Object.fromEntries(entries) as Record<string, unknown>;
     },
   )
 
@@ -116,6 +116,7 @@ export const platforma = BlockModel.create()
 
   .done(2);
 
+export type Platforma = typeof platforma;
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from './args';
