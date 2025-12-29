@@ -7,8 +7,9 @@
   ],
   "description": "Tengo-based template",
   "scripts": {
-    "build": "rm -rf dist/* && pl-tengo check && pl-tengo build",
-    "format": "/usr/bin/env emacs --script ./format.el"
+    "build": "rm -rf dist && pl-tengo check && pl-tengo build",
+    "format": "/usr/bin/env emacs --script ./format.el",
+    "do-pack": "rm -f *.tgz && pnpm pack && mv *.tgz package.tgz"
   },
   "dependencies": {
     "@platforma-open/milaboratories.samples-and-data.parse-h5ad": "workspace:*",

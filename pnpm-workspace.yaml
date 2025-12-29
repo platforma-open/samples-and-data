@@ -8,42 +8,36 @@ packages:
   - test
 
 catalog:
-  '@platforma-sdk/block-tools': 2.6.28
+  # SDK packages - EXACT VERSIONS (no ^ or ~)
+  '@milaboratories/ts-builder': 1.2.1
+  '@milaboratories/ts-configs': 1.2.0
+  '@platforma-sdk/workflow-tengo': 5.7.3
   '@platforma-sdk/model': 1.49.0
   '@platforma-sdk/ui-vue': 1.49.0
   '@platforma-sdk/tengo-builder': 2.4.7
-  '@platforma-sdk/workflow-tengo': 5.7.3
-  "@platforma-sdk/blocks-deps-updater": 2.0.0
-  "@platforma-sdk/eslint-config": ^1.2.0
   '@platforma-sdk/package-builder': 3.10.7
-
-  '@platforma-open/milaboratories.runenv-python-3': ^1.7.5
-  '@platforma-open/milaboratories.runenv-r-samples-and-data': ^1.0.1
-
+  '@platforma-sdk/block-tools': 2.6.28
+  '@platforma-sdk/eslint-config': 1.2.0
   '@platforma-sdk/test': 1.49.1
   '@milaboratories/helpers': 1.12.1
 
-  'vue': ^3.5.24
-  'vue-tsc': ^2.2.8
+  # Block-specific dependencies (can use ^ or ~)
+  '@platforma-open/milaboratories.runenv-python-3': ^1.7.5
+  '@platforma-open/milaboratories.runenv-r-samples-and-data': ^1.0.1
 
-  'zod': ~3.23.8
+  # Common dependencies - can use ^ or ~
+  'vue': ^3.5.24
+  'typescript': ~5.6.3
+  'turbo': ^2.6.1
+  'vitest': ^4.0.10
+  'eslint': ^9.25.1
+  '@changesets/cli': ^2.29.7
+
+  # Other dependencies
   'radashi': ^12.7.0
   'utility-types': ^3.11.0
-
-  'typescript': ~5.6.3
-  'tsup': ~8.4.0
-  'turbo': ^2.6.1
-
-  'vite': ^6.0.6
-  'vitest': ^4.0.10
-  '@vitejs/plugin-vue': ^5.2.1
-  'vite-plugin-dts': ^4.3.0
-
   '@vueuse/core': ^12.2.0
+  '@types/node': ~20.16.15
 
   'ag-grid-enterprise': &ag-grid ^34.1.2
   'ag-grid-vue3': *ag-grid
-
-  '@changesets/cli': ^2.29.7
-
-  '@types/node': ~20.16.15

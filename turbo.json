@@ -2,11 +2,23 @@
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["tsconfig.json"],
   "tasks": {
+    "lint": {
+      "outputs": [],
+      "dependsOn": ["^build"]
+    },
+    "type-check": {
+      "outputs": [],
+      "dependsOn": ["^build"]
+    },
     "build": {
       "inputs": ["$TURBO_DEFAULT$"],
       "env": ["PL_PKG_DEV"],
       "outputs": ["./dist/**", "./block-pack/**", "./pkg-*.tgz"],
-      "dependsOn": ["^build"]
+      "dependsOn": ["type-check", "lint", "^build"]
+    },
+    "do-pack": {
+      "dependsOn": ["build"],
+      "outputs": ["package.tgz"]
     },
     "test": {
       "dependsOn": ["build"],

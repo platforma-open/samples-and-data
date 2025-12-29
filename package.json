@@ -1,21 +1,23 @@
 {
-  "name": "@platforma-open/milaboratories.samples-and-data",
   "scripts": {
-    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "turbo run build",
     "build:dev": "env PL_PKG_DEV=local turbo run build",
+    "lint": "turbo run lint",
+    "type-check": "turbo run type-check",
     "test": "env PL_PKG_DEV=local turbo run test --concurrency 1 --env-mode=loose",
-    "test:dry-run": "PL_PKG_DEV=local turbo run test --dry-run=json",
+    "test:dry-run": "env PL_PKG_DEV=local turbo run test --dry-run=json",
     "mark-stable": "turbo run mark-stable",
+    "do-pack": "turbo run do-pack",
     "watch": "turbo watch build",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "update-sdk": "pl-blocks-deps-updater"
+    "update-sdk": "block-tools update-deps"
   },
   "devDependencies": {
-    "turbo": "catalog:",
     "@changesets/cli": "catalog:",
-    "@platforma-sdk/blocks-deps-updater": "catalog:"
+    "@platforma-sdk/block-tools": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
   "///": {

@@ -1,4 +1,4 @@
-import { model } from '@platforma-sdk/eslint-config';
+import { test } from '@platforma-sdk/eslint-config';
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [...model];
+export default [...test];

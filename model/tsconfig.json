@@ -1,16 +1,8 @@
 {
+  "extends": "@milaboratories/ts-configs/block/model",
   "compilerOptions": {
-    "target": "es2022",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "outDir": "./dist",
     "rootDir": "./src",
-    "sourceMap": true,
-    "declaration": true
+    "outDir": "./dist"
   },
-  "types": [],
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"]
 }

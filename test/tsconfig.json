@@ -1,16 +1,8 @@
 {
+  "extends": "@milaboratories/ts-configs/block/test",
   "compilerOptions": {
-    "target": "es2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "strict": true,
-    "outDir": "./dist",
     "rootDir": "./src",
-    "sourceMap": true,
-    "declaration": true,
-    "skipLibCheck": true
+    "outDir": "./dist"
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"]
 }
