@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.parse-h5ad
 
+## 1.1.3
+
+### Patch Changes
+
+- 47cb5bb: Update anndata version to support newer files
+
 ## 1.1.2
 
 ### Patch Changes
