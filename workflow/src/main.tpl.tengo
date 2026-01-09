@@ -88,11 +88,6 @@ wf.body(func(args) {
 		}
 	}
 
-	blockTitle := args.blockTitle
-	if is_undefined(blockTitle) {
-		blockTitle = "Samples & Data"
-	}
-
 	for _, dataset in args.datasets {
 		proc := dsProcessors[dataset.content.type]
 		if is_undefined(proc) {
@@ -100,7 +95,7 @@ wf.body(func(args) {
 		}
 
 		trace := pSpec.makeTrace(undefined,
-			{type: "milaboratories.samples-and-data", id: blockId, importance: 10, label: blockTitle},
+			{type: "milaboratories.samples-and-data", id: blockId, importance: 10, label: "Samples & Data"},
 			{type: "milaboratories.samples-and-data/dataset", id: dataset.id, importance: 100, label: dataset.label}
 		)		
 		
