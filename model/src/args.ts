@@ -207,7 +207,6 @@ export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
 }
 
 export interface BlockArgs {
-  blockTitle?: string;
   sampleIds: PlId[];
   sampleLabelColumnLabel: string;
   sampleLabels: Record<PlId, string>;
