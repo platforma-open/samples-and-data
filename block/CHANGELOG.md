@@ -1,5 +1,18 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.13.0
+
+### Minor Changes
+
+- ed17db5: Added subtitle, removed editable title
+
+### Patch Changes
+
+- Updated dependencies [ed17db5]
+  - @platforma-open/milaboratories.samples-and-data.workflow@2.5.0
+  - @platforma-open/milaboratories.samples-and-data.model@2.5.0
+  - @platforma-open/milaboratories.samples-and-data.ui@2.5.0
+
 ## 1.12.4
 
 ### Patch Changes

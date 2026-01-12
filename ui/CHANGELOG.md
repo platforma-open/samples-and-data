@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.5.0
+
+### Minor Changes
+
+- ed17db5: Added subtitle, removed editable title
+
 ## 2.4.3
 
 ### Patch Changes
