@@ -31,7 +31,6 @@ import {
   PlBtnGhost,
   PlBtnPrimary,
   PlDialogModal,
-  PlEditableTitle,
   PlTextField,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, shallowRef, useCssModule } from 'vue';
@@ -374,15 +373,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 </script>
 
 <template>
-  <PlBlockPage>
-    <template #title>
-      <PlEditableTitle
-        v-model="app.model.args.blockTitle"
-        :max-length="40"
-        max-width="600px"
-        placeholder="Samples & Data"
-      />
-    </template>
+  <PlBlockPage title="Samples & Data">
     <template #append>
       <PlBtnGhost icon="dna-import" @click.stop="() => (app.showImportDataset = true)">
         Import Dataset
