@@ -1,12 +1,12 @@
 import type {
   ImportFileHandle,
   InferHrefType,
+  InferOutputsType,
   PlId,
   TreeNodeAccessor,
 } from '@platforma-sdk/model';
 import {
   BlockModel,
-  type InferOutputsType,
 } from '@platforma-sdk/model';
 import { isGroupedDataset, type BlockArgs } from './args';
 
@@ -15,7 +15,6 @@ export type BlockUiState = { suggestedImport: boolean };
 export const platforma = BlockModel.create()
 
   .withArgs<BlockArgs>({
-    blockTitle: 'Samples & Data',
     sampleIds: [],
     metadata: [],
     sampleLabelColumnLabel: 'Sample',
@@ -92,7 +91,14 @@ export const platforma = BlockModel.create()
     },
   )
 
-  .title((ctx) => ctx.args.blockTitle ?? 'Samples & Data')
+  .title(() => 'Samples & Data')
+
+  .subtitle((ctx) => {
+    const datasetsNum = ctx.args.datasets.length;
+    if (datasetsNum === 0) return 'No datasets';
+    if (datasetsNum === 1) return '1 dataset';
+    return `${datasetsNum} datasets`;
+  })
 
   .sections((ctx) => {
     return [
