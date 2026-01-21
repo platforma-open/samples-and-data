@@ -4,8 +4,8 @@
   "type": "module",
   "description": "Samples and Data software package",
   "scripts": {
-    "do-pack": "rm -f *.tgz && pl-pkg build && pnpm pack && mv platforma-open*.tgz package.tgz",
-    "build": "rm -f *.tgz && rm -rf dist && pl-pkg build",
+    "do-pack": "shx rm -f *.tgz && pl-pkg build && pnpm pack && shx mv platforma-open*.tgz package.tgz",
+    "build": "shx rm -f *.tgz && shx rm -rf dist && pl-pkg build",
     "prepublishOnly": "pl-pkg prepublish"
   },
   "block-software": {
