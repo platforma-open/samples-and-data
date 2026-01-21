@@ -13,10 +13,10 @@
     "update-sdk": "pl-blocks-deps-updater"
   },
   "devDependencies": {
-    "turbo": "catalog:",
     "@changesets/cli": "catalog:",
     "@platforma-sdk/blocks-deps-updater": "catalog:",
-    "shx": "catalog:"
+    "shx": "catalog:",
+    "turbo": "catalog:"
   },
   "packageManager": "pnpm@9.12.0",
   "///": {
@@ -47,6 +47,25 @@
     }
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "vite@>=6.2.0 <6.2.4": ">=6.2.4",
+      "vite@>=6.2.0 <6.2.6": ">=6.2.6",
+      "@babel/runtime@<7.26.10": ">=7.26.10",
+      "vite@>=6.2.0 <=6.2.6": ">=6.2.7",
+      "vite@>=6.2.0 <6.2.5": ">=6.2.5",
+      "brace-expansion@>=1.0.0 <=1.1.11": ">=1.1.12",
+      "brace-expansion@>=2.0.0 <=2.0.1": ">=2.0.2",
+      "vite@>=6.0.0 <=6.3.5": ">=6.3.6",
+      "vite@>=6.0.0 <=6.4.0": ">=6.4.1",
+      "tar-fs@>=3.0.0 <3.1.1": ">=3.1.1",
+      "js-yaml@<3.14.2": ">=3.14.2",
+      "js-yaml@>=4.0.0 <4.1.1": ">=4.1.1",
+      "glob@>=10.2.0 <10.5.0": ">=10.5.0",
+      "node-forge@<1.3.2": ">=1.3.2",
+      "@smithy/config-resolver@<4.4.0": ">=4.4.0",
+      "undici@>=7.0.0 <7.18.2": ">=7.18.2",
+      "tar@<=7.5.2": ">=7.5.3",
+      "tar@<=7.5.3": ">=7.5.4"
+    }
   }
 }
