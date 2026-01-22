@@ -4,7 +4,7 @@
   "type": "module",
   "description": "Seurat RDS file parser for Samples and Data",
   "scripts": {
-    "build": "rm -f *.tgz && rm -rf dist && pl-pkg build",
+    "build": "shx rm -f *.tgz && shx rm -rf dist && pl-pkg build",
     "test": "true",
     "prepublishOnly": "pl-pkg prepublish"
   },

@@ -7,7 +7,7 @@
   ],
   "description": "Tengo-based template",
   "scripts": {
-    "build": "rm -rf dist/* && pl-tengo check && pl-tengo build",
+    "build": "shx rm -rf dist/* && pl-tengo check && pl-tengo build",
     "format": "/usr/bin/env emacs --script ./format.el"
   },
   "dependencies": {
