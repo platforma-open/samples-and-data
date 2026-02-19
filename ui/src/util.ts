@@ -1,6 +1,6 @@
 import type { BlockData } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { LocalBlobHandleAndSize, PlId, RemoteBlobHandleAndSize } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
+import type { AppV3, PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
 import { PlAgColumnHeader, type ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
 
@@ -67,9 +67,7 @@ export function agGroupIdColumnDef<RowT extends { readonly groupId: PlId; readon
   };
 }
 
-export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(appUt: unknown): ColDef<RowT> {
-  const app = appUt as { model: { data: BlockData } };
-
+export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(app: AppV3<BlockData>): ColDef<RowT> {
   const sampleLabels = app.model.data.sampleLabels as Record<string, string>;
 
   const sampleIdComparator = agSampleIdComparator(sampleLabels);

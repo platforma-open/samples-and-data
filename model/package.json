@@ -11,15 +11,15 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@platforma-sdk/model": "catalog:",
+    "@platforma-sdk/model": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/sdk/model/package.tgz",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@platforma-sdk/block-tools": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:",
     "tsup": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:"
+    "typescript": "catalog:",
+    "vite": "catalog:"
   },
   "tsup": {
     "entry": [
