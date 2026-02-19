@@ -47,6 +47,14 @@
     }
   },
   "pnpm": {
-    "overrides": {}
+    "overrides": {
+      "@platforma-sdk/ui-vue": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/sdk/ui-vue/package.tgz",
+      "@milaboratories/pl-middle-layer": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/lib/node/pl-middle-layer/package.tgz",
+      "@milaboratories/pl-model-middle-layer": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/lib/model/middle-layer/package.tgz",
+      "@milaboratories/pl-model-common": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/lib/model/common/package.tgz",
+      "@platforma-sdk/model": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/sdk/model/package.tgz",
+      "@platforma-sdk/test": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/sdk/test/package.tgz",
+      "@platforma-sdk/workflow-tengo": "file:/Users/vadimpiven/Documents/MiLabs/git/core/platforma/sdk/workflow-tengo/package.tgz"
+    }
   }
 }

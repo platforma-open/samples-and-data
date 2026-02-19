@@ -8,22 +8,21 @@ import NewDatasetPage from './pages/NewDatasetPage.vue';
 export const sdkPlugin = defineApp(platforma, (app) => {
   const showImportDataset = ref(false);
 
-  if (app.model.args.datasets.length === 0 && !app.model.ui?.suggestedImport) {
-    if (app.model.ui === undefined) app.model.ui = { suggestedImport: true };
-    else app.model.ui.suggestedImport = true;
+  if (app.model.data.datasets.length === 0 && !app.model.data.suggestedImport) {
+    app.model.data.suggestedImport = true;
     showImportDataset.value = true;
   }
 
   const progresses = computed(() => app.model.outputs.fileImports ?? {});
 
   function inferNewDatasetLabel() {
-    let i = app.model.args.datasets.length + 1;
+    let i = app.model.data.datasets.length + 1;
     while (i < 1000) {
       let label = 'My Dataset';
       if (i > 0) {
         label = label + ` (${i})`;
       }
-      if (app.model.args.datasets.findIndex((d) => d.label === label) === -1) return label;
+      if (app.model.data.datasets.findIndex((d) => d.label === label) === -1) return label;
       ++i;
     }
     return 'New Dataset';
