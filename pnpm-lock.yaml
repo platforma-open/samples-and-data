@@ -932,7 +932,7 @@ packages:
     resolution: {integrity: sha512-39K69Tkws9EwU6lrSgd4txeN+vu/BcIyJIrLaX3Q9LKD+/LZCH39He5OayhA1YSJzso0WLI/FkGzW2OAOprA+A==}
 
   '@milaboratories/pl-middle-layer@file:../../core/platforma/lib/node/pl-middle-layer/package.tgz':
-    resolution: {integrity: sha512-pd0yyryUZ1YnGxFMJKBRoxBHCIxL3v9hifimX5eFkH5PTOJFfkHTc6K2Nu4vYnqrwBslwvOD9WmujAKPlmtoSg==, tarball: file:../../core/platforma/lib/node/pl-middle-layer/package.tgz}
+    resolution: {integrity: sha512-sUQhwsDGXTXk3tLAK9SzL7nnLNN5kDtS3nrDITh98irZIlYSdMYUv/p1QtB/ewOSftTvWzlQ+jqU7K+K8y8p7w==, tarball: file:../../core/platforma/lib/node/pl-middle-layer/package.tgz}
     version: 1.46.30
     engines: {node: '>=22.19.0'}
 
@@ -1127,7 +1127,7 @@ packages:
       typescript-eslint: ^8.17.0
 
   '@platforma-sdk/model@file:../../core/platforma/sdk/model/package.tgz':
-    resolution: {integrity: sha512-IcMy3wwF40WNCO8wSbRBF5UYEShmyUWeg6qhGZeK/8tl74Jv69dKsl6MGZuEhKQIV+1g6v5hK0u+5wXbG++W9Q==, tarball: file:../../core/platforma/sdk/model/package.tgz}
+    resolution: {integrity: sha512-fV5ZDp+M+zdpQeRowLrmzFpMg4JMZpc/nmG36mme6Dt2O5Au5Q9wvuC/XXWyJZQ2q1ax/XCW6oOffM46Lj9vPg==, tarball: file:../../core/platforma/sdk/model/package.tgz}
     version: 1.54.7
 
   '@platforma-sdk/package-builder@3.10.7':
@@ -1140,11 +1140,11 @@ packages:
     hasBin: true
 
   '@platforma-sdk/test@file:../../core/platforma/sdk/test/package.tgz':
-    resolution: {integrity: sha512-HAuhO3IR5v1WXBquUfW3kTuHu54XSyeMCKPUZLqQ7YFtByl35Q/LT3MT6wQ5Ea6Uoz+snpoHH9aH6RFEDrAtmA==, tarball: file:../../core/platforma/sdk/test/package.tgz}
+    resolution: {integrity: sha512-2G/6CgoltcaUcczOfDoRPJfa4i3Ur2RwGfUHT5HApYUSSVXHkhZp1EQvWWK5aH9iPu2qlGWJuDQ94x4oYChc8g==, tarball: file:../../core/platforma/sdk/test/package.tgz}
     version: 1.54.7
 
   '@platforma-sdk/ui-vue@file:../../core/platforma/sdk/ui-vue/package.tgz':
-    resolution: {integrity: sha512-KfaaIU8YeYdTKlPnKfkLO2gTn4oTuqkjxpl+Ji7D0DjigaaYLrumMhL70QvbloDWVHO9p61NZP+GRuF6WuRVSA==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
+    resolution: {integrity: sha512-PuxubQgRzr6qAUzdlLxTmtMf+djNsPjhputf6anZ9bUGyz44Tm8TptFGWE/meMUNOJGcx1VsIGDBTYzL/2/F5g==, tarball: file:../../core/platforma/sdk/ui-vue/package.tgz}
     version: 1.54.7
 
   '@platforma-sdk/workflow-tengo@file:../../core/platforma/sdk/workflow-tengo/package.tgz':
@@ -2644,6 +2644,7 @@ packages:
 
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
     hasBin: true
 
   globals@13.24.0:
@@ -3570,6 +3571,7 @@ packages:
   tar@7.4.3:
     resolution: {integrity: sha512-5S7Va8hKfV7W5U6g3aYxXmlPoZVAwUMy9AOKyF2fVuZa2UD3qZjg578OrLRt8PcNN1PleVaL/5/yYATNL0ICUw==}
     engines: {node: '>=18'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   term-size@2.2.1:
     resolution: {integrity: sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg==}

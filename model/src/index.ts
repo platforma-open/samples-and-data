@@ -80,7 +80,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
       return Object.fromEntries(ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
         ?.mapFields((datasetId, groups) => {
-          const dataset = ctx.data.datasets?.find(ds => ds.id === datasetId);
+          const dataset = ctx.data.datasets.find(ds => ds.id === datasetId);
           if (!dataset) return [datasetId as PlId, undefined];
 
           // BulkCountMatrix uses JSON objects
@@ -114,7 +114,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .title(() => 'Samples & Data')
 
   .subtitle((ctx) => {
-    const datasetsNum = ctx.data.datasets?.length ?? 0;
+    const datasetsNum = ctx.data.datasets.length;
     if (datasetsNum === 0) return 'No datasets';
     if (datasetsNum === 1) return '1 dataset';
     return `${datasetsNum} datasets`;
@@ -123,7 +123,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
   .sections((ctx) => {
     return [
       { type: 'link', href: '/', label: 'Metadata' },
-      ...(ctx.data.datasets ?? []).map(
+      ...ctx.data.datasets.map(
         (ds) =>
           ({
             type: 'link',
