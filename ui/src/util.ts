@@ -1,7 +1,7 @@
-import type { BlockData } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { LocalBlobHandleAndSize, PlId, RemoteBlobHandleAndSize } from '@platforma-sdk/model';
-import type { AppV3, PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { PlAgColumnHeader, type ReactiveFileContent } from '@platforma-sdk/ui-vue';
+import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
+import { PlAgColumnHeader, type AppV2, type ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
 
 export function setEquals(a: string[], b: string[]): boolean {
@@ -67,13 +67,15 @@ export function agGroupIdColumnDef<RowT extends { readonly groupId: PlId; readon
   };
 }
 
-export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(app: AppV3<BlockData>): ColDef<RowT> {
-  const sampleLabels = app.model.data.sampleLabels as Record<string, string>;
+export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(appUt: unknown): ColDef<RowT> {
+  const app = appUt as AppV2<BlockArgs>;
+
+  const sampleLabels = app.model.args.sampleLabels as Record<string, string>;
 
   const sampleIdComparator = agSampleIdComparator(sampleLabels);
 
   return {
-    headerName: app.model.data.sampleLabelColumnLabel,
+    headerName: app.model.args.sampleLabelColumnLabel,
     flex: 1,
     valueGetter: (params) => params.data?.sample,
     editable: false,

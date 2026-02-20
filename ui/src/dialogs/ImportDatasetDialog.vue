@@ -131,7 +131,7 @@ const props = defineProps<{
 /** Case when importing to an existing dataset */
 const targetDs = computed(() => {
   if (props.targetDataset)
-    return app.model.data.datasets.find((ds) => ds.id === props.targetDataset);
+    return app.model.args.datasets.find((ds) => ds.id === props.targetDataset);
   else
     return undefined;
 });
@@ -236,12 +236,12 @@ function updateDatasetType(datasetType: DSType | undefined) {
   if (datasetType === 'MultiSampleH5AD') {
     // Add already-loaded files to h5adFilesToPreprocess
     for (const file of parsedFiles.value.map((f) => f.handle)) {
-      if (!app.model.data.h5adFilesToPreprocess.includes(file)) {
-        app.model.data.h5adFilesToPreprocess.push(file);
+      if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
+        app.model.args.h5adFilesToPreprocess.push(file);
       }
     }
   } else if (datasetType === 'MultiSampleSeurat') {
-    app.model.data.seuratFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
+    app.model.args.seuratFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
   }
 }
 
@@ -263,8 +263,8 @@ function addFiles(files: ImportFileHandle[]) {
   // Add files to h5adFilesToPreprocess for MultiSampleH5AD datasets
   if (datasetType === 'MultiSampleH5AD') {
     for (const file of files) {
-      if (!app.model.data.h5adFilesToPreprocess.includes(file)) {
-        app.model.data.h5adFilesToPreprocess.push(file);
+      if (!app.model.args.h5adFilesToPreprocess.includes(file)) {
+        app.model.args.h5adFilesToPreprocess.push(file);
       }
     }
   }
@@ -274,7 +274,7 @@ function addFiles(files: ImportFileHandle[]) {
 
 const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   const types = new Set(dsTypeOptions.value.map((o) => o.value));
-  return app.model.data.datasets
+  return app.model.args.datasets
     .filter(
       (ds) =>
         types.has(ds.content.type),
@@ -583,7 +583,7 @@ async function createOrAdd() {
 
 async function addToExistingDataset() {
   const datasetId = data.targetAddDataset!;
-  const dataset = app.model.data.datasets.find((ds) => ds.id === datasetId);
+  const dataset = app.model.args.datasets.find((ds) => ds.id === datasetId);
   if (dataset === undefined)
     throw new Error('Dataset not found');
 
@@ -659,7 +659,7 @@ async function createNewDataset() {
     case 'TaggedXsv': {
       const contentData: DSContentTaggedXsv['data'] = {};
       addTaggedXsvDatasetContent(contentData);
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -675,7 +675,7 @@ async function createNewDataset() {
     case 'Xsv':{
       const contentData: DSContentXsv['data'] = {};
       addXsvDatasetContent(contentData);
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -690,7 +690,7 @@ async function createNewDataset() {
       const contentData: DSContentFasta['data'] = {};
       addFastaDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -704,7 +704,7 @@ async function createNewDataset() {
       const contentData: DSContentTaggedFastq['data'] = {};
       addTaggedFastqDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -721,7 +721,7 @@ async function createNewDataset() {
       const contentData: DSContentMultilaneFastq['data'] = {};
       addMultilaneFastqDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -736,7 +736,7 @@ async function createNewDataset() {
       const contentData: DSContentFastq['data'] = {};
       addFastqDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -751,7 +751,7 @@ async function createNewDataset() {
       const contentData: DSContentCellRangerMtx['data'] = {};
       addCellRangerMtxDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -765,7 +765,7 @@ async function createNewDataset() {
       const contentData: DSContentH5ad['data'] = {};
       addH5adDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -779,7 +779,7 @@ async function createNewDataset() {
       const contentData: DSContentH5['data'] = {};
       addH5DatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -793,7 +793,7 @@ async function createNewDataset() {
       const contentData: DSContentSeurat['data'] = {};
       addSeuratDatasetContent(contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -808,7 +808,7 @@ async function createNewDataset() {
       const contentData: DSContentMultiSampleH5ad['data'] = {};
       addMultiSampleH5adDatasetContent(groupLabels, contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -826,7 +826,7 @@ async function createNewDataset() {
       const contentData: DSContentMultiSampleSeurat['data'] = {};
       addMultiSampleSeuratDatasetContent(groupLabels, contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -844,7 +844,7 @@ async function createNewDataset() {
       const contentData: DSContentBulkCountMatrix['data'] = {};
       addBulkCountMatrixDatasetContent(groupLabels, contentData);
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
@@ -866,7 +866,7 @@ async function createNewDataset() {
       // Samples will be imported later via the samplesheet import dialog
       const sampleGroups: Record<PlId, Record<PlId, string>> = {};
 
-      app.model.data.datasets.push({
+      app.model.args.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {

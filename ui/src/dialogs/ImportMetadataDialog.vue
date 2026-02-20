@@ -49,7 +49,7 @@ watch(
 
 const algo = computed(() =>
   determineBestMatchingAlgorithm(
-    Object.values(app.model.data.sampleLabels).filter(isDefined),
+    Object.values(app.model.args.sampleLabels).filter(isDefined),
     data.sampleNameColumnIdx === -1
       ? []
       : props.importCandidate.data.rows
@@ -67,14 +67,14 @@ const sampleColumnOptions = computed<ListOption<number>[]>(() =>
 const colsMatchingExisting = computed(() => {
   let res = 0;
   for (const c of props.importCandidate.data.columns)
-    if (app.model.data.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
+    if (app.model.args.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
   return res;
 });
 
 const tableDataText = computed(() => {
   const ic = props.importCandidate;
   let result = '';
-  result += `Matched samples: ${algo.value.matches} (out of ${app.model.data.sampleIds.length})\n`;
+  result += `Matched samples: ${algo.value.matches} (out of ${app.model.args.sampleIds.length})\n`;
   result += `Unmatched rows: ${ic.data.rows.length - algo.value.matches}\n`;
   // result += `Matching algorithm: ${algo.value.topAlgorithm.name}\n`
   result += `Import meta columns: ${ic.data.columns.length} (${colsMatchingExisting.value} match existing)`;
@@ -94,7 +94,7 @@ const tableIssuesText = computed(() => {
 });
 
 function runImport() {
-  const args = app.model.data;
+  const args = app.model.args;
 
   // Process metadata columns using utility function
   const { modelColumns, newColumns } = processMetadataColumns({
