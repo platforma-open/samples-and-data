@@ -90,7 +90,7 @@ const colsMatchingExisting = computed(() => {
   for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; cIdx++) {
     if (cIdx === data.fileIdColumnIdx || cIdx === data.sampleIdColumnIdx || cIdx === data.barcodeIdColumnIdx) continue;
     const c = props.importCandidate.data.columns[cIdx];
-    if (app.model.data.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
+    if (app.model.args.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
   }
   return res;
 });
@@ -175,7 +175,7 @@ const tableIssuesText = computed(() => {
 });
 
 function runImport() {
-  const args = app.model.data;
+  const args = app.model.args;
   const rows: SamplesheetImportData['rows'] = [];
 
   // Process metadata columns using utility function
