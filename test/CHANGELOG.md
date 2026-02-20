@@ -1,5 +1,13 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 2.3.4
+
+### Patch Changes
+
+- 1a100d0: BlockModelV3 migration
+- Updated dependencies [1a100d0]
+  - @platforma-open/milaboratories.samples-and-data.model@2.5.1
+
 ## 2.3.3
 
 ### Patch Changes
