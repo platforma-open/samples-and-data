@@ -20,7 +20,7 @@ const app = useApp();
 const datasetId = app.queryParams.id;
 
 const dataset = (() => {
-  const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
+  const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
   if (!ds)
     throw new Error('Dataset not found');
   return ds as DSTaggedXsv;
