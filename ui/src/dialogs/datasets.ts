@@ -1,8 +1,7 @@
-import type { BlockData, DSType } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockArgs, DSType } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
-import type { AppV3 } from '@platforma-sdk/ui-vue';
 import { getFileNameFromHandle, uniquePlId } from '@platforma-sdk/model';
-import type { SimpleOption } from '@platforma-sdk/ui-vue';
+import type { AppV2, SimpleOption } from '@platforma-sdk/ui-vue';
 import type { ComputedRef, Reactive, ShallowRef } from 'vue';
 import { computed, ref, shallowRef, watch } from 'vue';
 import type { FileContentType, FileNamePatternMatch } from './file_name_parser';
@@ -174,11 +173,12 @@ export function useParsedFiles(
   );
 }
 
-export function getOrCreateSample(app: AppV3<BlockData>, sampleName: string): PlId {
-  const id = Object.entries(app.model.data.sampleLabels).find(([, label]) => label === sampleName)?.[0];
+export function getOrCreateSample(appUt: unknown, sampleName: string): PlId {
+  const app = appUt as AppV2<BlockArgs>;
+  const id = Object.entries(app.model.args.sampleLabels).find(([, label]) => label === sampleName)?.[0];
   if (id) return id as PlId;
   const newId = uniquePlId();
-  app.model.data.sampleIds.push(newId);
-  app.model.data.sampleLabels[newId] = sampleName;
+  app.model.args.sampleIds.push(newId);
+  app.model.args.sampleLabels[newId] = sampleName;
   return newId;
 }

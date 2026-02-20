@@ -1,4 +1,4 @@
-import type { BlockData } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
 import { uniquePlId } from '@platforma-sdk/model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
@@ -26,45 +26,39 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  await project.mutateBlockStorage(blockId, {
-    operation: 'update-block-data',
-    value: {
-      metadata: [
-        {
-          id: metaColumn1Id,
-          label: 'MetaColumn1',
-          global: false,
-          valueType: 'Long',
-          data: {
-            [sample1Id]: 2345,
-          },
+  await project.setBlockArgs(blockId, {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'MetaColumn1',
+        global: false,
+        valueType: 'Long',
+        data: {
+          [sample1Id]: 2345,
         },
-      ],
-      sampleIds: [sample1Id],
-      sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: { [sample1Id]: 'Sample 1' },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'Dataset 1',
-          content: {
-            type: 'Fastq',
-            readIndices: ['R1', 'R2'],
-            gzipped: true,
-            data: {
-              [sample1Id]: {
-                R1: r1Handle,
-                R2: r2Handle,
-              },
+      },
+    ],
+    sampleIds: [sample1Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: { [sample1Id]: 'Sample 1' },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'Fastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          data: {
+            [sample1Id]: {
+              R1: r1Handle,
+              R2: r2Handle,
             },
           },
         },
-      ],
-      h5adFilesToPreprocess: [],
-      seuratFilesToPreprocess: [],
-      suggestedImport: false,
-    } satisfies BlockData,
-  });
+      },
+    ],
+  } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -85,47 +79,43 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  await project.mutateBlockStorage(blockId, {
-    operation: 'update-block-data',
-    value: {
-      metadata: [
-        {
-          id: metaColumn1Id,
-          label: 'MetaColumn1',
-          global: false,
-          valueType: 'Long',
-          data: {
-            [sample1Id]: 2345,
-          },
+  await project.setBlockArgs(blockId, {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'MetaColumn1',
+        global: false,
+        valueType: 'Long',
+        data: {
+          [sample1Id]: 2345,
         },
-      ],
-      sampleIds: [sample1Id],
-      sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: { [sample1Id]: 'Sample 1' },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'Dataset 1',
-          content: {
-            type: 'MultilaneFastq',
-            readIndices: ['R1', 'R2'],
-            gzipped: true,
-            data: {
-              [sample1Id]: {
-                L001: {
-                  R1: r1Handle,
-                  R2: r2Handle,
-                },
+      },
+    ],
+    sampleIds: [sample1Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: { [sample1Id]: 'Sample 1' },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'MultilaneFastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          data: {
+            [sample1Id]: {
+              L001: {
+                R1: r1Handle,
+                R2: r2Handle,
               },
             },
           },
         },
-      ],
-      h5adFilesToPreprocess: [],
-      seuratFilesToPreprocess: [],
-      suggestedImport: false,
-    } satisfies BlockData,
-  });
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
+  } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -146,44 +136,39 @@ blockTest('multisample h5ad input', { timeout: 100000 }, async ({ rawPrj: projec
 
   const h5adHandle = await helpers.getLocalFileHandle('./assets/test.h5ad');
 
-  await project.mutateBlockStorage(blockId, {
-    operation: 'update-block-data',
-    value: {
-      metadata: [],
-      sampleIds: [sample1Id, sample2Id],
-      sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: {
-        [sample1Id]: 'Sample 1',
-        [sample2Id]: 'Sample 2',
-      },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'H5AD Dataset',
-          content: {
-            type: 'MultiSampleH5AD',
-            sampleColumnName: 'samples',
-            gzipped: false,
-            data: {
-              [group1Id]: h5adHandle,
-            },
-            sampleGroups: {
-              [group1Id]: {
-                [sample1Id]: 's1',
-                [sample2Id]: 's2',
-              },
-            },
-            groupLabels: {
-              [group1Id]: 'Group 1',
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'H5AD Dataset',
+        content: {
+          type: 'MultiSampleH5AD',
+          sampleColumnName: 'samples',
+          gzipped: false,
+          data: {
+            [group1Id]: h5adHandle,
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 's1',
+              [sample2Id]: 's2',
             },
           },
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
         },
-      ],
-      h5adFilesToPreprocess: [h5adHandle],
-      seuratFilesToPreprocess: [],
-      suggestedImport: false,
-    } satisfies BlockData,
-  });
+      },
+    ],
+    h5adFilesToPreprocess: [h5adHandle],
+  } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -213,44 +198,40 @@ blockTest('multisample seurat input', { timeout: 100000 }, async ({ rawPrj: proj
   // TODO: Add test.rds file to assets directory
   const seuratHandle = await helpers.getLocalFileHandle('./assets/test.rds');
 
-  await project.mutateBlockStorage(blockId, {
-    operation: 'update-block-data',
-    value: {
-      metadata: [],
-      sampleIds: [sample1Id, sample2Id],
-      sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: {
-        [sample1Id]: 'Sample 1',
-        [sample2Id]: 'Sample 2',
-      },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'Seurat Dataset',
-          content: {
-            type: 'MultiSampleSeurat',
-            sampleColumnName: 'sample',
-            gzipped: false,
-            data: {
-              [group1Id]: seuratHandle,
-            },
-            sampleGroups: {
-              [group1Id]: {
-                [sample1Id]: 's1',
-                [sample2Id]: 's2',
-              },
-            },
-            groupLabels: {
-              [group1Id]: 'Group 1',
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Seurat Dataset',
+        content: {
+          type: 'MultiSampleSeurat',
+          sampleColumnName: 'sample',
+          gzipped: false,
+          data: {
+            [group1Id]: seuratHandle,
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 's1',
+              [sample2Id]: 's2',
             },
           },
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
         },
-      ],
-      h5adFilesToPreprocess: [],
-      seuratFilesToPreprocess: [seuratHandle],
-      suggestedImport: false,
-    } satisfies BlockData,
-  });
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [seuratHandle],
+  } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -278,33 +259,29 @@ blockTest('simple h5 input', async ({ rawPrj: project, ml: _ml, helpers, expect 
   // TODO: Add test.h5 file to assets directory
   const h5Handle = await helpers.getLocalFileHandle('./assets/test.h5');
 
-  await project.mutateBlockStorage(blockId, {
-    operation: 'update-block-data',
-    value: {
-      metadata: [],
-      sampleIds: [sample1Id],
-      sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: {
-        [sample1Id]: 'Sample 1',
-      },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'H5 Dataset',
-          content: {
-            type: 'H5',
-            gzipped: false,
-            data: {
-              [sample1Id]: h5Handle,
-            },
+  await project.setBlockArgs(blockId, {
+    metadata: [],
+    sampleIds: [sample1Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'H5 Dataset',
+        content: {
+          type: 'H5',
+          gzipped: false,
+          data: {
+            [sample1Id]: h5Handle,
           },
         },
-      ],
-      h5adFilesToPreprocess: [],
-      seuratFilesToPreprocess: [],
-      suggestedImport: false,
-    } satisfies BlockData,
-  });
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
+  } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -327,58 +304,52 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  await project.mutateBlockStorage(blockId, {
-    operation: 'update-block-data',
-    value: {
-      metadata: [
-        {
-          id: metaColumn1Id,
-          label: 'MetaColumn1',
-          global: false,
-          valueType: 'Long',
-          data: {
-            [sample1Id]: 2345,
-            [sample2Id]: 3456,
-          },
+  await project.setBlockArgs(blockId, {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'MetaColumn1',
+        global: false,
+        valueType: 'Long',
+        data: {
+          [sample1Id]: 2345,
+          [sample2Id]: 3456,
         },
-      ],
-      sampleIds: [sample1Id, sample2Id],
-      sampleLabelColumnLabel: 'Sample Name',
-      sampleLabels: {
-        [sample1Id]: 'Sample 1',
-        [sample2Id]: 'Sample 2',
       },
-      datasets: [
-        {
-          id: dataset1Id,
-          label: 'Dataset 1',
-          content: {
-            type: 'MultiplexedFastq',
-            readIndices: ['R1', 'R2'],
-            gzipped: true,
-            groupLabels: {
-              [group1Id]: 'Group 1',
+    ],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'MultiplexedFastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 'sample1',
+              [sample2Id]: 'sample2',
             },
-            sampleGroups: {
-              [group1Id]: {
-                [sample1Id]: 'sample1',
-                [sample2Id]: 'sample2',
-              },
-            },
-            data: {
-              [group1Id]: {
-                R1: r1Handle,
-                R2: r2Handle,
-              },
+          },
+          data: {
+            [group1Id]: {
+              R1: r1Handle,
+              R2: r2Handle,
             },
           },
         },
-      ],
-      h5adFilesToPreprocess: [],
-      seuratFilesToPreprocess: [],
-      suggestedImport: false,
-    } satisfies BlockData,
-  });
+      },
+    ],
+  } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
