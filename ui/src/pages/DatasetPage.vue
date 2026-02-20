@@ -34,14 +34,14 @@ const deleteModalOpen = ref(false);
 const datasetId = app.queryParams.id;
 
 const dataset = (() => {
-  const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
+  const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
   if (!ds)
     throw new Error('Dataset not found');
   return ds;
 })();
 
 async function deleteTheDataset() {
-  const index = app.model.data.datasets.findIndex((ds) => ds.id === datasetId);
+  const index = app.model.args.datasets.findIndex((ds) => ds.id === datasetId);
   if (index === -1)
     throw new Error('Dataset not found');
 
@@ -53,7 +53,7 @@ async function deleteTheDataset() {
   if (datasetContent.type === 'H5AD' || datasetContent.type === 'MultiSampleH5AD') {
     // Remove these files from h5adFilesToPreprocess
     if (filesToRemove.length > 0) {
-      app.model.data.h5adFilesToPreprocess = app.model.data.h5adFilesToPreprocess.filter(
+      app.model.args.h5adFilesToPreprocess = app.model.args.h5adFilesToPreprocess.filter(
         (fileHandle) => !filesToRemove.includes(fileHandle),
       );
     }
@@ -62,13 +62,13 @@ async function deleteTheDataset() {
   if (datasetContent.type === 'Seurat' || datasetContent.type === 'MultiSampleSeurat') {
     // Remove these files from seuratFilesToPreprocess
     if (filesToRemove.length > 0) {
-      app.model.data.seuratFilesToPreprocess = app.model.data.seuratFilesToPreprocess.filter(
+      app.model.args.seuratFilesToPreprocess = app.model.args.seuratFilesToPreprocess.filter(
         (fileHandle) => !filesToRemove.includes(fileHandle),
       );
     }
   }
 
-  app.model.data.datasets.splice(index, 1);
+  app.model.args.datasets.splice(index, 1);
   await app.allSettled();
   await app.navigateTo('/');
 }
