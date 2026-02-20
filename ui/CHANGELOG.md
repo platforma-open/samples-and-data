@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.5.2
+
+### Patch Changes
+
+- c130999: Revert v3 model migraion
+
 ## 2.5.1
 
 ### Patch Changes
