@@ -23,7 +23,7 @@ type GroupedDataset = Dataset<DSContent & WithSampleGroupsData<unknown>>;
 
 const datasets = computed(() => {
   return props.datasetIds.map((datasetId) => {
-    const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
+    const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
     if (!ds)
       throw new Error('Dataset not found');
     return ds as GroupedDataset;
@@ -54,7 +54,7 @@ async function importSamplesheet() {
 }
 
 async function handleSamplesheetImport(importData: SamplesheetImportData) {
-  const args = app.model.args;
+  const args = app.model.data;
 
   // Create metadata columns lookup map for O(1) access
   const metadataColumnsMap = new Map(importData.metadataColumns.map((col) => [col.id, col]));
@@ -136,7 +136,7 @@ const parsedSampleGroups = computed(() => {
   const result: Record<PlId, Record<PlId, PlId[]>> = {};
 
   for (const [datasetId, groups] of Object.entries(sampleGroups)) {
-    const dataset = app.model.args.datasets.find((ds) => ds.id === datasetId);
+    const dataset = app.model.data.datasets.find((ds) => ds.id === datasetId);
     if (!dataset) continue;
 
     // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
