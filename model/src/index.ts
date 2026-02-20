@@ -3,23 +3,19 @@ import type {
   InferHrefType,
   InferOutputsType,
   PlId,
-  TreeNodeAccessor,
+  TreeNodeAccessor
 } from '@platforma-sdk/model';
 import { BlockModelV3 } from '@platforma-sdk/model';
-import {
-  isGroupedDataset,
-  type BlockArgs,
-  type BlockData,
-  type DSAny,
-} from './args';
+import { isGroupedDataset, type BlockArgs, type BlockData, type DSAny } from './args';
 import { blockDataModel } from './data_model';
 
 function validateDatasets(datasets: DSAny[]) {
   const valid = datasets.every((ds) => {
-    if (!isGroupedDataset(ds))
-      return true;
+    if (!isGroupedDataset(ds)) return true;
     // samples are saved for each group
-    return Object.keys(ds.content.sampleGroups ?? {}).length === Object.keys(ds.content.data).length;
+    return (
+      Object.keys(ds.content.sampleGroups ?? {}).length === Object.keys(ds.content.data).length
+    );
   });
   if (!valid) throw new Error('Not all grouped datasets have sample groups configured');
 }
@@ -40,16 +36,15 @@ export const platforma = BlockModelV3.create(blockDataModel)
       datasets: sortedById(data.datasets),
       metadata: sortedById(data.metadata),
       sampleLabelColumnLabel: data.sampleLabelColumnLabel,
-      sampleLabels: data.sampleLabels,
+      sampleLabels: data.sampleLabels
     };
   })
 
   .prerunArgs((data: BlockData) => {
-    validateDatasets(data.datasets);
     return {
       datasets: sortedById(data.datasets),
       h5adFilesToPreprocess: [...data.h5adFilesToPreprocess].sort(),
-      seuratFilesToPreprocess: [...data.seuratFilesToPreprocess].sort(),
+      seuratFilesToPreprocess: [...data.seuratFilesToPreprocess].sort()
     };
   })
 
@@ -60,56 +55,66 @@ export const platforma = BlockModelV3.create(blockDataModel)
         Object.fromEntries(
           resolver
             ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
-            ?.mapFields(
-              (handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()],
-              { skipUnresolved: true },
-            ) ?? [],
+            ?.mapFields((handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()], {
+              skipUnresolved: true
+            }) ?? []
         );
 
       return {
         ...getImports(ctx.outputs),
-        ...getImports(ctx.prerun),
+        ...getImports(ctx.prerun)
       };
     },
-    { retentive: true, isActive: true },
+    { retentive: true, isActive: true }
   )
 
-  .retentiveOutput(
-    'sampleGroups',
-    (ctx) => {
-      return Object.fromEntries(ctx.prerun
+  .retentiveOutput('sampleGroups', (ctx) => {
+    return Object.fromEntries(
+      ctx.prerun
         ?.resolve({ field: 'sampleGroups', assertFieldType: 'Input' })
         ?.mapFields((datasetId, groups) => {
-          const dataset = ctx.data.datasets.find(ds => ds.id === datasetId);
+          const dataset = ctx.data.datasets.find((ds) => ds.id === datasetId);
           if (!dataset) return [datasetId as PlId, undefined];
 
           // BulkCountMatrix uses JSON objects
           if (dataset.content.type === 'BulkCountMatrix') {
-            const result = Object.fromEntries(groups?.mapFields((groupId, samples) => [
-              groupId as PlId, samples?.getDataAsJson<PlId[]>()]) ?? []);
+            const result = Object.fromEntries(
+              groups?.mapFields((groupId, samples) => [
+                groupId as PlId,
+                samples?.getDataAsJson<PlId[]>()
+              ]) ?? []
+            );
             return [datasetId as PlId, result];
           }
           // MultiSampleH5AD and MultiSampleSeurat use file handles
-          else if (dataset.content.type === 'MultiSampleH5AD' || dataset.content.type === 'MultiSampleSeurat') {
-            const result = Object.fromEntries(groups?.mapFields((groupId, samplesFile) => [
-              groupId as PlId, samplesFile?.getFileHandle()]) ?? []);
+          else if (
+            dataset.content.type === 'MultiSampleH5AD' ||
+            dataset.content.type === 'MultiSampleSeurat'
+          ) {
+            const result = Object.fromEntries(
+              groups?.mapFields((groupId, samplesFile) => [
+                groupId as PlId,
+                samplesFile?.getFileHandle()
+              ]) ?? []
+            );
             return [datasetId as PlId, result];
           }
 
           return [datasetId as PlId, undefined];
-        }) ?? []);
-    },
-  )
+        }) ?? []
+    );
+  })
 
-  .retentiveOutput(
-    'availableColumns',
-    (ctx) => {
-      return Object.fromEntries(ctx.prerun
+  .retentiveOutput('availableColumns', (ctx) => {
+    return Object.fromEntries(
+      ctx.prerun
         ?.resolve({ field: 'availableColumns', assertFieldType: 'Input' })
-        ?.mapFields((fileName, columnsCsv) =>
-          [fileName, columnsCsv?.getRemoteFileHandle() ?? undefined]) ?? []);
-    },
-  )
+        ?.mapFields((fileName, columnsCsv) => [
+          fileName,
+          columnsCsv?.getRemoteFileHandle() ?? undefined
+        ]) ?? []
+    );
+  })
 
   .title(() => 'Samples & Data')
 
@@ -128,15 +133,15 @@ export const platforma = BlockModelV3.create(blockDataModel)
           ({
             type: 'link',
             href: `/dataset?id=${ds.id}`,
-            label: ds.label,
-          } as const),
+            label: ds.label
+          } as const)
       ),
       {
         type: 'link',
         href: '/new-dataset',
         appearance: 'add-section',
-        label: 'New Dataset',
-      },
+        label: 'New Dataset'
+      }
     ];
   })
 
