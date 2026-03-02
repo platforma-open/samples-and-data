@@ -34,13 +34,13 @@ catalog:
   'tsup': ~8.4.0
   'turbo': ~2.6.1
 
-  'vite': ~6.0.6
+  'vite': ~6.2.3
   'vitest': ~4.0.10
   '@vitejs/plugin-vue': ~5.2.1
   'vite-plugin-dts': ~4.3.0
   'shx': ~0.4.0
 
-  '@vueuse/core': ~12.2.0
+  '@vueuse/core': ~12.8.2
 
   'ag-grid-enterprise': &ag-grid ~34.1.2
   'ag-grid-vue3': *ag-grid
