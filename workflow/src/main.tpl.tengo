@@ -143,6 +143,14 @@ wf.body(func(args) {
 		outputs: {
 			fileImports: maps.mapValues(fileImports, func(im) {
 				return im.handle
+			}),
+			// Collecting all imported file resources in the output ensures the
+			// block's output tree is not finalized until all file uploads
+			// complete. Without this, the block would report "Done" while files
+			// are still uploading in the background, since im.handle alone
+			// doesn't create a dependency on upload completion.
+			uploadedFiles: maps.mapValues(fileImports, func(im) {
+				return im.file
 			})
 		},
 		exports: {
