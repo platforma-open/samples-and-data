@@ -36,20 +36,33 @@ export const platforma = BlockModel.create()
   .output(
     'fileImports',
     (ctx) => {
-      const getImports = (resolver?: TreeNodeAccessor) =>
-        Object.fromEntries(
-          resolver
-            ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
-            ?.mapFields(
-              (handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()],
-              { skipUnresolved: true },
-            ) ?? [],
-        );
+      return Object.fromEntries(
+        ctx.outputs
+          ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
+          ?.mapFields(
+            (handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()],
+            { skipUnresolved: true },
+          ) ?? [],
+      );
+    },
+    { isActive: true },
+  )
 
-      return {
-        ...getImports(ctx.outputs),
-        ...getImports(ctx.prerun),
-      };
+  // Drives prerun file uploads; the getImportProgress() calls register with
+  // the UploadDriver, triggering actual blob uploads. Without this active
+  // output, prerun dependencies (sampleGroups, availableColumns) would never
+  // resolve. Progress values are not used by the UI.
+  .output(
+    'prerunFileImports',
+    (ctx) => {
+      return Object.fromEntries(
+        ctx.prerun
+          ?.resolve({ field: 'fileImports', assertFieldType: 'Input' })
+          ?.mapFields(
+            (handle, acc) => [handle as ImportFileHandle, acc.getImportProgress()],
+            { skipUnresolved: true },
+          ) ?? [],
+      );
     },
     { isActive: true },
   )
