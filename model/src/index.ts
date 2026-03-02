@@ -51,7 +51,7 @@ export const platforma = BlockModel.create()
         ...getImports(ctx.prerun),
       };
     },
-    { retentive: true, isActive: true },
+    { isActive: true },
   )
 
   .retentiveOutput(
