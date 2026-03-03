@@ -12,6 +12,7 @@ blockTest('empty inputs', { timeout: 7000 }, async ({ rawPrj: project, ml, helpe
   const stableState = await blockState.awaitStableValue();
   expect(stableState.outputs).toStrictEqual({
     fileImports: { ok: true, stable: true, value: {} },
+    prerunFileImports: { ok: true, stable: true, value: {} },
     sampleGroups: { ok: true, stable: true, value: { } },
     availableColumns: { ok: true, stable: true, value: {} },
   });
