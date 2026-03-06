@@ -20,6 +20,7 @@ import {
   type MTValueType,
   type PlId,
 } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { ImportFileHandle, LocalImportFileHandle } from '@platforma-sdk/model';
 import { uniquePlId } from '@platforma-sdk/model';
 import {
   AgGridTheme,
@@ -31,9 +32,12 @@ import {
   PlBtnGhost,
   PlBtnPrimary,
   PlDialogModal,
+  PlFileDialog,
+  PlProgressCell,
   PlTextField,
+  ReactiveFileContent,
 } from '@platforma-sdk/ui-vue';
-import { computed, reactive, shallowRef, useCssModule } from 'vue';
+import { computed, reactive, ref, shallowRef, useCssModule, watch } from 'vue';
 import { useApp } from '../app';
 import DatasetCell from '../components/DatasetCell.vue';
 import ImportErrorDialog from '../components/ImportErrorDialog.vue';
@@ -53,7 +57,53 @@ const datasetsWithAutoExtraction = computed(() =>
   groupedDatasets.value.filter((ds) => ds.content.type !== 'MultiplexedFastq'),
 );
 
-const { state: importState, importTable, clearImportCandidate, clearErrorMessage } = useTableImport();
+const { state: importState, importTable, importTableFromBytes, clearImportCandidate, clearErrorMessage } = useTableImport();
+
+const reactiveFileContent = ReactiveFileContent.useGlobal();
+
+const metadataFileDialogOpened = ref(false);
+
+const metadataFileBytes = computed(() => {
+  const handle = app.model.outputs.metadataFile;
+  if (!handle) return undefined;
+  return reactiveFileContent.getContentBytes(handle.handle)?.value;
+});
+
+watch(metadataFileBytes, async (bytes) => {
+  if (!bytes) return;
+  if (bytes.byteLength > 5_000_000) {
+    importState.errorMessage = { title: 'File is too big' };
+    clearMetadataUploadHandle();
+  } else {
+    await importTableFromBytes(bytes);
+  }
+}, { immediate: true });
+
+async function handleMetadataFileSelected(files: ImportFileHandle[]) {
+  const handle = files[0];
+  if (!handle) return;
+
+  if (handle.startsWith('upload://')) {
+    const local = handle as LocalImportFileHandle;
+    if ((await platforma!.lsDriver.getLocalFileSize(local)) > 5_000_000) {
+      importState.errorMessage = { title: 'File is too big' };
+      return;
+    }
+    const content = await platforma!.lsDriver.getLocalFileContent(local);
+    await importTableFromBytes(content);
+  } else {
+    app.model.args.metadataUploadHandle = handle;
+  }
+}
+
+function clearMetadataUploadHandle() {
+  delete (app.model.args as Partial<typeof app.model.args>).metadataUploadHandle;
+}
+
+function onMetadataDialogClose() {
+  clearImportCandidate();
+  clearMetadataUploadHandle();
+}
 
 const data = reactive<{
   showAddColumnDialog: boolean;
@@ -115,14 +165,6 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
   const sample = node?.data?.id;
   if (!sample) return [];
   return [sample];
-}
-
-async function importMetadata() {
-  await importTable({
-    title: 'Import metadata table',
-    buttonLabel: 'Import',
-    fileExtensions: ['xlsx', 'csv', 'tsv', 'txt'],
-  });
 }
 
 async function deleteSamples(sampleIds: PlId[]) {
@@ -379,7 +421,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
         Import Dataset
       </PlBtnGhost>
       &nbsp;
-      <PlBtnGhost icon="table-import" @click.stop="importMetadata"> Import metadata </PlBtnGhost>
+      <PlBtnGhost icon="table-import" @click.stop="metadataFileDialogOpened = true"> Import metadata </PlBtnGhost>
     </template>
 
     <SyncDatasetDialog :dataset-ids="datasetsWithAutoExtraction.map((ds) => ds.id)" />
@@ -399,10 +441,27 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
   <ImportDatasetDialog v-if="app.showImportDataset" />
 
+  <PlDialogModal
+    :model-value="!!app.model.args.metadataUploadHandle && !importState.importCandidate"
+    closable
+    @update:model-value="(v) => { if (!v) clearMetadataUploadHandle(); }"
+  >
+    <template #title>Importing metadata file...</template>
+    <PlProgressCell stage="running" step="Downloading file..." />
+  </PlDialogModal>
+
   <ImportMetadataModal
     v-if="importState.importCandidate !== undefined"
     :import-candidate="importState.importCandidate"
-    @on-close="clearImportCandidate"
+    @on-close="onMetadataDialogClose"
+  />
+
+  <PlFileDialog
+    v-model="metadataFileDialogOpened"
+    :multi="false"
+    title="Select metadata file to import"
+    :extensions="['csv', 'tsv', 'xlsx']"
+    @import:files="(e) => handleMetadataFileSelected(e.files)"
   />
 
   <PlDialogModal

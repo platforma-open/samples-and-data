@@ -21,6 +21,22 @@ export function useTableImport(initialState?: Partial<TableImportState>) {
     ...initialState,
   });
 
+  async function importTableFromBytes(bytes: Uint8Array) {
+    try {
+      const ic = readFileForImport(bytes);
+      if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
+        state.errorMessage = { title: 'Table is empty', message: JSON.stringify(ic) };
+        return;
+      }
+      state.importCandidate = ic;
+    } catch (e) {
+      state.errorMessage = {
+        title: 'Error reading table',
+        message: e instanceof Error ? e.message : String(e),
+      };
+    }
+  }
+
   async function importTable(options: TableImportOptions = {}) {
     const {
       title = 'Import table',
@@ -70,6 +86,7 @@ export function useTableImport(initialState?: Partial<TableImportState>) {
   return {
     state: state as UnwrapRef<TableImportState>,
     importTable,
+    importTableFromBytes,
     clearImportCandidate,
     clearErrorMessage,
   };
