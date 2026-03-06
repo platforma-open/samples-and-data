@@ -214,4 +214,5 @@ export interface BlockArgs {
   datasets: DSAny[];
   h5adFilesToPreprocess: ImportFileHandle[];
   seuratFilesToPreprocess: ImportFileHandle[];
+  metadataUploadHandle?: ImportFileHandle;
 }

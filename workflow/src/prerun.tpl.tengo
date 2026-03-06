@@ -67,14 +67,20 @@ wf.body(func(args) {
         }
     }
     columns := readColumns(args, importFile)
+
+	outputs := {
+        fileImports: maps.mapValues(fileImports, func(im) {
+			return im.handle
+		}),
+        sampleGroups: sampleGroups,
+		availableColumns: columns
+    }
+	if !is_undefined(args.metadataUploadHandle) {
+		outputs.metadataFile = file.exportFile(importFile(args.metadataUploadHandle))
+	}
+
 	return {
-		outputs: {
-            fileImports: maps.mapValues(fileImports, func(im) {
-				return im.handle
-			}),
-            sampleGroups: sampleGroups,
-			availableColumns: columns
-        },
+		outputs: outputs,
 		exports: {}
 	}
 })
