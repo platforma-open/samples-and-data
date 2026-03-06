@@ -15,6 +15,7 @@ blockTest('empty inputs', { timeout: 7000 }, async ({ rawPrj: project, ml, helpe
     prerunFileImports: { ok: true, stable: true, value: {} },
     sampleGroups: { ok: true, stable: true, value: { } },
     availableColumns: { ok: true, stable: true, value: {} },
+    metadataFile: { ok: true, stable: true, value: undefined },
   });
 });
 
@@ -59,6 +60,8 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
         },
       },
     ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -169,6 +172,7 @@ blockTest('multisample h5ad input', { timeout: 100000 }, async ({ rawPrj: projec
       },
     ],
     h5adFilesToPreprocess: [h5adHandle],
+    seuratFilesToPreprocess: [],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -350,6 +354,8 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
         },
       },
     ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
   } satisfies BlockArgs);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
