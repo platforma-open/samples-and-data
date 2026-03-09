@@ -104,6 +104,13 @@ export const platforma = BlockModel.create()
     },
   )
 
+  .retentiveOutput(
+    'metadataFile',
+    (ctx) => ctx.prerun
+      ?.resolveAny({ field: 'metadataFile' })
+      ?.getFileHandle(),
+  )
+
   .title(() => 'Samples & Data')
 
   .subtitle((ctx) => {

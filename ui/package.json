@@ -15,6 +15,7 @@
     "ag-grid-vue3": "catalog:",
     "@vueuse/core": "catalog:",
     "@milaboratories/helpers": "catalog:",
+    "@milaboratories/pl-model-common": "catalog:",
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
     "@platforma-sdk/model": "catalog:",
     "@platforma-sdk/ui-vue": "catalog:",

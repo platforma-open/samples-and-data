@@ -12,6 +12,9 @@ catalogs:
     '@milaboratories/helpers':
       specifier: 1.13.0
       version: 1.13.0
+    '@milaboratories/pl-model-common':
+      specifier: ^1.19.0
+      version: 1.25.1
     '@platforma-open/milaboratories.runenv-python-3':
       specifier: ^1.7.5
       version: 1.7.5
@@ -203,6 +206,9 @@ importers:
       '@milaboratories/helpers':
         specifier: 'catalog:'
         version: 1.13.0
+      '@milaboratories/pl-model-common':
+        specifier: 'catalog:'
+        version: 1.25.1
       '@platforma-open/milaboratories.samples-and-data.model':
         specifier: workspace:*
         version: link:../model

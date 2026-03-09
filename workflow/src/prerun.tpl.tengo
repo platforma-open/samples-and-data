@@ -50,7 +50,7 @@ wf.body(func(args) {
         parser := parsers[dataset.content.type]
         if !is_undefined(parser) {
             samplesMap := parser.getSamples(dataset, importFile)
-            
+
             // BulkCountMatrix returns JSON objects
             // MultiSampleH5AD and MultiSampleSeurat return CSV files
             if dataset.content.type == "BulkCountMatrix" {
@@ -67,14 +67,26 @@ wf.body(func(args) {
         }
     }
     columns := readColumns(args, importFile)
+
+    metadataFile := undefined
+    if !is_undefined(args.metadataUploadHandle) {
+        metadataFile = importFile(args.metadataUploadHandle)
+	}
+
+	outputs := {
+        fileImports: maps.mapValues(fileImports, func(im) {
+			return im.handle
+		}),
+        sampleGroups: sampleGroups,
+		availableColumns: columns
+    }
+
+    if !is_undefined(metadataFile) {
+        outputs.metadataFile = file.exportFile(metadataFile)
+    }
+
 	return {
-		outputs: {
-            fileImports: maps.mapValues(fileImports, func(im) {
-				return im.handle
-			}),
-            sampleGroups: sampleGroups,
-			availableColumns: columns
-        },
+		outputs: outputs,
 		exports: {}
 	}
 })
