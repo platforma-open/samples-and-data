@@ -74,6 +74,42 @@ sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     }
 }
 
+sampleIdLabelColumn := func(args, dataset, datasetSampleIdAxis, isGrouped) {
+    datasetSampleLabels := {}
+    addLabel := func(sampleId) {
+        label := args.sampleLabels[sampleId]
+        if !is_undefined(label) {
+            datasetSampleLabels[sampleId] = label
+        }
+    }
+
+    if isGrouped {
+        for _, ss in dataset.content.sampleGroups {
+            for sampleId, _ in ss {
+                addLabel(sampleId)
+            }
+        }
+    } else {
+        for sampleId in maps.getKeys(dataset.content.data) {
+            addLabel(sampleId)
+        }
+    }
+
+    return {
+        spec: {
+            kind: "PColumn",
+            name: "pl7.app/label",
+            valueType: "String",
+            annotations: {
+                "pl7.app/label": args.sampleLabelColumnLabel,
+                "pl7.app/isLabel": "true"
+            },
+            axesSpec: [datasetSampleIdAxis]
+        },
+        data: createJsonPColumnData(datasetSampleLabels)
+    }
+}
+
 getSampleColumnName := func(dataset) {
     sampleColumnName := dataset.content.sampleColumnName
     if !sampleColumnName {
@@ -107,6 +143,7 @@ export {
     createJsonPColumnData: createJsonPColumnData,
     datasetColumnSpecBase: datasetColumnSpecBase,
     sampleGroupsLinkerColumn: sampleGroupsLinkerColumn,
+    sampleIdLabelColumn: sampleIdLabelColumn,
     getSampleColumnName: getSampleColumnName,
     createFileDataset: createFileDataset
 }
