@@ -64,9 +64,9 @@ wf.body(func(args) {
 	}
 
 	exports := pframes.pFrameBuilder()
-	
+
 	// Create metadata
-	
+
 	for k, v in metadata.createMetadata(args, blockId, sampleIdAxis) {
 		exports.add(k, v.spec, v.data)
 	}
@@ -94,18 +94,25 @@ wf.body(func(args) {
 			ll.panic("Unknown dataset type %v", dataset.content.type)
 		}
 
+		// Per-dataset sampleId axis: adds "pl7.app/dataset" to the domain so that
+		// label columns created here only match downstream blocks that processed
+		// this specific dataset (not all datasets in this S&D block).
+		datasetSampleIdAxis := maps.deepMerge(sampleIdAxis, {
+			domain: {"pl7.app/dataset": dataset.id}
+		})
+
 		trace := pSpec.makeTrace(undefined,
 			{type: "milaboratories.samples-and-data", id: blockId, importance: 10, label: "Samples & Data"},
 			{type: "milaboratories.samples-and-data/dataset", id: dataset.id, importance: 100, label: dataset.label}
-		)		
-		
-		ds := undefined 
+		)
+
+		ds := undefined
 		if proc.isGrouped {
 			datasetGroupIdAxis := proc.createGroupAxis(groupIdAxis, dataset)
-			ds = proc.createDataset(blockId, sampleIdAxis, datasetGroupIdAxis, dataset, importFile)
-			
+			ds = proc.createDataset(blockId, datasetSampleIdAxis, datasetGroupIdAxis, dataset, importFile)
+
 			// linker column
-			linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
+			linker := util.sampleGroupsLinkerColumn(blockId, dataset, datasetSampleIdAxis, datasetGroupIdAxis)
 
 			ds["dataset." + dataset.id + ".linker"] = {
 				spec: linker.spec,
@@ -132,8 +139,13 @@ wf.body(func(args) {
 			}
 
 		} else {
-			ds = proc.createDataset(blockId, sampleIdAxis, dataset, importFile)
+			ds = proc.createDataset(blockId, datasetSampleIdAxis, dataset, importFile)
 		}
+
+		// Per-dataset sample label column: only contains samples belonging to this
+		// dataset, preventing downstream blocks from seeing samples from other datasets.
+		ds["dataset." + dataset.id + ".sampleId"] = util.sampleIdLabelColumn(args, dataset, datasetSampleIdAxis, proc.isGrouped)
+
 		for k, v in ds {
 			exports.add(k, trace.inject(v.spec), v.data)
 		}

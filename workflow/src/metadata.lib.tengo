@@ -1,5 +1,3 @@
-
-ll := import("@platforma-sdk/workflow-tengo:ll")
 json := import("json")
 util := import(":util")
 
@@ -10,7 +8,7 @@ normalizeString := func(str) {
 
 /**
  * Adds metadata columns to the exports
- * 
+ *
  * @param args - arguments
  * @param blockId - block id
  * @param sampleIdAxisSpec - sample id axis spec
@@ -35,24 +33,6 @@ createMetadata := func(args, blockId, sampleIdAxisSpec) {
 			},
 			data: util.createJsonPColumnData(column.data)
 		}
-	}
-
-	//
-	// Creating sample label column
-	//
-
-	columns["metadata.sampleId"] = {
-		spec: {
-			kind: "PColumn",
-			name: "pl7.app/label",
-			valueType: "String",
-			annotations: {
-				"pl7.app/label": args.sampleLabelColumnLabel,
-				"pl7.app/isLabel": "true"
-			},
-			axesSpec: [sampleIdAxisSpec]
-		},
-		data: util.createJsonPColumnData(args.sampleLabels)
 	}
 
     return columns
