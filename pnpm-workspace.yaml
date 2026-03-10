@@ -22,6 +22,7 @@ catalog:
 
   '@platforma-sdk/test': 1.51.3
   '@milaboratories/helpers': 1.13.0
+  '@milaboratories/pl-model-common': ^1.19.0
 
   'vue': ^3.5.24
   'vue-tsc': ^2.2.8

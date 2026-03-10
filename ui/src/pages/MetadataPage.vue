@@ -31,13 +31,16 @@ import {
   PlBtnGhost,
   PlBtnPrimary,
   PlDialogModal,
+  PlFileDialog,
+  PlProgressCell,
   PlTextField,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, shallowRef, useCssModule } from 'vue';
 import { useApp } from '../app';
 import DatasetCell from '../components/DatasetCell.vue';
 import ImportErrorDialog from '../components/ImportErrorDialog.vue';
-import { useTableImport } from '../composables/useTableImport';
+import { DEFAULT_TABLE_FILE_EXTENSIONS } from '../composables/useTableImport';
+import { useMetadataImport } from '../composables/useMetadataImport';
 import ImportDatasetDialog from '../dialogs/ImportDatasetDialog.vue';
 import ImportMetadataModal from '../dialogs/ImportMetadataDialog.vue';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
@@ -53,7 +56,14 @@ const datasetsWithAutoExtraction = computed(() =>
   groupedDatasets.value.filter((ds) => ds.content.type !== 'MultiplexedFastq'),
 );
 
-const { state: importState, importTable, clearImportCandidate, clearErrorMessage } = useTableImport();
+const {
+  importState,
+  fileDialogOpened,
+  openFileDialog,
+  handleFileSelected,
+  onImportClose,
+  clearErrorMessage,
+} = useMetadataImport();
 
 const data = reactive<{
   showAddColumnDialog: boolean;
@@ -117,13 +127,6 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
   return [sample];
 }
 
-async function importMetadata() {
-  await importTable({
-    title: 'Import metadata table',
-    buttonLabel: 'Import',
-    fileExtensions: ['xlsx', 'csv', 'tsv', 'txt'],
-  });
-}
 
 async function deleteSamples(sampleIds: PlId[]) {
   app.model.args.sampleIds = app.model.args.sampleIds.filter((s) => !sampleIds.includes(s));
@@ -379,7 +382,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
         Import Dataset
       </PlBtnGhost>
       &nbsp;
-      <PlBtnGhost icon="table-import" @click.stop="importMetadata"> Import metadata </PlBtnGhost>
+      <PlBtnGhost icon="table-import" @click.stop="openFileDialog"> Import metadata </PlBtnGhost>
     </template>
 
     <SyncDatasetDialog :dataset-ids="datasetsWithAutoExtraction.map((ds) => ds.id)" />
@@ -399,10 +402,30 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
   <ImportDatasetDialog v-if="app.showImportDataset" />
 
+  <!-- Loading modal: remote file selected, waiting for backend to make it available -->
+  <PlDialogModal
+    :model-value="app.model.args.metadataUploadHandle !== undefined && importState.importCandidate === undefined && importState.errorMessage === undefined"
+    :close-on-outside-click="false"
+    closable
+    @update:model-value="(v) => { if (!v) app.model.args.metadataUploadHandle = undefined; }"
+  >
+    <template #title>Importing metadata...</template>
+    <PlProgressCell stage="running" step="Downloading file..." />
+  </PlDialogModal>
+
   <ImportMetadataModal
     v-if="importState.importCandidate !== undefined"
     :import-candidate="importState.importCandidate"
-    @on-close="clearImportCandidate"
+    @on-close="onImportClose"
+  />
+
+  <PlFileDialog
+    v-model="fileDialogOpened"
+    :close-on-outside-click="false"
+    :multi="false"
+    :extensions="[...DEFAULT_TABLE_FILE_EXTENSIONS]"
+    title="Select metadata file"
+    @import:files="(e) => handleFileSelected(e.files)"
   />
 
   <PlDialogModal
