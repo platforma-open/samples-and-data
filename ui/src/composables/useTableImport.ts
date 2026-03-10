@@ -7,6 +7,9 @@ export type TableImportState = {
   errorMessage: { title: string; message?: string } | undefined;
 };
 
+export const DEFAULT_TABLE_FILE_EXTENSIONS = ['xlsx', 'csv', 'tsv', 'txt'] as const;
+export const DEFAULT_MAX_FILE_SIZE = 5_000_000;
+
 export type TableImportOptions = {
   title?: string;
   buttonLabel?: string;
@@ -25,8 +28,8 @@ export function useTableImport(initialState?: Partial<TableImportState>) {
     const {
       title = 'Import table',
       buttonLabel = 'Import',
-      fileExtensions = ['xlsx', 'csv', 'tsv', 'txt'],
-      maxFileSize = 5_000_000,
+      fileExtensions = [...DEFAULT_TABLE_FILE_EXTENSIONS],
+      maxFileSize = DEFAULT_MAX_FILE_SIZE,
     } = options;
 
     const result = await platforma!.lsDriver.showOpenSingleFileDialog({
