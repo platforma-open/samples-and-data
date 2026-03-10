@@ -1,4 +1,3 @@
-json := import("json")
 util := import(":util")
 
 // TODO implement
