@@ -4,12 +4,19 @@ slices := import("@platforma-sdk/workflow-tengo:slices")
 json := import("json")
 util := import(":util")
 
+// Cap discrete-filter annotations at 250 unique values: larger cardinalities
+// are usually identifier-like (barcodes, free-text notes) and would bloat
+// the PFrame spec without producing a usable dropdown.
+maxDiscreteValues := 250
+
 // TODO implement
 normalizeString := func(str) {
 	return str
 }
 
 // Collect unique values of a map (Record<sampleId, value>), sorted.
+// Precondition: dataMap values must be strings — we coerce with string(v)
+// only as the dedup key, so non-string types (e.g. 1 vs "1") would collide.
 // Sorted output keeps the encoded spec stable across runs (Tengo map
 // iteration is non-deterministic) and yields scannable dropdowns.
 collectUniqueValues := func(dataMap) {
@@ -44,12 +51,9 @@ createMetadata := func(args, blockId, sampleIdAxisSpec) {
 		// Mark String metadata columns as discrete filters and attach their
 		// observed categories so downstream blocks (e.g. Lead Selection) can
 		// render dropdowns for filtering on this variable.
-		// Cap at 500: larger cardinalities are usually identifier-like
-		// (barcodes, free-text notes) and would bloat the PFrame spec
-		// without producing a usable dropdown.
 		if column.valueType == "String" {
 			uniqueValues := collectUniqueValues(column.data)
-			if len(uniqueValues) > 0 && len(uniqueValues) <= 500 {
+			if len(uniqueValues) > 0 && len(uniqueValues) <= maxDiscreteValues {
 				annotations["pl7.app/isDiscreteFilter"] = "true"
 				annotations["pl7.app/discreteValues"] = string(json.encode(uniqueValues))
 			}
