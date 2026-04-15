@@ -8,9 +8,24 @@ normalizeString := func(str) {
 	return str
 }
 
+// Collect unique values of a map (Record<sampleId, value>), preserving
+// first-seen order.
+collectUniqueValues := func(dataMap) {
+	seen := {}
+	ordered := []
+	for _, v in dataMap {
+		key := string(v)
+		if !seen[key] {
+			seen[key] = true
+			ordered = append(ordered, v)
+		}
+	}
+	return ordered
+}
+
 /**
  * Adds metadata columns to the exports
- * 
+ *
  * @param args - arguments
  * @param blockId - block id
  * @param sampleIdAxisSpec - sample id axis spec
@@ -20,14 +35,27 @@ normalizeString := func(str) {
 createMetadata := func(args, blockId, sampleIdAxisSpec) {
     columns := {}
 	for _, column in args.metadata {
+		annotations := {
+			"pl7.app/label": column.label
+		}
+
+		// Mark String metadata columns as discrete filters and attach their
+		// observed categories so downstream blocks (e.g. Lead Selection) can
+		// render dropdowns for filtering on this variable.
+		if column.valueType == "String" {
+			uniqueValues := collectUniqueValues(column.data)
+			if len(uniqueValues) > 0 {
+				annotations["pl7.app/isDiscreteFilter"] = "true"
+				annotations["pl7.app/discreteValues"] = string(json.encode(uniqueValues))
+			}
+		}
+
 		columns["metadata." + column.id] = {
 			spec: {
 				kind: "PColumn",
 				name: "pl7.app/metadata",
 				valueType: column.valueType,
-				annotations: {
-					"pl7.app/label": column.label
-				},
+				annotations: annotations,
 				domain: {
 					"pl7.app/columnId": column.global ? normalizeString(column.label) : column.id
 				},
