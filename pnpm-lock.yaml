@@ -94,8 +94,8 @@ catalogs:
       specifier: ^2.2.8
       version: 2.2.8
     zod:
-      specifier: ~3.23.8
-      version: 3.23.8
+      specifier: ~3.25.76
+      version: 3.25.76
 
 importers:
 
@@ -140,7 +140,7 @@ importers:
         version: 1.64.0
       zod:
         specifier: 'catalog:'
-        version: 3.23.8
+        version: 3.25.76
     devDependencies:
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
@@ -262,7 +262,7 @@ importers:
         version: file:vendor/xlsx-0.20.3.tgz
       zod:
         specifier: 'catalog:'
-        version: 3.23.8
+        version: 3.25.76
 
   workflow:
     dependencies:

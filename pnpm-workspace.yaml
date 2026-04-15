@@ -27,7 +27,7 @@ catalog:
   'vue': ^3.5.24
   'vue-tsc': ^2.2.8
 
-  'zod': ~3.23.8
+  'zod': ~3.25.76
   'radashi': ^12.7.0
   'utility-types': ^3.11.0
 
