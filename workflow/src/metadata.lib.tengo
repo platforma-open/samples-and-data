@@ -4,10 +4,10 @@ slices := import("@platforma-sdk/workflow-tengo:slices")
 json := import("json")
 util := import(":util")
 
-// Cap discrete-filter annotations at 250 unique values: larger cardinalities
+// Cap discrete-filter annotations at 50 unique values: larger cardinalities
 // are usually identifier-like (barcodes, free-text notes) and would bloat
 // the PFrame spec without producing a usable dropdown.
-maxDiscreteValues := 250
+maxDiscreteValues := 50
 
 // TODO implement
 normalizeString := func(str) {
