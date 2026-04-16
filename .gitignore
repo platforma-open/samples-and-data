@@ -8,6 +8,7 @@ work/
 vite.config.*.timestamp-*
 log/
 *.idea
+.vscode/
 *.tsbuildinfo
 *.tgz
 
