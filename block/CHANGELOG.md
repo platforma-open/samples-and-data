@@ -1,5 +1,16 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.15.0
+
+### Minor Changes
+
+- 1f40d80: Samplesheet import in `SyncDatasetDialog` now accepts TSV, CSV, and TXT files in addition to XLSX. The metadata import parser dispatches on file extension, so `.tsv` files are parsed with a tab separator instead of being auto-detected.
+
+### Patch Changes
+
+- Updated dependencies [1f40d80]
+  - @platforma-open/milaboratories.samples-and-data.ui@2.7.0
+
 ## 1.14.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "scripts": {
     "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "shx rm -rf block-pack && block-tools pack",
