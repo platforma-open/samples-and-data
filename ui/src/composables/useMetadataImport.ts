@@ -1,4 +1,5 @@
 import type { ImportFileHandle } from '@platforma-sdk/model';
+import { getFileNameFromHandle } from '@platforma-sdk/model';
 import { ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import { computed, ref, watch } from 'vue';
 import { useApp } from '../app';
@@ -19,9 +20,9 @@ export function useMetadataImport() {
   });
 
   // Parse bytes and populate importState. Returns true on success, false on failure.
-  function processTableBytes(bytes: Uint8Array): boolean {
+  function processTableBytes(bytes: Uint8Array, fileName: string): boolean {
     try {
-      const ic = readFileForImport(bytes);
+      const ic = readFileForImport(bytes, fileName);
       if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
         importState.errorMessage = { title: 'Table is empty', message: 'The file does not contain any data to import.' };
         return false;
@@ -39,7 +40,8 @@ export function useMetadataImport() {
 
   watch(metadataFileBytes, (bytes) => {
     if (bytes === undefined) return;
-    if (app.model.args.metadataUploadHandle === undefined) return;
+    const handle = app.model.args.metadataUploadHandle;
+    if (handle === undefined) return;
     if (importState.importCandidate !== undefined) return;
 
     if (bytes.length > DEFAULT_MAX_FILE_SIZE) {
@@ -47,7 +49,7 @@ export function useMetadataImport() {
       app.model.args.metadataUploadHandle = undefined;
       return;
     }
-    if (!processTableBytes(bytes)) {
+    if (!processTableBytes(bytes, getFileNameFromHandle(handle))) {
       app.model.args.metadataUploadHandle = undefined;
     }
   }, { immediate: true });

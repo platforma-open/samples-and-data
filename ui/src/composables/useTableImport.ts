@@ -1,3 +1,4 @@
+import { getFileNameFromHandle } from '@platforma-sdk/model';
 import { reactive, type UnwrapRef } from 'vue';
 import type { ImportResult } from '../dataimport';
 import { readFileForImport } from '../dataimport';
@@ -48,7 +49,7 @@ export function useTableImport(initialState?: Partial<TableImportState>) {
 
     const content = await platforma!.lsDriver.getLocalFileContent(file);
     try {
-      const ic = readFileForImport(content);
+      const ic = readFileForImport(content, getFileNameFromHandle(file));
       if (ic.data.columns.length === 0 || ic.data.rows.length === 0) {
         state.errorMessage = { title: 'Table is empty', message: JSON.stringify(ic) };
         return;

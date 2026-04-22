@@ -49,7 +49,6 @@ async function importSamplesheet() {
   await importTable({
     title: 'Import samplesheet',
     buttonLabel: 'Import',
-    fileExtensions: ['xlsx'],
   });
 }
 

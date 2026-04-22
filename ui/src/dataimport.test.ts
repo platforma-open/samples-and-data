@@ -2,11 +2,15 @@ import * as fsp from 'node:fs/promises';
 import { test } from 'vitest';
 import { readFileForImport } from './dataimport';
 
-test.for([{ file: 'test_assets/test_table.xlsx' }, { file: 'test_assets/test_table.csv' }])(
+test.for([
+  { file: 'test_assets/test_table.xlsx' },
+  { file: 'test_assets/test_table.csv' },
+  { file: 'test_assets/test_table.tsv' },
+])(
   'simple test for $file',
   async ({ file }, { expect }) => {
     const content = await fsp.readFile(file);
-    const result = readFileForImport(content);
+    const result = readFileForImport(content, file);
     expect(result).toMatchObject({
       missingHeaders: 1,
       emptyColumns: 1,
