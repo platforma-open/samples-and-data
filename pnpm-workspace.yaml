@@ -20,7 +20,7 @@ catalog:
   '@platforma-open/milaboratories.runenv-python-3': ^1.7.5
   '@platforma-open/milaboratories.runenv-r-samples-and-data': ^1.0.1
 
-  '@platforma-sdk/test': 1.65.4
+  '@platforma-sdk/test': 1.65.2
   '@milaboratories/helpers': 1.14.1
   '@milaboratories/pl-model-common': ^1.31.2
 
