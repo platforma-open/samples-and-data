@@ -51,8 +51,14 @@ function validateAndCleanRow(row: unknown): ImportDataRow | undefined {
   return result;
 }
 
-export function readFileForImport(data: Uint8Array): ImportResult {
-  const wb = XLSX.read(data);
+function readOptionsFor(fileName: string | undefined): XLSX.ParsingOptions | undefined {
+  const ext = fileName?.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
+  if (ext === 'tsv') return { type: 'array', FS: '\t' };
+  return undefined;
+}
+
+export function readFileForImport(data: Uint8Array, fileName?: string): ImportResult {
+  const wb = XLSX.read(data, readOptionsFor(fileName));
   const worksheet = wb.Sheets[wb.SheetNames[0]];
   const rawData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
