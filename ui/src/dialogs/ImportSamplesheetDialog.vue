@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { MTColumn, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { MTColumn } from '@platforma-open/milaboratories.samples-and-data.model';
 import { uniquePlId } from '@platforma-sdk/model';
 import type { ListOption } from '@platforma-sdk/ui-vue';
 import {
@@ -33,10 +33,13 @@ export type SamplesheetImportData = {
   fileIdColumn: number;
   sampleIdColumn: number;
   metadataColumns: MTColumn[];
+  // Rows carry only the user-facing sample label (`sampleId`). The actual
+  // block sampleId (PlId) is resolved by the consumer via getOrCreateSample,
+  // so that samples with the same label across file groups / imports collapse
+  // onto a single block-level sampleId.
   rows: Array<{
     fileId: string;
     sampleId: string;
-    samplePlId: PlId;
     metadata: Record<string, unknown>;
   }>;
 };
@@ -225,7 +228,6 @@ function runImport() {
     if (!sampleIdValue || !lastFileId) continue;
 
     const sampleId = String(sampleIdValue);
-    const samplePlId = uniquePlId();
 
     // Extract metadata using utility function
     const metadata = extractMetadataFromRow(row, modelColumns);
@@ -238,7 +240,6 @@ function runImport() {
     rows.push({
       fileId: lastFileId,
       sampleId: sampleId,
-      samplePlId: samplePlId,
       metadata: metadata,
     });
   }

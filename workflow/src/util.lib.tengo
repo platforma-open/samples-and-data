@@ -43,13 +43,17 @@ datasetColumnSpecBase := func(blockId, dataset, extension) {
 
 sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     data := {}
-    samples := []
+    // A sampleId may legitimately appear in multiple groups (one sample shared
+    // across file groups). Dedupe via a map so the axisKeys annotation below
+    // lists each sampleId once.
+    sampleSet := {}
     for groupId, ss in dataset.content.sampleGroups {
         for sampleId, sampleName in ss {
-            samples = samples + [sampleId]
+            sampleSet[sampleId] = true
             data[json.encode([groupId, sampleId])] = sampleName
         }
     }
+    samples := maps.getKeys(sampleSet)
     spec := {
         kind: "PColumn",
         name: "pl7.app/sequencing/data/sampleGroups",
