@@ -82,12 +82,13 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
         updatedSampleGroups[groupId] = { ...updatedSampleGroups[groupId] };
       }
 
-      // Use the samplePlId from import data
-      const sampleId = row.samplePlId;
-
-      // Add sample to global sample lists
-      args.sampleIds.push(sampleId);
-      args.sampleLabels[sampleId] = row.sampleId;
+      // Resolve the block-level sampleId by label: reuse the existing sampleId
+      // when a sample with the same label is already in the block, otherwise
+      // mint a new one. This makes a re-import (or a second file group sharing
+      // the same sample names) collapse onto one sampleId instead of forking
+      // a duplicate, so the multiplexed FASTQ linker can legitimately carry
+      // `(groupA, sId), (groupB, sId)` for a sample that appears in both groups.
+      const sampleId = getOrCreateSample(app, row.sampleId);
 
       // Add the sample to the matched group
       updatedSampleGroups[groupId][sampleId] = row.sampleId;

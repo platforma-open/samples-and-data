@@ -128,7 +128,7 @@ wf.body(func(args) {
 					},
 					axesSpec: [datasetGroupIdAxis]
 				},
-				data: util.createJsonPColumnData(dataset.groupLabels)
+				data: util.createJsonPColumnData(dataset.content.groupLabels)
 			}
 
 		} else {
