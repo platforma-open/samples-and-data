@@ -216,3 +216,28 @@ export interface BlockArgs {
   seuratFilesToPreprocess: ImportFileHandle[];
   metadataUploadHandle?: ImportFileHandle;
 }
+
+export type LegacyBlockArgs = BlockArgs;
+
+export type LegacyBlockUiState = {
+  suggestedImport: boolean;
+};
+
+export type BlockDataV20260427 = {
+  datasets: DSAny[];
+  metadata: MTColumn[];
+  sampleIds: PlId[];
+  sampleLabelColumnLabel: string;
+  sampleLabels: Record<PlId, string>;
+  h5adFilesToPreprocess: ImportFileHandle[];
+  seuratFilesToPreprocess: ImportFileHandle[];
+  metadataUploadHandle?: ImportFileHandle;
+  suggestedImport: boolean;
+};
+
+export type BlockData = BlockDataV20260427;
+
+export type BlockPrerunArgs = Pick<
+  BlockData,
+  'datasets' | 'h5adFilesToPreprocess' | 'seuratFilesToPreprocess' | 'metadataUploadHandle'
+>;
