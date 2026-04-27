@@ -1,4 +1,4 @@
-import type { BlockArgs } from '@platforma-open/milaboratories.samples-and-data.model';
+import type { BlockData } from '@platforma-open/milaboratories.samples-and-data.model';
 import { uniquePlId } from '@platforma-sdk/model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
@@ -28,7 +28,7 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  await project.setBlockArgs(blockId, {
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
     metadata: [
       {
         id: metaColumn1Id,
@@ -62,7 +62,8 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
     ],
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [],
-  } satisfies BlockArgs);
+    suggestedImport: false,
+  } satisfies BlockData });
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -83,7 +84,7 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  await project.setBlockArgs(blockId, {
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
     metadata: [
       {
         id: metaColumn1Id,
@@ -119,7 +120,8 @@ blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expec
     ],
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [],
-  } satisfies BlockArgs);
+    suggestedImport: false,
+  } satisfies BlockData });
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -140,7 +142,7 @@ blockTest('multisample h5ad input', { timeout: 100000 }, async ({ rawPrj: projec
 
   const h5adHandle = await helpers.getLocalFileHandle('./assets/test.h5ad');
 
-  await project.setBlockArgs(blockId, {
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
     metadata: [],
     sampleIds: [sample1Id, sample2Id],
     sampleLabelColumnLabel: 'Sample Name',
@@ -173,7 +175,8 @@ blockTest('multisample h5ad input', { timeout: 100000 }, async ({ rawPrj: projec
     ],
     h5adFilesToPreprocess: [h5adHandle],
     seuratFilesToPreprocess: [],
-  } satisfies BlockArgs);
+    suggestedImport: false,
+  } satisfies BlockData });
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -203,7 +206,7 @@ blockTest('multisample seurat input', { timeout: 100000 }, async ({ rawPrj: proj
   // TODO: Add test.rds file to assets directory
   const seuratHandle = await helpers.getLocalFileHandle('./assets/test.rds');
 
-  await project.setBlockArgs(blockId, {
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
     metadata: [],
     sampleIds: [sample1Id, sample2Id],
     sampleLabelColumnLabel: 'Sample Name',
@@ -236,7 +239,8 @@ blockTest('multisample seurat input', { timeout: 100000 }, async ({ rawPrj: proj
     ],
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [seuratHandle],
-  } satisfies BlockArgs);
+    suggestedImport: false,
+  } satisfies BlockData });
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -264,7 +268,7 @@ blockTest('simple h5 input', async ({ rawPrj: project, ml: _ml, helpers, expect 
   // TODO: Add test.h5 file to assets directory
   const h5Handle = await helpers.getLocalFileHandle('./assets/test.h5');
 
-  await project.setBlockArgs(blockId, {
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
     metadata: [],
     sampleIds: [sample1Id],
     sampleLabelColumnLabel: 'Sample Name',
@@ -286,7 +290,8 @@ blockTest('simple h5 input', async ({ rawPrj: project, ml: _ml, helpers, expect 
     ],
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [],
-  } satisfies BlockArgs);
+    suggestedImport: false,
+  } satisfies BlockData });
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -309,7 +314,7 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
   const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
   const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
 
-  await project.setBlockArgs(blockId, {
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
     metadata: [
       {
         id: metaColumn1Id,
@@ -356,7 +361,8 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
     ],
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [],
-  } satisfies BlockArgs);
+    suggestedImport: false,
+  } satisfies BlockData });
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
