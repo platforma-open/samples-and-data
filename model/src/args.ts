@@ -148,11 +148,23 @@ export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFil
  * pair may appear multiple times — those entries represent per-sample
  * alternatives (outer OR). `barcodes` keys are the dataset's declared
  * `barcodeTags`; a multi-key record is an AND combination across tags.
+ *
+ * `ruleId` is a stable, block-local identifier used for ag-grid row identity,
+ * selection state across re-renders, and rule deletion. Plain string — these
+ * ids never leave the block, so they don't need to be globally unique PlIds.
  */
 export interface BarcodeRule {
+  ruleId: string;
   sampleGroupId: PlId;
   sampleId: PlId;
   barcodes: Record<string, string>;
+}
+
+// Block-local rule id generator. Avoids `uniquePlId` / `crypto.randomUUID`
+// because the model migration step runs in a sandbox without the Web Crypto
+// API. Ten base36 random chars — these ids never leave the block.
+export function makeRuleId(): string {
+  return Math.random().toString(36).slice(2, 12);
 }
 
 export interface DSContentMultiplexedFastq extends WithSampleGroupsData<FastqFileGroup> {

@@ -5,8 +5,8 @@ import { AgGridVue } from 'ag-grid-vue3';
 import type { DSMultiplexedFastq, PlId, ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed, shallowRef } from 'vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, PlBtnGroup } from '@platforma-sdk/ui-vue';
+import { computed, ref, shallowRef } from 'vue';
 import { useApp } from '../app';
 import MultiplexingRulesSection from '../components/MultiplexingRulesSection.vue';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
@@ -133,13 +133,24 @@ const gridOptions: GridOptions<DatasetRow> = {
     PlAgCellFile,
   },
 };
+
+type ViewMode = 'files' | 'rules';
+const viewMode = ref<ViewMode>('files');
+const viewOptions = [
+  { label: 'File Groups', value: 'files' as const },
+  { label: 'Multiplexing Rules', value: 'rules' as const },
+];
 </script>
 
 <template>
   <div class="multiplexed-fastq-page">
     <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
 
-    <div class="multiplexed-fastq-page__grid">
+    <div class="multiplexed-fastq-page__toolbar">
+      <PlBtnGroup v-model="viewMode" :options="viewOptions" />
+    </div>
+
+    <div v-show="viewMode === 'files'" class="multiplexed-fastq-page__pane">
       <AgGridVue
         :theme="AgGridTheme"
         :style="{ height: '100%' }"
@@ -151,7 +162,9 @@ const gridOptions: GridOptions<DatasetRow> = {
       />
     </div>
 
-    <MultiplexingRulesSection :dataset="dataset" />
+    <div v-show="viewMode === 'rules'" class="multiplexed-fastq-page__pane">
+      <MultiplexingRulesSection :dataset="dataset" />
+    </div>
   </div>
 </template>
 
@@ -160,11 +173,18 @@ const gridOptions: GridOptions<DatasetRow> = {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 16px;
+  gap: 12px;
 }
 
-.multiplexed-fastq-page__grid {
+.multiplexed-fastq-page__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.multiplexed-fastq-page__pane {
   flex: 1 1 auto;
-  min-height: 200px;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
 }
 </style>
