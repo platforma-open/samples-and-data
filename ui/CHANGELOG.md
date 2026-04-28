@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.9.1
+
+### Patch Changes
+
+- dbe82e5: Metadata page Data column now deduplicates dataset labels per sample. With multiplexed datasets that place the same sample in multiple groups, the same dataset chip was rendered once per group; now shown once.
+
 ## 2.9.0
 
 ### Minor Changes
