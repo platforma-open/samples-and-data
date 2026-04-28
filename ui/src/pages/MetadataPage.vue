@@ -49,7 +49,7 @@ const styles = useCssModule();
 
 const app = useApp();
 
-const groupedDatasets = computed(() => app.model.args.datasets.filter(isGroupedDataset));
+const groupedDatasets = computed(() => app.model.data.datasets.filter(isGroupedDataset));
 
 // Datasets that should have automatic sample extraction (excludes MultiplexedFastq)
 const datasetsWithAutoExtraction = computed(() =>
@@ -83,7 +83,7 @@ const onGridReady = (params: GridReadyEvent) => {
 
 function showAddColumnDialog(type: MTValueType) {
   data.showAddColumnDialog = true;
-  data.newColumnName = `Metadata Column ${Object.values(app.model.args.metadata).length + 1}`;
+  data.newColumnName = `Metadata Column ${Object.values(app.model.data.metadata).length + 1}`;
   data.newColumnType = type;
 }
 
@@ -96,7 +96,7 @@ function closeAddColumnDialog() {
 async function addColumn(valueType: MTValueType, name: string) {
   const metaColumnId = uniquePlId();
 
-  app.model.args.metadata.push({
+  app.model.data.metadata.push({
     id: metaColumnId,
     valueType,
     label: name,
@@ -108,8 +108,8 @@ async function addColumn(valueType: MTValueType, name: string) {
 }
 
 async function deleteMetaColumn(metaColumnId: string) {
-  const metaColumnIdx = app.model.args.metadata.findIndex((mCol) => mCol.id === metaColumnId);
-  app.model.args.metadata.splice(metaColumnIdx, 1);
+  const metaColumnIdx = app.model.data.metadata.findIndex((mCol) => mCol.id === metaColumnId);
+  app.model.data.metadata.splice(metaColumnIdx, 1);
   await app.allSettled();
 }
 
@@ -129,14 +129,14 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
 
 
 async function deleteSamples(sampleIds: PlId[]) {
-  app.model.args.sampleIds = app.model.args.sampleIds.filter((s) => !sampleIds.includes(s));
+  app.model.data.sampleIds = app.model.data.sampleIds.filter((s) => !sampleIds.includes(s));
 
   // delete from non-grouped datasets
   for (const s of sampleIds) {
-    delete app.model.args.sampleLabels[s];
-    for (const m of app.model.args.metadata) delete m.data[s];
+    delete app.model.data.sampleLabels[s];
+    for (const m of app.model.data.metadata) delete m.data[s];
 
-    for (const ds of app.model.args.datasets) {
+    for (const ds of app.model.data.datasets) {
       if (!isGroupedDataset(ds)) {
         delete ds.content.data[s];
       }
@@ -144,7 +144,7 @@ async function deleteSamples(sampleIds: PlId[]) {
   }
 
   // delete from grouped datasets
-  for (const ds of app.model.args.datasets) {
+  for (const ds of app.model.data.datasets) {
     if (isGroupedDataset(ds)) {
       const content = ds.content as WithSampleGroupsData<unknown>;
       for (const groupId of Object.keys(content.sampleGroups ?? {})) {
@@ -167,7 +167,7 @@ const columnDefs = computed<ColDef[]>(() => {
       colId: 'label',
       field: 'label',
       editable: true,
-      headerName: app.model.args.sampleLabelColumnLabel,
+      headerName: app.model.data.sampleLabelColumnLabel,
       minWidth: 100,
       maxWidth: 300,
       suppressHeaderMenuButton: true,
@@ -190,7 +190,7 @@ const columnDefs = computed<ColDef[]>(() => {
       headerComponent: PlAgColumnHeader,
       headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
     },
-    ...app.model.args.metadata.map((mCol): ColDef => {
+    ...app.model.data.metadata.map((mCol): ColDef => {
       const common: ColDef = {
         colId: `meta.${mCol.id}`,
         field: `meta.${mCol.id}`,
@@ -247,7 +247,7 @@ const columnDefs = computed<ColDef[]>(() => {
 
 const rowData = computed<MetadataRow[]>(() => {
   const samples2ds: Record<string, string[]> = {};
-  for (const ds of app.model.args.datasets) {
+  for (const ds of app.model.data.datasets) {
     if (isGroupedDataset(ds)) {
       const content = ds.content as WithSampleGroupsData<unknown>;
       for (const [_, samples] of Object.entries(content.sampleGroups ?? {})) {
@@ -268,10 +268,10 @@ const rowData = computed<MetadataRow[]>(() => {
     }
   }
 
-  return app.model.args.sampleIds.map((id) => ({
+  return app.model.data.sampleIds.map((id) => ({
     id,
-    label: app.model.args.sampleLabels[id]!,
-    meta: Object.fromEntries(app.model.args.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
+    label: app.model.data.sampleLabels[id]!,
+    meta: Object.fromEntries(app.model.data.metadata.map((mCol) => [mCol.id, mCol.data[id]])),
     datasets: samples2ds[id],
   }));
 });
@@ -305,12 +305,12 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
     const newValue = event.newValue;
     if (columnId === 'label') {
       if (newValue)
-        app.model.args.sampleLabels[sampleId] = newValue;
+        app.model.data.sampleLabels[sampleId] = newValue;
       else
-        delete app.model.args.sampleLabels[sampleId];
+        delete app.model.data.sampleLabels[sampleId];
     } else if (columnId.startsWith('meta.')) {
       const metaColumnId = columnId.slice(5);
-      const metaColumn = notEmpty(app.model.args.metadata.find((col) => col.id === metaColumnId));
+      const metaColumn = notEmpty(app.model.data.metadata.find((col) => col.id === metaColumnId));
       if (newValue)
         metaColumn.data[sampleId] = newValue;
       else
@@ -360,7 +360,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
         name: `Delete ${
           targetSamples.length > 1
             ? `${targetSamples.length} samples`
-            : app.model.args.sampleLabels[targetSamples[0]]
+            : app.model.data.sampleLabels[targetSamples[0]]
         }`,
         action: (_) => {
           deleteSamples(targetSamples);
@@ -404,10 +404,10 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
   <!-- Loading modal: remote file selected, waiting for backend to make it available -->
   <PlDialogModal
-    :model-value="app.model.args.metadataUploadHandle !== undefined && importState.importCandidate === undefined && importState.errorMessage === undefined"
+    :model-value="app.model.data.metadataUploadHandle !== undefined && importState.importCandidate === undefined && importState.errorMessage === undefined"
     :close-on-outside-click="false"
     closable
-    @update:model-value="(v) => { if (!v) app.model.args.metadataUploadHandle = undefined; }"
+    @update:model-value="(v) => { if (!v) app.model.data.metadataUploadHandle = undefined; }"
   >
     <template #title>Importing metadata...</template>
     <PlProgressCell stage="running" step="Downloading file..." />

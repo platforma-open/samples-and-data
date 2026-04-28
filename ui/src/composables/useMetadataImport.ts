@@ -40,17 +40,17 @@ export function useMetadataImport() {
 
   watch(metadataFileBytes, (bytes) => {
     if (bytes === undefined) return;
-    const handle = app.model.args.metadataUploadHandle;
+    const handle = app.model.data.metadataUploadHandle;
     if (handle === undefined) return;
     if (importState.importCandidate !== undefined) return;
 
     if (bytes.length > DEFAULT_MAX_FILE_SIZE) {
       importState.errorMessage = { title: 'File is too big' };
-      app.model.args.metadataUploadHandle = undefined;
+      app.model.data.metadataUploadHandle = undefined;
       return;
     }
     if (!processTableBytes(bytes, getFileNameFromHandle(handle))) {
-      app.model.args.metadataUploadHandle = undefined;
+      app.model.data.metadataUploadHandle = undefined;
     }
   }, { immediate: true });
 
@@ -60,12 +60,12 @@ export function useMetadataImport() {
 
   function handleFileSelected(files: ImportFileHandle[]) {
     if (files.length === 0) return;
-    app.model.args.metadataUploadHandle = files[0];
+    app.model.data.metadataUploadHandle = files[0];
   }
 
   function onImportClose() {
     clearImportCandidate();
-    app.model.args.metadataUploadHandle = undefined;
+    app.model.data.metadataUploadHandle = undefined;
   }
 
   return {

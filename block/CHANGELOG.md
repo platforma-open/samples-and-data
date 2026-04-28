@@ -1,5 +1,17 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.16.0
+
+### Minor Changes
+
+- c8d92d5: Migrate to BlockModelV3. Unified `BlockData`; three projection channels — `args` (datasets, metadata, sampleLabels, sampleLabelColumnLabel), `prerunArgs` (datasets, file-handle preprocessing arrays, metadata upload handle), data-only (sampleIds, suggestedImport). Persisted state preserved via `DataModelBuilder.upgradeLegacy`. UI bindings move to `app.model.data`.
+
+### Patch Changes
+
+- Updated dependencies [c8d92d5]
+  - @platforma-open/milaboratories.samples-and-data.model@2.7.0
+  - @platforma-open/milaboratories.samples-and-data.ui@2.8.0
+
 ## 1.15.0
 
 ### Minor Changes
