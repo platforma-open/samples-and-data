@@ -41,22 +41,84 @@ datasetColumnSpecBase := func(blockId, dataset, extension) {
     }
 }
 
-sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
-    data := {}
-    // A sampleId may legitimately appear in multiple groups (one sample shared
-    // across file groups). Dedupe via a map so the axisKeys annotation below
-    // lists each sampleId once.
-    sampleSet := {}
-    for groupId, ss in dataset.content.sampleGroups {
-        for sampleId, sampleName in ss {
-            sampleSet[sampleId] = true
-            data[json.encode([groupId, sampleId])] = sampleName
-        }
+// Per-sample multiplexing rules column. Replaces the legacy
+// `pl7.app/sequencing/data/sampleGroups` linker — group membership is now
+// derivable from the cell key set, group display name lives in the sibling
+// `pl7.app/label` column on `[sampleGroupId]`.
+//
+// Cell value at `[groupId, sampleId]` = JSON-encoded
+// `Array<Record<TagName, Barcode>>`: outer array = OR alternatives,
+// each record = AND across declared tags. Insertion order is preserved.
+//
+// Returns `undefined` when the dataset has no rules — caller emits nothing.
+multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
+    rules := dataset.content.barcodeRules
+    if is_undefined(rules) || len(rules) == 0 {
+        return undefined
     }
-    samples := maps.getKeys(sampleSet)
+
+    barcodeTags := dataset.content.barcodeTags
+    if is_undefined(barcodeTags) || len(barcodeTags) == 0 {
+        ll.panic("Dataset %v has barcodeRules but no barcodeTags", dataset.id)
+    }
+
+    // Tag-name lookup for "unknown tag" check on rule.barcodes records.
+    tagSet := {}
+    for t in barcodeTags {
+        tagSet[t] = true
+    }
+
+    // Group rules by (groupId, sampleId), preserving the array's insertion
+    // order both across cells (keyOrder) and within a cell's alternatives.
+    grouped := {}
+    keyOrder := []
+    sampleSet := {}
+    nucleotidesOnly := true
+    for rule in rules {
+        gid := rule.sampleGroupId
+        sid := rule.sampleId
+        cellKey := json.encode([gid, sid])
+
+        // Defence-in-depth: every barcode record must carry exactly the
+        // declared tag set with non-empty values. Iterate the declared
+        // `barcodeTags` array (deterministic order in error messages).
+        for tag in barcodeTags {
+            value := rule.barcodes[tag]
+            if is_undefined(value) || value == "" {
+                ll.panic("Rule for (group=%v, sample=%v) is missing tag %q", gid, sid, tag)
+            }
+            if nucleotidesOnly {
+                for ch in value {
+                    if !(ch == 'A' || ch == 'C' || ch == 'G' || ch == 'T' || ch == 'N' ||
+                         ch == 'a' || ch == 'c' || ch == 'g' || ch == 't' || ch == 'n') {
+                        nucleotidesOnly = false
+                        break
+                    }
+                }
+            }
+        }
+        for tag, _ in rule.barcodes {
+            if !tagSet[tag] {
+                ll.panic("Rule for (group=%v, sample=%v) has unknown tag %q", gid, sid, tag)
+            }
+        }
+
+        if is_undefined(grouped[cellKey]) {
+            grouped[cellKey] = []
+            keyOrder = append(keyOrder, cellKey)
+        }
+        grouped[cellKey] = append(grouped[cellKey], rule.barcodes)
+        sampleSet[sid] = true
+    }
+
+    data := {}
+    for k in keyOrder {
+        data[k] = json.encode(grouped[k])
+    }
+
     spec := {
         kind: "PColumn",
-        name: "pl7.app/sequencing/data/sampleGroups",
+        name: "pl7.app/sequencing/multiplexingRules",
         domain: {
             "pl7.app/block": blockId,
             "pl7.app/dataset": dataset.id
@@ -64,11 +126,12 @@ sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
         valueType: "String",
         axesSpec: [groupIdAxis, sampleIdAxis],
         annotations: {
-            "pl7.app/label": "Sample Groups",
-            "pl7.app/isLinkedColumn": "true",
+            "pl7.app/label": "Multiplexing Rules",
+            "pl7.app/sequencing/barcodeTags": string(json.encode(barcodeTags)),
+            "pl7.app/sequencing/barcodeNucleotidesOnly": nucleotidesOnly ? "true" : "false",
             "pl7.app/hideDataFromUi": "true",
-            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))), // axis values for groupIdAxis
-            "pl7.app/axisKeys/1": string(json.encode(samples)) // axis values for sampleIdAxis
+            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))),
+            "pl7.app/axisKeys/1": string(json.encode(maps.getKeys(sampleSet)))
         }
     }
 
@@ -110,7 +173,7 @@ createFileDataset := func(blockId, sampleIdAxis, dataset, importFile, extension)
 export {
     createJsonPColumnData: createJsonPColumnData,
     datasetColumnSpecBase: datasetColumnSpecBase,
-    sampleGroupsLinkerColumn: sampleGroupsLinkerColumn,
+    multiplexingRulesColumn: multiplexingRulesColumn,
     getSampleColumnName: getSampleColumnName,
     createFileDataset: createFileDataset
 }

@@ -66,6 +66,8 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
 
     // Clone the existing sampleGroups to trigger Vue reactivity
     const updatedSampleGroups = { ...(dataset.content.sampleGroups || {}) };
+    // Replace the rules array wholesale so the deep watcher detects the change.
+    const updatedRules = [...(dataset.content.barcodeRules ?? [])];
 
     // Process each row and match fileId to groupLabel
     for (const row of importData.rows) {
@@ -100,10 +102,23 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
           column.data[sampleId] = value;
         }
       }
+
+      // Append a new BarcodeRule when the row carries any barcode value.
+      // (When the dataset has no declared tags, `row.barcodes` is `{}` and we
+      // skip rule creation — the operator must declare tags first.)
+      const tagEntries = Object.entries(row.barcodes ?? {});
+      if (tagEntries.length > 0 && tagEntries.every(([, v]) => v !== '')) {
+        updatedRules.push({
+          sampleGroupId: groupId,
+          sampleId,
+          barcodes: { ...row.barcodes },
+        });
+      }
     }
 
     // Replace the entire sampleGroups object to trigger Vue reactivity
     dataset.content.sampleGroups = updatedSampleGroups;
+    dataset.content.barcodeRules = updatedRules;
   }
 
   clearImportCandidate();
@@ -113,6 +128,13 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
 // Available group labels from all MultiplexedFastq datasets
 const availableGroupLabels = computed(() =>
   multiplexedFastqDatasets.value.flatMap((ds) => Object.values(ds.content.groupLabels)),
+);
+
+// Declared barcode tags. The dialog handles a single dataset page at a time
+// (props.datasetIds always carries one id when SyncDatasetDialog is mounted
+// from MultiplexedFastqDatasetPage), so we read the first dataset's tags.
+const barcodeTags = computed<string[]>(() =>
+  multiplexedFastqDatasets.value[0]?.content.barcodeTags ?? [],
 );
 
 // Check if there are rows without samples (for highlighting import button)
@@ -268,6 +290,7 @@ async function updateSamples() {
     v-if="importState.importCandidate !== undefined"
     :import-candidate="importState.importCandidate"
     :available-group-labels="availableGroupLabels"
+    :barcode-tags="barcodeTags"
     @on-close="clearImportCandidate"
     @on-import="handleSamplesheetImport"
   />

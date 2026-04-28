@@ -8,6 +8,7 @@ import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
 import { computed, shallowRef } from 'vue';
 import { useApp } from '../app';
+import MultiplexingRulesSection from '../components/MultiplexingRulesSection.vue';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
 import { agGroupIdColumnDef } from '../util';
 
@@ -135,15 +136,35 @@ const gridOptions: GridOptions<DatasetRow> = {
 </script>
 
 <template>
-  <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
+  <div class="multiplexed-fastq-page">
+    <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
 
-  <AgGridVue
-    :theme="AgGridTheme"
-    :style="{ height: '100%' }"
-    :rowData="rowData"
-    :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs"
-    :gridOptions="gridOptions"
-    @grid-ready="onGridReady"
-  />
+    <div class="multiplexed-fastq-page__grid">
+      <AgGridVue
+        :theme="AgGridTheme"
+        :style="{ height: '100%' }"
+        :rowData="rowData"
+        :defaultColDef="defaultColDef"
+        :columnDefs="columnDefs"
+        :gridOptions="gridOptions"
+        @grid-ready="onGridReady"
+      />
+    </div>
+
+    <MultiplexingRulesSection :dataset="dataset" />
+  </div>
 </template>
+
+<style scoped>
+.multiplexed-fastq-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+}
+
+.multiplexed-fastq-page__grid {
+  flex: 1 1 auto;
+  min-height: 200px;
+}
+</style>

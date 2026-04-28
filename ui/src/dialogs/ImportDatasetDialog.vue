@@ -876,6 +876,10 @@ async function createNewDataset() {
           sampleGroups: sampleGroups,
           data: contentData,
           groupLabels: groupLabels,
+          // Multiplexing rules — operator declares tags and rules in the
+          // dataset page after creation. Empty by default.
+          barcodeTags: [],
+          barcodeRules: [],
         },
       });
       break;
