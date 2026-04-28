@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Dataset, DSContent, DSMultiplexedFastq, PlId, WithSampleGroupsData } from '@platforma-open/milaboratories.samples-and-data.model';
+import { uniquePlId } from '@platforma-sdk/model';
 import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed } from 'vue';
@@ -64,6 +65,22 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       Object.entries(dataset.content.groupLabels).map(([groupId, label]) => [label, groupId as PlId]),
     );
 
+    // Merge any newly-declared tags from the dialog into the dataset's tag
+    // set. New tags get an empty value backfilled into every existing rule
+    // so the (rules, tags) invariant holds.
+    const existingTags = dataset.content.barcodeTags;
+    const newTags = importData.declaredTags.filter((t) => !existingTags.includes(t));
+    let updatedTags = existingTags;
+    let updatedRules = [...dataset.content.barcodeRules];
+    if (newTags.length > 0) {
+      updatedTags = [...existingTags, ...newTags];
+      updatedRules = updatedRules.map((rule) => {
+        const patch: Record<string, string> = {};
+        for (const t of newTags) patch[t] = '';
+        return { ...rule, barcodes: { ...rule.barcodes, ...patch } };
+      });
+    }
+
     // Clone the existing sampleGroups to trigger Vue reactivity
     const updatedSampleGroups = { ...(dataset.content.sampleGroups || {}) };
 
@@ -82,12 +99,13 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
         updatedSampleGroups[groupId] = { ...updatedSampleGroups[groupId] };
       }
 
-      // Use the samplePlId from import data
-      const sampleId = row.samplePlId;
-
-      // Add sample to global sample lists
-      args.sampleIds.push(sampleId);
-      args.sampleLabels[sampleId] = row.sampleId;
+      // Resolve the block-level sampleId by label: reuse the existing sampleId
+      // when a sample with the same label is already in the block, otherwise
+      // mint a new one. This makes a re-import (or a second file group sharing
+      // the same sample names) collapse onto one sampleId instead of forking
+      // a duplicate, so the multiplexed FASTQ linker can legitimately carry
+      // `(groupA, sId), (groupB, sId)` for a sample that appears in both groups.
+      const sampleId = getOrCreateSample(app, row.sampleId);
 
       // Add the sample to the matched group
       updatedSampleGroups[groupId][sampleId] = row.sampleId;
@@ -99,10 +117,25 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
           column.data[sampleId] = value;
         }
       }
+
+      // Append a new BarcodeRule when the row carries any barcode value.
+      // (When the dataset has no declared tags, `row.barcodes` is `{}` and we
+      // skip rule creation — the operator must declare tags first.)
+      const tagEntries = Object.entries(row.barcodes ?? {});
+      if (tagEntries.length > 0 && tagEntries.every(([, v]) => v !== '')) {
+        updatedRules.push({
+          ruleId: uniquePlId(),
+          sampleGroupId: groupId,
+          sampleId,
+          barcodes: { ...row.barcodes },
+        });
+      }
     }
 
     // Replace the entire sampleGroups object to trigger Vue reactivity
     dataset.content.sampleGroups = updatedSampleGroups;
+    dataset.content.barcodeTags = updatedTags;
+    dataset.content.barcodeRules = updatedRules;
   }
 
   clearImportCandidate();
@@ -112,6 +145,13 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
 // Available group labels from all MultiplexedFastq datasets
 const availableGroupLabels = computed(() =>
   multiplexedFastqDatasets.value.flatMap((ds) => Object.values(ds.content.groupLabels)),
+);
+
+// Declared barcode tags. The dialog handles a single dataset page at a time
+// (props.datasetIds always carries one id when SyncDatasetDialog is mounted
+// from MultiplexedFastqDatasetPage), so we read the first dataset's tags.
+const barcodeTags = computed<string[]>(() =>
+  multiplexedFastqDatasets.value[0]?.content.barcodeTags ?? [],
 );
 
 // Check if there are rows without samples (for highlighting import button)
@@ -267,6 +307,7 @@ async function updateSamples() {
     v-if="importState.importCandidate !== undefined"
     :import-candidate="importState.importCandidate"
     :available-group-labels="availableGroupLabels"
+    :barcode-tags="barcodeTags"
     @on-close="clearImportCandidate"
     @on-import="handleSamplesheetImport"
   />

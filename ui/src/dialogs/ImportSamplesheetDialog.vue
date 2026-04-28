@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import type { MTColumn, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
-import { uniquePlId } from '@platforma-sdk/model';
+import type { MTColumn } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ListOption } from '@platforma-sdk/ui-vue';
 import {
+  PlAlert,
+  PlBtnGhost,
   PlBtnPrimary,
   PlBtnSecondary,
   PlDialogModal,
   PlDropdown,
   PlLogView,
+  PlRow,
   PlTextArea,
+  PlTextField,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, watch } from 'vue';
 import { useApp } from '../app';
@@ -19,9 +22,13 @@ import {
   processMetadataColumns,
 } from '../utils/metadata';
 
+const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
+
 const props = defineProps<{
   importCandidate: ImportResult;
   availableGroupLabels: string[];
+  /** Declared barcode tags on the target multiplexed-FASTQ dataset. */
+  barcodeTags: string[];
 }>();
 
 const emit = defineEmits<{
@@ -33,69 +40,143 @@ export type SamplesheetImportData = {
   fileIdColumn: number;
   sampleIdColumn: number;
   metadataColumns: MTColumn[];
+  /**
+   * Tags the importer wants the dataset to declare. Includes both pre-existing
+   * tags (echoed back) and brand-new ones the operator added in the dialog.
+   * Caller is responsible for merging into `dataset.content.barcodeTags`.
+   */
+  declaredTags: string[];
   rows: Array<{
     fileId: string;
     sampleId: string;
-    samplePlId: PlId;
     metadata: Record<string, unknown>;
+    /** Per-tag barcode value pulled from the selected column for that tag. */
+    barcodes: Record<string, string>;
   }>;
 };
 
 const app = useApp();
 
+// Tag-binding row for the dialog: which tag name maps to which column.
+type TagBinding = { tagName: string; columnIdx: number };
+
 const data = reactive({
   fileIdColumnIdx: -1,
   sampleIdColumnIdx: -1,
-  barcodeIdColumnIdx: -1,
+  bindings: [] as TagBinding[],
 });
+
+function sanitizeTagName(raw: string): string {
+  const cleaned = raw.replace(/[^A-Za-z0-9]/g, '');
+  return cleaned.length > 0 ? cleaned : 'Tag';
+}
+
+/**
+ * Build one binding per non-File/non-Sample column, using the column header
+ * (sanitized) as the default tag name. For columns that match an
+ * already-declared tag (case-insensitive substring), reuse that tag name.
+ * Operator removes any binding they don't want as a barcode tag — those
+ * columns then flow through the metadata pipeline as before.
+ */
+function defaultBindingsFor(
+  ic: ImportResult,
+  fileIdx: number,
+  sampleIdx: number,
+  declaredTags: string[],
+): TagBinding[] {
+  const cols = ic.data.columns;
+  const result: TagBinding[] = [];
+  const taken = new Set<string>();
+  for (let i = 0; i < cols.length; i++) {
+    if (i === fileIdx || i === sampleIdx) continue;
+    const header = cols[i].header;
+    const matchedTag = declaredTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
+    let tagName = matchedTag ?? (TAG_NAME_RX.test(header) ? header : sanitizeTagName(header));
+    let n = 2;
+    while (taken.has(tagName)) {
+      tagName = `${sanitizeTagName(header) || 'Tag'}${n}`;
+      n++;
+    }
+    taken.add(tagName);
+    result.push({ tagName, columnIdx: i });
+  }
+  return result;
+}
 
 watch(
   () => props.importCandidate,
   (ic) => {
-    // Try to find file_id column
+    // file id
     data.fileIdColumnIdx = ic.data.columns.findIndex((c) =>
       c.header.toLowerCase().includes('file'));
     if (data.fileIdColumnIdx === -1) data.fileIdColumnIdx = 0;
 
-    // Try to find sample_id column
+    // sample id
     data.sampleIdColumnIdx = ic.data.columns.findIndex((c) =>
       c.header.toLowerCase().includes('sample'));
     if (data.sampleIdColumnIdx === -1) {
-      // If sample column not found, try to use second column if different from file column
       data.sampleIdColumnIdx = data.fileIdColumnIdx === 0 ? 1 : 0;
     }
 
-    // Try to find barcode_id column
-    data.barcodeIdColumnIdx = ic.data.columns.findIndex((c) =>
-      c.header.toLowerCase().includes('barcode'));
-    // If not found, leave it as -1 (must be selected manually)
+    data.bindings = defaultBindingsFor(
+      ic,
+      data.fileIdColumnIdx,
+      data.sampleIdColumnIdx,
+      props.barcodeTags,
+    );
   },
   { immediate: true },
+);
+
+// When dataset's declared tag set changes externally, re-seed bindings
+// (preserving any existing column choices the operator made).
+watch(
+  () => props.barcodeTags,
+  (tags) => {
+    const previous = new Map(data.bindings.map((b) => [b.tagName, b.columnIdx]));
+    const seeded = defaultBindingsFor(
+      props.importCandidate,
+      data.fileIdColumnIdx,
+      data.sampleIdColumnIdx,
+      tags,
+    );
+    data.bindings = seeded.map((b) => ({
+      ...b,
+      columnIdx: previous.get(b.tagName) ?? b.columnIdx,
+    }));
+  },
 );
 
 const sampleColumnOptions = computed<ListOption<number>[]>(() =>
   props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })),
 );
 
-// Count metadata columns (all columns except file ID, sample ID, and barcode ID)
-const metadataColumnsCount = computed(() => {
-  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1 || data.barcodeIdColumnIdx === -1) {
-    return 0;
+const skippedColumnIndices = computed(() => {
+  const set = new Set<number>();
+  set.add(data.fileIdColumnIdx);
+  set.add(data.sampleIdColumnIdx);
+  for (const b of data.bindings) {
+    if (b.columnIdx !== -1) set.add(b.columnIdx);
   }
-  return props.importCandidate.data.columns.length - 3; // Exclude file ID, sample ID, and barcode ID
+  return set;
+});
+
+const metadataColumnsCount = computed(() => {
+  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return 0;
+  return props.importCandidate.data.columns.length - skippedColumnIndices.value.size;
 });
 
 const colsMatchingExisting = computed(() => {
   let res = 0;
+  const skip = skippedColumnIndices.value;
   for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; cIdx++) {
-    if (cIdx === data.fileIdColumnIdx || cIdx === data.sampleIdColumnIdx || cIdx === data.barcodeIdColumnIdx) continue;
+    if (skip.has(cIdx)) continue;
     const c = props.importCandidate.data.columns[cIdx];
     if (app.model.data.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
   }
   return res;
 });
 
-// Compute matching statistics based on selected file ID column
 const matchingStats = computed(() => {
   if (data.fileIdColumnIdx === -1) {
     return { matchedFiles: 0, totalFiles: 0, unmatchedRows: 0 };
@@ -105,23 +186,17 @@ const matchingStats = computed(() => {
   let unmatchedRows = 0;
   let lastFileId: string | null = null;
 
-  // Apply forward-fill logic for merged cells when collecting unique file IDs
   for (const row of props.importCandidate.data.rows) {
     const fileIdValue = row[data.fileIdColumnIdx];
     const sampleId = row[data.sampleIdColumnIdx];
 
-    // Update lastFileId if current cell has a value
-    if (fileIdValue) {
-      lastFileId = String(fileIdValue);
-    }
+    if (fileIdValue) lastFileId = String(fileIdValue);
 
-    // Skip rows without sample ID
     if (!sampleId) {
       unmatchedRows++;
       continue;
     }
 
-    // If no file ID even after forward-fill, count as unmatched
     if (!lastFileId) {
       unmatchedRows++;
       continue;
@@ -129,7 +204,6 @@ const matchingStats = computed(() => {
 
     uniqueFileIds.add(lastFileId);
 
-    // Check if this file ID matches any group
     if (!props.availableGroupLabels.includes(lastFileId)) {
       unmatchedRows++;
     }
@@ -174,79 +248,83 @@ const tableIssuesText = computed(() => {
   return undefined;
 });
 
+function bindingTagError(idx: number): string | undefined {
+  const b = data.bindings[idx];
+  if (!b.tagName) return 'Tag name is required';
+  if (!TAG_NAME_RX.test(b.tagName)) return 'Use letters and digits only';
+  if (data.bindings.some((other, i) => i !== idx && other.tagName === b.tagName)) {
+    return 'Tag name must be unique';
+  }
+  return undefined;
+}
+
+const importDisabled = computed(() => {
+  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return true;
+  if (data.bindings.length === 0) return true;
+  for (let i = 0; i < data.bindings.length; i++) {
+    if (bindingTagError(i)) return true;
+  }
+  return false;
+});
+
+function removeBinding(idx: number) {
+  data.bindings = data.bindings.filter((_, i) => i !== idx);
+}
+
+function updateBindingTag(idx: number, value: string) {
+  data.bindings = data.bindings.map((b, i) => (i === idx ? { ...b, tagName: value } : b));
+}
+
 function runImport() {
   const args = app.model.data;
   const rows: SamplesheetImportData['rows'] = [];
 
-  // Process metadata columns using utility function
+  const skipColumnIndices = Array.from(skippedColumnIndices.value);
+
   const { modelColumns, newColumns } = processMetadataColumns({
     importCandidate: props.importCandidate,
     existingMetadata: args.metadata,
-    skipColumnIndices: [data.fileIdColumnIdx, data.sampleIdColumnIdx, data.barcodeIdColumnIdx],
+    skipColumnIndices,
   });
 
-  // Add new columns to the model
   args.metadata.push(...newColumns);
 
-  // Get all metadata columns (existing + new)
   const metadataColumns = modelColumns.filter((col): col is MTColumn => col !== undefined);
 
-  // Find or create "Barcode ID" metadata column
-  let barcodeIdColumn = args.metadata.find((col) => col.label === 'Barcode ID');
-  if (!barcodeIdColumn) {
-    barcodeIdColumn = {
-      id: uniquePlId(),
-      label: 'Barcode ID',
-      valueType: 'String',
-      global: true,
-      data: {},
-    };
-    args.metadata.push(barcodeIdColumn);
-    metadataColumns.push(barcodeIdColumn);
-  } else if (!metadataColumns.includes(barcodeIdColumn)) {
-    // Add barcode ID column to metadata columns list if it already existed
-    metadataColumns.push(barcodeIdColumn);
-  }
+  const declaredTags = data.bindings.map((b) => b.tagName);
 
-  // Process rows with forward-fill for merged cells
   let lastFileId: string | null = null;
 
   for (const row of props.importCandidate.data.rows) {
     const fileIdValue = row[data.fileIdColumnIdx];
     const sampleIdValue = row[data.sampleIdColumnIdx];
-    const barcodeIdValue = row[data.barcodeIdColumnIdx];
 
-    // Update lastFileId if current cell has a value
-    if (fileIdValue) {
-      lastFileId = String(fileIdValue);
-    }
+    if (fileIdValue) lastFileId = String(fileIdValue);
 
-    // Skip row if no sample ID or no file ID (even after forward-fill)
     if (!sampleIdValue || !lastFileId) continue;
 
     const sampleId = String(sampleIdValue);
-    const samplePlId = uniquePlId();
-
-    // Extract metadata using utility function
     const metadata = extractMetadataFromRow(row, modelColumns);
 
-    // Add barcode ID to metadata if present
-    if (barcodeIdValue) {
-      metadata[barcodeIdColumn.id] = String(barcodeIdValue);
+    const barcodes: Record<string, string> = {};
+    for (const b of data.bindings) {
+      const v = b.columnIdx !== -1 ? row[b.columnIdx] : undefined;
+      barcodes[b.tagName] = v !== undefined && v !== null ? String(v) : '';
     }
 
     rows.push({
       fileId: lastFileId,
-      sampleId: sampleId,
-      samplePlId: samplePlId,
-      metadata: metadata,
+      sampleId,
+      metadata,
+      barcodes,
     });
   }
 
   emit('onImport', {
     fileIdColumn: data.fileIdColumnIdx,
     sampleIdColumn: data.sampleIdColumnIdx,
-    metadataColumns: metadataColumns,
+    metadataColumns,
+    declaredTags,
     rows,
   });
 }
@@ -266,6 +344,7 @@ function runImport() {
     "
   >
     <template #title>Import samplesheet</template>
+
     <PlDropdown
       v-model="data.fileIdColumnIdx"
       label="File ID column"
@@ -276,11 +355,26 @@ function runImport() {
       label="Sample ID column"
       :options="sampleColumnOptions"
     />
-    <PlDropdown
-      v-model="data.barcodeIdColumnIdx"
-      label="Barcode ID column"
-      :options="sampleColumnOptions"
-    />
+
+    <PlAlert v-if="data.bindings.length === 0" type="warn">
+      No barcode tags to import. Every remaining column was removed — close
+      and re-open if that was a mistake.
+    </PlAlert>
+
+    <PlRow
+      v-for="(binding, idx) in data.bindings"
+      :key="idx"
+    >
+      <PlTextField
+        :model-value="binding.tagName"
+        :label="`Tag for column &quot;${props.importCandidate.data.columns[binding.columnIdx].header}&quot;`"
+        placeholder="e.g. P5"
+        :error="bindingTagError(idx)"
+        @update:model-value="(v: string) => updateBindingTag(idx, v)"
+      />
+      <PlBtnGhost icon="close" @click="removeBinding(idx)" />
+    </PlRow>
+
     <PlLogView :value="tableDataText" label="Import information" />
     <template v-if="tableIssuesText">
       <PlTextArea
@@ -293,10 +387,7 @@ function runImport() {
     </template>
 
     <template #actions>
-      <PlBtnPrimary
-        :disabled="data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1 || data.barcodeIdColumnIdx === -1"
-        @click="runImport"
-      >
+      <PlBtnPrimary :disabled="importDisabled" @click="runImport">
         Import
       </PlBtnPrimary>
       <PlBtnSecondary @click="() => emit('onClose')">Cancel</PlBtnSecondary>
