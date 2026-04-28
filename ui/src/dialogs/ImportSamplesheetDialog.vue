@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { MTColumn } from '@platforma-open/milaboratories.samples-and-data.model';
-import { uniquePlId } from '@platforma-sdk/model';
 import type { ListOption } from '@platforma-sdk/ui-vue';
 import {
+  PlAlert,
   PlBtnPrimary,
   PlBtnSecondary,
   PlDialogModal,
@@ -22,6 +22,8 @@ import {
 const props = defineProps<{
   importCandidate: ImportResult;
   availableGroupLabels: string[];
+  /** Declared barcode tags on the target multiplexed-FASTQ dataset. */
+  barcodeTags: string[];
 }>();
 
 const emit = defineEmits<{
@@ -33,14 +35,12 @@ export type SamplesheetImportData = {
   fileIdColumn: number;
   sampleIdColumn: number;
   metadataColumns: MTColumn[];
-  // Rows carry only the user-facing sample label (`sampleId`). The actual
-  // block sampleId (PlId) is resolved by the consumer via getOrCreateSample,
-  // so that samples with the same label across file groups / imports collapse
-  // onto a single block-level sampleId.
   rows: Array<{
     fileId: string;
     sampleId: string;
     metadata: Record<string, unknown>;
+    /** Per-tag barcode value pulled from the selected column for that tag. */
+    barcodes: Record<string, string>;
   }>;
 };
 
@@ -49,29 +49,39 @@ const app = useApp();
 const data = reactive({
   fileIdColumnIdx: -1,
   sampleIdColumnIdx: -1,
-  barcodeIdColumnIdx: -1,
+  /** Map tagName -> selected column index. -1 = unset. */
+  tagColumnIdx: {} as Record<string, number>,
 });
 
 watch(
   () => props.importCandidate,
   (ic) => {
-    // Try to find file_id column
+    // file id
     data.fileIdColumnIdx = ic.data.columns.findIndex((c) =>
       c.header.toLowerCase().includes('file'));
     if (data.fileIdColumnIdx === -1) data.fileIdColumnIdx = 0;
 
-    // Try to find sample_id column
+    // sample id
     data.sampleIdColumnIdx = ic.data.columns.findIndex((c) =>
       c.header.toLowerCase().includes('sample'));
     if (data.sampleIdColumnIdx === -1) {
-      // If sample column not found, try to use second column if different from file column
       data.sampleIdColumnIdx = data.fileIdColumnIdx === 0 ? 1 : 0;
     }
+  },
+  { immediate: true },
+);
 
-    // Try to find barcode_id column
-    data.barcodeIdColumnIdx = ic.data.columns.findIndex((c) =>
-      c.header.toLowerCase().includes('barcode'));
-    // If not found, leave it as -1 (must be selected manually)
+// Reset / repopulate tag→column mapping whenever the tag set changes.
+watch(
+  () => props.barcodeTags,
+  (tags) => {
+    const next: Record<string, number> = {};
+    for (const tag of tags) {
+      const found = props.importCandidate.data.columns.findIndex((c) =>
+        c.header.toLowerCase().includes(tag.toLowerCase()));
+      next[tag] = data.tagColumnIdx[tag] ?? found ?? -1;
+    }
+    data.tagColumnIdx = next;
   },
   { immediate: true },
 );
@@ -80,25 +90,33 @@ const sampleColumnOptions = computed<ListOption<number>[]>(() =>
   props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })),
 );
 
-// Count metadata columns (all columns except file ID, sample ID, and barcode ID)
-const metadataColumnsCount = computed(() => {
-  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1 || data.barcodeIdColumnIdx === -1) {
-    return 0;
+const skippedColumnIndices = computed(() => {
+  const set = new Set<number>();
+  set.add(data.fileIdColumnIdx);
+  set.add(data.sampleIdColumnIdx);
+  for (const tag of props.barcodeTags) {
+    const idx = data.tagColumnIdx[tag];
+    if (idx !== undefined && idx !== -1) set.add(idx);
   }
-  return props.importCandidate.data.columns.length - 3; // Exclude file ID, sample ID, and barcode ID
+  return set;
+});
+
+const metadataColumnsCount = computed(() => {
+  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return 0;
+  return props.importCandidate.data.columns.length - skippedColumnIndices.value.size;
 });
 
 const colsMatchingExisting = computed(() => {
   let res = 0;
+  const skip = skippedColumnIndices.value;
   for (let cIdx = 0; cIdx < props.importCandidate.data.columns.length; cIdx++) {
-    if (cIdx === data.fileIdColumnIdx || cIdx === data.sampleIdColumnIdx || cIdx === data.barcodeIdColumnIdx) continue;
+    if (skip.has(cIdx)) continue;
     const c = props.importCandidate.data.columns[cIdx];
     if (app.model.data.metadata.find((mc) => columnNamesMatch(mc.label, c.header))) res++;
   }
   return res;
 });
 
-// Compute matching statistics based on selected file ID column
 const matchingStats = computed(() => {
   if (data.fileIdColumnIdx === -1) {
     return { matchedFiles: 0, totalFiles: 0, unmatchedRows: 0 };
@@ -108,23 +126,17 @@ const matchingStats = computed(() => {
   let unmatchedRows = 0;
   let lastFileId: string | null = null;
 
-  // Apply forward-fill logic for merged cells when collecting unique file IDs
   for (const row of props.importCandidate.data.rows) {
     const fileIdValue = row[data.fileIdColumnIdx];
     const sampleId = row[data.sampleIdColumnIdx];
 
-    // Update lastFileId if current cell has a value
-    if (fileIdValue) {
-      lastFileId = String(fileIdValue);
-    }
+    if (fileIdValue) lastFileId = String(fileIdValue);
 
-    // Skip rows without sample ID
     if (!sampleId) {
       unmatchedRows++;
       continue;
     }
 
-    // If no file ID even after forward-fill, count as unmatched
     if (!lastFileId) {
       unmatchedRows++;
       continue;
@@ -132,7 +144,6 @@ const matchingStats = computed(() => {
 
     uniqueFileIds.add(lastFileId);
 
-    // Check if this file ID matches any group
     if (!props.availableGroupLabels.includes(lastFileId)) {
       unmatchedRows++;
     }
@@ -177,77 +188,64 @@ const tableIssuesText = computed(() => {
   return undefined;
 });
 
+const importDisabled = computed(() => {
+  if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return true;
+  if (props.barcodeTags.length === 0) return true;
+  for (const tag of props.barcodeTags) {
+    if ((data.tagColumnIdx[tag] ?? -1) === -1) return true;
+  }
+  return false;
+});
+
 function runImport() {
   const args = app.model.data;
   const rows: SamplesheetImportData['rows'] = [];
+
+  const skipColumnIndices = Array.from(skippedColumnIndices.value);
 
   // Process metadata columns using utility function
   const { modelColumns, newColumns } = processMetadataColumns({
     importCandidate: props.importCandidate,
     existingMetadata: args.metadata,
-    skipColumnIndices: [data.fileIdColumnIdx, data.sampleIdColumnIdx, data.barcodeIdColumnIdx],
+    skipColumnIndices,
   });
 
-  // Add new columns to the model
   args.metadata.push(...newColumns);
 
-  // Get all metadata columns (existing + new)
   const metadataColumns = modelColumns.filter((col): col is MTColumn => col !== undefined);
 
-  // Find or create "Barcode ID" metadata column
-  let barcodeIdColumn = args.metadata.find((col) => col.label === 'Barcode ID');
-  if (!barcodeIdColumn) {
-    barcodeIdColumn = {
-      id: uniquePlId(),
-      label: 'Barcode ID',
-      valueType: 'String',
-      global: true,
-      data: {},
-    };
-    args.metadata.push(barcodeIdColumn);
-    metadataColumns.push(barcodeIdColumn);
-  } else if (!metadataColumns.includes(barcodeIdColumn)) {
-    // Add barcode ID column to metadata columns list if it already existed
-    metadataColumns.push(barcodeIdColumn);
-  }
-
-  // Process rows with forward-fill for merged cells
   let lastFileId: string | null = null;
 
   for (const row of props.importCandidate.data.rows) {
     const fileIdValue = row[data.fileIdColumnIdx];
     const sampleIdValue = row[data.sampleIdColumnIdx];
-    const barcodeIdValue = row[data.barcodeIdColumnIdx];
 
-    // Update lastFileId if current cell has a value
-    if (fileIdValue) {
-      lastFileId = String(fileIdValue);
-    }
+    if (fileIdValue) lastFileId = String(fileIdValue);
 
-    // Skip row if no sample ID or no file ID (even after forward-fill)
     if (!sampleIdValue || !lastFileId) continue;
 
     const sampleId = String(sampleIdValue);
-
-    // Extract metadata using utility function
     const metadata = extractMetadataFromRow(row, modelColumns);
 
-    // Add barcode ID to metadata if present
-    if (barcodeIdValue) {
-      metadata[barcodeIdColumn.id] = String(barcodeIdValue);
+    const barcodes: Record<string, string> = {};
+    for (const tag of props.barcodeTags) {
+      const colIdx = data.tagColumnIdx[tag];
+      const v = colIdx !== undefined && colIdx !== -1 ? row[colIdx] : undefined;
+      barcodes[tag] = v !== undefined && v !== null ? String(v) : '';
     }
 
     rows.push({
       fileId: lastFileId,
-      sampleId: sampleId,
-      metadata: metadata,
+      sampleId,
+      metadata,
+      barcodes,
     });
   }
 
   emit('onImport', {
     fileIdColumn: data.fileIdColumnIdx,
     sampleIdColumn: data.sampleIdColumnIdx,
-    metadataColumns: metadataColumns,
+    metadataColumns,
     rows,
   });
 }
@@ -267,6 +265,13 @@ function runImport() {
     "
   >
     <template #title>Import samplesheet</template>
+
+    <PlAlert v-if="props.barcodeTags.length === 0" type="warn">
+      Declare at least one barcode tag in the Multiplexing Rules section
+      before importing a samplesheet — the importer needs to know which
+      column maps to which tag.
+    </PlAlert>
+
     <PlDropdown
       v-model="data.fileIdColumnIdx"
       label="File ID column"
@@ -278,10 +283,14 @@ function runImport() {
       :options="sampleColumnOptions"
     />
     <PlDropdown
-      v-model="data.barcodeIdColumnIdx"
-      label="Barcode ID column"
+      v-for="tag in props.barcodeTags"
+      :key="tag"
+      :model-value="data.tagColumnIdx[tag] ?? -1"
+      :label="`Barcode column for ${tag}`"
       :options="sampleColumnOptions"
+      @update:model-value="(v) => (data.tagColumnIdx[tag] = v as number)"
     />
+
     <PlLogView :value="tableDataText" label="Import information" />
     <template v-if="tableIssuesText">
       <PlTextArea
@@ -294,10 +303,7 @@ function runImport() {
     </template>
 
     <template #actions>
-      <PlBtnPrimary
-        :disabled="data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1 || data.barcodeIdColumnIdx === -1"
-        @click="runImport"
-      >
+      <PlBtnPrimary :disabled="importDisabled" @click="runImport">
         Import
       </PlBtnPrimary>
       <PlBtnSecondary @click="() => emit('onClose')">Cancel</PlBtnSecondary>

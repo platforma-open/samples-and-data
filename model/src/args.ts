@@ -143,9 +143,25 @@ export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFil
   xsvType: 'csv' | 'tsv';
 }
 
+/**
+ * One row in the Multiplexing Rules table. The same `(sampleGroupId, sampleId)`
+ * pair may appear multiple times — those entries represent per-sample
+ * alternatives (outer OR). `barcodes` keys are the dataset's declared
+ * `barcodeTags`; a multi-key record is an AND combination across tags.
+ */
+export interface BarcodeRule {
+  sampleGroupId: PlId;
+  sampleId: PlId;
+  barcodes: Record<string, string>;
+}
+
 export interface DSContentMultiplexedFastq extends WithSampleGroupsData<FastqFileGroup> {
   type: 'MultiplexedFastq';
   readIndices: ReadIndex[];
+  /** Ordered, user-declared list of barcode tag names. */
+  barcodeTags: string[];
+  /** Flat per-sample multiplexing rules. */
+  barcodeRules: BarcodeRule[];
 }
 
 export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFileHandle | null> {
@@ -233,7 +249,14 @@ export type BlockDataV20260427 = {
   suggestedImport: boolean;
 };
 
-export type BlockData = BlockDataV20260427;
+/**
+ * V20260428 only differs from V20260427 in `DSContentMultiplexedFastq`, which
+ * gains `barcodeTags` and `barcodeRules`. Top-level shape is identical;
+ * dataset-level upgrade is performed in `DataModelBuilder.migrate`.
+ */
+export type BlockDataV20260428 = BlockDataV20260427;
+
+export type BlockData = BlockDataV20260428;
 
 export type BlockArgs = Pick<
   BlockData,

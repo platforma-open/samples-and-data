@@ -103,13 +103,18 @@ wf.body(func(args) {
 		if proc.isGrouped {
 			datasetGroupIdAxis := proc.createGroupAxis(groupIdAxis, dataset)
 			ds = proc.createDataset(blockId, sampleIdAxis, datasetGroupIdAxis, dataset, importFile)
-			
-			// linker column
-			linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
 
-			ds["dataset." + dataset.id + ".linker"] = {
-				spec: linker.spec,
-				data: linker.data
+			// Multiplexing rules column (MultiplexedFastq only). Replaces the
+			// legacy `pl7.app/sequencing/data/sampleGroups` linker. Returns
+			// undefined when the dataset has no rules — no column is emitted.
+			if dataset.content.type == "MultiplexedFastq" {
+				rules := util.multiplexingRulesColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
+				if !is_undefined(rules) {
+					ds["dataset." + dataset.id + ".multiplexingRules"] = {
+						spec: rules.spec,
+						data: rules.data
+					}
+				}
 			}
 
 			// group labels column
