@@ -12,6 +12,7 @@ import {
   type BlockPrerunArgs,
   type DSAny,
 } from './args';
+import { validateMultiplexingRules } from './multiplexing-rules-validation';
 
 function validateDatasets(datasets: DSAny[]) {
   const valid = datasets.every((ds) => {
@@ -33,6 +34,14 @@ export const platforma = BlockModelV3.create(blockDataModel)
 
   .args<BlockArgs>((data) => {
     validateDatasets(data.datasets);
+    const ruleIssues = validateMultiplexingRules(data.datasets, data.sampleLabels);
+    if (ruleIssues.length > 0) {
+      throw new Error(
+        ruleIssues
+          .map((i) => `${i.datasetLabel}: ${i.message}`)
+          .join(' | '),
+      );
+    }
     return {
       datasets: sortedById(data.datasets),
       metadata: sortedById(data.metadata),
@@ -159,3 +168,4 @@ export const platforma = BlockModelV3.create(blockDataModel)
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from './args';
+export * from './multiplexing-rules-validation';

@@ -3,6 +3,7 @@ import type { ColDef, GridApi, GridOptions, GridReadyEvent } from 'ag-grid-enter
 import { ClientSideRowModelModule, MenuModule, ModuleRegistry, RichSelectModule } from 'ag-grid-enterprise';
 import { AgGridVue } from 'ag-grid-vue3';
 import type { DSMultiplexedFastq, PlId, ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
+import { validateMultiplexingRulesDataset } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
 import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, PlAlert, PlBtnGroup } from '@platforma-sdk/ui-vue';
@@ -141,87 +142,9 @@ const viewOptions = [
   { label: 'Multiplexing Rules', value: 'rules' as const },
 ];
 
-type Issue = { severity: 'error' | 'warn'; message: string };
-
-const issues = computed<Issue[]>(() => {
-  const out: Issue[] = [];
-  const ds = dataset.value;
-  const tags = ds.content.barcodeTags;
-  const rules = ds.content.barcodeRules;
-  const groupIds = new Set(Object.keys(ds.content.data));
-
-  // Empty barcode values
-  if (tags.length > 0) {
-    let emptyCount = 0;
-    for (const r of rules) {
-      for (const t of tags) {
-        if ((r.barcodes[t] ?? '') === '') emptyCount++;
-      }
-    }
-    if (emptyCount > 0) {
-      out.push({
-        severity: 'error',
-        message: `${emptyCount} empty barcode value${emptyCount === 1 ? '' : 's'} in the rules table.`,
-      });
-    }
-  }
-
-  // Cross-sample collisions: within one group, distinct samples carrying identical barcodes
-  if (tags.length > 0 && rules.length > 0) {
-    const collisions: string[] = [];
-    const byGroup = new Map<string, Map<string, Set<string>>>(); // groupId → barcodeKey → sampleIds
-    for (const r of rules) {
-      const key = tags.map((t) => `${t}=${r.barcodes[t] ?? ''}`).join('|');
-      let g = byGroup.get(r.sampleGroupId);
-      if (!g) { g = new Map(); byGroup.set(r.sampleGroupId, g); }
-      let s = g.get(key);
-      if (!s) { s = new Set(); g.set(key, s); }
-      s.add(r.sampleId);
-    }
-    for (const [gid, m] of byGroup) {
-      for (const [, sIds] of m) {
-        if (sIds.size > 1) {
-          const groupLabel = ds.content.groupLabels[gid as PlId] ?? gid;
-          const sampleLabels = [...sIds].map((sid) => app.model.data.sampleLabels[sid as PlId] ?? sid);
-          collisions.push(`${groupLabel}: ${sampleLabels.join(', ')}`);
-        }
-      }
-    }
-    if (collisions.length > 0) {
-      out.push({
-        severity: 'warn',
-        message: `Same barcodes assigned to different samples in the same group — ${collisions.join('; ')}.`,
-      });
-    }
-  }
-
-  // Files-no-rules: groups with files but no rules
-  if (tags.length > 0) {
-    const groupsWithRules = new Set(rules.map((r) => r.sampleGroupId));
-    const missing = [...groupIds].filter((g) => !groupsWithRules.has(g as PlId));
-    if (missing.length > 0) {
-      const labels = missing.map((g) => ds.content.groupLabels[g as PlId] ?? g);
-      out.push({
-        severity: 'warn',
-        message: `${missing.length} file group${missing.length === 1 ? '' : 's'} without rules: ${labels.join(', ')}.`,
-      });
-    }
-  }
-
-  // Rules-no-files: rules referencing groups not present in dataset.content.data
-  const rulesUnknownGroups = new Set<string>();
-  for (const r of rules) {
-    if (!groupIds.has(r.sampleGroupId)) rulesUnknownGroups.add(r.sampleGroupId);
-  }
-  if (rulesUnknownGroups.size > 0) {
-    out.push({
-      severity: 'warn',
-      message: `${rulesUnknownGroups.size} rule${rulesUnknownGroups.size === 1 ? '' : 's'} reference unknown file groups.`,
-    });
-  }
-
-  return out;
-});
+const issues = computed(() =>
+  validateMultiplexingRulesDataset(dataset.value, app.model.data.sampleLabels),
+);
 
 const alertSeverity = computed<'error' | 'warn' | undefined>(() => {
   if (issues.value.some((i) => i.severity === 'error')) return 'error';
