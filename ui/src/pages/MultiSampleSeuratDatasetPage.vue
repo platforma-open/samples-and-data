@@ -28,7 +28,7 @@ const reactiveFileContent = ReactiveFileContent.useGlobal();
 const datasetId = app.queryParams.id;
 
 const dataset = computed(() => {
-  const ds = app.model.args.datasets.find((ds) => ds.id === datasetId);
+  const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
   if (!ds)
     throw new Error('Dataset not found');
   return ds as DSMultiSampleSeurat;
@@ -115,15 +115,15 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
         // Update seuratFilesToPreprocess
         if (oldValue && oldValue !== newValue) {
           // Remove old file from seuratFilesToPreprocess
-          const index = app.model.args.seuratFilesToPreprocess.indexOf(oldValue);
+          const index = app.model.data.seuratFilesToPreprocess.indexOf(oldValue);
           if (index !== -1) {
-            app.model.args.seuratFilesToPreprocess.splice(index, 1);
+            app.model.data.seuratFilesToPreprocess.splice(index, 1);
           }
         }
         if (newValue && newValue !== oldValue) {
           // Add new file to seuratFilesToPreprocess if not already present
-          if (!app.model.args.seuratFilesToPreprocess.includes(newValue)) {
-            app.model.args.seuratFilesToPreprocess.push(newValue);
+          if (!app.model.data.seuratFilesToPreprocess.includes(newValue)) {
+            app.model.data.seuratFilesToPreprocess.push(newValue);
           }
         }
 

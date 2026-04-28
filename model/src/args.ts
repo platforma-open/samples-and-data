@@ -206,7 +206,7 @@ export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
   return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD' || ds.content.type === 'MultiplexedFastq' || ds.content.type === 'MultiSampleSeurat';
 }
 
-export interface BlockArgs {
+export type LegacyBlockArgs = {
   sampleIds: PlId[];
   sampleLabelColumnLabel: string;
   sampleLabels: Record<PlId, string>;
@@ -215,4 +215,32 @@ export interface BlockArgs {
   h5adFilesToPreprocess: ImportFileHandle[];
   seuratFilesToPreprocess: ImportFileHandle[];
   metadataUploadHandle?: ImportFileHandle;
-}
+};
+
+export type LegacyBlockUiState = {
+  suggestedImport: boolean;
+};
+
+export type BlockDataV20260427 = {
+  datasets: DSAny[];
+  metadata: MTColumn[];
+  sampleIds: PlId[];
+  sampleLabelColumnLabel: string;
+  sampleLabels: Record<PlId, string>;
+  h5adFilesToPreprocess: ImportFileHandle[];
+  seuratFilesToPreprocess: ImportFileHandle[];
+  metadataUploadHandle?: ImportFileHandle;
+  suggestedImport: boolean;
+};
+
+export type BlockData = BlockDataV20260427;
+
+export type BlockArgs = Pick<
+  BlockData,
+  'datasets' | 'metadata' | 'sampleLabelColumnLabel' | 'sampleLabels'
+>;
+
+export type BlockPrerunArgs = Pick<
+  BlockData,
+  'datasets' | 'h5adFilesToPreprocess' | 'seuratFilesToPreprocess' | 'metadataUploadHandle'
+>;
