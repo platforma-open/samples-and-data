@@ -9,6 +9,7 @@ import type {
   LegacyBlockUiState,
   PlId,
 } from './args';
+import { makeRuleId } from './args';
 
 /**
  * Walk every MultiplexedFastq dataset and:
@@ -46,6 +47,7 @@ function upgradeMultiplexedDatasets(prev: BlockDataV20260427): BlockDataV2026042
           const value = barcodeIdColumn.data[sampleId as PlId];
           if (value === undefined || value === null || String(value).length === 0) continue;
           seeded.push({
+            ruleId: makeRuleId(),
             sampleGroupId: groupId as PlId,
             sampleId: sampleId as PlId,
             barcodes: { BarcodeID: String(value) },

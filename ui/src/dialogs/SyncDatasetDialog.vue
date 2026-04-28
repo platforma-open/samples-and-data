@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Dataset, DSContent, DSMultiplexedFastq, PlId, WithSampleGroupsData } from '@platforma-open/milaboratories.samples-and-data.model';
+import { uniquePlId } from '@platforma-sdk/model';
 import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from '@platforma-sdk/ui-vue';
 import * as _ from 'radashi';
 import { computed } from 'vue';
@@ -64,10 +65,24 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       Object.entries(dataset.content.groupLabels).map(([groupId, label]) => [label, groupId as PlId]),
     );
 
+    // Merge any newly-declared tags from the dialog into the dataset's tag
+    // set. New tags get an empty value backfilled into every existing rule
+    // so the (rules, tags) invariant holds.
+    const existingTags = dataset.content.barcodeTags;
+    const newTags = importData.declaredTags.filter((t) => !existingTags.includes(t));
+    let updatedTags = existingTags;
+    let updatedRules = [...dataset.content.barcodeRules];
+    if (newTags.length > 0) {
+      updatedTags = [...existingTags, ...newTags];
+      updatedRules = updatedRules.map((rule) => {
+        const patch: Record<string, string> = {};
+        for (const t of newTags) patch[t] = '';
+        return { ...rule, barcodes: { ...rule.barcodes, ...patch } };
+      });
+    }
+
     // Clone the existing sampleGroups to trigger Vue reactivity
     const updatedSampleGroups = { ...(dataset.content.sampleGroups || {}) };
-    // Replace the rules array wholesale so the deep watcher detects the change.
-    const updatedRules = [...(dataset.content.barcodeRules ?? [])];
 
     // Process each row and match fileId to groupLabel
     for (const row of importData.rows) {
@@ -109,6 +124,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       const tagEntries = Object.entries(row.barcodes ?? {});
       if (tagEntries.length > 0 && tagEntries.every(([, v]) => v !== '')) {
         updatedRules.push({
+          ruleId: uniquePlId(),
           sampleGroupId: groupId,
           sampleId,
           barcodes: { ...row.barcodes },
@@ -118,6 +134,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
 
     // Replace the entire sampleGroups object to trigger Vue reactivity
     dataset.content.sampleGroups = updatedSampleGroups;
+    dataset.content.barcodeTags = updatedTags;
     dataset.content.barcodeRules = updatedRules;
   }
 

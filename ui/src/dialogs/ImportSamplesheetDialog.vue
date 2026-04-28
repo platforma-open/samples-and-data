@@ -3,12 +3,15 @@ import type { MTColumn } from '@platforma-open/milaboratories.samples-and-data.m
 import type { ListOption } from '@platforma-sdk/ui-vue';
 import {
   PlAlert,
+  PlBtnGhost,
   PlBtnPrimary,
   PlBtnSecondary,
   PlDialogModal,
   PlDropdown,
   PlLogView,
+  PlRow,
   PlTextArea,
+  PlTextField,
 } from '@platforma-sdk/ui-vue';
 import { computed, reactive, watch } from 'vue';
 import { useApp } from '../app';
@@ -18,6 +21,8 @@ import {
   extractMetadataFromRow,
   processMetadataColumns,
 } from '../utils/metadata';
+
+const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
 
 const props = defineProps<{
   importCandidate: ImportResult;
@@ -35,6 +40,12 @@ export type SamplesheetImportData = {
   fileIdColumn: number;
   sampleIdColumn: number;
   metadataColumns: MTColumn[];
+  /**
+   * Tags the importer wants the dataset to declare. Includes both pre-existing
+   * tags (echoed back) and brand-new ones the operator added in the dialog.
+   * Caller is responsible for merging into `dataset.content.barcodeTags`.
+   */
+  declaredTags: string[];
   rows: Array<{
     fileId: string;
     sampleId: string;
@@ -46,12 +57,51 @@ export type SamplesheetImportData = {
 
 const app = useApp();
 
+// Tag-binding row for the dialog: which tag name maps to which column.
+type TagBinding = { tagName: string; columnIdx: number };
+
 const data = reactive({
   fileIdColumnIdx: -1,
   sampleIdColumnIdx: -1,
-  /** Map tagName -> selected column index. -1 = unset. */
-  tagColumnIdx: {} as Record<string, number>,
+  bindings: [] as TagBinding[],
 });
+
+function sanitizeTagName(raw: string): string {
+  const cleaned = raw.replace(/[^A-Za-z0-9]/g, '');
+  return cleaned.length > 0 ? cleaned : 'Tag';
+}
+
+/**
+ * Build one binding per non-File/non-Sample column, using the column header
+ * (sanitized) as the default tag name. For columns that match an
+ * already-declared tag (case-insensitive substring), reuse that tag name.
+ * Operator removes any binding they don't want as a barcode tag — those
+ * columns then flow through the metadata pipeline as before.
+ */
+function defaultBindingsFor(
+  ic: ImportResult,
+  fileIdx: number,
+  sampleIdx: number,
+  declaredTags: string[],
+): TagBinding[] {
+  const cols = ic.data.columns;
+  const result: TagBinding[] = [];
+  const taken = new Set<string>();
+  for (let i = 0; i < cols.length; i++) {
+    if (i === fileIdx || i === sampleIdx) continue;
+    const header = cols[i].header;
+    const matchedTag = declaredTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
+    let tagName = matchedTag ?? (TAG_NAME_RX.test(header) ? header : sanitizeTagName(header));
+    let n = 2;
+    while (taken.has(tagName)) {
+      tagName = `${sanitizeTagName(header) || 'Tag'}${n}`;
+      n++;
+    }
+    taken.add(tagName);
+    result.push({ tagName, columnIdx: i });
+  }
+  return result;
+}
 
 watch(
   () => props.importCandidate,
@@ -67,23 +117,34 @@ watch(
     if (data.sampleIdColumnIdx === -1) {
       data.sampleIdColumnIdx = data.fileIdColumnIdx === 0 ? 1 : 0;
     }
+
+    data.bindings = defaultBindingsFor(
+      ic,
+      data.fileIdColumnIdx,
+      data.sampleIdColumnIdx,
+      props.barcodeTags,
+    );
   },
   { immediate: true },
 );
 
-// Reset / repopulate tag→column mapping whenever the tag set changes.
+// When dataset's declared tag set changes externally, re-seed bindings
+// (preserving any existing column choices the operator made).
 watch(
   () => props.barcodeTags,
   (tags) => {
-    const next: Record<string, number> = {};
-    for (const tag of tags) {
-      const found = props.importCandidate.data.columns.findIndex((c) =>
-        c.header.toLowerCase().includes(tag.toLowerCase()));
-      next[tag] = data.tagColumnIdx[tag] ?? found ?? -1;
-    }
-    data.tagColumnIdx = next;
+    const previous = new Map(data.bindings.map((b) => [b.tagName, b.columnIdx]));
+    const seeded = defaultBindingsFor(
+      props.importCandidate,
+      data.fileIdColumnIdx,
+      data.sampleIdColumnIdx,
+      tags,
+    );
+    data.bindings = seeded.map((b) => ({
+      ...b,
+      columnIdx: previous.get(b.tagName) ?? b.columnIdx,
+    }));
   },
-  { immediate: true },
 );
 
 const sampleColumnOptions = computed<ListOption<number>[]>(() =>
@@ -94,9 +155,8 @@ const skippedColumnIndices = computed(() => {
   const set = new Set<number>();
   set.add(data.fileIdColumnIdx);
   set.add(data.sampleIdColumnIdx);
-  for (const tag of props.barcodeTags) {
-    const idx = data.tagColumnIdx[tag];
-    if (idx !== undefined && idx !== -1) set.add(idx);
+  for (const b of data.bindings) {
+    if (b.columnIdx !== -1) set.add(b.columnIdx);
   }
   return set;
 });
@@ -188,14 +248,32 @@ const tableIssuesText = computed(() => {
   return undefined;
 });
 
+function bindingTagError(idx: number): string | undefined {
+  const b = data.bindings[idx];
+  if (!b.tagName) return 'Tag name is required';
+  if (!TAG_NAME_RX.test(b.tagName)) return 'Use letters and digits only';
+  if (data.bindings.some((other, i) => i !== idx && other.tagName === b.tagName)) {
+    return 'Tag name must be unique';
+  }
+  return undefined;
+}
+
 const importDisabled = computed(() => {
   if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return true;
-  if (props.barcodeTags.length === 0) return true;
-  for (const tag of props.barcodeTags) {
-    if ((data.tagColumnIdx[tag] ?? -1) === -1) return true;
+  if (data.bindings.length === 0) return true;
+  for (let i = 0; i < data.bindings.length; i++) {
+    if (bindingTagError(i)) return true;
   }
   return false;
 });
+
+function removeBinding(idx: number) {
+  data.bindings = data.bindings.filter((_, i) => i !== idx);
+}
+
+function updateBindingTag(idx: number, value: string) {
+  data.bindings = data.bindings.map((b, i) => (i === idx ? { ...b, tagName: value } : b));
+}
 
 function runImport() {
   const args = app.model.data;
@@ -203,7 +281,6 @@ function runImport() {
 
   const skipColumnIndices = Array.from(skippedColumnIndices.value);
 
-  // Process metadata columns using utility function
   const { modelColumns, newColumns } = processMetadataColumns({
     importCandidate: props.importCandidate,
     existingMetadata: args.metadata,
@@ -213,6 +290,8 @@ function runImport() {
   args.metadata.push(...newColumns);
 
   const metadataColumns = modelColumns.filter((col): col is MTColumn => col !== undefined);
+
+  const declaredTags = data.bindings.map((b) => b.tagName);
 
   let lastFileId: string | null = null;
 
@@ -228,10 +307,9 @@ function runImport() {
     const metadata = extractMetadataFromRow(row, modelColumns);
 
     const barcodes: Record<string, string> = {};
-    for (const tag of props.barcodeTags) {
-      const colIdx = data.tagColumnIdx[tag];
-      const v = colIdx !== undefined && colIdx !== -1 ? row[colIdx] : undefined;
-      barcodes[tag] = v !== undefined && v !== null ? String(v) : '';
+    for (const b of data.bindings) {
+      const v = b.columnIdx !== -1 ? row[b.columnIdx] : undefined;
+      barcodes[b.tagName] = v !== undefined && v !== null ? String(v) : '';
     }
 
     rows.push({
@@ -246,6 +324,7 @@ function runImport() {
     fileIdColumn: data.fileIdColumnIdx,
     sampleIdColumn: data.sampleIdColumnIdx,
     metadataColumns,
+    declaredTags,
     rows,
   });
 }
@@ -266,12 +345,6 @@ function runImport() {
   >
     <template #title>Import samplesheet</template>
 
-    <PlAlert v-if="props.barcodeTags.length === 0" type="warn">
-      Declare at least one barcode tag in the Multiplexing Rules section
-      before importing a samplesheet — the importer needs to know which
-      column maps to which tag.
-    </PlAlert>
-
     <PlDropdown
       v-model="data.fileIdColumnIdx"
       label="File ID column"
@@ -282,14 +355,25 @@ function runImport() {
       label="Sample ID column"
       :options="sampleColumnOptions"
     />
-    <PlDropdown
-      v-for="tag in props.barcodeTags"
-      :key="tag"
-      :model-value="data.tagColumnIdx[tag] ?? -1"
-      :label="`Barcode column for ${tag}`"
-      :options="sampleColumnOptions"
-      @update:model-value="(v) => (data.tagColumnIdx[tag] = v as number)"
-    />
+
+    <PlAlert v-if="data.bindings.length === 0" type="warn">
+      No barcode tags to import. Every remaining column was removed — close
+      and re-open if that was a mistake.
+    </PlAlert>
+
+    <PlRow
+      v-for="(binding, idx) in data.bindings"
+      :key="idx"
+    >
+      <PlTextField
+        :model-value="binding.tagName"
+        :label="`Tag for column &quot;${props.importCandidate.data.columns[binding.columnIdx].header}&quot;`"
+        placeholder="e.g. P5"
+        :error="bindingTagError(idx)"
+        @update:model-value="(v: string) => updateBindingTag(idx, v)"
+      />
+      <PlBtnGhost icon="close" @click="removeBinding(idx)" />
+    </PlRow>
 
     <PlLogView :value="tableDataText" label="Import information" />
     <template v-if="tableIssuesText">

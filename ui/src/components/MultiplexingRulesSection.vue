@@ -1,46 +1,59 @@
 <script setup lang="ts">
 import type { BarcodeRule, DSMultiplexedFastq, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
 import {
+  ClientSideRowModelModule,
+  type ColDef,
+  type GridApi,
+  type GridOptions,
+  type GridReadyEvent,
+  type IRowNode,
+  MenuModule,
+  ModuleRegistry,
+  RichSelectModule,
+} from 'ag-grid-enterprise';
+import { AgGridVue } from 'ag-grid-vue3';
+import { uniquePlId } from '@platforma-sdk/model';
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgColumnHeader,
+  type PlAgHeaderComponentParams,
+  PlAgOverlayNoRows,
   PlAlert,
   PlBtnGhost,
+  PlBtnPrimary,
   PlBtnSecondary,
-  PlDropdown,
+  PlDialogModal,
   PlTextField,
 } from '@platforma-sdk/ui-vue';
-import type { ListOption } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
+import { computed, reactive, shallowRef, useCssModule } from 'vue';
 import { useApp } from '../app';
-import { getOrCreateSample } from '../dialogs/datasets';
+
+ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
 const props = defineProps<{
   dataset: DSMultiplexedFastq;
 }>();
 
 const app = useApp();
+const styles = useCssModule();
 
 const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
-const NUCLEOTIDE_RX = /^[ACGTNacgtn]+$/;
 
-// `dataset.content` is reactive (BlockModelV3 deep watcher) — but per
-// monorepo convention, replace whole arrays / records on mutation so the
-// watcher reliably detects the change.
 const tags = computed(() => props.dataset.content.barcodeTags);
 const rules = computed(() => props.dataset.content.barcodeRules);
 
-const groupOptions = computed<ListOption<PlId>[]>(() =>
-  Object.keys(props.dataset.content.data).map((groupId) => ({
-    value: groupId as PlId,
-    label: props.dataset.content.groupLabels[groupId as PlId] ?? groupId,
-  })),
-);
+const groupIds = computed<string[]>(() => Object.keys(props.dataset.content.data));
+const groupIdToLabel = computed<Record<string, string>>(() => {
+  const out: Record<string, string> = {};
+  for (const groupId of groupIds.value) {
+    out[groupId] = props.dataset.content.groupLabels[groupId as PlId] ?? groupId;
+  }
+  return out;
+});
 
-const sampleOptions = computed<ListOption<PlId | ''>[]>(() => [
-  { value: '' as const, label: '— Select sample —' },
-  ...Object.entries(app.model.data.sampleLabels).map(([id, label]) => ({
-    value: id as PlId,
-    label,
-  })),
-]);
+const sampleIds = computed<string[]>(() => Object.keys(app.model.data.sampleLabels));
+const sampleIdToLabel = computed<Record<string, string>>(() => ({ ...app.model.data.sampleLabels } as Record<string, string>));
 
 function setTags(next: string[]) {
   props.dataset.content.barcodeTags = next;
@@ -50,210 +63,344 @@ function setRules(next: BarcodeRule[]) {
   props.dataset.content.barcodeRules = next;
 }
 
-function tagError(name: string, idx: number): string | undefined {
+// --- Tag dialog (add / rename) ----------------------------------------------
+
+type TagDialogState =
+  | { mode: 'closed' }
+  | { mode: 'add'; name: string }
+  | { mode: 'rename'; oldName: string; name: string };
+
+const tagDialog = reactive<{ state: TagDialogState }>({ state: { mode: 'closed' } });
+
+const tagDialogError = computed<string | undefined>(() => {
+  const s = tagDialog.state;
+  if (s.mode === 'closed') return undefined;
+  const name = s.name.trim();
   if (!name) return 'Tag name is required';
   if (!TAG_NAME_RX.test(name)) return 'Use letters and digits only';
-  if (tags.value.some((t, i) => i !== idx && t === name)) return 'Tag name must be unique';
+  const collidesWith = tags.value.find((t) =>
+    s.mode === 'rename' ? t === name && t !== s.oldName : t === name,
+  );
+  if (collidesWith) return 'Tag name must be unique';
   return undefined;
-}
+});
 
-function freshTagName(): string {
-  const used = new Set(tags.value);
+function openAddTag() {
   let i = tags.value.length + 1;
-  while (used.has(`Tag${i}`)) i++;
-  return `Tag${i}`;
+  let candidate = `Tag${i}`;
+  while (tags.value.includes(candidate)) {
+    i++;
+    candidate = `Tag${i}`;
+  }
+  tagDialog.state = { mode: 'add', name: candidate };
 }
 
-function addTag() {
-  const newTag = freshTagName();
-  setTags([...tags.value, newTag]);
-  setRules(rules.value.map((r) => ({
-    ...r,
-    barcodes: { ...r.barcodes, [newTag]: '' },
-  })));
+function openRenameTag(oldName: string) {
+  tagDialog.state = { mode: 'rename', oldName, name: oldName };
 }
 
-function renameTag(idx: number, newName: string) {
-  const oldName = tags.value[idx];
-  if (oldName === newName) return;
-  const next = [...tags.value];
-  next[idx] = newName;
-  setTags(next);
-  if (tagError(newName, idx) !== undefined) return;
+function closeTagDialog() {
+  tagDialog.state = { mode: 'closed' };
+}
+
+function commitTagDialog() {
+  const s = tagDialog.state;
+  if (s.mode === 'closed') return;
+  if (tagDialogError.value !== undefined) return;
+  const name = s.name.trim();
+  if (s.mode === 'add') {
+    setTags([...tags.value, name]);
+    setRules(rules.value.map((r) => ({
+      ...r,
+      barcodes: { ...r.barcodes, [name]: '' },
+    })));
+  } else {
+    const oldName = s.oldName;
+    if (oldName === name) {
+      closeTagDialog();
+      return;
+    }
+    setTags(tags.value.map((t) => (t === oldName ? name : t)));
+    setRules(rules.value.map((r) => {
+      const { [oldName]: value, ...rest } = r.barcodes;
+      return { ...r, barcodes: { ...rest, [name]: value ?? '' } };
+    }));
+  }
+  closeTagDialog();
+}
+
+function deleteTag(name: string) {
+  setTags(tags.value.filter((t) => t !== name));
   setRules(rules.value.map((r) => {
-    const { [oldName]: value, ...rest } = r.barcodes;
-    return { ...r, barcodes: { ...rest, [newName]: value ?? '' } };
-  }));
-}
-
-function removeTag(idx: number) {
-  const oldName = tags.value[idx];
-  setTags(tags.value.filter((_, i) => i !== idx));
-  setRules(rules.value.map((r) => {
-    const { [oldName]: _drop, ...rest } = r.barcodes;
+    const { [name]: _drop, ...rest } = r.barcodes;
     return { ...r, barcodes: rest };
   }));
 }
 
+// --- Rule operations --------------------------------------------------------
+
 function addRule() {
   const last = rules.value[rules.value.length - 1];
-  const groupIds = Object.keys(props.dataset.content.data) as PlId[];
-  const sampleGroupId = (last?.sampleGroupId ?? groupIds[0] ?? '') as PlId;
+  const sampleGroupId = (last?.sampleGroupId ?? groupIds.value[0] ?? '') as PlId;
   const sampleId = (last?.sampleId ?? '') as PlId;
   const barcodes: Record<string, string> = {};
   for (const t of tags.value) barcodes[t] = '';
-  setRules([...rules.value, { sampleGroupId, sampleId, barcodes }]);
+  setRules([...rules.value, { ruleId: uniquePlId(), sampleGroupId, sampleId, barcodes }]);
 }
 
-function removeRule(idx: number) {
-  setRules(rules.value.filter((_, i) => i !== idx));
+function deleteRules(ruleIds: string[]) {
+  if (ruleIds.length === 0) return;
+  const drop = new Set(ruleIds);
+  setRules(rules.value.filter((r) => !drop.has(r.ruleId)));
 }
 
-function updateRuleField<K extends keyof BarcodeRule>(idx: number, key: K, value: BarcodeRule[K]) {
-  const next = rules.value.map((r, i) => (i === idx ? { ...r, [key]: value } : r));
-  setRules(next);
+// --- Grid setup -------------------------------------------------------------
+
+type RuleRow = {
+  ruleId: string;
+  ruleIdx: number;
+  sampleGroupId: string;
+  sampleId: string;
+  barcodes: Record<string, string>;
+};
+
+const gridApi = shallowRef<GridApi<RuleRow>>();
+
+function onGridReady(p: GridReadyEvent<RuleRow>) {
+  gridApi.value = p.api;
 }
 
-function updateRuleBarcode(idx: number, tag: string, value: string) {
-  const next = rules.value.map((r, i) =>
-    i === idx ? { ...r, barcodes: { ...r.barcodes, [tag]: value } } : r,
-  );
-  setRules(next);
-}
+const rowData = computed<RuleRow[]>(() =>
+  rules.value.map((r, ruleIdx) => ({
+    ruleId: r.ruleId,
+    ruleIdx,
+    sampleGroupId: r.sampleGroupId,
+    sampleId: r.sampleId,
+    barcodes: r.barcodes,
+  })),
+);
 
-function pickSample(idx: number, sampleId: PlId | '') {
-  if (sampleId === '') return;
-  updateRuleField(idx, 'sampleId', sampleId);
-}
+const tagColIdPrefix = 'tag.';
 
-// Resolve a free-form sample label entered by the operator into a block-level
-// PlId — reuses an existing sampleId when the label matches, otherwise mints
-// a new one. Mirrors the samplesheet-import path.
-function resolveSampleByLabel(idx: number, label: string) {
-  if (!label) return;
-  const id = getOrCreateSample(app, label);
-  updateRuleField(idx, 'sampleId', id);
-}
+const columnDefs = computed<ColDef<RuleRow>[]>(() => {
+  const defs: ColDef<RuleRow>[] = [
+    { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
+    {
+      colId: 'sampleGroupId',
+      field: 'sampleGroupId',
+      headerName: 'Sample Group',
+      editable: true,
+      minWidth: 160,
+      flex: 1,
+      suppressHeaderMenuButton: true,
+      headerComponent: PlAgColumnHeader,
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+      cellEditor: 'agRichSelectCellEditor',
+      cellEditorPopup: true,
+      cellEditorParams: () => ({
+        values: groupIds.value,
+        formatValue: (v: string) => groupIdToLabel.value[v] ?? v,
+        searchType: 'matchAny',
+        allowTyping: true,
+        filterList: true,
+        highlightMatch: true,
+      }),
+      valueFormatter: (p) => groupIdToLabel.value[p.value as string] ?? (p.value as string),
+    },
+    {
+      colId: 'sampleId',
+      field: 'sampleId',
+      headerName: 'Sample',
+      editable: true,
+      minWidth: 160,
+      flex: 1,
+      suppressHeaderMenuButton: true,
+      headerComponent: PlAgColumnHeader,
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+      cellEditor: 'agRichSelectCellEditor',
+      cellEditorPopup: true,
+      cellEditorParams: () => ({
+        values: sampleIds.value,
+        formatValue: (v: string) => sampleIdToLabel.value[v] ?? v,
+        searchType: 'matchAny',
+        allowTyping: true,
+        filterList: true,
+        highlightMatch: true,
+      }),
+      valueFormatter: (p) => sampleIdToLabel.value[p.value as string] ?? (p.value as string),
+    },
+    ...tags.value.map((tag): ColDef<RuleRow> => ({
+      colId: `${tagColIdPrefix}${tag}`,
+      headerName: tag,
+      editable: true,
+      minWidth: 120,
+      flex: 1,
+      headerComponent: PlAgColumnHeader,
+      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+      valueGetter: (p) => p.data?.barcodes?.[tag] ?? '',
+      valueSetter: (p) => {
+        // Updating the model in onCellValueChanged below; valueSetter must
+        // mutate p.data to make the grid re-render the cell synchronously.
+        if (!p.data) return false;
+        p.data.barcodes = { ...p.data.barcodes, [tag]: String(p.newValue ?? '') };
+        return true;
+      },
+    })),
+    {
+      colId: 'add',
+      headerName: '+',
+      headerClass: styles.plusHeader,
+      suppressHeaderMenuButton: true,
+      minWidth: 45,
+      maxWidth: 45,
+      sortable: false,
+      resizable: false,
+      pinned: 'right',
+      lockPinned: true,
+    },
+  ];
 
-function barcodeError(value: string): string | undefined {
-  if (!value) return 'Required';
-  return undefined;
-}
+  return defs;
+});
 
-function barcodeWarning(value: string): string | undefined {
-  if (value && !NUCLEOTIDE_RX.test(value)) return 'Non-nucleotide characters';
-  return undefined;
+const defaultColDef: ColDef<RuleRow> = {
+  suppressHeaderMenuButton: false,
+};
+
+const gridOptions = computed<GridOptions<RuleRow>>(() => ({
+  getRowId: (p) => p.data.ruleId,
+
+  rowSelection: {
+    mode: 'multiRow',
+    checkboxes: false,
+    headerCheckbox: false,
+  },
+
+  stopEditingWhenCellsLoseFocus: true,
+  singleClickEdit: false,
+
+  onColumnHeaderClicked: (event) => {
+    const columnId = event.column.getId();
+    if (columnId === 'add') {
+      event.api.showColumnMenu('add');
+    }
+  },
+
+  onCellValueChanged: async (event) => {
+    const row = event.data;
+    if (!row) return;
+    const idx = row.ruleIdx;
+    const colId = event.column.getId();
+
+    const next = [...rules.value];
+    if (colId === 'sampleGroupId') {
+      next[idx] = { ...next[idx], sampleGroupId: row.sampleGroupId as PlId };
+    } else if (colId === 'sampleId') {
+      next[idx] = { ...next[idx], sampleId: row.sampleId as PlId };
+    } else if (colId.startsWith(tagColIdPrefix)) {
+      const tag = colId.slice(tagColIdPrefix.length);
+      next[idx] = {
+        ...next[idx],
+        barcodes: { ...next[idx].barcodes, [tag]: String(event.newValue ?? '') },
+      };
+    } else {
+      return;
+    }
+    setRules(next);
+    await app.allSettled();
+  },
+
+  getMainMenuItems: (params) => {
+    const colId = params.column?.getId();
+    if (!colId) return [];
+    if (colId === 'add') {
+      return [
+        { name: 'Add Tag', action: () => openAddTag() },
+      ];
+    }
+    if (colId.startsWith(tagColIdPrefix)) {
+      const tag = colId.slice(tagColIdPrefix.length);
+      return [
+        { name: `Rename ${tag}`, action: () => openRenameTag(tag) },
+        { name: `Delete ${tag}`, action: () => deleteTag(tag) },
+      ];
+    }
+    return [];
+  },
+
+  getContextMenuItems: (params) => {
+    const targetIds = getSelectedRuleIds(params.node ?? null);
+    if (targetIds.length === 0) return [];
+    return [
+      {
+        name: targetIds.length > 1 ? `Delete ${targetIds.length} rules` : 'Delete rule',
+        action: () => deleteRules(targetIds),
+      },
+    ];
+  },
+}));
+
+function getSelectedRuleIds(node: IRowNode<RuleRow> | null): string[] {
+  const selected = gridApi.value?.getSelectedRows().map((r) => r.ruleId) ?? [];
+  if (selected.length > 0) return selected;
+  if (node?.data?.ruleId) return [node.data.ruleId];
+  return [];
 }
 </script>
 
 <template>
   <div class="multiplexing-rules">
-    <div class="multiplexing-rules__header">
-      <h3>Multiplexing Rules</h3>
-      <span class="multiplexing-rules__hint">
-        Declare the barcode tag names used in this dataset, then add one rule
-        row per (group, sample, barcode) combination. Multiple rows for the
-        same sample mean alternatives.
-      </span>
+    <PlAlert v-if="tags.length === 0" type="warn">
+      No barcode tags declared yet. Click the
+      <strong>+</strong> column header on the right of the grid and choose
+      <em>Add Tag</em> to get started.
+    </PlAlert>
+
+    <div class="multiplexing-rules__grid">
+      <AgGridVue
+        :theme="AgGridTheme"
+        :style="{ height: '100%' }"
+        :rowData="rowData"
+        :columnDefs="columnDefs"
+        :defaultColDef="defaultColDef"
+        :grid-options="gridOptions"
+        :noRowsOverlayComponent="PlAgOverlayNoRows"
+        @grid-ready="onGridReady"
+      />
     </div>
 
-    <!-- Tag declaration -->
-    <div class="tag-row">
-      <span class="tag-row__label">Tags:</span>
-      <div v-if="tags.length === 0" class="tag-row__placeholder">
-        Declare at least one tag to begin (e.g. <code>P5</code>, <code>P7</code>, <code>BarcodeID</code>).
-      </div>
-      <div
-        v-for="(tagName, tagIdx) in tags"
-        :key="tagIdx"
-        class="tag-chip"
-        :class="{ 'tag-chip--error': tagError(tagName, tagIdx) !== undefined }"
-      >
-        <input
-          class="tag-chip__input"
-          :value="tagName"
-          :title="tagError(tagName, tagIdx) ?? 'Tag name'"
-          @change="(e) => renameTag(tagIdx, (e.target as HTMLInputElement).value)"
-        />
-        <PlBtnGhost
-          class="tag-chip__remove"
-          icon="close"
-          @click="removeTag(tagIdx)"
-        />
-      </div>
-      <PlBtnGhost icon="add" @click="addTag">Add tag</PlBtnGhost>
+    <div class="multiplexing-rules__footer">
+      <PlBtnSecondary icon="add" :disabled="tags.length === 0" @click="addRule">
+        Add rule
+      </PlBtnSecondary>
     </div>
 
-    <!-- Rules table -->
-    <div v-if="tags.length === 0" class="rules-empty">
-      <PlAlert type="warn">
-        Add a tag above before declaring multiplexing rules.
-      </PlAlert>
-    </div>
+    <!-- Add / rename tag dialog -->
+    <PlDialogModal
+      :model-value="tagDialog.state.mode !== 'closed'"
+      closable
+      @update:model-value="(v) => { if (!v) closeTagDialog(); }"
+    >
+      <template #title>
+        {{ tagDialog.state.mode === 'rename' ? 'Rename Tag' : 'Add Tag' }}
+      </template>
 
-    <table v-else class="rules-table">
-      <thead>
-        <tr>
-          <th class="rules-table__hcol">Sample Group</th>
-          <th class="rules-table__hcol">Sample</th>
-          <th
-            v-for="t in tags"
-            :key="t"
-            class="rules-table__hcol"
-          >
-            {{ t }}
-          </th>
-          <th class="rules-table__hcol rules-table__actions" />
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-if="rules.length === 0">
-          <td :colspan="tags.length + 3" class="rules-table__empty">
-            No rules yet. Click "Add rule" to fill in the first one.
-          </td>
-        </tr>
-        <tr v-for="(rule, ruleIdx) in rules" :key="ruleIdx">
-          <td class="rules-table__cell">
-            <PlDropdown
-              :model-value="rule.sampleGroupId"
-              :options="groupOptions"
-              @update:model-value="(v) => updateRuleField(ruleIdx, 'sampleGroupId', v as PlId)"
-            />
-          </td>
-          <td class="rules-table__cell">
-            <PlDropdown
-              :model-value="rule.sampleId || ''"
-              :options="sampleOptions"
-              @update:model-value="(v) => pickSample(ruleIdx, v as PlId)"
-            />
-          </td>
-          <td
-            v-for="t in tags"
-            :key="t"
-            class="rules-table__cell"
-            :class="{
-              'rules-table__cell--error': barcodeError(rule.barcodes[t] ?? '') !== undefined,
-              'rules-table__cell--warn': barcodeError(rule.barcodes[t] ?? '') === undefined
-                && barcodeWarning(rule.barcodes[t] ?? '') !== undefined,
-            }"
-          >
-            <PlTextField
-              :model-value="rule.barcodes[t] ?? ''"
-              placeholder="Enter barcode"
-              :title="barcodeError(rule.barcodes[t] ?? '') ?? barcodeWarning(rule.barcodes[t] ?? '') ?? ''"
-              @update:model-value="(v: string) => updateRuleBarcode(ruleIdx, t, v)"
-            />
-          </td>
-          <td class="rules-table__actions">
-            <PlBtnGhost icon="close" @click="removeRule(ruleIdx)" />
-          </td>
-        </tr>
-      </tbody>
-    </table>
+      <PlTextField
+        v-if="tagDialog.state.mode !== 'closed'"
+        :model-value="tagDialog.state.name"
+        label="Tag name"
+        placeholder="e.g. P5, P7, BarcodeID"
+        :error="tagDialogError"
+        @update:model-value="(v: string) => { if (tagDialog.state.mode !== 'closed') tagDialog.state.name = v; }"
+      />
 
-    <div v-if="tags.length > 0" class="rules-table__footer">
-      <PlBtnSecondary @click="addRule">+ Add rule</PlBtnSecondary>
-    </div>
+      <template #actions>
+        <PlBtnPrimary :disabled="tagDialogError !== undefined" @click="commitTagDialog">
+          {{ tagDialog.state.mode === 'rename' ? 'Rename' : 'Add' }}
+        </PlBtnPrimary>
+        <PlBtnGhost @click="closeTagDialog">Cancel</PlBtnGhost>
+      </template>
+    </PlDialogModal>
   </div>
 </template>
 
@@ -262,109 +409,33 @@ function barcodeWarning(value: string): string | undefined {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--border-color, #d0d0d0);
-  border-radius: 6px;
-  background-color: var(--bg-elevated, #fafafa);
+  height: 100%;
+  min-height: 0;
 }
 
-.multiplexing-rules__header h3 {
-  margin: 0 0 4px 0;
+.multiplexing-rules__grid {
+  flex: 1 1 auto;
+  min-height: 240px;
 }
 
-.multiplexing-rules__hint {
-  font-size: 12px;
-  color: var(--text-secondary, #6a6a6a);
-}
-
-.tag-row {
+.multiplexing-rules__footer {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
+  justify-content: flex-start;
 }
+</style>
 
-.tag-row__label {
-  font-weight: 600;
-}
-
-.tag-row__placeholder {
-  font-style: italic;
-  color: var(--text-tertiary, #9a9a9a);
-}
-
-.tag-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 4px 2px 8px;
-  border: 1px solid var(--border-color, #c0c0c0);
-  border-radius: 12px;
-  background-color: var(--bg-base, #ffffff);
-  gap: 4px;
-}
-
-.tag-chip--error {
-  border-color: var(--error-color, #e25c5c);
-}
-
-.tag-chip__input {
-  border: none;
-  outline: none;
-  background: transparent;
-  width: 80px;
-  font-size: 13px;
-}
-
-.tag-chip__remove {
-  cursor: pointer;
-}
-
-.rules-empty {
-  padding: 8px 0;
-}
-
-.rules-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--bg-base, #ffffff);
-  border-radius: 4px;
-}
-
-.rules-table__hcol {
-  text-align: left;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--border-color, #d0d0d0);
-  font-weight: 600;
-  font-size: 13px;
-}
-
-.rules-table__cell {
-  padding: 4px 8px;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--border-color-soft, #ececec);
-}
-
-.rules-table__cell--error {
-  background-color: var(--error-bg, #fff0f0);
-}
-
-.rules-table__cell--warn {
-  background-color: var(--warn-bg, #fff7e6);
-}
-
-.rules-table__actions {
-  width: 40px;
-  text-align: right;
-}
-
-.rules-table__empty {
+<style lang="css" module>
+.plusHeader {
+  padding-left: 0;
+  padding-right: 0;
   text-align: center;
-  padding: 24px;
-  color: var(--text-tertiary, #9a9a9a);
-  font-style: italic;
 }
 
-.rules-table__footer {
-  margin-top: 4px;
+.plusHeader :global(.ag-header-cell-label) {
+  justify-content: center;
+}
+
+.plusHeader :global(.ag-sort-indicator-container) {
+  display: none;
 }
 </style>
