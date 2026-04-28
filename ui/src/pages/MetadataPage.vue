@@ -247,23 +247,21 @@ const columnDefs = computed<ColDef[]>(() => {
 
 const rowData = computed<MetadataRow[]>(() => {
   const samples2ds: Record<string, string[]> = {};
+  const addLabel = (sId: string, label: string) => {
+    if (samples2ds[sId] === undefined) samples2ds[sId] = [];
+    if (!samples2ds[sId].includes(label)) samples2ds[sId].push(label);
+  };
   for (const ds of app.model.data.datasets) {
     if (isGroupedDataset(ds)) {
       const content = ds.content as WithSampleGroupsData<unknown>;
-      for (const [_, samples] of Object.entries(content.sampleGroups ?? {})) {
+      for (const samples of Object.values(content.sampleGroups ?? {})) {
         for (const sId of Object.keys(samples)) {
-          if (samples2ds[sId] === undefined) {
-            samples2ds[sId] = [];
-          }
-          samples2ds[sId].push(ds.label);
+          addLabel(sId, ds.label);
         }
       }
     } else {
       for (const sId of Object.keys(ds.content.data)) {
-        if (samples2ds[sId] === undefined) {
-          samples2ds[sId] = [];
-        }
-        samples2ds[sId].push(ds.label);
+        addLabel(sId, ds.label);
       }
     }
   }

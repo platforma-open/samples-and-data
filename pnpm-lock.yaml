@@ -22,8 +22,8 @@ catalogs:
       specifier: ^1.0.1
       version: 1.0.1
     '@platforma-sdk/block-tools':
-      specifier: 2.7.14
-      version: 2.7.14
+      specifier: 2.7.15
+      version: 2.7.15
     '@platforma-sdk/blocks-deps-updater':
       specifier: 2.2.0
       version: 2.2.0
@@ -131,7 +131,7 @@ importers:
     devDependencies:
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.7.14
+        version: 2.7.15
 
   model:
     dependencies:
@@ -144,7 +144,7 @@ importers:
     devDependencies:
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.7.14
+        version: 2.7.15
       '@platforma-sdk/eslint-config':
         specifier: 'catalog:'
         version: 1.2.0(@eslint/js@9.37.0)(@stylistic/eslint-plugin@2.13.0(eslint@9.37.0)(typescript@5.6.3))(eslint-plugin-n@17.23.1(eslint@9.37.0)(typescript@5.6.3))(eslint-plugin-vue@9.33.0(eslint@9.37.0))(eslint@9.37.0)(globals@15.15.0)(typescript-eslint@8.46.0(eslint@9.37.0)(typescript@5.6.3))(typescript@5.6.3)
@@ -956,8 +956,8 @@ packages:
   '@milaboratories/pl-model-common@1.31.2':
     resolution: {integrity: sha512-dnK0zXzylN7MAO1Nyx8EJargaqa94iDDEDwZW7d1/lRl1p50cR9zGP8pUnIy1I8UcI4lzH34f81RRQy6AbTuTw==}
 
-  '@milaboratories/pl-model-common@1.36.0':
-    resolution: {integrity: sha512-BbFs3sTmy12ZKfTY6rFep0C5pfQoLvsjACN8EYaNIjXqOjQajt6velh4uGpB47+Uyp78k0cIWH4T04MIlixQrw==}
+  '@milaboratories/pl-model-common@1.36.1':
+    resolution: {integrity: sha512-2s2UAcL0fvdSWYKGO4sE7hqAmAr1OANE6DLgt0gooe/368KzH+eybSyuvB/h+7yaRKkgaBsZP0rPVPddIsoXOQ==}
 
   '@milaboratories/pl-model-middle-layer@1.15.0':
     resolution: {integrity: sha512-uYb/H+rYWSY4IckYxKClQF6yLv+yOJMqtIfJusd7MuCn29HYeQLMruowNaf9A/O35bFx5gqAeiF7XDCn2iQHNA==}
@@ -965,8 +965,8 @@ packages:
   '@milaboratories/pl-model-middle-layer@1.16.4':
     resolution: {integrity: sha512-uFTZHEjRmfRvY97tRbBuTvNzQnTYIj58S8HBzyMsFkzxbUI8vTBPtvEqbTU2IbQ31IEGvv8T0BBl9b7/vdud0A==}
 
-  '@milaboratories/pl-model-middle-layer@1.18.5':
-    resolution: {integrity: sha512-eIYE77rBva0k2KWDUmKJBHnGcyi/Tnc5rhlwZVb8q3hS3L4Upf4Pk7/lBL4ZLxYVMZ3/Da0Wp3EKYspUagi9Zg==}
+  '@milaboratories/pl-model-middle-layer@1.18.6':
+    resolution: {integrity: sha512-kRX5TpkjWwnWwHXISjXr+FiYZIHzIq/6Qz7amn05HLkfPn+WOFuWdbmiQIuXU2Fwr5Nzcj6bp4SgQDI/BZYhDg==}
 
   '@milaboratories/pl-tree@1.9.9':
     resolution: {integrity: sha512-WHeWAR8xAfobdpXBFJY5rBV6lPkpMrfWLiNAROozWp9S16EHFlauHS//ykcxyqwr438HLjkGurDCygbS5COvmQ==}
@@ -1115,8 +1115,8 @@ packages:
   '@platforma-open/milaboratories.software-small-binaries@2.0.4':
     resolution: {integrity: sha512-q8dAJ/RwAR35uKj74Bvzq4lpuBLxzuCNkuCH4suwb2ybDyEggL0XUB26aUuf15hX+6rFVulyBaQToXURKVKwzw==}
 
-  '@platforma-sdk/block-tools@2.7.14':
-    resolution: {integrity: sha512-Ankwor77rQTFHa0Vkag4C0Lb5h/HMHwe/gs5bcKo1rmwMBBHOtLf/vxWjOyciE+P412ezveOfW+v3fJP7c+A4w==}
+  '@platforma-sdk/block-tools@2.7.15':
+    resolution: {integrity: sha512-aWsJt5MU7yYSR+X+OvQ7liuk+SAQBzqYBjMTgr+Klibv5anWQ0hdOdDWn4T7lwVBTGTvoFsUBMzjTq9fiSIIDA==}
     hasBin: true
 
   '@platforma-sdk/block-tools@2.7.7':
@@ -5311,7 +5311,7 @@ snapshots:
       canonicalize: 2.1.0
       zod: 3.25.76
 
-  '@milaboratories/pl-model-common@1.36.0':
+  '@milaboratories/pl-model-common@1.36.1':
     dependencies:
       '@milaboratories/helpers': 1.14.1
       '@milaboratories/pl-error-like': 1.12.9
@@ -5334,10 +5334,10 @@ snapshots:
       utility-types: 3.11.0
       zod: 3.25.76
 
-  '@milaboratories/pl-model-middle-layer@1.18.5':
+  '@milaboratories/pl-model-middle-layer@1.18.6':
     dependencies:
       '@milaboratories/helpers': 1.14.1
-      '@milaboratories/pl-model-common': 1.36.0
+      '@milaboratories/pl-model-common': 1.36.1
       es-toolkit: 1.39.10
       utility-types: 3.11.0
       zod: 3.25.76
@@ -5592,12 +5592,12 @@ snapshots:
       '@platforma-open/milaboratories.software-small-binaries.mnz-client': 1.6.5
       '@platforma-open/milaboratories.software-small-binaries.table-converter': 1.3.5
 
-  '@platforma-sdk/block-tools@2.7.14':
+  '@platforma-sdk/block-tools@2.7.15':
     dependencies:
       '@aws-sdk/client-s3': 3.859.0
       '@milaboratories/pl-http': 1.2.4
-      '@milaboratories/pl-model-common': 1.36.0
-      '@milaboratories/pl-model-middle-layer': 1.18.5
+      '@milaboratories/pl-model-common': 1.36.1
+      '@milaboratories/pl-model-middle-layer': 1.18.6
       '@milaboratories/resolve-helper': 1.1.3
       '@milaboratories/ts-helpers': 1.8.1
       '@milaboratories/ts-helpers-oclif': 1.1.40
