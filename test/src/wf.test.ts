@@ -356,6 +356,8 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
               R2: r2Handle,
             },
           },
+          barcodeTags: [],
+          barcodeRules: [],
         },
       },
     ],

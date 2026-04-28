@@ -3,11 +3,13 @@ import type { ColDef, GridApi, GridOptions, GridReadyEvent } from 'ag-grid-enter
 import { ClientSideRowModelModule, MenuModule, ModuleRegistry, RichSelectModule } from 'ag-grid-enterprise';
 import { AgGridVue } from 'ag-grid-vue3';
 import type { DSMultiplexedFastq, PlId, ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
+import { validateMultiplexingRulesDataset } from '@platforma-open/milaboratories.samples-and-data.model';
 import type { ImportFileHandle } from '@platforma-sdk/model';
 import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed, shallowRef } from 'vue';
+import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, PlAlert, PlBtnGroup } from '@platforma-sdk/ui-vue';
+import { computed, ref, shallowRef } from 'vue';
 import { useApp } from '../app';
+import MultiplexingRulesSection from '../components/MultiplexingRulesSection.vue';
 import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
 import { agGroupIdColumnDef } from '../util';
 
@@ -132,18 +134,79 @@ const gridOptions: GridOptions<DatasetRow> = {
     PlAgCellFile,
   },
 };
+
+type ViewMode = 'files' | 'rules';
+const viewMode = ref<ViewMode>('files');
+const viewOptions = [
+  { label: 'File Groups', value: 'files' as const },
+  { label: 'Multiplexing Rules', value: 'rules' as const },
+];
+
+const issues = computed(() =>
+  validateMultiplexingRulesDataset(dataset.value, app.model.data.sampleLabels),
+);
+
+const alertSeverity = computed<'error' | 'warn' | undefined>(() => {
+  if (issues.value.some((i) => i.severity === 'error')) return 'error';
+  if (issues.value.length > 0) return 'warn';
+  return undefined;
+});
 </script>
 
 <template>
-  <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
+  <div class="multiplexed-fastq-page">
+    <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
 
-  <AgGridVue
-    :theme="AgGridTheme"
-    :style="{ height: '100%' }"
-    :rowData="rowData"
-    :defaultColDef="defaultColDef"
-    :columnDefs="columnDefs"
-    :gridOptions="gridOptions"
-    @grid-ready="onGridReady"
-  />
+    <PlAlert v-if="issues.length > 0" :type="alertSeverity">
+      <ul class="multiplexed-fastq-page__issues">
+        <li v-for="(issue, i) in issues" :key="i">{{ issue.message }}</li>
+      </ul>
+    </PlAlert>
+
+    <div class="multiplexed-fastq-page__toolbar">
+      <PlBtnGroup v-model="viewMode" :options="viewOptions" />
+    </div>
+
+    <div v-show="viewMode === 'files'" class="multiplexed-fastq-page__pane">
+      <AgGridVue
+        :theme="AgGridTheme"
+        :style="{ height: '100%' }"
+        :rowData="rowData"
+        :defaultColDef="defaultColDef"
+        :columnDefs="columnDefs"
+        :gridOptions="gridOptions"
+        @grid-ready="onGridReady"
+      />
+    </div>
+
+    <div v-show="viewMode === 'rules'" class="multiplexed-fastq-page__pane">
+      <MultiplexingRulesSection :dataset="dataset" />
+    </div>
+  </div>
 </template>
+
+<style scoped>
+.multiplexed-fastq-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 12px;
+}
+
+.multiplexed-fastq-page__toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.multiplexed-fastq-page__pane {
+  flex: 1 1 auto;
+  min-height: 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.multiplexed-fastq-page__issues {
+  margin: 0;
+  padding-left: 18px;
+}
+</style>
