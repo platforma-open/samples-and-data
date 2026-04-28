@@ -245,6 +245,9 @@ const columnDefs = computed<ColDef<RuleRow>[]>(() => {
         p.data.barcodes = { ...p.data.barcodes, [tag]: String(p.newValue ?? '') };
         return true;
       },
+      cellClassRules: {
+        [styles.emptyCell]: (p) => (p.data?.barcodes?.[tag] ?? '') === '',
+      },
     })),
     {
       colId: 'add',
@@ -437,5 +440,10 @@ function getSelectedRuleIds(node: IRowNode<RuleRow> | null): string[] {
 
 .plusHeader :global(.ag-sort-indicator-container) {
   display: none;
+}
+
+.emptyCell {
+  background-color: var(--bg-error-subtle, rgba(244, 67, 54, 0.08));
+  box-shadow: inset 0 0 0 1px var(--border-error, #f44336);
 }
 </style>

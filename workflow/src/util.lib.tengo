@@ -1,5 +1,4 @@
 json := import("json")
-canonical := import("@platforma-sdk/workflow-tengo:canonical")
 maps := import("@platforma-sdk/workflow-tengo:maps")
 smart := import("@platforma-sdk/workflow-tengo:smart")
 consts := import("@platforma-sdk/workflow-tengo:pframes.constants")
@@ -138,7 +137,7 @@ multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
 
     return {
         spec: spec,
-        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, canonical.encode(data))
+        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, json.encode(data))
     }
 }
 
