@@ -113,7 +113,7 @@ multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
 
     data := {}
     for k in keyOrder {
-        data[k] = json.encode(grouped[k])
+        data[k] = string(json.encode(grouped[k]))
     }
 
     spec := {
