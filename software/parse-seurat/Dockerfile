@@ -8,6 +8,9 @@ ENV RENV_CONFIG_REPOS_OVERRIDE=https://cloud.r-project.org
 
 # Install system dependencies required for R packages
 RUN apt-get update && apt-get install -y \
+    curl \
+    ca-certificates \
+    dash \
     libcurl4-openssl-dev \
     libssl-dev \
     libxml2-dev \
@@ -29,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     libbz2-dev \
     liblzma-dev \
     libpcre2-dev \
+    libuv1-dev \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -56,6 +60,9 @@ ENV RENV_PATHS_LIBRARY=${R_LIBS_USER}
 # Yes, we have to create it manually. Otherwise default will be used silently.
 RUN mkdir -p "${R_LIBS_USER}"
 
-RUN R --no-echo -e "renv::restore(clean = TRUE)" \
+# First pass: parallel install (fast for the bulk of packages).
+# Second pass: sequential retry to resolve any parallel-install races
+# (e.g. ggplot2 starting before tibble is visible in the library).
+RUN R --no-echo -e "tryCatch(renv::restore(), error = function(e) message('parallel pass finished with errors: ', conditionMessage(e))); options(Ncpus = 1); renv::restore(clean = TRUE)" \
     && find /root/.cache/R -name keys.html -delete \
     && find /usr/local/lib/R -name keys.html -delete
