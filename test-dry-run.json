@@ -3,7 +3,7 @@
 > PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "3D05BXk6idIbGD0OAKqulpjud3d",
+  "id": "3DlNUWgZWYnBjePyJnsvUZbMtVV",
   "version": "1",
   "turboVersion": "2.6.1",
   "monorepo": true,
@@ -39,12 +39,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "b2e78bf21eb943b7",
+      "hash": "6dfd6c65f5d862d8",
       "inputs": {
-        "CHANGELOG.md": "9e7999d6f6ccbac70a7051d90f12dc092b312769",
+        "CHANGELOG.md": "de8e8b7b37f154a5249f36d63523fbdd6d61253a",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "758e2a664c5651969a285e08df0c4fc1bcdd2bc6"
+        "package.json": "bfe73c9ff3bb649da142bb9ab132f8c05a182691"
       },
       "hashOfExternalDependencies": "21204e41113cd859",
       "cache": {
@@ -116,12 +116,12 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "cdb89471ae90fd60",
+      "hash": "78a36c93be52e3cc",
       "inputs": {
-        "CHANGELOG.md": "9e7999d6f6ccbac70a7051d90f12dc092b312769",
+        "CHANGELOG.md": "de8e8b7b37f154a5249f36d63523fbdd6d61253a",
         "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
         "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "758e2a664c5651969a285e08df0c4fc1bcdd2bc6"
+        "package.json": "bfe73c9ff3bb649da142bb9ab132f8c05a182691"
       },
       "hashOfExternalDependencies": "21204e41113cd859",
       "cache": {
@@ -492,11 +492,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-      "hash": "577afe0649b2472c",
+      "hash": "4da4e387bb52bbeb",
       "inputs": {
-        "CHANGELOG.md": "a2f01832a95d623f8e51afe6e0ad2ad450faa5f3",
-        "Dockerfile": "bdc11787e4b20488e5c11fbcd7cfecf0b0f171da",
-        "package.json": "fe28a09065799b323938f50802fe24a52fbec874",
+        "CHANGELOG.md": "5f629269ff09da4ab0429452fda6bb06f1855552",
+        "Dockerfile": "f52729b1af1354bb3a78ed5b11a408aba7aef759",
+        "package.json": "4eb7767e74f3b939a7e193b7043f4fde9c2cbfea",
         "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
         "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
         "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
@@ -568,11 +568,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-      "hash": "f70f9c00a814c22c",
+      "hash": "892086336db16c10",
       "inputs": {
-        "CHANGELOG.md": "a2f01832a95d623f8e51afe6e0ad2ad450faa5f3",
-        "Dockerfile": "bdc11787e4b20488e5c11fbcd7cfecf0b0f171da",
-        "package.json": "fe28a09065799b323938f50802fe24a52fbec874",
+        "CHANGELOG.md": "5f629269ff09da4ab0429452fda6bb06f1855552",
+        "Dockerfile": "f52729b1af1354bb3a78ed5b11a408aba7aef759",
+        "package.json": "4eb7767e74f3b939a7e193b7043f4fde9c2cbfea",
         "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
         "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
         "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
@@ -643,7 +643,7 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "a36965b95e52b0c6",
+      "hash": "c0310465e9816238",
       "inputs": {
         "CHANGELOG.md": "3d7b4441171304163a1f4122336e66da85e809e2",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
@@ -726,7 +726,7 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "003c1a1f13aba5ad",
+      "hash": "815a44b75781a716",
       "inputs": {
         "CHANGELOG.md": "3d7b4441171304163a1f4122336e66da85e809e2",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
@@ -1063,11 +1063,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "663074d70e7f97af",
+      "hash": "9270d0ba362452db",
       "inputs": {
-        "CHANGELOG.md": "fbdfd83cf8f1b72f671dc04a0faf677eefe3e012",
+        "CHANGELOG.md": "435fd08ed22a14f7afa47e5e384f995955f91a04",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "a74e9a73624530b1d88105dbdcd8a3224affedfc",
+        "package.json": "e8c928aca53fdd0290b0752f30455e8d77202d98",
         "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
         "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
         "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
@@ -1159,11 +1159,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "94b55c6c471704e8",
+      "hash": "16974d7d92f241db",
       "inputs": {
-        "CHANGELOG.md": "fbdfd83cf8f1b72f671dc04a0faf677eefe3e012",
+        "CHANGELOG.md": "435fd08ed22a14f7afa47e5e384f995955f91a04",
         "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "a74e9a73624530b1d88105dbdcd8a3224affedfc",
+        "package.json": "e8c928aca53fdd0290b0752f30455e8d77202d98",
         "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
         "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
         "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
@@ -1251,7 +1251,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "4e242c3bc65cf90c274fe0c1a83ce739e2de2711",
+    "sha": "71ca3e8788d538bdc33eaf670290cf374b191a77",
     "branch": "main"
   }
 }
