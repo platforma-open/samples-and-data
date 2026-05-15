@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.17.2
+
+### Patch Changes
+
+- @platforma-open/milaboratories.samples-and-data.workflow@2.7.1
+
 ## 1.17.1
 
 ### Patch Changes

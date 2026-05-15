@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.samples-and-data.workflow
 
+## 2.7.1
+
+### Patch Changes
+
+- Updated dependencies [36f4458]
+  - @platforma-open/milaboratories.samples-and-data.parse-seurat@1.1.2
+
 ## 2.7.0
 
 ### Minor Changes
