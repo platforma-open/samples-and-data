@@ -46,6 +46,13 @@ RUN R -e "install.packages('renv', repos = 'https://cloud.r-project.org')"
 COPY *.R .
 COPY ./renv.lock ./renv.lock
 
+# Some block-software docker cmds invoke the .R script directly (relying on the
+# `#!/usr/bin/env Rscript` shebang) rather than via `Rscript /app/script.R`.
+# COPY preserves the 0644 mode from git, so the direct invocation fails with
+# `Permission denied`. Make every entry script executable here — harmless for
+# blocks whose cmd already prefixes Rscript.
+RUN chmod +x /app/*.R
+
 # Have to use absolute paths because during execution the working directory will be changed
 # and realpath command does not work
 ENV RENV_PATHS_RENV=/app/renv
