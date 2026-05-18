@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ImportResult } from '../dataimport';
-import { defaultBindingsFor, sanitizeTagName } from './samplesheet-bindings';
+import { defaultBindingsFor, pickTagNameForBinding, sanitizeTagName } from './samplesheet-bindings';
 
 function ic(headers: string[]): ImportResult {
   return {
@@ -32,13 +32,21 @@ describe('defaultBindingsFor', () => {
     expect(result).toEqual([{ tagName: 'P5', columnIdx: 2 }]);
   });
 
-  it('binds each declared tag at most once even if multiple columns match', () => {
+  it('binds all columns matching a declared tag with deduplicated tag names', () => {
     const result = defaultBindingsFor(
       ic(['File', 'Sample', 'P5_a', 'P5_b']),
       0, 1, ['P5'],
     );
     expect(result.map((b) => b.columnIdx)).toEqual([2, 3]);
     expect(new Set(result.map((b) => b.tagName)).size).toBe(2);
+  });
+
+  it('matches the longest declared tag first to avoid substring shadowing', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'P5extra_barcode']),
+      0, 1, ['P5', 'P5extra'],
+    );
+    expect(result).toEqual([{ tagName: 'P5extra', columnIdx: 2 }]);
   });
 
   it('always excludes the File and Sample columns', () => {
@@ -55,6 +63,29 @@ describe('defaultBindingsFor', () => {
       0, 1, ['P5'],
     );
     expect(result).toEqual([{ tagName: 'P5', columnIdx: 4 }]);
+  });
+});
+
+describe('pickTagNameForBinding', () => {
+  it('returns the declared tag when the header contains it', () => {
+    expect(pickTagNameForBinding('P5_barcode', ['P5'], new Set())).toBe('P5');
+  });
+
+  it('matches the longest declared tag first', () => {
+    expect(pickTagNameForBinding('P5extra_barcode', ['P5', 'P5extra'], new Set()))
+      .toBe('P5extra');
+  });
+
+  it('falls back to the sanitized header when no declared tag matches', () => {
+    expect(pickTagNameForBinding('P7-barcode', ['P5'], new Set())).toBe('P7barcode');
+  });
+
+  it('returns the header as-is when it is already alphanumeric and no tag matches', () => {
+    expect(pickTagNameForBinding('P7', [], new Set())).toBe('P7');
+  });
+
+  it('appends a numeric suffix when the picked name collides', () => {
+    expect(pickTagNameForBinding('P5_barcode', ['P5'], new Set(['P5']))).toBe('P52');
   });
 });
 

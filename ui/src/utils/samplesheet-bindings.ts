@@ -25,10 +25,12 @@ export function defaultBindingsFor(
   const cols = ic.data.columns;
   const result: TagBinding[] = [];
   const taken = new Set<string>();
+  // Longest-first so `P5extra` wins over `P5` when both are declared.
+  const sortedTags = [...declaredTags].sort((a, b) => b.length - a.length);
   for (let i = 0; i < cols.length; i++) {
     if (i === fileIdx || i === sampleIdx) continue;
     const header = cols[i].header;
-    const matchedTag = declaredTags.find((t) =>
+    const matchedTag = sortedTags.find((t) =>
       header.toLowerCase().includes(t.toLowerCase()));
     if (!matchedTag) continue;
     let tagName = matchedTag;
@@ -41,4 +43,28 @@ export function defaultBindingsFor(
     result.push({ tagName, columnIdx: i });
   }
   return result;
+}
+
+/**
+ * Pick a default tag name for a manually-added binding. Mirrors
+ * `defaultBindingsFor`'s matching logic: longest-first match against an
+ * already-declared tag, otherwise sanitize the header. Resolves collisions
+ * against `taken` with a numeric suffix.
+ */
+export function pickTagNameForBinding(
+  header: string,
+  declaredTags: string[],
+  taken: Set<string>,
+): string {
+  const sortedTags = [...declaredTags].sort((a, b) => b.length - a.length);
+  const matchedTag = sortedTags.find((t) =>
+    header.toLowerCase().includes(t.toLowerCase()));
+  const base = matchedTag ?? (TAG_NAME_RX.test(header) ? header : sanitizeTagName(header));
+  let tagName = base;
+  let n = 2;
+  while (taken.has(tagName)) {
+    tagName = `${sanitizeTagName(base) || 'Tag'}${n}`;
+    n++;
+  }
+  return tagName;
 }

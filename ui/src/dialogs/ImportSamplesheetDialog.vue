@@ -23,7 +23,7 @@ import {
 } from '../utils/metadata';
 import {
   defaultBindingsFor,
-  sanitizeTagName,
+  pickTagNameForBinding,
   TAG_NAME_RX,
   type TagBinding,
 } from '../utils/samplesheet-bindings';
@@ -251,14 +251,8 @@ const addableColumns = computed<ListOption<number>[]>(() => {
 
 function addBinding(columnIdx: number) {
   const header = props.importCandidate.data.columns[columnIdx].header;
-  const base = TAG_NAME_RX.test(header) ? header : sanitizeTagName(header);
   const taken = new Set(data.bindings.map((b) => b.tagName));
-  let tagName = base;
-  let n = 2;
-  while (taken.has(tagName)) {
-    tagName = `${base}${n}`;
-    n++;
-  }
+  const tagName = pickTagNameForBinding(header, props.barcodeTags, taken);
   data.bindings = [...data.bindings, { tagName, columnIdx }];
   showAddBindingPicker.value = false;
 }
@@ -379,10 +373,10 @@ function runImport() {
       </PlBtnGhost>
       <PlDropdown
         v-if="showAddBindingPicker"
-        :model-value="-1"
+        :model-value="undefined"
         label="Choose column to bind as a tag"
         :options="addableColumns"
-        @update:model-value="(v: number | undefined) => { if (v !== undefined && v !== -1) addBinding(v); }"
+        @update:model-value="(v: number | undefined) => { if (v !== undefined) addBinding(v); }"
       />
     </PlRow>
 
