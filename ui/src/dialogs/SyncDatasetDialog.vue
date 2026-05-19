@@ -114,11 +114,12 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
         }
       }
 
-      // Append a new BarcodeRule only when the row covers every declared tag
-      // with a non-empty value (Option B in
-      // docs/text/work/ad-hoc/sd-samplesheet-tag-backfill-asymmetry.md).
-      // Rows that do not cover all declared tags still produce a sample +
-      // metadata; the dialog surfaces the omission in its summary.
+      // Append a new BarcodeRule only when the row covers every declared
+      // tag with a non-empty value. Rows that fall short still produce a
+      // sample + metadata; the dialog surfaces the omission in its
+      // summary. Skipping partial rules keeps the dataset's `(rules, tags)`
+      // invariant intact — the model validator would otherwise reject the
+      // dataset with an unhelpful "N empty barcode value(s)" error.
       const newRule = buildRuleFromRow({
         row,
         updatedTags,

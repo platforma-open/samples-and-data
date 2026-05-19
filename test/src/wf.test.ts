@@ -382,8 +382,9 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
 // emitter (panics in `util.multiplexingRulesColumn` or
 // `util.sampleGroupsLinkerColumn` cause the block to error out before
 // stableState resolves). Together with `simple multiplexed fastq input` above
-// (zero-rules path), this covers the dual-emission contract from
-// `docs/text/work/ad-hoc/sd-miltenyi-zero-rules-integration.md`.
+// (zero-rules path), this locks in the dual-emission contract: grouped
+// MultiplexedFastq datasets always emit the legacy linker, and additionally
+// emit the multiplexingRules column when at least one rule exists.
 blockTest('multiplexed fastq with barcode rules', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();

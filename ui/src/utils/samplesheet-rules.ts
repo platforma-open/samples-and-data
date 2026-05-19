@@ -32,16 +32,18 @@ export function backfillExistingRules(
 }
 
 /**
- * Build a barcode rule from a samplesheet row, applying Option B semantics
- * from `docs/text/work/ad-hoc/sd-samplesheet-tag-backfill-asymmetry.md`:
- * a rule is only created when the row covers every declared tag with a
- * non-empty value. Mirrors what `multiplexing-rules-validation` enforces at
- * `args` time, so a pushed rule is well-formed and the block stays runnable.
+ * Build a barcode rule from a samplesheet row, only when the row covers
+ * every declared tag with a non-empty value. Mirrors what
+ * `multiplexing-rules-validation` enforces at `args` time, so a pushed rule
+ * is well-formed and the block stays runnable; if the importer pushed
+ * partial rules instead, the dataset's `(rules, tags)` invariant would
+ * break and the block would refuse to run with an unhelpful "N empty
+ * barcode value(s)" error.
  *
  * Returns `null` when the row should not produce a new rule. The sample is
  * still assigned to its file group and its metadata still flows through —
- * only the rule append is skipped. The dialog's import summary signals which
- * declared tags were not covered.
+ * only the rule append is skipped. The dialog's import summary signals
+ * which declared tags were not covered.
  */
 export function buildRuleFromRow(args: {
   row: { barcodes?: Record<string, string> };

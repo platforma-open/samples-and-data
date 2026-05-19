@@ -144,12 +144,17 @@ multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
 // Backward-compat linker. Restored from samples-and-data 1.15.0 so consumers
 // that have not yet migrated to `pl7.app/sequencing/multiplexingRules` (or that
 // hit legacy data shapes #119's "Barcode ID" metadata migration did not catch)
-// can still read group↔sample membership from a deterministic column. See
-// `docs/text/work/ad-hoc/sd-miltenyi-zero-rules-integration.md`.
+// can still read group↔sample membership from a deterministic column.
 //
-// Source of truth for new consumers is `multiplexingRulesColumn`. This emitter
-// is unconditional for grouped MultiplexedFastq datasets and is expected to be
-// deleted in a future major once all legacy paths have been removed.
+// Why we keep dual-emission: `multiplexingRulesColumn` only emits when the
+// dataset has at least one rule, so a grouped MultiplexedFastq dataset with
+// samples but no authored barcodes ends up with no bridge between
+// `[sampleGroupId]` and `[sampleId]`. Downstream demultiplexing blocks
+// (Miltenyi, Demultiplex FASTQ) then refuse to start. Re-emitting the
+// linker unconditionally restores that bridge for the zero-rules case while
+// keeping `multiplexingRulesColumn` as the source of truth for new
+// consumers. Expected to be deleted in a future major once all legacy
+// consumer paths have been removed.
 sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     data := {}
     sampleSet := {}

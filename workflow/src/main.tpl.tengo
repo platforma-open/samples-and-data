@@ -106,10 +106,14 @@ wf.body(func(args) {
 
 			// MultiplexedFastq: emit the rules column when the operator has authored
 			// barcode rules (source of truth for new consumers), plus the legacy
-			// `pl7.app/sequencing/data/sampleGroups` linker unconditionally — the
-			// linker carries group↔sample membership for consumers on legacy data
-			// shapes #119's migration did not catch. See
-			// `docs/text/work/ad-hoc/sd-miltenyi-zero-rules-integration.md`.
+			// `pl7.app/sequencing/data/sampleGroups` linker unconditionally. The
+			// rules column does not emit on a zero-rules dataset, so without the
+			// linker shim a grouped MultiplexedFastq with samples but no authored
+			// barcodes carries no bridge between `[sampleGroupId]` and
+			// `[sampleId]` — and downstream demultiplexing blocks (Miltenyi,
+			// Demultiplex FASTQ) then refuse to start. The linker covers the
+			// zero-rules case and lets the consumer's legacy fallback path read
+			// group↔sample membership.
 			if dataset.content.type == "MultiplexedFastq" {
 				linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
 				ds["dataset." + dataset.id + ".linker"] = {
