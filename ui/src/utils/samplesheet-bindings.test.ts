@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { ImportResult } from '../dataimport';
-import { defaultBindingsFor, pickTagNameForBinding, sanitizeTagName } from './samplesheet-bindings';
+import {
+  defaultBindingsFor,
+  legacyBarcodeBindingFor,
+  pickTagNameForBinding,
+  sanitizeTagName,
+} from './samplesheet-bindings';
 
 function ic(headers: string[]): ImportResult {
   return {
@@ -86,6 +91,56 @@ describe('pickTagNameForBinding', () => {
 
   it('appends a numeric suffix when the picked name collides', () => {
     expect(pickTagNameForBinding('P5_barcode', ['P5'], new Set(['P5']))).toBe('P52');
+  });
+});
+
+describe('legacyBarcodeBindingFor', () => {
+  it('returns undefined when no column looks like a barcode column', () => {
+    const r = legacyBarcodeBindingFor(
+      ic(['File', 'Sample', 'Condition', 'Treatment']),
+      0, 1,
+    );
+    expect(r).toBeUndefined();
+  });
+
+  it('returns a BarcodeID binding for an exact "Barcode ID" header', () => {
+    const r = legacyBarcodeBindingFor(
+      ic(['File', 'Sample', 'Barcode ID']),
+      0, 1,
+    );
+    expect(r).toEqual({ tagName: 'BarcodeID', columnIdx: 2 });
+  });
+
+  it('matches case-insensitively', () => {
+    const r = legacyBarcodeBindingFor(
+      ic(['File', 'Sample', 'BARCODE_index']),
+      0, 1,
+    );
+    expect(r).toEqual({ tagName: 'BarcodeID', columnIdx: 2 });
+  });
+
+  it('matches substrings — header containing "barcode"', () => {
+    const r = legacyBarcodeBindingFor(
+      ic(['File', 'Sample', 'syBarcode ID']),
+      0, 1,
+    );
+    expect(r).toEqual({ tagName: 'BarcodeID', columnIdx: 2 });
+  });
+
+  it('excludes the File and Sample columns', () => {
+    const r = legacyBarcodeBindingFor(
+      ic(['Barcode_File', 'Barcode_Sample', 'P5']),
+      0, 1,
+    );
+    expect(r).toBeUndefined();
+  });
+
+  it('returns the first matching column when several would match', () => {
+    const r = legacyBarcodeBindingFor(
+      ic(['File', 'Sample', 'BarcodeA', 'BarcodeB']),
+      0, 1,
+    );
+    expect(r).toEqual({ tagName: 'BarcodeID', columnIdx: 2 });
   });
 });
 

@@ -46,6 +46,34 @@ export function defaultBindingsFor(
 }
 
 /**
+ * Legacy-style auto-bind for the single-Barcode-ID flow. When a dataset has no
+ * declared tags yet and the samplesheet carries a column whose header
+ * (case-insensitive) contains `barcode`, produce a single binding with tag
+ * name `BarcodeID` — matching the V20260427→V20260428 migration's seed
+ * convention. Mirrors the 1.15.0 ImportSamplesheetDialog auto-detect heuristic
+ * so demux-block setups carrying a single barcode column work without the
+ * operator manually invoking Add Tag Binding.
+ *
+ * Returns `undefined` when no barcode-like column is found. Callers should
+ * only invoke this when `declaredTags.length === 0`; with declared tags
+ * present, prefer `defaultBindingsFor`.
+ */
+export function legacyBarcodeBindingFor(
+  ic: ImportResult,
+  fileIdx: number,
+  sampleIdx: number,
+): TagBinding | undefined {
+  const cols = ic.data.columns;
+  for (let i = 0; i < cols.length; i++) {
+    if (i === fileIdx || i === sampleIdx) continue;
+    if (cols[i].header.toLowerCase().includes('barcode')) {
+      return { tagName: 'BarcodeID', columnIdx: i };
+    }
+  }
+  return undefined;
+}
+
+/**
  * Pick a default tag name for a manually-added binding. Mirrors
  * `defaultBindingsFor`'s matching logic: longest-first match against an
  * already-declared tag, otherwise sanitize the header. Resolves collisions

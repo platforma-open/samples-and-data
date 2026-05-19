@@ -23,6 +23,7 @@ import {
 } from '../utils/metadata';
 import {
   defaultBindingsFor,
+  legacyBarcodeBindingFor,
   pickTagNameForBinding,
   TAG_NAME_RX,
   type TagBinding,
@@ -88,6 +89,20 @@ watch(
       data.sampleIdColumnIdx,
       props.barcodeTags,
     );
+
+    // 1.15.0-parity fallback: on a fresh MultiplexedFastq dataset (no declared
+    // tags yet), pre-bind any column whose header looks like a barcode column
+    // to a `BarcodeID` tag. Mirrors the legacy single-Barcode-ID auto-detect
+    // so demux-block setups round-trip without the operator manually invoking
+    // Add Tag Binding.
+    if (data.bindings.length === 0 && props.barcodeTags.length === 0) {
+      const legacy = legacyBarcodeBindingFor(
+        ic,
+        data.fileIdColumnIdx,
+        data.sampleIdColumnIdx,
+      );
+      if (legacy) data.bindings = [legacy];
+    }
   },
   { immediate: true },
 );
@@ -341,6 +356,16 @@ function runImport() {
       label="Sample ID column"
       :options="sampleColumnOptions"
     />
+
+    <PlAlert
+      v-if="data.bindings.length === 0 && props.barcodeTags.length === 0"
+      type="warn"
+    >
+      Multiplexed FASTQ datasets need at least one tag binding for downstream
+      demultiplexing blocks (Miltenyi, Demultiplex FASTQ) to run. Add a tag
+      binding below to bind a barcode column, or proceed for a metadata-only
+      import.
+    </PlAlert>
 
     <PlAlert
       v-if="data.bindings.length === 0 && props.barcodeTags.length > 0"
