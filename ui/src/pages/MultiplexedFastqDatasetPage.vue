@@ -151,11 +151,31 @@ const alertSeverity = computed<'error' | 'warn' | undefined>(() => {
   if (issues.value.length > 0) return 'warn';
   return undefined;
 });
+
+// Fires when the operator has assigned samples to at least one file group but
+// has not authored any barcode rules yet. Without rules the new
+// `pl7.app/sequencing/multiplexingRules` column does not emit, so downstream
+// demultiplexing blocks (Miltenyi, Demultiplex FASTQ) cannot start. Hidden
+// once any rule exists or every group is empty.
+const hasSamplesButNoRules = computed(() => {
+  const content = dataset.value.content;
+  if (content.barcodeRules.length > 0) return false;
+  const groups = content.sampleGroups;
+  if (!groups) return false;
+  return Object.values(groups).some((g) => Object.keys(g ?? {}).length > 0);
+});
 </script>
 
 <template>
   <div class="multiplexed-fastq-page">
     <SyncDatasetDialog :dataset-ids="[datasetId as PlId]" />
+
+    <PlAlert v-if="hasSamplesButNoRules" type="warn">
+      This dataset has no multiplexing rules. Add tags + rules in the
+      Multiplexing Rules section, or import a samplesheet with a barcode
+      column, before wiring up downstream demultiplexing blocks (Miltenyi
+      clonotyping, Demultiplex FASTQ).
+    </PlAlert>
 
     <PlAlert v-if="issues.length > 0" :type="alertSeverity">
       <ul class="multiplexed-fastq-page__issues">
