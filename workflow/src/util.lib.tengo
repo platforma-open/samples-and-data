@@ -141,6 +141,47 @@ multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     }
 }
 
+// Backward-compat linker. Restored from samples-and-data 1.15.0 so consumers
+// that have not yet migrated to `pl7.app/sequencing/multiplexingRules` (or that
+// hit legacy data shapes #119's "Barcode ID" metadata migration did not catch)
+// can still read group↔sample membership from a deterministic column. See
+// `docs/text/work/ad-hoc/sd-miltenyi-zero-rules-integration.md`.
+//
+// Source of truth for new consumers is `multiplexingRulesColumn`. This emitter
+// is unconditional for grouped MultiplexedFastq datasets and is expected to be
+// deleted in a future major once all legacy paths have been removed.
+sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
+    data := {}
+    sampleSet := {}
+    for groupId, ss in dataset.content.sampleGroups {
+        for sampleId, sampleName in ss {
+            sampleSet[sampleId] = true
+            data[string(json.encode([groupId, sampleId]))] = sampleName
+        }
+    }
+    spec := {
+        kind: "PColumn",
+        name: "pl7.app/sequencing/data/sampleGroups",
+        domain: {
+            "pl7.app/block": blockId,
+            "pl7.app/dataset": dataset.id
+        },
+        valueType: "String",
+        axesSpec: [groupIdAxis, sampleIdAxis],
+        annotations: {
+            "pl7.app/label": "Sample Groups",
+            "pl7.app/isLinkedColumn": "true",
+            "pl7.app/hideDataFromUi": "true",
+            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))),
+            "pl7.app/axisKeys/1": string(json.encode(maps.getKeys(sampleSet)))
+        }
+    }
+    return {
+        spec: spec,
+        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, json.encode(data))
+    }
+}
+
 getSampleColumnName := func(dataset) {
     sampleColumnName := dataset.content.sampleColumnName
     if !sampleColumnName {
@@ -174,6 +215,7 @@ export {
     createJsonPColumnData: createJsonPColumnData,
     datasetColumnSpecBase: datasetColumnSpecBase,
     multiplexingRulesColumn: multiplexingRulesColumn,
+    sampleGroupsLinkerColumn: sampleGroupsLinkerColumn,
     getSampleColumnName: getSampleColumnName,
     createFileDataset: createFileDataset
 }

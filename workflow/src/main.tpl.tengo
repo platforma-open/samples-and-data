@@ -104,10 +104,19 @@ wf.body(func(args) {
 			datasetGroupIdAxis := proc.createGroupAxis(groupIdAxis, dataset)
 			ds = proc.createDataset(blockId, sampleIdAxis, datasetGroupIdAxis, dataset, importFile)
 
-			// Multiplexing rules column (MultiplexedFastq only). Replaces the
-			// legacy `pl7.app/sequencing/data/sampleGroups` linker. Returns
-			// undefined when the dataset has no rules — no column is emitted.
+			// MultiplexedFastq: emit the rules column when the operator has authored
+			// barcode rules (source of truth for new consumers), plus the legacy
+			// `pl7.app/sequencing/data/sampleGroups` linker unconditionally — the
+			// linker carries group↔sample membership for consumers on legacy data
+			// shapes #119's migration did not catch. See
+			// `docs/text/work/ad-hoc/sd-miltenyi-zero-rules-integration.md`.
 			if dataset.content.type == "MultiplexedFastq" {
+				linker := util.sampleGroupsLinkerColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
+				ds["dataset." + dataset.id + ".linker"] = {
+					spec: linker.spec,
+					data: linker.data
+				}
+
 				rules := util.multiplexingRulesColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
 				if !is_undefined(rules) {
 					ds["dataset." + dataset.id + ".multiplexingRules"] = {

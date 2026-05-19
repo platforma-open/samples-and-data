@@ -375,3 +375,97 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
     sampleGroups: { ok: true, value: { } },
   });
 });
+
+// Exercises the rules-present emission path. The block test framework does not
+// expose direct result-pool introspection, so this test relies on
+// `awaitBlockDone` to surface any `exportsError` from the rules / linker
+// emitter (panics in `util.multiplexingRulesColumn` or
+// `util.sampleGroupsLinkerColumn` cause the block to error out before
+// stableState resolves). Together with `simple multiplexed fastq input` above
+// (zero-rules path), this covers the dual-emission contract from
+// `docs/text/work/ad-hoc/sd-miltenyi-zero-rules-integration.md`.
+blockTest('multiplexed fastq with barcode rules', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const sample2Id = uniquePlId();
+  const metaColumn1Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+  const group1Id = uniquePlId();
+
+  const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
+  const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
+
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'MetaColumn1',
+        global: false,
+        valueType: 'Long',
+        data: {
+          [sample1Id]: 2345,
+          [sample2Id]: 3456,
+        },
+      },
+    ],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'Sample 1',
+      [sample2Id]: 'Sample 2',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'MultiplexedFastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 'sample1',
+              [sample2Id]: 'sample2',
+            },
+          },
+          data: {
+            [group1Id]: {
+              R1: r1Handle,
+              R2: r2Handle,
+            },
+          },
+          barcodeTags: ['P5'],
+          barcodeRules: [
+            {
+              ruleId: 'rule-sample1',
+              sampleGroupId: group1Id,
+              sampleId: sample1Id,
+              barcodes: { P5: 'AAAACGTT' },
+            },
+            {
+              ruleId: 'rule-sample2',
+              sampleGroupId: group1Id,
+              sampleId: sample2Id,
+              barcodes: { P5: 'TTTTGGGG' },
+            },
+          ],
+        },
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
+    suggestedImport: false,
+  } satisfies BlockData });
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
+    sampleGroups: { ok: true, value: { } },
+  });
+});
