@@ -8,6 +8,11 @@ import { useApp } from '../app';
 import ImportErrorDialog from '../components/ImportErrorDialog.vue';
 import { useTableImport } from '../composables/useTableImport';
 import { parseCsvNestedMapFromHandles, setEquals } from '../util';
+import {
+  backfillExistingRules,
+  buildRuleFromRow,
+  mergeDeclaredTags,
+} from '../utils/samplesheet-rules';
 import { getOrCreateSample } from './datasets';
 import type { SamplesheetImportData } from './ImportSamplesheetDialog.vue';
 import ImportSamplesheetDialog from './ImportSamplesheetDialog.vue';
@@ -54,8 +59,6 @@ async function importSamplesheet() {
 }
 
 async function handleSamplesheetImport(importData: SamplesheetImportData) {
-  const args = app.model.data;
-
   // Create metadata columns lookup map for O(1) access
   const metadataColumnsMap = new Map(importData.metadataColumns.map((col) => [col.id, col]));
 
@@ -66,20 +69,13 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
     );
 
     // Merge any newly-declared tags from the dialog into the dataset's tag
-    // set. New tags get an empty value backfilled into every existing rule
-    // so the (rules, tags) invariant holds.
-    const existingTags = dataset.content.barcodeTags;
-    const newTags = importData.declaredTags.filter((t) => !existingTags.includes(t));
-    let updatedTags = existingTags;
-    let updatedRules = [...dataset.content.barcodeRules];
-    if (newTags.length > 0) {
-      updatedTags = [...existingTags, ...newTags];
-      updatedRules = updatedRules.map((rule) => {
-        const patch: Record<string, string> = {};
-        for (const t of newTags) patch[t] = '';
-        return { ...rule, barcodes: { ...rule.barcodes, ...patch } };
-      });
-    }
+    // set, then backfill empty values onto pre-existing rules so the
+    // (rules, tags) invariant holds.
+    const { updatedTags, newTags } = mergeDeclaredTags(
+      dataset.content.barcodeTags,
+      importData.declaredTags,
+    );
+    const updatedRules = backfillExistingRules(dataset.content.barcodeRules, newTags);
 
     // Clone the existing sampleGroups to trigger Vue reactivity
     const updatedSampleGroups = { ...(dataset.content.sampleGroups || {}) };
@@ -118,18 +114,19 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
         }
       }
 
-      // Append a new BarcodeRule when the row carries any barcode value.
-      // (When the dataset has no declared tags, `row.barcodes` is `{}` and we
-      // skip rule creation — the operator must declare tags first.)
-      const tagEntries = Object.entries(row.barcodes ?? {});
-      if (tagEntries.length > 0 && tagEntries.every(([, v]) => v !== '')) {
-        updatedRules.push({
-          ruleId: uniquePlId(),
-          sampleGroupId: groupId,
-          sampleId,
-          barcodes: { ...row.barcodes },
-        });
-      }
+      // Append a new BarcodeRule only when the row covers every declared tag
+      // with a non-empty value (Option B in
+      // docs/text/work/ad-hoc/sd-samplesheet-tag-backfill-asymmetry.md).
+      // Rows that do not cover all declared tags still produce a sample +
+      // metadata; the dialog surfaces the omission in its summary.
+      const newRule = buildRuleFromRow({
+        row,
+        updatedTags,
+        groupId,
+        sampleId,
+        mintRuleId: uniquePlId,
+      });
+      if (newRule) updatedRules.push(newRule);
     }
 
     // Replace the entire sampleGroups object to trigger Vue reactivity
