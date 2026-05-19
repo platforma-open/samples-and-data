@@ -158,10 +158,15 @@ multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
 sampleGroupsLinkerColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     data := {}
     sampleSet := {}
-    for groupId, ss in dataset.content.sampleGroups {
-        for sampleId, sampleName in ss {
-            sampleSet[sampleId] = true
-            data[string(json.encode([groupId, sampleId]))] = sampleName
+    // `sampleGroups` is undefined on a freshly-created dataset (file groups
+    // added, samples not yet assigned). Skip iteration and emit an empty
+    // linker; Tengo would panic on `for ... in undefined`.
+    if !is_undefined(dataset.content.sampleGroups) {
+        for groupId, ss in dataset.content.sampleGroups {
+            for sampleId, sampleName in ss {
+                sampleSet[sampleId] = true
+                data[string(json.encode([groupId, sampleId]))] = sampleName
+            }
         }
     }
     spec := {
