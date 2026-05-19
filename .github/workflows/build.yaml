@@ -32,6 +32,11 @@ jobs:
       pnpm-recursive-tests: false
       team-id: 'ciplopen'
 
+      # Pin pl backend to pre-MILAB-6195 (pl#1846, merged 2026-05-19): main now returns
+      # Unimplemented on GetJWTToken, breaking pl-client@3.1.1's login flow.
+      # Remove when bumping @platforma-sdk/test to 1.77.5+ (which pulls pl-client@3.8.0).
+      pl-docker-tag: '3.5.0'
+
       publish-to-public: 'true'
       package-path: 'block'
       create-tag: 'true'
