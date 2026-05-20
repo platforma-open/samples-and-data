@@ -314,9 +314,9 @@ function runImport() {
       :options="sampleColumnOptions"
     />
 
-    <PlAlert v-if="data.bindings.length === 0" type="warn">
-      No barcode tags to import. Every remaining column was removed — close
-      and re-open if that was a mistake.
+    <PlAlert v-if="data.bindings.length === 0" type="info">
+      No barcode columns will be imported — remaining columns will flow to
+      metadata.
     </PlAlert>
 
     <PlRow
