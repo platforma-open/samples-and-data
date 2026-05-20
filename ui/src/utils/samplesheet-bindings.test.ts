@@ -56,6 +56,22 @@ describe('defaultBindingsFor', () => {
     expect(result).toEqual([{ tagName: 'BarcodeID', columnIdx: 2 }]);
   });
 
+  it('matches a bare "Barcode" header against a declared "BarcodeID" tag (re-import after fallback seeded)', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Barcode']),
+      0, 1, ['BarcodeID'],
+    );
+    expect(result).toEqual([{ tagName: 'BarcodeID', columnIdx: 2 }]);
+  });
+
+  it('does not bind a short header to a longer declared tag below the length floor', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'ID']),
+      0, 1, ['BarcodeID'],
+    );
+    expect(result).toEqual([]);
+  });
+
   it('does not bind every column when a declared tag normalizes to an empty string', () => {
     const result = defaultBindingsFor(
       ic(['File', 'Sample', 'Condition', 'Treatment']),
