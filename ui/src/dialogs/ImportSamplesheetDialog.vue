@@ -21,8 +21,7 @@ import {
   extractMetadataFromRow,
   processMetadataColumns,
 } from '../utils/metadata';
-
-const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
+import { defaultBindingsFor, TAG_NAME_RX, type TagBinding } from '../utils/samplesheet-bindings';
 
 const props = defineProps<{
   importCandidate: ImportResult;
@@ -57,51 +56,11 @@ export type SamplesheetImportData = {
 
 const app = useApp();
 
-// Tag-binding row for the dialog: which tag name maps to which column.
-type TagBinding = { tagName: string; columnIdx: number };
-
 const data = reactive({
   fileIdColumnIdx: -1,
   sampleIdColumnIdx: -1,
   bindings: [] as TagBinding[],
 });
-
-function sanitizeTagName(raw: string): string {
-  const cleaned = raw.replace(/[^A-Za-z0-9]/g, '');
-  return cleaned.length > 0 ? cleaned : 'Tag';
-}
-
-/**
- * Build one binding per non-File/non-Sample column, using the column header
- * (sanitized) as the default tag name. For columns that match an
- * already-declared tag (case-insensitive substring), reuse that tag name.
- * Operator removes any binding they don't want as a barcode tag — those
- * columns then flow through the metadata pipeline as before.
- */
-function defaultBindingsFor(
-  ic: ImportResult,
-  fileIdx: number,
-  sampleIdx: number,
-  declaredTags: string[],
-): TagBinding[] {
-  const cols = ic.data.columns;
-  const result: TagBinding[] = [];
-  const taken = new Set<string>();
-  for (let i = 0; i < cols.length; i++) {
-    if (i === fileIdx || i === sampleIdx) continue;
-    const header = cols[i].header;
-    const matchedTag = declaredTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
-    let tagName = matchedTag ?? (TAG_NAME_RX.test(header) ? header : sanitizeTagName(header));
-    let n = 2;
-    while (taken.has(tagName)) {
-      tagName = `${sanitizeTagName(header) || 'Tag'}${n}`;
-      n++;
-    }
-    taken.add(tagName);
-    result.push({ tagName, columnIdx: i });
-  }
-  return result;
-}
 
 watch(
   () => props.importCandidate,
