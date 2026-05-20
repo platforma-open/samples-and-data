@@ -24,14 +24,15 @@ export function defaultBindingsFor(
   const result: TagBinding[] = [];
   const taken = new Set<string>();
 
+  // Sort longest-first so overlapping tags match the most specific one:
+  // without this, 'i7' shadows 'i7_index' when both are declared.
+  const sortedTags = [...declaredTags].sort((a, b) => b.length - a.length);
+
   // Bind columns matching a declared tag (case-insensitive substring).
-  // Potential issue: substring match returns first-found in array order. If
-  // declared tags overlap (e.g. ['i7', 'i7_index']) the shorter tag can
-  // shadow the longer one — sort by length desc if this becomes real.
   for (let i = 0; i < cols.length; i++) {
     if (i === fileIdx || i === sampleIdx) continue;
     const header = cols[i].header;
-    const matchedTag = declaredTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
+    const matchedTag = sortedTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
     if (!matchedTag) continue;
     let tagName = matchedTag;
     let n = 2;
