@@ -4,11 +4,6 @@ export const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
 
 export type TagBinding = { tagName: string; columnIdx: number };
 
-export function sanitizeTagName(raw: string): string {
-  const cleaned = raw.replace(/[^A-Za-z0-9]/g, '');
-  return cleaned.length > 0 ? cleaned : 'Tag';
-}
-
 /**
  * Build one binding per non-File / non-Sample column whose header matches an
  * already-declared barcode tag (case-insensitive substring). Columns that
@@ -30,6 +25,9 @@ export function defaultBindingsFor(
   const taken = new Set<string>();
 
   // Bind columns matching a declared tag (case-insensitive substring).
+  // Potential issue: substring match returns first-found in array order. If
+  // declared tags overlap (e.g. ['i7', 'i7_index']) the shorter tag can
+  // shadow the longer one — sort by length desc if this becomes real.
   for (let i = 0; i < cols.length; i++) {
     if (i === fileIdx || i === sampleIdx) continue;
     const header = cols[i].header;
