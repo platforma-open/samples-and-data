@@ -28,11 +28,20 @@ export function defaultBindingsFor(
   // without this, 'i7' shadows 'i7_index' when both are declared.
   const sortedTags = [...declaredTags].sort((a, b) => b.length - a.length);
 
-  // Bind columns matching a declared tag (case-insensitive substring).
+  // Strip non-alphanumeric before matching so a 'BarcodeID' declared tag
+  // resolves against a 'Barcode ID' header on re-import. The empty-string
+  // guard keeps a pathological tag like '-' from substring-matching every
+  // header.
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // Bind columns matching a declared tag (alphanumeric, case-insensitive substring).
   for (let i = 0; i < cols.length; i++) {
     if (i === fileIdx || i === sampleIdx) continue;
-    const header = cols[i].header;
-    const matchedTag = sortedTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
+    const headerNorm = norm(cols[i].header);
+    const matchedTag = sortedTags.find((t) => {
+      const tagNorm = norm(t);
+      return tagNorm !== '' && headerNorm.includes(tagNorm);
+    });
     if (!matchedTag) continue;
     let tagName = matchedTag;
     let n = 2;
