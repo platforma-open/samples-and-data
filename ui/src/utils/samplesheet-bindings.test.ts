@@ -47,6 +47,22 @@ describe('defaultBindingsFor', () => {
     );
     expect(result).toEqual([{ tagName: 'i7_index', columnIdx: 2 }]);
   });
+
+  it('matches a "Barcode ID" header against a declared "BarcodeID" tag (alphanumeric normalization)', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Barcode ID']),
+      0, 1, ['BarcodeID'],
+    );
+    expect(result).toEqual([{ tagName: 'BarcodeID', columnIdx: 2 }]);
+  });
+
+  it('does not bind every column when a declared tag normalizes to an empty string', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Condition', 'Treatment']),
+      0, 1, ['-'],
+    );
+    expect(result).toEqual([]);
+  });
 });
 
 describe('defaultBindingsFor — barcode-shaped fallback', () => {
