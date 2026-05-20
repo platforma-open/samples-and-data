@@ -375,3 +375,89 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
     sampleGroups: { ok: true, value: { } },
   });
 });
+
+blockTest('multiplexed fastq with barcode rules', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
+  const blockId = await project.addBlock('Block', blockSpec);
+  const sample1Id = uniquePlId();
+  const sample2Id = uniquePlId();
+  const metaColumn1Id = uniquePlId();
+  const dataset1Id = uniquePlId();
+  const group1Id = uniquePlId();
+
+  const r1Handle = await helpers.getLocalFileHandle('./assets/small_data_R1.fastq.gz');
+  const r2Handle = await helpers.getLocalFileHandle('./assets/small_data_R2.fastq.gz');
+
+  await project.mutateBlockStorage(blockId, { operation: 'update-block-data', value: {
+    metadata: [
+      {
+        id: metaColumn1Id,
+        label: 'Condition',
+        global: false,
+        valueType: 'String',
+        data: {
+          [sample1Id]: 'Healthy',
+          [sample2Id]: 'Disease',
+        },
+      },
+    ],
+    sampleIds: [sample1Id, sample2Id],
+    sampleLabelColumnLabel: 'Sample Name',
+    sampleLabels: {
+      [sample1Id]: 'sampleC',
+      [sample2Id]: 'sampleD',
+    },
+    datasets: [
+      {
+        id: dataset1Id,
+        label: 'Dataset 1',
+        content: {
+          type: 'MultiplexedFastq',
+          readIndices: ['R1', 'R2'],
+          gzipped: true,
+          groupLabels: {
+            [group1Id]: 'Group 1',
+          },
+          sampleGroups: {
+            [group1Id]: {
+              [sample1Id]: 'sampleC',
+              [sample2Id]: 'sampleD',
+            },
+          },
+          data: {
+            [group1Id]: {
+              R1: r1Handle,
+              R2: r2Handle,
+            },
+          },
+          barcodeTags: ['BarcodeID'],
+          barcodeRules: [
+            {
+              ruleId: 'rule-1',
+              sampleGroupId: group1Id,
+              sampleId: sample1Id,
+              barcodes: { BarcodeID: 'UDP0001' },
+            },
+            {
+              ruleId: 'rule-2',
+              sampleGroupId: group1Id,
+              sampleId: sample2Id,
+              barcodes: { BarcodeID: 'UDP0002' },
+            },
+          ],
+        },
+      },
+    ],
+    h5adFilesToPreprocess: [],
+    seuratFilesToPreprocess: [],
+    suggestedImport: false,
+  } satisfies BlockData });
+  await project.runBlock(blockId);
+  await helpers.awaitBlockDone(blockId);
+  const blockState = project.getBlockState(blockId);
+  const stableState = await blockState.awaitStableValue();
+
+  expect(stableState.outputs).toMatchObject({
+    fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
+    sampleGroups: { ok: true, value: { } },
+  });
+});
