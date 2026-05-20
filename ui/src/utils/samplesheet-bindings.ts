@@ -10,9 +10,14 @@ export function sanitizeTagName(raw: string): string {
 }
 
 /**
- * Build one binding per non-File / non-Sample column whose header matches
- * an already-declared barcode tag (case-insensitive substring). Columns that
+ * Build one binding per non-File / non-Sample column whose header matches an
+ * already-declared barcode tag (case-insensitive substring). Columns that
  * do not match a declared tag flow through the metadata pipeline.
+ *
+ * On a fresh dataset (no declared tags), as a fallback for the single-
+ * Barcode-ID flow used by demultiplexing blocks, the first column whose
+ * header contains `barcode` (case-insensitive) is auto-bound as a
+ * `BarcodeID` tag.
  */
 export function defaultBindingsFor(
   ic: ImportResult,
@@ -23,6 +28,8 @@ export function defaultBindingsFor(
   const cols = ic.data.columns;
   const result: TagBinding[] = [];
   const taken = new Set<string>();
+
+  // Bind columns matching a declared tag (case-insensitive substring).
   for (let i = 0; i < cols.length; i++) {
     if (i === fileIdx || i === sampleIdx) continue;
     const header = cols[i].header;
@@ -37,5 +44,21 @@ export function defaultBindingsFor(
     taken.add(tagName);
     result.push({ tagName, columnIdx: i });
   }
+
+  // Fallback for the single-Barcode-ID flow: on a fresh dataset (no declared
+  // tags) where the samplesheet has any column whose header contains
+  // `barcode` (case-insensitive), pre-bind the first such column as a
+  // `BarcodeID` tag. Matches the V3 migration's seed convention so
+  // downstream identifiers stay consistent with legacy projects.
+  if (result.length === 0 && declaredTags.length === 0) {
+    for (let i = 0; i < cols.length; i++) {
+      if (i === fileIdx || i === sampleIdx) continue;
+      if (cols[i].header.toLowerCase().includes('barcode')) {
+        result.push({ tagName: 'BarcodeID', columnIdx: i });
+        break;
+      }
+    }
+  }
+
   return result;
 }

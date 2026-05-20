@@ -40,3 +40,45 @@ describe('defaultBindingsFor', () => {
     expect(result).toEqual([]);
   });
 });
+
+describe('defaultBindingsFor — barcode-shaped fallback', () => {
+  it('auto-binds a "Barcode ID" column as BarcodeID when no tags are declared', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Barcode ID', 'Condition']),
+      0, 1, [],
+    );
+    expect(result).toEqual([{ tagName: 'BarcodeID', columnIdx: 2 }]);
+  });
+
+  it('matches a typo-style header via the barcode substring (case-insensitive)', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'syBarcode ID', 'Condition']),
+      0, 1, [],
+    );
+    expect(result).toEqual([{ tagName: 'BarcodeID', columnIdx: 2 }]);
+  });
+
+  it('does not fallback when no barcode-shaped column is present', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Condition', 'Treatment']),
+      0, 1, [],
+    );
+    expect(result).toEqual([]);
+  });
+
+  it('does not fallback when declared tags are present', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Barcode ID']),
+      0, 1, ['P5'],
+    );
+    expect(result).toEqual([]);
+  });
+
+  it('picks the first matching barcode-shaped column when multiple are present', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Barcode A', 'Barcode B']),
+      0, 1, [],
+    );
+    expect(result).toEqual([{ tagName: 'BarcodeID', columnIdx: 2 }]);
+  });
+});
