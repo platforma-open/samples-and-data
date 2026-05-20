@@ -10,11 +10,9 @@ export function sanitizeTagName(raw: string): string {
 }
 
 /**
- * Build one binding per non-File/non-Sample column, using the column header
- * (sanitized) as the default tag name. For columns that match an
- * already-declared tag (case-insensitive substring), reuse that tag name.
- * Operator removes any binding they don't want as a barcode tag — those
- * columns then flow through the metadata pipeline as before.
+ * Build one binding per non-File / non-Sample column whose header matches
+ * an already-declared barcode tag (case-insensitive substring). Columns that
+ * do not match a declared tag flow through the metadata pipeline.
  */
 export function defaultBindingsFor(
   ic: ImportResult,
@@ -29,10 +27,11 @@ export function defaultBindingsFor(
     if (i === fileIdx || i === sampleIdx) continue;
     const header = cols[i].header;
     const matchedTag = declaredTags.find((t) => header.toLowerCase().includes(t.toLowerCase()));
-    let tagName = matchedTag ?? (TAG_NAME_RX.test(header) ? header : sanitizeTagName(header));
+    if (!matchedTag) continue;
+    let tagName = matchedTag;
     let n = 2;
     while (taken.has(tagName)) {
-      tagName = `${sanitizeTagName(header) || 'Tag'}${n}`;
+      tagName = `${matchedTag}${n}`;
       n++;
     }
     taken.add(tagName);
