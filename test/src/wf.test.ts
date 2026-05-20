@@ -3,7 +3,7 @@ import { uniquePlId } from '@platforma-sdk/model';
 import { blockTest } from '@platforma-sdk/test';
 import { blockSpec } from 'this-block';
 
-blockTest('empty inputs', { timeout: 30000 }, async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('empty inputs', { timeout: 30000 }, async ({ rawPrj: project, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
@@ -19,7 +19,7 @@ blockTest('empty inputs', { timeout: 30000 }, async ({ rawPrj: project, ml, help
   });
 });
 
-blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('simple input', async ({ rawPrj: project, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();
   const metaColumn1Id = uniquePlId();
@@ -75,7 +75,7 @@ blockTest('simple input', async ({ rawPrj: project, ml, helpers, expect }) => {
   });
 });
 
-blockTest('simple multilane input', async ({ rawPrj: project, ml, helpers, expect }) => {
+blockTest('simple multilane input', async ({ rawPrj: project, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();
   const metaColumn1Id = uniquePlId();
@@ -376,6 +376,12 @@ blockTest('simple multiplexed fastq input', async ({ rawPrj: project, ml: _ml, h
   });
 });
 
+// Regression net for the rules-present MultiplexedFastq emission path.
+// PR #124's `defaultBindingsFor` changes (skip non-matching headers +
+// barcode-shaped fallback) both seed datasets shaped like this one. The
+// block must reach stable state with populated `barcodeRules` + `barcodeTags`
+// and import both reads. Sibling test 'simple multiplexed fastq input'
+// above exercises the zero-rules path.
 blockTest('multiplexed fastq with barcode rules', async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
   const blockId = await project.addBlock('Block', blockSpec);
   const sample1Id = uniquePlId();
@@ -456,6 +462,12 @@ blockTest('multiplexed fastq with barcode rules', async ({ rawPrj: project, ml: 
   const blockState = project.getBlockState(blockId);
   const stableState = await blockState.awaitStableValue();
 
+  // `sampleGroups.value` is `{}` for MultiplexedFastq by design — the
+  // retentiveOutput in model/src/index.ts returns `undefined` for any dataset
+  // type other than BulkCountMatrix / MultiSampleH5AD / MultiSampleSeurat.
+  // The `ok: true` check confirms the derivation succeeded without throwing,
+  // not its content. The workflow's `multiplexingRules` PColumn emission is
+  // consumed by downstream blocks, not surfaced as a model output here.
   expect(stableState.outputs).toMatchObject({
     fileImports: { ok: true, value: { [r1Handle]: { done: true }, [r2Handle]: { done: true } } },
     sampleGroups: { ok: true, value: { } },
