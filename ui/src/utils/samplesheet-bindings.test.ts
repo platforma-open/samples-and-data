@@ -39,6 +39,14 @@ describe('defaultBindingsFor', () => {
     );
     expect(result).toEqual([]);
   });
+
+  it('prefers the longer tag when declared tags overlap as substrings', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'i7_index_column']),
+      0, 1, ['i7', 'i7_index'],
+    );
+    expect(result).toEqual([{ tagName: 'i7_index', columnIdx: 2 }]);
+  });
 });
 
 describe('defaultBindingsFor — barcode-shaped fallback', () => {
