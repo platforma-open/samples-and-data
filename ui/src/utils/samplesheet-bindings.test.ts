@@ -15,17 +15,28 @@ function ic(headers: string[]): ImportResult {
   };
 }
 
-describe('defaultBindingsFor (origin/main behavior — characterization)', () => {
-  // This test locks in the buggy behavior on origin/main so the change in the
-  // next task makes the bug visible as a test failure. Remove or rewrite when
-  // Edit 1 lands.
-  it('CURRENT BUG: binds every non-File / non-Sample column even with no declared tags', () => {
+describe('defaultBindingsFor', () => {
+  it('returns no bindings when no tags are declared (the ticket fix)', () => {
     const result = defaultBindingsFor(
       ic(['File', 'Sample', 'Condition', 'Treatment']),
       0, 1, [],
     );
-    expect(result).toHaveLength(2);
-    expect(result[0]).toEqual({ tagName: 'Condition', columnIdx: 2 });
-    expect(result[1]).toEqual({ tagName: 'Treatment', columnIdx: 3 });
+    expect(result).toEqual([]);
+  });
+
+  it('binds a column whose header matches a declared tag (case-insensitive substring)', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'P5', 'Condition']),
+      0, 1, ['P5'],
+    );
+    expect(result).toEqual([{ tagName: 'P5', columnIdx: 2 }]);
+  });
+
+  it('returns no binding for unrelated columns even when a tag is declared', () => {
+    const result = defaultBindingsFor(
+      ic(['File', 'Sample', 'Condition', 'Treatment']),
+      0, 1, ['P5'],
+    );
+    expect(result).toEqual([]);
   });
 });
