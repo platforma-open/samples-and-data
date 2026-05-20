@@ -219,7 +219,6 @@ function bindingTagError(idx: number): string | undefined {
 
 const importDisabled = computed(() => {
   if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return true;
-  if (data.bindings.length === 0) return true;
   for (let i = 0; i < data.bindings.length; i++) {
     if (bindingTagError(i)) return true;
   }
