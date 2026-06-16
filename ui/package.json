@@ -7,7 +7,6 @@
     "watch": "ts-builder build --target block-ui --watch",
     "build": "ts-builder build --target block-ui",
     "lint": "eslint .",
-    "preview": "vite preview",
     "fmt": "ts-builder format",
     "check": "ts-builder check --target block-ui",
     "test": "vitest run --passWithNoTests"
@@ -31,7 +30,6 @@
     "ag-grid-vue3": "catalog:",
     "radashi": "catalog:",
     "utility-types": "catalog:",
-    "vite": "catalog:",
     "vitest": "catalog:",
     "xlsx": "../vendor/xlsx-0.20.3.tgz",
     "zod": "catalog:"
