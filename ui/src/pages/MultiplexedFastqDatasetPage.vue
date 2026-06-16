@@ -1,17 +1,33 @@
 <script setup lang="ts">
-import type { ColDef, GridApi, GridOptions, GridReadyEvent } from 'ag-grid-enterprise';
-import { ClientSideRowModelModule, MenuModule, ModuleRegistry, RichSelectModule } from 'ag-grid-enterprise';
-import { AgGridVue } from 'ag-grid-vue3';
-import type { DSMultiplexedFastq, PlId, ReadIndex } from '@platforma-open/milaboratories.samples-and-data.model';
-import { validateMultiplexingRulesDataset } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, PlAlert, PlBtnGroup } from '@platforma-sdk/ui-vue';
-import { computed, ref, shallowRef } from 'vue';
-import { useApp } from '../app';
-import MultiplexingRulesSection from '../components/MultiplexingRulesSection.vue';
-import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
-import { agGroupIdColumnDef } from '../util';
+import type { ColDef, GridApi, GridOptions, GridReadyEvent } from "ag-grid-enterprise";
+import {
+  ClientSideRowModelModule,
+  MenuModule,
+  ModuleRegistry,
+  RichSelectModule,
+} from "ag-grid-enterprise";
+import { AgGridVue } from "ag-grid-vue3";
+import type {
+  DSMultiplexedFastq,
+  PlId,
+  ReadIndex,
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import { validateMultiplexingRulesDataset } from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+  PlAlert,
+  PlBtnGroup,
+} from "@platforma-sdk/ui-vue";
+import { computed, ref, shallowRef } from "vue";
+import { useApp } from "../app";
+import MultiplexingRulesSection from "../components/MultiplexingRulesSection.vue";
+import SyncDatasetDialog from "../dialogs/SyncDatasetDialog.vue";
+import { agGroupIdColumnDef } from "../util";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -21,8 +37,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = computed(() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSMultiplexedFastq;
 });
 
@@ -43,16 +58,14 @@ type DatasetRow = {
 const rowData = computed(() => {
   // For MultiplexedFastq, read samples directly from content.sampleGroups (not from outputs)
   // One row per group, with all read indices as separate columns
-  return Object.entries(dataset.value.content.data).map(
-    ([groupId, fileGroup]) => ({
-      groupId: groupId as PlId,
-      groupLabel: dataset.value.content.groupLabels[groupId as PlId],
-      nSamples: dataset.value.content.sampleGroups?.[groupId as PlId]
-        ? Object.keys(dataset.value.content.sampleGroups[groupId as PlId]).length
-        : 0,
-      reads: fileGroup,
-    }),
-  );
+  return Object.entries(dataset.value.content.data).map(([groupId, fileGroup]) => ({
+    groupId: groupId as PlId,
+    groupLabel: dataset.value.content.groupLabels[groupId as PlId],
+    nSamples: dataset.value.content.sampleGroups?.[groupId as PlId]
+      ? Object.keys(dataset.value.content.sampleGroups[groupId as PlId]).length
+      : 0,
+    reads: fileGroup,
+  }));
 });
 
 const defaultColDef: ColDef = {
@@ -64,12 +77,12 @@ const columnDefs = computed(() => {
   const res: ColDef<DatasetRow>[] = [
     makeRowNumberColDef(),
     {
-      headerName: 'Samples',
+      headerName: "Samples",
       flex: 1,
       valueGetter: (params) => params.data?.nSamples,
       editable: false,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Number' },
+      headerComponentParams: { type: "Number" },
     },
     agGroupIdColumnDef(),
   ];
@@ -81,7 +94,7 @@ const columnDefs = computed(() => {
       flex: 2,
       cellStyle: { padding: 0 },
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "File" } satisfies PlAgHeaderComponentParams,
 
       cellRendererParams: {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
@@ -93,9 +106,9 @@ const columnDefs = computed(() => {
       cellRendererSelector: (params) =>
         params.data?.groupId
           ? {
-              component: 'PlAgCellFile',
+              component: "PlAgCellFile",
               params: {
-                extensions: dataset.value.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
+                extensions: dataset.value.content.gzipped ? ["fastq.gz", "fq.gz"] : ["fastq", "fq"],
               },
             }
           : undefined,
@@ -110,7 +123,9 @@ const columnDefs = computed(() => {
         if (!dataset.value.content.data[groupId]) {
           dataset.value.content.data[groupId] = {};
         }
-        dataset.value.content.data[groupId][readIndex] = params.newValue ? params.newValue : undefined;
+        dataset.value.content.data[groupId][readIndex] = params.newValue
+          ? params.newValue
+          : undefined;
         return true;
       },
     } as ColDef<DatasetRow, ImportFileHandle>);
@@ -122,7 +137,7 @@ const columnDefs = computed(() => {
 const gridOptions: GridOptions<DatasetRow> = {
   getRowId: (row) => row.data.groupId,
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
@@ -135,20 +150,20 @@ const gridOptions: GridOptions<DatasetRow> = {
   },
 };
 
-type ViewMode = 'files' | 'rules';
-const viewMode = ref<ViewMode>('files');
+type ViewMode = "files" | "rules";
+const viewMode = ref<ViewMode>("files");
 const viewOptions = [
-  { label: 'File Groups', value: 'files' as const },
-  { label: 'Multiplexing Rules', value: 'rules' as const },
+  { label: "File Groups", value: "files" as const },
+  { label: "Multiplexing Rules", value: "rules" as const },
 ];
 
 const issues = computed(() =>
   validateMultiplexingRulesDataset(dataset.value, app.model.data.sampleLabels),
 );
 
-const alertSeverity = computed<'error' | 'warn' | undefined>(() => {
-  if (issues.value.some((i) => i.severity === 'error')) return 'error';
-  if (issues.value.length > 0) return 'warn';
+const alertSeverity = computed<"error" | "warn" | undefined>(() => {
+  if (issues.value.some((i) => i.severity === "error")) return "error";
+  if (issues.value.length > 0) return "warn";
   return undefined;
 });
 </script>

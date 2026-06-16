@@ -1,4 +1,4 @@
-import { escapeRegExp } from './string_utils';
+import { escapeRegExp } from "./string_utils";
 
 type MatcherFunction = (existingSample: string, importSample: string) => boolean;
 export type SampleMatchingAlgorithm = {
@@ -12,8 +12,8 @@ function prepareString(str: string, caseInsensitive: boolean, trim: boolean) {
   return str;
 }
 
-const rightDelimiterRegexp = '[_,\\-#$@&~\\[\\{\\(]';
-const leftDelimiterRegexp = '[_,\\-#$@&~\\]\\}\\)]';
+const rightDelimiterRegexp = "[_,\\-#$@&~\\[\\{\\(]";
+const leftDelimiterRegexp = "[_,\\-#$@&~\\]\\}\\)]";
 
 function startsWith(
   stringA: string,
@@ -25,7 +25,7 @@ function startsWith(
   stringA = prepareString(stringA, caseInsensitive, trim);
   stringB = prepareString(stringB, caseInsensitive, trim);
   if (requireDelimiter)
-    return stringA.match(RegExp('^' + escapeRegExp(stringB) + rightDelimiterRegexp)) !== null;
+    return stringA.match(RegExp("^" + escapeRegExp(stringB) + rightDelimiterRegexp)) !== null;
   else return stringA.startsWith(stringB);
 }
 
@@ -39,7 +39,7 @@ function endsWith(
   stringA = prepareString(stringA, caseInsensitive, trim);
   stringB = prepareString(stringB, caseInsensitive, trim);
   if (requireDelimiter)
-    return stringA.match(RegExp(leftDelimiterRegexp + escapeRegExp(stringB) + '$')) !== null;
+    return stringA.match(RegExp(leftDelimiterRegexp + escapeRegExp(stringB) + "$")) !== null;
   else return stringA.endsWith(stringB);
 }
 
@@ -54,8 +54,8 @@ function contains(
   stringB = prepareString(stringB, caseInsensitive, trim);
   if (requireDelimiter)
     return (
-      stringA.match(RegExp(leftDelimiterRegexp + escapeRegExp(stringB) + rightDelimiterRegexp))
-      !== null
+      stringA.match(RegExp(leftDelimiterRegexp + escapeRegExp(stringB) + rightDelimiterRegexp)) !==
+      null
     );
   else return stringA.includes(stringB);
 }
@@ -63,22 +63,22 @@ function contains(
 function calculateDefaultAlgorithms(): SampleMatchingAlgorithm[] {
   const result: SampleMatchingAlgorithm[] = [];
   result.push({
-    name: 'Perfect match',
+    name: "Perfect match",
     matcher: (existingSample, importSample) => existingSample === importSample,
   });
   result.push({
-    name: 'Match ignoring case',
+    name: "Match ignoring case",
     matcher: (existingSample, importSample) =>
       existingSample.toLocaleLowerCase() === importSample.toLocaleLowerCase(),
   });
 
-  for (const op of ['starts with', 'ends with', 'contains'] as const)
+  for (const op of ["starts with", "ends with", "contains"] as const)
     for (const existingBigger of [true, false])
       for (const trim of [false, true])
         for (const caseInsensitive of [false, true])
           for (const requireDelimiter of [true, false]) {
-            const baseMatcher: MatcherFunction
-              = op === 'starts with'
+            const baseMatcher: MatcherFunction =
+              op === "starts with"
                 ? (existingSample, importSample) =>
                     startsWith(
                       existingSample,
@@ -87,24 +87,37 @@ function calculateDefaultAlgorithms(): SampleMatchingAlgorithm[] {
                       caseInsensitive,
                       trim,
                     )
-                : op === 'ends with'
+                : op === "ends with"
                   ? (existingSample, importSample) =>
-                      endsWith(existingSample, importSample, requireDelimiter, caseInsensitive, trim)
+                      endsWith(
+                        existingSample,
+                        importSample,
+                        requireDelimiter,
+                        caseInsensitive,
+                        trim,
+                      )
                   : (existingSample, importSample) =>
-                      contains(existingSample, importSample, requireDelimiter, caseInsensitive, trim);
+                      contains(
+                        existingSample,
+                        importSample,
+                        requireDelimiter,
+                        caseInsensitive,
+                        trim,
+                      );
             if (existingBigger)
               result.push({
                 name: `Existing sample name ${op} import sample name${
-                  requireDelimiter ? ' requiring delimiter at the end' : ''
-                }${trim ? '; trim' : ''}${caseInsensitive ? '; case-insensitive' : ''}`,
+                  requireDelimiter ? " requiring delimiter at the end" : ""
+                }${trim ? "; trim" : ""}${caseInsensitive ? "; case-insensitive" : ""}`,
                 matcher: baseMatcher,
               });
             else
               result.push({
                 name: `Import sample name ${op} existing sample name${
-                  requireDelimiter ? ' requiring delimiter at the end' : ''
-                }${trim ? '; trim' : ''}${caseInsensitive ? '; case-insensitive' : ''}`,
-                matcher: (existingSample, importSample) => baseMatcher(importSample, existingSample),
+                  requireDelimiter ? " requiring delimiter at the end" : ""
+                }${trim ? "; trim" : ""}${caseInsensitive ? "; case-insensitive" : ""}`,
+                matcher: (existingSample, importSample) =>
+                  baseMatcher(importSample, existingSample),
               });
           }
 

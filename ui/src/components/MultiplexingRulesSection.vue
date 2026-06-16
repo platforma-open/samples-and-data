@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import type { BarcodeRule, DSMultiplexedFastq, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
+import type {
+  BarcodeRule,
+  DSMultiplexedFastq,
+  PlId,
+} from "@platforma-open/milaboratories.samples-and-data.model";
 import {
   ClientSideRowModelModule,
   type ColDef,
@@ -10,9 +14,9 @@ import {
   MenuModule,
   ModuleRegistry,
   RichSelectModule,
-} from 'ag-grid-enterprise';
-import { AgGridVue } from 'ag-grid-vue3';
-import { uniquePlId } from '@platforma-sdk/model';
+} from "ag-grid-enterprise";
+import { AgGridVue } from "ag-grid-vue3";
+import { uniquePlId } from "@platforma-sdk/model";
 import {
   AgGridTheme,
   makeRowNumberColDef,
@@ -25,9 +29,9 @@ import {
   PlBtnSecondary,
   PlDialogModal,
   PlTextField,
-} from '@platforma-sdk/ui-vue';
-import { computed, reactive, shallowRef, useCssModule } from 'vue';
-import { useApp } from '../app';
+} from "@platforma-sdk/ui-vue";
+import { computed, reactive, shallowRef, useCssModule } from "vue";
+import { useApp } from "../app";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -53,7 +57,9 @@ const groupIdToLabel = computed<Record<string, string>>(() => {
 });
 
 const sampleIds = computed<string[]>(() => Object.keys(app.model.data.sampleLabels));
-const sampleIdToLabel = computed<Record<string, string>>(() => ({ ...app.model.data.sampleLabels } as Record<string, string>));
+const sampleIdToLabel = computed<Record<string, string>>(
+  () => ({ ...app.model.data.sampleLabels }) as Record<string, string>,
+);
 
 function setTags(next: string[]) {
   props.dataset.content.barcodeTags = next;
@@ -66,22 +72,22 @@ function setRules(next: BarcodeRule[]) {
 // --- Tag dialog (add / rename) ----------------------------------------------
 
 type TagDialogState =
-  | { mode: 'closed' }
-  | { mode: 'add'; name: string }
-  | { mode: 'rename'; oldName: string; name: string };
+  | { mode: "closed" }
+  | { mode: "add"; name: string }
+  | { mode: "rename"; oldName: string; name: string };
 
-const tagDialog = reactive<{ state: TagDialogState }>({ state: { mode: 'closed' } });
+const tagDialog = reactive<{ state: TagDialogState }>({ state: { mode: "closed" } });
 
 const tagDialogError = computed<string | undefined>(() => {
   const s = tagDialog.state;
-  if (s.mode === 'closed') return undefined;
+  if (s.mode === "closed") return undefined;
   const name = s.name.trim();
-  if (!name) return 'Tag name is required';
-  if (!TAG_NAME_RX.test(name)) return 'Use letters and digits only';
+  if (!name) return "Tag name is required";
+  if (!TAG_NAME_RX.test(name)) return "Use letters and digits only";
   const collidesWith = tags.value.find((t) =>
-    s.mode === 'rename' ? t === name && t !== s.oldName : t === name,
+    s.mode === "rename" ? t === name && t !== s.oldName : t === name,
   );
-  if (collidesWith) return 'Tag name must be unique';
+  if (collidesWith) return "Tag name must be unique";
   return undefined;
 });
 
@@ -92,28 +98,30 @@ function openAddTag() {
     i++;
     candidate = `Tag${i}`;
   }
-  tagDialog.state = { mode: 'add', name: candidate };
+  tagDialog.state = { mode: "add", name: candidate };
 }
 
 function openRenameTag(oldName: string) {
-  tagDialog.state = { mode: 'rename', oldName, name: oldName };
+  tagDialog.state = { mode: "rename", oldName, name: oldName };
 }
 
 function closeTagDialog() {
-  tagDialog.state = { mode: 'closed' };
+  tagDialog.state = { mode: "closed" };
 }
 
 function commitTagDialog() {
   const s = tagDialog.state;
-  if (s.mode === 'closed') return;
+  if (s.mode === "closed") return;
   if (tagDialogError.value !== undefined) return;
   const name = s.name.trim();
-  if (s.mode === 'add') {
+  if (s.mode === "add") {
     setTags([...tags.value, name]);
-    setRules(rules.value.map((r) => ({
-      ...r,
-      barcodes: { ...r.barcodes, [name]: '' },
-    })));
+    setRules(
+      rules.value.map((r) => ({
+        ...r,
+        barcodes: { ...r.barcodes, [name]: "" },
+      })),
+    );
   } else {
     const oldName = s.oldName;
     if (oldName === name) {
@@ -121,30 +129,34 @@ function commitTagDialog() {
       return;
     }
     setTags(tags.value.map((t) => (t === oldName ? name : t)));
-    setRules(rules.value.map((r) => {
-      const { [oldName]: value, ...rest } = r.barcodes;
-      return { ...r, barcodes: { ...rest, [name]: value ?? '' } };
-    }));
+    setRules(
+      rules.value.map((r) => {
+        const { [oldName]: value, ...rest } = r.barcodes;
+        return { ...r, barcodes: { ...rest, [name]: value ?? "" } };
+      }),
+    );
   }
   closeTagDialog();
 }
 
 function deleteTag(name: string) {
   setTags(tags.value.filter((t) => t !== name));
-  setRules(rules.value.map((r) => {
-    const { [name]: _drop, ...rest } = r.barcodes;
-    return { ...r, barcodes: rest };
-  }));
+  setRules(
+    rules.value.map((r) => {
+      const { [name]: _drop, ...rest } = r.barcodes;
+      return { ...r, barcodes: rest };
+    }),
+  );
 }
 
 // --- Rule operations --------------------------------------------------------
 
 function addRule() {
   const last = rules.value[rules.value.length - 1];
-  const sampleGroupId = (last?.sampleGroupId ?? groupIds.value[0] ?? '') as PlId;
-  const sampleId = (last?.sampleId ?? '') as PlId;
+  const sampleGroupId = (last?.sampleGroupId ?? groupIds.value[0] ?? "") as PlId;
+  const sampleId = (last?.sampleId ?? "") as PlId;
   const barcodes: Record<string, string> = {};
-  for (const t of tags.value) barcodes[t] = '';
+  for (const t of tags.value) barcodes[t] = "";
   setRules([...rules.value, { ruleId: uniquePlId(), sampleGroupId, sampleId, barcodes }]);
 }
 
@@ -180,27 +192,27 @@ const rowData = computed<RuleRow[]>(() =>
   })),
 );
 
-const tagColIdPrefix = 'tag.';
+const tagColIdPrefix = "tag.";
 
 const columnDefs = computed<ColDef<RuleRow>[]>(() => {
   const defs: ColDef<RuleRow>[] = [
     { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
     {
-      colId: 'sampleGroupId',
-      field: 'sampleGroupId',
-      headerName: 'Sample Group',
+      colId: "sampleGroupId",
+      field: "sampleGroupId",
+      headerName: "Sample Group",
       editable: true,
       minWidth: 160,
       flex: 1,
       suppressHeaderMenuButton: true,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
-      cellEditor: 'agRichSelectCellEditor',
+      headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
+      cellEditor: "agRichSelectCellEditor",
       cellEditorPopup: true,
       cellEditorParams: () => ({
         values: groupIds.value,
         formatValue: (v: string) => groupIdToLabel.value[v] ?? v,
-        searchType: 'matchAny',
+        searchType: "matchAny",
         allowTyping: true,
         filterList: true,
         highlightMatch: true,
@@ -208,57 +220,59 @@ const columnDefs = computed<ColDef<RuleRow>[]>(() => {
       valueFormatter: (p) => groupIdToLabel.value[p.value as string] ?? (p.value as string),
     },
     {
-      colId: 'sampleId',
-      field: 'sampleId',
-      headerName: 'Sample',
+      colId: "sampleId",
+      field: "sampleId",
+      headerName: "Sample",
       editable: true,
       minWidth: 160,
       flex: 1,
       suppressHeaderMenuButton: true,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
-      cellEditor: 'agRichSelectCellEditor',
+      headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
+      cellEditor: "agRichSelectCellEditor",
       cellEditorPopup: true,
       cellEditorParams: () => ({
         values: sampleIds.value,
         formatValue: (v: string) => sampleIdToLabel.value[v] ?? v,
-        searchType: 'matchAny',
+        searchType: "matchAny",
         allowTyping: true,
         filterList: true,
         highlightMatch: true,
       }),
       valueFormatter: (p) => sampleIdToLabel.value[p.value as string] ?? (p.value as string),
     },
-    ...tags.value.map((tag): ColDef<RuleRow> => ({
-      colId: `${tagColIdPrefix}${tag}`,
-      headerName: tag,
-      editable: true,
-      minWidth: 120,
-      flex: 1,
-      headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
-      valueGetter: (p) => p.data?.barcodes?.[tag] ?? '',
-      valueSetter: (p) => {
-        // Updating the model in onCellValueChanged below; valueSetter must
-        // mutate p.data to make the grid re-render the cell synchronously.
-        if (!p.data) return false;
-        p.data.barcodes = { ...p.data.barcodes, [tag]: String(p.newValue ?? '') };
-        return true;
-      },
-      cellClassRules: {
-        [styles.emptyCell]: (p) => (p.data?.barcodes?.[tag] ?? '') === '',
-      },
-    })),
+    ...tags.value.map(
+      (tag): ColDef<RuleRow> => ({
+        colId: `${tagColIdPrefix}${tag}`,
+        headerName: tag,
+        editable: true,
+        minWidth: 120,
+        flex: 1,
+        headerComponent: PlAgColumnHeader,
+        headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
+        valueGetter: (p) => p.data?.barcodes?.[tag] ?? "",
+        valueSetter: (p) => {
+          // Updating the model in onCellValueChanged below; valueSetter must
+          // mutate p.data to make the grid re-render the cell synchronously.
+          if (!p.data) return false;
+          p.data.barcodes = { ...p.data.barcodes, [tag]: String(p.newValue ?? "") };
+          return true;
+        },
+        cellClassRules: {
+          [styles.emptyCell]: (p) => (p.data?.barcodes?.[tag] ?? "") === "",
+        },
+      }),
+    ),
     {
-      colId: 'add',
-      headerName: '+',
+      colId: "add",
+      headerName: "+",
       headerClass: styles.plusHeader,
       suppressHeaderMenuButton: true,
       minWidth: 45,
       maxWidth: 45,
       sortable: false,
       resizable: false,
-      pinned: 'right',
+      pinned: "right",
       lockPinned: true,
     },
   ];
@@ -274,7 +288,7 @@ const gridOptions = computed<GridOptions<RuleRow>>(() => ({
   getRowId: (p) => p.data.ruleId,
 
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
@@ -284,8 +298,8 @@ const gridOptions = computed<GridOptions<RuleRow>>(() => ({
 
   onColumnHeaderClicked: (event) => {
     const columnId = event.column.getId();
-    if (columnId === 'add') {
-      event.api.showColumnMenu('add');
+    if (columnId === "add") {
+      event.api.showColumnMenu("add");
     }
   },
 
@@ -296,15 +310,15 @@ const gridOptions = computed<GridOptions<RuleRow>>(() => ({
     const colId = event.column.getId();
 
     const next = [...rules.value];
-    if (colId === 'sampleGroupId') {
+    if (colId === "sampleGroupId") {
       next[idx] = { ...next[idx], sampleGroupId: row.sampleGroupId as PlId };
-    } else if (colId === 'sampleId') {
+    } else if (colId === "sampleId") {
       next[idx] = { ...next[idx], sampleId: row.sampleId as PlId };
     } else if (colId.startsWith(tagColIdPrefix)) {
       const tag = colId.slice(tagColIdPrefix.length);
       next[idx] = {
         ...next[idx],
-        barcodes: { ...next[idx].barcodes, [tag]: String(event.newValue ?? '') },
+        barcodes: { ...next[idx].barcodes, [tag]: String(event.newValue ?? "") },
       };
     } else {
       return;
@@ -316,10 +330,8 @@ const gridOptions = computed<GridOptions<RuleRow>>(() => ({
   getMainMenuItems: (params) => {
     const colId = params.column?.getId();
     if (!colId) return [];
-    if (colId === 'add') {
-      return [
-        { name: 'Add Tag', action: () => openAddTag() },
-      ];
+    if (colId === "add") {
+      return [{ name: "Add Tag", action: () => openAddTag() }];
     }
     if (colId.startsWith(tagColIdPrefix)) {
       const tag = colId.slice(tagColIdPrefix.length);
@@ -336,7 +348,7 @@ const gridOptions = computed<GridOptions<RuleRow>>(() => ({
     if (targetIds.length === 0) return [];
     return [
       {
-        name: targetIds.length > 1 ? `Delete ${targetIds.length} rules` : 'Delete rule',
+        name: targetIds.length > 1 ? `Delete ${targetIds.length} rules` : "Delete rule",
         action: () => deleteRules(targetIds),
       },
     ];
@@ -355,8 +367,8 @@ function getSelectedRuleIds(node: IRowNode<RuleRow> | null): string[] {
   <div class="multiplexing-rules">
     <PlAlert v-if="tags.length === 0" type="warn">
       No barcode tags declared yet. Click the
-      <strong>+</strong> column header on the right of the grid and choose
-      <em>Add Tag</em> to get started.
+      <strong>+</strong> column header on the right of the grid and choose <em>Add Tag</em> to get
+      started.
     </PlAlert>
 
     <div class="multiplexing-rules__grid">
@@ -382,10 +394,14 @@ function getSelectedRuleIds(node: IRowNode<RuleRow> | null): string[] {
     <PlDialogModal
       :model-value="tagDialog.state.mode !== 'closed'"
       closable
-      @update:model-value="(v) => { if (!v) closeTagDialog(); }"
+      @update:model-value="
+        (v) => {
+          if (!v) closeTagDialog();
+        }
+      "
     >
       <template #title>
-        {{ tagDialog.state.mode === 'rename' ? 'Rename Tag' : 'Add Tag' }}
+        {{ tagDialog.state.mode === "rename" ? "Rename Tag" : "Add Tag" }}
       </template>
 
       <PlTextField
@@ -394,12 +410,16 @@ function getSelectedRuleIds(node: IRowNode<RuleRow> | null): string[] {
         label="Tag name"
         placeholder="e.g. P5, P7, BarcodeID"
         :error="tagDialogError"
-        @update:model-value="(v: string) => { if (tagDialog.state.mode !== 'closed') tagDialog.state.name = v; }"
+        @update:model-value="
+          (v: string) => {
+            if (tagDialog.state.mode !== 'closed') tagDialog.state.name = v;
+          }
+        "
       />
 
       <template #actions>
         <PlBtnPrimary :disabled="tagDialogError !== undefined" @click="commitTagDialog">
-          {{ tagDialog.state.mode === 'rename' ? 'Rename' : 'Add' }}
+          {{ tagDialog.state.mode === "rename" ? "Rename" : "Add" }}
         </PlBtnPrimary>
         <PlBtnGhost @click="closeTagDialog">Cancel</PlBtnGhost>
       </template>

@@ -1,28 +1,28 @@
-import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
-export type { PlId } from '@platforma-sdk/model';
+import type { ImportFileHandle, PlId } from "@platforma-sdk/model";
+export type { PlId } from "@platforma-sdk/model";
 
 /** *****  Metadata *******/
 
-export type MTValueTypeLong = 'Long';
-export type MTValueTypeDouble = 'Double';
-export type MTValueTypeString = 'String';
+export type MTValueTypeLong = "Long";
+export type MTValueTypeDouble = "Double";
+export type MTValueTypeString = "String";
 
 export interface MTColumnInfo {
   /**
-    * Id of the metadata column, that is assigned when column is created and never changes.
-    * Value of this field will also used in resulting PColumn domain, if global option is false.
-    * If global is set to true, normalized label will be used.
-    */
+   * Id of the metadata column, that is assigned when column is created and never changes.
+   * Value of this field will also used in resulting PColumn domain, if global option is false.
+   * If global is set to true, normalized label will be used.
+   */
   id: string;
   /**
-    * Human readable name of the metadata column.
-    * Value of this field will be used in resulting PColumn domain, if global option is true.
-    * String normalization proceduyre will be applied before setting the domain.
-    */
+   * Human readable name of the metadata column.
+   * Value of this field will be used in resulting PColumn domain, if global option is true.
+   * String normalization proceduyre will be applied before setting the domain.
+   */
   label: string;
   /**
-    * Regulates identifier derivation, see description of the fields above.
-    */
+   * Regulates identifier derivation, see description of the fields above.
+   */
   global: boolean;
 }
 
@@ -42,7 +42,7 @@ export interface MTDataString {
 }
 
 export type MTColumn = (MTDataDouble | MTDataLong | MTDataString) & MTColumnInfo;
-export type MTValueType = MTColumn['valueType'];
+export type MTValueType = MTColumn["valueType"];
 
 export interface IDSContent {
   gzipped: boolean;
@@ -56,24 +56,24 @@ export interface WithPerSampleData<T> extends IDSContent {
   data: Record<PlId, T>;
 }
 
-export type ReadIndex = 'R1' | 'R2' | 'I1' | 'I2';
+export type ReadIndex = "R1" | "R2" | "I1" | "I2";
 export type ReadIndices = ReadIndex[];
 export type FastqFileGroup = Partial<Record<ReadIndex, ImportFileHandle>>;
 
 export interface DSContentFastq extends WithPerSampleData<FastqFileGroup> {
-  type: 'Fastq';
+  type: "Fastq";
   readIndices: ReadIndex[];
 }
 
 /* null means sample is added to the dataset, but file is not yet set */
 export interface DSContentFasta extends WithPerSampleData<ImportFileHandle | null> {
-  type: 'Fasta';
+  type: "Fasta";
 }
 
 export type Lane = string;
 
 export interface DSContentMultilaneFastq extends WithPerSampleData<Record<Lane, FastqFileGroup>> {
-  type: 'MultilaneFastq';
+  type: "MultilaneFastq";
   readIndices: ReadIndex[];
 }
 
@@ -84,7 +84,7 @@ export interface TaggedDatasetRecord {
 }
 
 export interface DSContentTaggedFastq extends WithPerSampleData<TaggedDatasetRecord[]> {
-  type: 'TaggedFastq';
+  type: "TaggedFastq";
   readIndices: ReadIndex[];
   hasLanes: boolean;
   tags: string[];
@@ -92,8 +92,8 @@ export interface DSContentTaggedFastq extends WithPerSampleData<TaggedDatasetRec
 
 /* null means sample is added to the dataset, but file is not yet set */
 export interface DSContentXsv extends WithPerSampleData<ImportFileHandle | null> {
-  type: 'Xsv';
-  xsvType: 'csv' | 'tsv';
+  type: "Xsv";
+  xsvType: "csv" | "tsv";
 }
 
 export interface TaggedXsvDatasetRecord {
@@ -102,28 +102,28 @@ export interface TaggedXsvDatasetRecord {
 }
 
 export interface DSContentTaggedXsv extends WithPerSampleData<TaggedXsvDatasetRecord[]> {
-  type: 'TaggedXsv';
-  xsvType: 'csv' | 'tsv';
+  type: "TaggedXsv";
+  xsvType: "csv" | "tsv";
   tags: string[];
 }
 
-export type CellRangerMtxRole = 'matrix.mtx' | 'features.tsv' | 'barcodes.tsv';
+export type CellRangerMtxRole = "matrix.mtx" | "features.tsv" | "barcodes.tsv";
 export type CellRangerMtxFileGroup = Partial<Record<CellRangerMtxRole, ImportFileHandle>>;
 
 export interface DSContentCellRangerMtx extends WithPerSampleData<CellRangerMtxFileGroup> {
-  type: 'CellRangerMTX';
+  type: "CellRangerMTX";
 }
 
 export interface DSContentH5ad extends WithPerSampleData<ImportFileHandle | null> {
-  type: 'H5AD';
+  type: "H5AD";
 }
 
 export interface DSContentH5 extends WithPerSampleData<ImportFileHandle | null> {
-  type: 'H5';
+  type: "H5";
 }
 
 export interface DSContentSeurat extends WithPerSampleData<ImportFileHandle | null> {
-  type: 'Seurat';
+  type: "Seurat";
 }
 
 /// --------------- Grouped Datasets --------------- ///
@@ -139,8 +139,8 @@ export interface WithSampleGroupsData<T> extends IDSContent {
 }
 
 export interface DSContentBulkCountMatrix extends WithSampleGroupsData<ImportFileHandle | null> {
-  type: 'BulkCountMatrix';
-  xsvType: 'csv' | 'tsv';
+  type: "BulkCountMatrix";
+  xsvType: "csv" | "tsv";
 }
 
 /**
@@ -168,7 +168,7 @@ export function makeRuleId(): string {
 }
 
 export interface DSContentMultiplexedFastq extends WithSampleGroupsData<FastqFileGroup> {
-  type: 'MultiplexedFastq';
+  type: "MultiplexedFastq";
   readIndices: ReadIndex[];
   /** Ordered, user-declared list of barcode tag names. */
   barcodeTags: string[];
@@ -177,12 +177,12 @@ export interface DSContentMultiplexedFastq extends WithSampleGroupsData<FastqFil
 }
 
 export interface DSContentMultiSampleH5ad extends WithSampleGroupsData<ImportFileHandle | null> {
-  type: 'MultiSampleH5AD';
+  type: "MultiSampleH5AD";
   sampleColumnName?: string;
 }
 
 export interface DSContentMultiSampleSeurat extends WithSampleGroupsData<ImportFileHandle | null> {
-  type: 'MultiSampleSeurat';
+  type: "MultiSampleSeurat";
   sampleColumnName?: string;
 }
 
@@ -226,12 +226,21 @@ export type DSSeurat = Dataset<DSContentSeurat>;
 export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
 export type DSMultiSampleSeurat = Dataset<DSContentMultiSampleSeurat>;
 
-export type DSType = DSAny['content']['type'];
+export type DSType = DSAny["content"]["type"];
 
-export type DSGrouped = DSBulkCountMatrix | DSMultiSampleH5ad | DSMultiplexedFastq | DSMultiSampleSeurat;
+export type DSGrouped =
+  | DSBulkCountMatrix
+  | DSMultiSampleH5ad
+  | DSMultiplexedFastq
+  | DSMultiSampleSeurat;
 
 export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
-  return ds.content.type === 'BulkCountMatrix' || ds.content.type === 'MultiSampleH5AD' || ds.content.type === 'MultiplexedFastq' || ds.content.type === 'MultiSampleSeurat';
+  return (
+    ds.content.type === "BulkCountMatrix" ||
+    ds.content.type === "MultiSampleH5AD" ||
+    ds.content.type === "MultiplexedFastq" ||
+    ds.content.type === "MultiSampleSeurat"
+  );
 }
 
 export type LegacyBlockArgs = {
@@ -272,10 +281,10 @@ export type BlockData = BlockDataV20260428;
 
 export type BlockArgs = Pick<
   BlockData,
-  'datasets' | 'metadata' | 'sampleLabelColumnLabel' | 'sampleLabels'
+  "datasets" | "metadata" | "sampleLabelColumnLabel" | "sampleLabels"
 >;
 
 export type BlockPrerunArgs = Pick<
   BlockData,
-  'datasets' | 'h5adFilesToPreprocess' | 'seuratFilesToPreprocess' | 'metadataUploadHandle'
+  "datasets" | "h5adFilesToPreprocess" | "seuratFilesToPreprocess" | "metadataUploadHandle"
 >;

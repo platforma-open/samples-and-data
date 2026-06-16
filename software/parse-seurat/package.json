@@ -1,12 +1,22 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
   "version": "1.1.2",
-  "type": "module",
   "description": "Seurat RDS file parser for Samples and Data",
+  "files": [
+    "./dist/**/*"
+  ],
+  "type": "module",
   "scripts": {
-    "build": "shx rm -f *.tgz && shx rm -rf dist && pl-pkg build",
+    "build": "pl-pkg build",
     "test": "true",
-    "prepublishOnly": "pl-pkg prepublish"
+    "prepublishOnly": "pl-pkg prepublish",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
+  },
+  "devDependencies": {
+    "@platforma-open/milaboratories.runenv-python-3": "catalog:",
+    "@platforma-open/milaboratories.runenv-r-samples-and-data": "catalog:",
+    "@platforma-sdk/package-builder": "catalog:"
   },
   "block-software": {
     "entrypoints": {
@@ -35,9 +45,5 @@
         }
       }
     }
-  },
-  "devDependencies": {
-    "@platforma-open/milaboratories.runenv-r-samples-and-data": "catalog:",
-    "@platforma-sdk/package-builder": "catalog:"
   }
 }

@@ -1,7 +1,7 @@
-import type { PlId } from '@platforma-sdk/model';
-import type { DSAny, DSMultiplexedFastq } from './args';
+import type { PlId } from "@platforma-sdk/model";
+import type { DSAny, DSMultiplexedFastq } from "./args";
 
-export type MultiplexingRuleIssueSeverity = 'error' | 'warn';
+export type MultiplexingRuleIssueSeverity = "error" | "warn";
 
 export interface MultiplexingRuleIssue {
   severity: MultiplexingRuleIssueSeverity;
@@ -11,7 +11,7 @@ export interface MultiplexingRuleIssue {
 }
 
 function isMultiplexedFastq(ds: DSAny): ds is DSMultiplexedFastq {
-  return ds.content.type === 'MultiplexedFastq';
+  return ds.content.type === "MultiplexedFastq";
 }
 
 export function validateMultiplexingRulesDataset(
@@ -28,14 +28,14 @@ export function validateMultiplexingRulesDataset(
     let emptyCount = 0;
     for (const r of rules) {
       for (const t of tags) {
-        if ((r.barcodes[t] ?? '') === '') emptyCount++;
+        if ((r.barcodes[t] ?? "") === "") emptyCount++;
       }
     }
     if (emptyCount > 0) {
       out.push({
         ...meta,
-        severity: 'error',
-        message: `${emptyCount} empty barcode value${emptyCount === 1 ? '' : 's'} in the rules table.`,
+        severity: "error",
+        message: `${emptyCount} empty barcode value${emptyCount === 1 ? "" : "s"} in the rules table.`,
       });
     }
   }
@@ -43,11 +43,17 @@ export function validateMultiplexingRulesDataset(
   if (tags.length > 0 && rules.length > 0) {
     const byGroup = new Map<string, Map<string, Set<string>>>();
     for (const r of rules) {
-      const key = tags.map((t) => `${t}=${r.barcodes[t] ?? ''}`).join('|');
+      const key = tags.map((t) => `${t}=${r.barcodes[t] ?? ""}`).join("|");
       let g = byGroup.get(r.sampleGroupId);
-      if (!g) { g = new Map(); byGroup.set(r.sampleGroupId, g); }
+      if (!g) {
+        g = new Map();
+        byGroup.set(r.sampleGroupId, g);
+      }
       let s = g.get(key);
-      if (!s) { s = new Set(); g.set(key, s); }
+      if (!s) {
+        s = new Set();
+        g.set(key, s);
+      }
       s.add(r.sampleId);
     }
     const collisions: string[] = [];
@@ -56,15 +62,15 @@ export function validateMultiplexingRulesDataset(
         if (sIds.size > 1) {
           const groupLabel = dataset.content.groupLabels[gid as PlId] ?? gid;
           const sampleNames = [...sIds].map((sid) => sampleLabels[sid as PlId] ?? sid);
-          collisions.push(`${groupLabel}: ${sampleNames.join(', ')}`);
+          collisions.push(`${groupLabel}: ${sampleNames.join(", ")}`);
         }
       }
     }
     if (collisions.length > 0) {
       out.push({
         ...meta,
-        severity: 'warn',
-        message: `Same barcodes assigned to different samples in the same group — ${collisions.join('; ')}.`,
+        severity: "warn",
+        message: `Same barcodes assigned to different samples in the same group — ${collisions.join("; ")}.`,
       });
     }
   }
@@ -76,8 +82,8 @@ export function validateMultiplexingRulesDataset(
       const labels = missing.map((g) => dataset.content.groupLabels[g as PlId] ?? g);
       out.push({
         ...meta,
-        severity: 'warn',
-        message: `${missing.length} file group${missing.length === 1 ? '' : 's'} without rules: ${labels.join(', ')}.`,
+        severity: "warn",
+        message: `${missing.length} file group${missing.length === 1 ? "" : "s"} without rules: ${labels.join(", ")}.`,
       });
     }
   }
@@ -89,8 +95,8 @@ export function validateMultiplexingRulesDataset(
   if (rulesUnknownGroups.size > 0) {
     out.push({
       ...meta,
-      severity: 'warn',
-      message: `${rulesUnknownGroups.size} rule${rulesUnknownGroups.size === 1 ? '' : 's'} reference unknown file groups.`,
+      severity: "warn",
+      message: `${rulesUnknownGroups.size} rule${rulesUnknownGroups.size === 1 ? "" : "s"} reference unknown file groups.`,
     });
   }
 

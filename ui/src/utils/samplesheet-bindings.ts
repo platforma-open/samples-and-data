@@ -1,4 +1,4 @@
-import type { ImportResult } from '../dataimport';
+import type { ImportResult } from "../dataimport";
 
 export const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
 
@@ -39,7 +39,7 @@ export function defaultBindingsFor(
   // resolves against a 'Barcode ID' header on re-import. The empty-string
   // guard keeps a pathological tag like '-' from substring-matching every
   // header.
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
   // Bind columns matching a declared tag (alphanumeric, case-insensitive substring).
   // Containment is bidirectional so a short header like 'Barcode' still matches
@@ -51,9 +51,11 @@ export function defaultBindingsFor(
     const headerNorm = norm(cols[i].header);
     const matchedTag = sortedTags.find((t) => {
       const tagNorm = norm(t);
-      if (tagNorm === '') return false;
-      return headerNorm.includes(tagNorm)
-        || (headerNorm.length >= MIN_REVERSE_HEADER_LEN && tagNorm.includes(headerNorm));
+      if (tagNorm === "") return false;
+      return (
+        headerNorm.includes(tagNorm) ||
+        (headerNorm.length >= MIN_REVERSE_HEADER_LEN && tagNorm.includes(headerNorm))
+      );
     });
     if (!matchedTag) continue;
     let tagName = matchedTag;
@@ -74,8 +76,8 @@ export function defaultBindingsFor(
   if (result.length === 0 && declaredTags.length === 0) {
     for (let i = 0; i < cols.length; i++) {
       if (i === fileIdx || i === sampleIdx) continue;
-      if (cols[i].header.toLowerCase().includes('barcode')) {
-        result.push({ tagName: 'BarcodeID', columnIdx: i });
+      if (cols[i].header.toLowerCase().includes("barcode")) {
+        result.push({ tagName: "BarcodeID", columnIdx: i });
         break;
       }
     }

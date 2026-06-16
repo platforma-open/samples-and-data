@@ -1,20 +1,25 @@
 <script setup lang="ts">
-import type { ColDef, GridApi, GridOptions, IRowNode } from 'ag-grid-enterprise';
+import type { ColDef, GridApi, GridOptions, IRowNode } from "ag-grid-enterprise";
 
-import { AgGridVue } from 'ag-grid-vue3';
+import { AgGridVue } from "ag-grid-vue3";
 
 import type {
   DSMultilaneFastq,
   FastqFileGroup,
   Lane,
   PlId,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import { agSampleIdColumnDef } from '../util';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import { agSampleIdColumnDef } from "../util";
 
 const app = useApp();
 
@@ -22,8 +27,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = (() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSMultilaneFastq;
 })();
 
@@ -38,15 +42,16 @@ function encodeKey(sampleId: PlId, lane: string): string {
   return JSON.stringify([sampleId, lane]);
 }
 
-const rowData = computed(() => Object.entries(dataset.content.data).flatMap(
-  ([sampleId, lanes]) =>
+const rowData = computed(() =>
+  Object.entries(dataset.content.data).flatMap(([sampleId, lanes]) =>
     Object.entries(lanes!).map(([lane, fastqs]) => ({
       key: encodeKey(sampleId as PlId, lane),
       sample: sampleId as PlId,
       lane: lane,
       reads: fastqs!,
     })),
-));
+  ),
+);
 
 const readIndices = computed(() => dataset.content.readIndices);
 
@@ -60,9 +65,9 @@ const columnDefs = computed(() => {
     makeRowNumberColDef(),
     agSampleIdColumnDef(app),
     {
-      headerName: 'Lane',
+      headerName: "Lane",
       flex: 1,
-      field: 'lane',
+      field: "lane",
       editable: false,
     } as ColDef<MultilaneFastaDatasetRow, string>,
   ];
@@ -73,11 +78,11 @@ const columnDefs = computed(() => {
       flex: 2,
       cellStyle: { padding: 0 },
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "File" } satisfies PlAgHeaderComponentParams,
 
-      cellRenderer: 'PlAgCellFile',
+      cellRenderer: "PlAgCellFile",
       cellRendererParams: {
-        extensions: dataset.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
+        extensions: dataset.content.gzipped ? ["fastq.gz", "fq.gz"] : ["fastq", "fq"],
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
           if (!fileHandle) return undefined;
           else return progresses[fileHandle];
@@ -116,7 +121,7 @@ function getSelectedKeys(
 const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
   getRowId: (row) => row.data.key,
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
@@ -128,7 +133,7 @@ const gridOptions: GridOptions<MultilaneFastaDatasetRow> = {
     if (getSelectedKeys(params.api, params.node).length === 0) return [];
     return [
       {
-        name: 'Delete',
+        name: "Delete",
         action: (params) => {
           const keysToDelete = getSelectedKeys(params.api, params.node);
 
