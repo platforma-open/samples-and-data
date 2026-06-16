@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { MTColumn } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ListOption } from '@platforma-sdk/ui-vue';
+import type { MTColumn } from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ListOption } from "@platforma-sdk/ui-vue";
 import {
   PlAlert,
   PlBtnGhost,
@@ -12,16 +12,16 @@ import {
   PlRow,
   PlTextArea,
   PlTextField,
-} from '@platforma-sdk/ui-vue';
-import { computed, reactive, watch } from 'vue';
-import { useApp } from '../app';
-import type { ImportResult } from '../dataimport';
+} from "@platforma-sdk/ui-vue";
+import { computed, reactive, watch } from "vue";
+import { useApp } from "../app";
+import type { ImportResult } from "../dataimport";
 import {
   columnNamesMatch,
   extractMetadataFromRow,
   processMetadataColumns,
-} from '../utils/metadata';
-import { defaultBindingsFor, TAG_NAME_RX, type TagBinding } from '../utils/samplesheet-bindings';
+} from "../utils/metadata";
+import { defaultBindingsFor, TAG_NAME_RX, type TagBinding } from "../utils/samplesheet-bindings";
 
 const props = defineProps<{
   importCandidate: ImportResult;
@@ -67,12 +67,14 @@ watch(
   (ic) => {
     // file id
     data.fileIdColumnIdx = ic.data.columns.findIndex((c) =>
-      c.header.toLowerCase().includes('file'));
+      c.header.toLowerCase().includes("file"),
+    );
     if (data.fileIdColumnIdx === -1) data.fileIdColumnIdx = 0;
 
     // sample id
     data.sampleIdColumnIdx = ic.data.columns.findIndex((c) =>
-      c.header.toLowerCase().includes('sample'));
+      c.header.toLowerCase().includes("sample"),
+    );
     if (data.sampleIdColumnIdx === -1) {
       data.sampleIdColumnIdx = data.fileIdColumnIdx === 0 ? 1 : 0;
     }
@@ -168,8 +170,8 @@ const matchingStats = computed(() => {
     }
   }
 
-  const matchedFiles = Array.from(uniqueFileIds).filter(
-    (fileId) => props.availableGroupLabels.includes(fileId),
+  const matchedFiles = Array.from(uniqueFileIds).filter((fileId) =>
+    props.availableGroupLabels.includes(fileId),
   ).length;
 
   return {
@@ -182,7 +184,7 @@ const matchingStats = computed(() => {
 const tableDataText = computed(() => {
   const ic = props.importCandidate;
   const stats = matchingStats.value;
-  let result = '';
+  let result = "";
   result += `Total rows: ${ic.data.rows.length}\n`;
   result += `Columns: ${ic.data.columns.length}\n`;
   result += `Matched files: ${stats.matchedFiles} (out of ${stats.totalFiles})`;
@@ -198,7 +200,7 @@ const tableDataText = computed(() => {
 const tableIssuesText = computed(() => {
   const ic = props.importCandidate;
   if (ic.emptyColumns > 0 || ic.emptyRowsRemoved > 0 || ic.missingHeaders > 0) {
-    let result = '';
+    let result = "";
     if (ic.emptyColumns > 0) result += `Empty columns removed: ${ic.emptyColumns}\n`;
     if (ic.emptyRowsRemoved > 0) result += `Empty rows removed: ${ic.emptyRowsRemoved}\n`;
     if (ic.missingHeaders > 0) result += `Missing headers: ${ic.missingHeaders}\n`;
@@ -209,10 +211,10 @@ const tableIssuesText = computed(() => {
 
 function bindingTagError(idx: number): string | undefined {
   const b = data.bindings[idx];
-  if (!b.tagName) return 'Tag name is required';
-  if (!TAG_NAME_RX.test(b.tagName)) return 'Use letters and digits only';
+  if (!b.tagName) return "Tag name is required";
+  if (!TAG_NAME_RX.test(b.tagName)) return "Use letters and digits only";
   if (data.bindings.some((other, i) => i !== idx && other.tagName === b.tagName)) {
-    return 'Tag name must be unique';
+    return "Tag name must be unique";
   }
   return undefined;
 }
@@ -235,7 +237,7 @@ function updateBindingTag(idx: number, value: string) {
 
 function runImport() {
   const args = app.model.data;
-  const rows: SamplesheetImportData['rows'] = [];
+  const rows: SamplesheetImportData["rows"] = [];
 
   const skipColumnIndices = Array.from(skippedColumnIndices.value);
 
@@ -267,7 +269,7 @@ function runImport() {
     const barcodes: Record<string, string> = {};
     for (const b of data.bindings) {
       const v = b.columnIdx !== -1 ? row[b.columnIdx] : undefined;
-      barcodes[b.tagName] = v !== undefined && v !== null ? String(v) : '';
+      barcodes[b.tagName] = v !== undefined && v !== null ? String(v) : "";
     }
 
     rows.push({
@@ -278,7 +280,7 @@ function runImport() {
     });
   }
 
-  emit('onImport', {
+  emit("onImport", {
     fileIdColumn: data.fileIdColumnIdx,
     sampleIdColumn: data.sampleIdColumnIdx,
     metadataColumns,
@@ -286,7 +288,6 @@ function runImport() {
     rows,
   });
 }
-
 </script>
 
 <template>
@@ -315,14 +316,10 @@ function runImport() {
     />
 
     <PlAlert v-if="data.bindings.length === 0" type="info">
-      No barcode columns will be imported — remaining columns will flow to
-      metadata.
+      No barcode columns will be imported — remaining columns will flow to metadata.
     </PlAlert>
 
-    <PlRow
-      v-for="(binding, idx) in data.bindings"
-      :key="idx"
-    >
+    <PlRow v-for="(binding, idx) in data.bindings" :key="idx">
       <PlTextField
         :model-value="binding.tagName"
         :label="`Tag for column &quot;${props.importCandidate.data.columns[binding.columnIdx].header}&quot;`"
@@ -345,9 +342,7 @@ function runImport() {
     </template>
 
     <template #actions>
-      <PlBtnPrimary :disabled="importDisabled" @click="runImport">
-        Import
-      </PlBtnPrimary>
+      <PlBtnPrimary :disabled="importDisabled" @click="runImport"> Import </PlBtnPrimary>
       <PlBtnSecondary @click="() => emit('onClose')">Cancel</PlBtnSecondary>
     </template>
   </PlDialogModal>

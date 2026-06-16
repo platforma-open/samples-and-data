@@ -1,8 +1,8 @@
-import type { BlockData } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { LocalBlobHandleAndSize, PlId, RemoteBlobHandleAndSize } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { PlAgColumnHeader, type AppV3, type ReactiveFileContent } from '@platforma-sdk/ui-vue';
-import type { ColDef, GridApi, IRowNode } from 'ag-grid-enterprise';
+import type { BlockData } from "@platforma-open/milaboratories.samples-and-data.model";
+import type { LocalBlobHandleAndSize, PlId, RemoteBlobHandleAndSize } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import { PlAgColumnHeader, type AppV3, type ReactiveFileContent } from "@platforma-sdk/ui-vue";
+import type { ColDef, GridApi, IRowNode } from "ag-grid-enterprise";
 
 export function setEquals(a: string[], b: string[]): boolean {
   if (a.length !== b.length) return false;
@@ -20,7 +20,7 @@ export function agSampleIdComparator(labels: Record<string, string>) {
     const aLabel = labels[a] ?? a;
     const bLabel = labels[b] ?? b;
     if (aLabel == bLabel) return 0;
-    return (aLabel > bLabel) ? 1 : -1;
+    return aLabel > bLabel ? 1 : -1;
   };
 }
 
@@ -28,46 +28,44 @@ export function getSelectedSamples<RowT extends { readonly sample: PlId }>(
   api: GridApi<RowT>,
   node: IRowNode<RowT> | null,
 ): PlId[] {
-  const samples = api
-    .getSelectedRows()
-    .map((row) => row.sample);
-  if (samples.length !== 0)
-    return samples;
+  const samples = api.getSelectedRows().map((row) => row.sample);
+  if (samples.length !== 0) return samples;
   const sample = node?.data?.sample;
-  if (!sample)
-    return [];
+  if (!sample) return [];
   return [sample];
 }
 
-export function getSelectedSamplesAndTags<RowT extends { readonly sample: PlId; readonly tags: Record<string, string> }>(
+export function getSelectedSamplesAndTags<
+  RowT extends { readonly sample: PlId; readonly tags: Record<string, string> },
+>(
   api: GridApi<RowT>,
   node: IRowNode<RowT> | null,
 ): { sampleId: PlId; tags: Record<string, string> }[] {
-  const samples = api
-    .getSelectedRows()
-    .map((row) => ({ sampleId: row.sample, tags: row.tags }));
-  if (samples.length !== 0)
-    return samples;
+  const samples = api.getSelectedRows().map((row) => ({ sampleId: row.sample, tags: row.tags }));
+  if (samples.length !== 0) return samples;
   const sampleId = node?.data?.sample;
-  if (!sampleId)
-    return [];
+  if (!sampleId) return [];
   return [{ sampleId, tags: node?.data?.tags ?? {} }];
 }
 
-export function agGroupIdColumnDef<RowT extends { readonly groupId: PlId; readonly groupLabel: string }>(): ColDef<RowT> {
+export function agGroupIdColumnDef<
+  RowT extends { readonly groupId: PlId; readonly groupLabel: string },
+>(): ColDef<RowT> {
   return {
-    headerName: 'File group',
+    headerName: "File group",
     flex: 1,
     valueGetter: (params) => params.data?.groupLabel,
     editable: false,
-    pinned: 'left',
+    pinned: "left",
     lockPinned: true,
     headerComponent: PlAgColumnHeader,
-    headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+    headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
   };
 }
 
-export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(appUt: unknown): ColDef<RowT> {
+export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(
+  appUt: unknown,
+): ColDef<RowT> {
   const app = appUt as AppV3<BlockData>;
 
   const sampleLabels = app.model.data.sampleLabels as Record<string, string>;
@@ -80,11 +78,11 @@ export function agSampleIdColumnDef<RowT extends { readonly sample: PlId }>(appU
     valueGetter: (params) => params.data?.sample,
     editable: false,
     refData: sampleLabels,
-    pinned: 'left',
+    pinned: "left",
     lockPinned: true,
     comparator: sampleIdComparator,
     headerComponent: PlAgColumnHeader,
-    headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+    headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
   };
 }
 
@@ -102,7 +100,7 @@ export function parseCsvFromHandle(
   if (!csvContent) return undefined;
 
   return csvContent
-    .split('\n')
+    .split("\n")
     .map((line: string) => line.trim())
     .filter((line: string) => line.length > 0);
 }
@@ -113,13 +111,20 @@ export function parseCsvFromHandle(
  */
 export function parseCsvMapFromHandles<K extends string = string>(
   reactiveFileContent: ReactiveFileContent,
-  fileHandlesMap: Record<K, LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined> | undefined,
+  fileHandlesMap:
+    | Record<K, LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined>
+    | undefined,
 ): Record<K, string[]> | undefined {
   if (!fileHandlesMap) return undefined;
 
   const result: Record<string, string[]> = {};
   for (const [key, fileHandleAndSize] of Object.entries(fileHandlesMap)) {
-    if (fileHandleAndSize && typeof fileHandleAndSize === 'object' && 'handle' in fileHandleAndSize && 'size' in fileHandleAndSize) {
+    if (
+      fileHandleAndSize &&
+      typeof fileHandleAndSize === "object" &&
+      "handle" in fileHandleAndSize &&
+      "size" in fileHandleAndSize
+    ) {
       const parsed = parseCsvFromHandle(
         reactiveFileContent,
         fileHandleAndSize as LocalBlobHandleAndSize | RemoteBlobHandleAndSize,
@@ -142,16 +147,23 @@ export function parseCsvNestedMapFromHandles<
   ValueT extends string = string,
 >(
   reactiveFileContent: ReactiveFileContent,
-  nestedMap: Record<OuterK, Record<InnerK, LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined>> | undefined,
+  nestedMap:
+    | Record<OuterK, Record<InnerK, LocalBlobHandleAndSize | RemoteBlobHandleAndSize | undefined>>
+    | undefined,
 ): Record<OuterK, Record<InnerK, ValueT[]>> | undefined {
   if (!nestedMap) return undefined;
 
   const result: Record<string, Record<string, ValueT[]>> = {};
   for (const [outerKey, innerMap] of Object.entries(nestedMap)) {
-    if (innerMap && typeof innerMap === 'object') {
+    if (innerMap && typeof innerMap === "object") {
       result[outerKey] = {};
       for (const [innerKey, fileHandleAndSize] of Object.entries(innerMap)) {
-        if (fileHandleAndSize && typeof fileHandleAndSize === 'object' && 'handle' in fileHandleAndSize && 'size' in fileHandleAndSize) {
+        if (
+          fileHandleAndSize &&
+          typeof fileHandleAndSize === "object" &&
+          "handle" in fileHandleAndSize &&
+          "size" in fileHandleAndSize
+        ) {
           const parsed = parseCsvFromHandle(
             reactiveFileContent,
             fileHandleAndSize as LocalBlobHandleAndSize | RemoteBlobHandleAndSize,

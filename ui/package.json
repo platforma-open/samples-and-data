@@ -3,33 +3,40 @@
   "version": "2.9.2",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "watch": "vue-tsc && vite build --watch",
-    "build": "vue-tsc -b && vite build",
+    "dev": "ts-builder serve --target block-ui",
+    "watch": "ts-builder build --target block-ui --watch",
+    "build": "ts-builder build --target block-ui",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "fmt": "ts-builder format",
+    "check": "ts-builder check --target block-ui",
+    "test": "vitest run --passWithNoTests"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
+    "@platforma-sdk/ui-vue": "catalog:",
+    "vue": "catalog:"
+  },
   "devDependencies": {
-    "ag-grid-enterprise": "catalog:",
-    "ag-grid-vue3": "catalog:",
-    "@vueuse/core": "catalog:",
     "@milaboratories/helpers": "catalog:",
     "@milaboratories/pl-model-common": "catalog:",
-    "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
+    "@milaboratories/ts-builder": "catalog:",
+    "@milaboratories/ts-configs": "catalog:",
+    "@platforma-sdk/eslint-config": "catalog:",
     "@platforma-sdk/model": "catalog:",
-    "@platforma-sdk/ui-vue": "catalog:",
-    "utility-types": "catalog:",
-    "vue": "catalog:",
-    "zod": "catalog:",
-    "radashi": "catalog:",
-    "xlsx": "../vendor/xlsx-0.20.3.tgz",
+    "@types/node": "*",
     "@vitejs/plugin-vue": "catalog:",
-    "@types/node": "catalog:",
-    "typescript": "catalog:",
+    "@vueuse/core": "catalog:",
+    "ag-grid-enterprise": "catalog:",
+    "ag-grid-vue3": "catalog:",
+    "radashi": "catalog:",
+    "utility-types": "catalog:",
     "vite": "catalog:",
-    "vue-tsc": "catalog:",
     "vitest": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:"
+    "xlsx": "../vendor/xlsx-0.20.3.tgz",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "*"
   }
 }

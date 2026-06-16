@@ -1,19 +1,24 @@
 <script setup lang="ts">
-import type { ColDef, GridOptions } from 'ag-grid-enterprise';
+import type { ColDef, GridOptions } from "ag-grid-enterprise";
 
-import { AgGridVue } from 'ag-grid-vue3';
+import { AgGridVue } from "ag-grid-vue3";
 
 import type {
   DSTaggedXsv,
   PlId,
   TaggedXsvDatasetRecord,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import { agSampleIdColumnDef } from '../util';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import { agSampleIdColumnDef } from "../util";
 
 const app = useApp();
 
@@ -21,8 +26,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = (() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSTaggedXsv;
 })();
 
@@ -37,14 +41,16 @@ function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedXsvDatasetR
   return JSON.stringify([sampleId, ...tags.map((t) => r.tags[t])]);
 }
 
-const rowData = computed(() => Object.entries(dataset.content.data).flatMap(([sampleId, rs]) =>
-  (rs ?? []).map((r) => ({
-    key: encodeKey(dataset.content.tags, sampleId as PlId, r),
-    sample: sampleId as PlId,
-    tags: r.tags,
-    file: r.file,
-  })),
-));
+const rowData = computed(() =>
+  Object.entries(dataset.content.data).flatMap(([sampleId, rs]) =>
+    (rs ?? []).map((r) => ({
+      key: encodeKey(dataset.content.tags, sampleId as PlId, r),
+      sample: sampleId as PlId,
+      tags: r.tags,
+      file: r.file,
+    })),
+  ),
+);
 
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true,
@@ -52,10 +58,7 @@ const defaultColDef: ColDef = {
 
 const columnDefs = computed(() => {
   const dsc = dataset.content;
-  const res: ColDef<TaggedXsvDatasetRow>[] = [
-    makeRowNumberColDef(),
-    agSampleIdColumnDef(app),
-  ];
+  const res: ColDef<TaggedXsvDatasetRow>[] = [makeRowNumberColDef(), agSampleIdColumnDef(app)];
 
   for (const tag of dsc.tags)
     res.push({
@@ -65,15 +68,21 @@ const columnDefs = computed(() => {
     });
 
   res.push({
-    headerName: 'Data',
-    field: 'file',
+    headerName: "Data",
+    field: "file",
     flex: 2,
     cellStyle: { padding: 0 },
     headerComponent: PlAgColumnHeader,
-    headerComponentParams: { type: 'File' } satisfies PlAgHeaderComponentParams,
-    cellRenderer: 'PlAgCellFile',
+    headerComponentParams: { type: "File" } satisfies PlAgHeaderComponentParams,
+    cellRenderer: "PlAgCellFile",
     cellRendererParams: {
-      extensions: dsc.gzipped ? (dsc.xsvType ? [dsc.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dsc.xsvType ? [dsc.xsvType] : ['csv', 'tsv']),
+      extensions: dsc.gzipped
+        ? dsc.xsvType
+          ? [dsc.xsvType + ".gz"]
+          : ["csv.gz", "tsv.gz"]
+        : dsc.xsvType
+          ? [dsc.xsvType]
+          : ["csv", "tsv"],
       resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
         const progresses = app.progresses;
         if (!fileHandle) return undefined;
@@ -87,7 +96,7 @@ const columnDefs = computed(() => {
 
 const gridOptions: GridOptions<TaggedXsvDatasetRow> = {
   getRowId: (row) => row.data.key,
-  rowSelection: 'multiple',
+  rowSelection: "multiple",
   rowHeight: 45,
   getMainMenuItems: (_) => [],
   // @TODO implement context menu and deletion

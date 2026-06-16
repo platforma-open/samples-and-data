@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import type {
-  MTColumn,
-  PlId,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import { uniquePlId } from '@platforma-sdk/model';
-import type {
-  ListOption,
-} from '@platforma-sdk/ui-vue';
+import type { MTColumn, PlId } from "@platforma-open/milaboratories.samples-and-data.model";
+import { uniquePlId } from "@platforma-sdk/model";
+import type { ListOption } from "@platforma-sdk/ui-vue";
 import {
   isDefined,
   PlBtnPrimary,
@@ -16,16 +11,16 @@ import {
   PlDropdown,
   PlLogView,
   PlTextArea,
-} from '@platforma-sdk/ui-vue';
-import { computed, reactive, watch } from 'vue';
-import { useApp } from '../app';
-import type { ImportResult } from '../dataimport';
-import { determineBestMatchingAlgorithm } from '../sample_matching';
+} from "@platforma-sdk/ui-vue";
+import { computed, reactive, watch } from "vue";
+import { useApp } from "../app";
+import type { ImportResult } from "../dataimport";
+import { determineBestMatchingAlgorithm } from "../sample_matching";
 import {
   columnNamesMatch,
   populateMetadataFromRow,
   processMetadataColumns,
-} from '../utils/metadata';
+} from "../utils/metadata";
 
 const props = defineProps<{ importCandidate: ImportResult }>();
 
@@ -41,7 +36,7 @@ const data = reactive({
 watch(
   () => props.importCandidate,
   (ic) => {
-    data.sampleNameColumnIdx = ic.data.columns.findIndex((c) => c.header.includes('sample'));
+    data.sampleNameColumnIdx = ic.data.columns.findIndex((c) => c.header.includes("sample"));
     if (data.sampleNameColumnIdx === -1) data.sampleNameColumnIdx = 0;
   },
   { immediate: true },
@@ -63,7 +58,6 @@ const sampleColumnOptions = computed<ListOption<number>[]>(() =>
   props.importCandidate.data.columns.map((c, idx) => ({ value: idx, label: c.header })),
 );
 
-
 const colsMatchingExisting = computed(() => {
   let res = 0;
   for (const c of props.importCandidate.data.columns)
@@ -73,7 +67,7 @@ const colsMatchingExisting = computed(() => {
 
 const tableDataText = computed(() => {
   const ic = props.importCandidate;
-  let result = '';
+  let result = "";
   result += `Matched samples: ${algo.value.matches} (out of ${app.model.data.sampleIds.length})\n`;
   result += `Unmatched rows: ${ic.data.rows.length - algo.value.matches}\n`;
   // result += `Matching algorithm: ${algo.value.topAlgorithm.name}\n`
@@ -112,7 +106,7 @@ function runImport() {
   for (const row of props.importCandidate.data.rows) {
     let iSampleName = row[data.sampleNameColumnIdx];
     if (!iSampleName) continue;
-    if (typeof iSampleName === 'number')
+    if (typeof iSampleName === "number")
       // coerce to string
       iSampleName = String(iSampleName);
     let sampleId = existingSamples.find(
@@ -130,7 +124,7 @@ function runImport() {
     populateMetadataFromRow(row, sampleId, modelColumns);
   }
 
-  emit('onClose');
+  emit("onClose");
 }
 </script>
 

@@ -1,12 +1,21 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
   "version": "1.1.3",
-  "type": "module",
   "description": "Samples and Data software package",
+  "files": [
+    "./dist/**/*"
+  ],
+  "type": "module",
   "scripts": {
     "do-pack": "shx rm -f *.tgz && pl-pkg build && pnpm pack && shx mv platforma-open*.tgz package.tgz",
-    "build": "shx rm -f *.tgz && shx rm -rf dist && pl-pkg build",
-    "prepublishOnly": "pl-pkg prepublish"
+    "build": "pl-pkg build",
+    "prepublishOnly": "pl-pkg prepublish",
+    "changeset": "changeset",
+    "version-packages": "changeset version"
+  },
+  "devDependencies": {
+    "@platforma-open/milaboratories.runenv-python-3": "catalog:",
+    "@platforma-sdk/package-builder": "catalog:"
   },
   "block-software": {
     "entrypoints": {
@@ -29,9 +38,5 @@
         }
       }
     }
-  },
-  "devDependencies": {
-    "@platforma-open/milaboratories.runenv-python-3": "catalog:",
-    "@platforma-sdk/package-builder": "catalog:"
   }
 }

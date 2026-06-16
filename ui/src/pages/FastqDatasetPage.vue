@@ -6,20 +6,25 @@ import {
   MenuModule,
   ModuleRegistry,
   RichSelectModule,
-} from 'ag-grid-enterprise';
-import { AgGridVue } from 'ag-grid-vue3';
+} from "ag-grid-enterprise";
+import { AgGridVue } from "ag-grid-vue3";
 
 import type {
   DSFastq,
   FastqFileGroup,
   PlId,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import { agSampleIdColumnDef, getSelectedSamples } from '../util';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import { agSampleIdColumnDef, getSelectedSamples } from "../util";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -29,21 +34,21 @@ const datasetId = app.queryParams.id;
 
 const dataset = (() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSFastq;
 })();
 
 type FastqDatasetRow = {
-  readonly sample: PlId ;
+  readonly sample: PlId;
   readonly reads: FastqFileGroup;
 };
 
-const rowData = computed(() => Object.entries(dataset.content.data).map(
-  ([sampleId, fastqs]) => ({
+const rowData = computed(() =>
+  Object.entries(dataset.content.data).map(([sampleId, fastqs]) => ({
     sample: sampleId as PlId,
     reads: fastqs!,
-  })));
+  })),
+);
 
 const readIndices = computed(() => dataset.content.readIndices);
 
@@ -54,10 +59,7 @@ const defaultColDef: ColDef = {
 const columnDefs = computed(() => {
   const progresses = app.progresses;
 
-  const res: ColDef<FastqDatasetRow>[] = [
-    makeRowNumberColDef(),
-    agSampleIdColumnDef(app),
-  ];
+  const res: ColDef<FastqDatasetRow>[] = [makeRowNumberColDef(), agSampleIdColumnDef(app)];
 
   for (const readIndex of readIndices.value)
     res.push({
@@ -65,31 +67,27 @@ const columnDefs = computed(() => {
       flex: 2,
       cellStyle: { padding: 0 },
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "File" } satisfies PlAgHeaderComponentParams,
 
       cellRendererParams: {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-          if (!fileHandle)
-            return undefined;
-          else
-            return progresses[fileHandle];
+          if (!fileHandle) return undefined;
+          else return progresses[fileHandle];
         },
       },
 
       cellRendererSelector: (params) =>
         params.data?.sample
           ? {
-              component: 'PlAgCellFile',
+              component: "PlAgCellFile",
               params: {
-                extensions: dataset.content.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
+                extensions: dataset.content.gzipped ? ["fastq.gz", "fq.gz"] : ["fastq", "fq"],
               },
             }
           : undefined,
 
       valueGetter: (params) =>
-        params.data?.sample
-          ? dataset.content.data[params.data.sample]?.[readIndex]
-          : undefined,
+        params.data?.sample ? dataset.content.data[params.data.sample]?.[readIndex] : undefined,
 
       valueSetter: (params) => {
         const sample = params.data.sample;
@@ -105,7 +103,7 @@ const gridOptions: GridOptions<FastqDatasetRow> = {
   getRowId: (row) => row.data.sample,
 
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
@@ -117,15 +115,13 @@ const gridOptions: GridOptions<FastqDatasetRow> = {
   },
 
   getContextMenuItems: (params) => {
-    if (getSelectedSamples(params.api, params.node).length === 0)
-      return [];
+    if (getSelectedSamples(params.api, params.node).length === 0) return [];
     return [
       {
-        name: 'Delete',
+        name: "Delete",
         action: (params) => {
           const samplesToDelete = getSelectedSamples(params.api, params.node);
-          for (const s of samplesToDelete)
-            delete dataset.content.data[s];
+          for (const s of samplesToDelete) delete dataset.content.data[s];
         },
       },
     ];

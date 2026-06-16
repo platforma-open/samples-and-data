@@ -11,3 +11,7 @@ log/
 *.tsbuildinfo
 *.tgz
 
+software/**/*.tgz
+.DS_Store
+.vscode/sftp.json
+test-dry-run.json
