@@ -30,27 +30,10 @@
     "@milaboratories/ts-configs": "catalog:",
     "@platforma-sdk/block-tools": "catalog:",
     "@platforma-sdk/eslint-config": "catalog:",
-    "tsup": "catalog:",
-    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
     "@types/node": "*",
     "typescript": "*"
-  },
-  "tsup": {
-    "entry": [
-      "src/index.ts"
-    ],
-    "splitting": false,
-    "treeshake": true,
-    "clean": true,
-    "format": [
-      "cjs",
-      "esm"
-    ],
-    "dts": true,
-    "minify": false,
-    "sourcemap": true
   }
 }
