@@ -17,12 +17,10 @@ import type {
   DSType,
   PlId,
   ReadIndices,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import { getFileNameFromHandle, getFilePathFromHandle, uniquePlId } from '@platforma-sdk/model';
-import type {
-  ListOption,
-} from '@platforma-sdk/ui-vue';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import { getFileNameFromHandle, getFilePathFromHandle, uniquePlId } from "@platforma-sdk/model";
+import type { ListOption } from "@platforma-sdk/ui-vue";
 import {
   PlBtnGhost,
   PlBtnGroup,
@@ -35,11 +33,11 @@ import {
   PlRow,
   PlTextField,
   ReactiveFileContent,
-} from '@platforma-sdk/ui-vue';
-import * as _ from 'radashi';
-import { computed, reactive, ref, watch } from 'vue';
-import { useApp } from '../app';
-import type { ImportMode } from './datasets';
+} from "@platforma-sdk/ui-vue";
+import * as _ from "radashi";
+import { computed, reactive, ref, watch } from "vue";
+import { useApp } from "../app";
+import type { ImportMode } from "./datasets";
 import {
   datasetTypes,
   extractFileName,
@@ -47,19 +45,16 @@ import {
   modesOptions,
   useParsedFiles,
   usePatternCompilation,
-} from './datasets';
-import { parseCsvMapFromHandles } from '../util';
-import type {
-  FileContentType,
-  FileNamePattern,
-} from './file_name_parser';
+} from "./datasets";
+import { parseCsvMapFromHandles } from "../util";
+import type { FileContentType, FileNamePattern } from "./file_name_parser";
 import {
   collectReadIndices,
   getWellFormattedReadIndex,
   inferFileNamePattern,
   normalizeCellRangerFileRole,
-} from './file_name_parser';
-import ParsedFilesList from './ParsedFilesList.vue';
+} from "./file_name_parser";
+import ParsedFilesList from "./ParsedFilesList.vue";
 
 type ImportDatasetDialogData = {
   /**
@@ -132,8 +127,7 @@ const props = defineProps<{
 const targetDs = computed(() => {
   if (props.targetDataset)
     return app.model.data.datasets.find((ds) => ds.id === props.targetDataset);
-  else
-    return undefined;
+  else return undefined;
 });
 
 /** Whether importing to an existing dataset */
@@ -142,10 +136,9 @@ const addingToFixedDataset = computed(() => targetDs.value !== undefined);
 /** Read indices of the target dataset if importing to an existing dataset */
 const targetDsReadIndices = computed(() => {
   const ds = targetDs.value;
-  if (ds && (ds.content.type === 'Fastq' || ds.content.type === 'MultilaneFastq'))
+  if (ds && (ds.content.type === "Fastq" || ds.content.type === "MultilaneFastq"))
     return ds.content.readIndices;
-  else
-    return ['R1'];
+  else return ["R1"];
 });
 
 const app = useApp();
@@ -158,11 +151,11 @@ const navigated = ref(false);
 
 function doClose() {
   app.showImportDataset = false;
-  emit('onClose', navigated.value);
+  emit("onClose", navigated.value);
 }
 
 const data = reactive<ImportDatasetDialogData>({
-  mode: targetDs.value ? 'add-to-existing' : 'create-new-dataset',
+  mode: targetDs.value ? "add-to-existing" : "create-new-dataset",
   targetAddDataset: targetDs.value?.id,
   datasetType: targetDs.value?.content.type,
   fileType: targetDs.value ? datasetTypes[targetDs.value.content.type].fileType : undefined,
@@ -171,11 +164,14 @@ const data = reactive<ImportDatasetDialogData>({
   readIndices: targetDsReadIndices.value,
   files: [],
   newDatasetLabel: app.inferNewDatasetLabel(),
-  pattern: '',
+  pattern: "",
   fileDialogOpened: true,
   datasetDialogOpened: false,
   importing: false,
-  sampleColumnName: targetDs.value?.content.type === 'MultiSampleH5AD' ? (targetDs.value.content.sampleColumnName ?? '') : '',
+  sampleColumnName:
+    targetDs.value?.content.type === "MultiSampleH5AD"
+      ? (targetDs.value.content.sampleColumnName ?? "")
+      : "",
   loadingColumns: false,
 });
 
@@ -233,15 +229,15 @@ const dsTypeOptions = computed(() => {
 });
 
 function updateDatasetType(datasetType: DSType | undefined) {
-  if (datasetType === 'MultiSampleH5AD') {
+  if (datasetType === "MultiSampleH5AD") {
     // Add already-loaded files to h5adFilesToPreprocess
     for (const file of parsedFiles.value.map((f) => f.handle)) {
       if (!app.model.data.h5adFilesToPreprocess.includes(file)) {
         app.model.data.h5adFilesToPreprocess.push(file);
       }
     }
-  } else if (datasetType === 'MultiSampleSeurat') {
-    app.model.data.seuratFilesToPreprocess.push(...parsedFiles.value.map(f => f.handle));
+  } else if (datasetType === "MultiSampleSeurat") {
+    app.model.data.seuratFilesToPreprocess.push(...parsedFiles.value.map((f) => f.handle));
   }
 }
 
@@ -261,7 +257,7 @@ function addFiles(files: ImportFileHandle[]) {
   data.files.push(...files);
 
   // Add files to h5adFilesToPreprocess for MultiSampleH5AD datasets
-  if (datasetType === 'MultiSampleH5AD') {
+  if (datasetType === "MultiSampleH5AD") {
     for (const file of files) {
       if (!app.model.data.h5adFilesToPreprocess.includes(file)) {
         app.model.data.h5adFilesToPreprocess.push(file);
@@ -275,10 +271,7 @@ function addFiles(files: ImportFileHandle[]) {
 const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
   const types = new Set(dsTypeOptions.value.map((o) => o.value));
   return app.model.data.datasets
-    .filter(
-      (ds) =>
-        types.has(ds.content.type),
-    )
+    .filter((ds) => types.has(ds.content.type))
     .map((ds) => ({
       value: ds.id,
       label: ds.label,
@@ -286,12 +279,9 @@ const addToExistingOptions = computed<ListOption<PlId>[]>(() => {
 });
 
 watch(addToExistingOptions, (ops) => {
-  if (data.targetAddDataset && ops.find((o) => o.value === data.targetAddDataset))
-    return;
-  if (ops.length === 0)
-    data.targetAddDataset = undefined;
-  else
-    data.targetAddDataset = ops[0].value;
+  if (data.targetAddDataset && ops.find((o) => o.value === data.targetAddDataset)) return;
+  if (ops.length === 0) data.targetAddDataset = undefined;
+  else data.targetAddDataset = ops[0].value;
 });
 
 function getOrCreateGroup(groupLabels: Record<PlId, string>, groupName: string): PlId {
@@ -303,11 +293,9 @@ function getOrCreateGroup(groupLabels: Record<PlId, string>, groupName: string):
 }
 
 /** FASTA */
-function addFastaDatasetContent(
-  contentData: DSContentFasta['data'],
-) {
+function addFastaDatasetContent(contentData: DSContentFasta["data"]) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
-    throw new Error('Dataset has read or lane matcher, trying to add fasta dataset');
+    throw new Error("Dataset has read or lane matcher, trying to add fasta dataset");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -318,11 +306,9 @@ function addFastaDatasetContent(
 }
 
 /** FASTQ */
-function addFastqDatasetContent(
-  contentData: DSContentFastq['data'],
-) {
+function addFastqDatasetContent(contentData: DSContentFastq["data"]) {
   if (compiledPattern.value?.hasLaneMatcher)
-    throw new Error('Dataset has no lanes, trying to add data with lanes');
+    throw new Error("Dataset has no lanes, trying to add data with lanes");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -339,11 +325,9 @@ function addFastqDatasetContent(
 }
 
 /** MULTI-LANE FASTQ */
-function addMultilaneFastqDatasetContent(
-  contentData: DSContentMultilaneFastq['data'],
-) {
+function addMultilaneFastqDatasetContent(contentData: DSContentMultilaneFastq["data"]) {
   if (!compiledPattern.value?.hasLaneMatcher)
-    throw new Error('Dataset has lanes, trying to add data without lanes');
+    throw new Error("Dataset has lanes, trying to add data without lanes");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -369,12 +353,9 @@ function addMultilaneFastqDatasetContent(
 }
 
 /** TAGGED FASTQ */
-function addTaggedFastqDatasetContent(
-  contentData: DSContentTaggedFastq['data'],
-) {
+function addTaggedFastqDatasetContent(contentData: DSContentTaggedFastq["data"]) {
   const pattern = compiledPattern.value;
-  if (!pattern)
-    throw new Error('No pattern');
+  if (!pattern) throw new Error("No pattern");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -392,20 +373,22 @@ function addTaggedFastqDatasetContent(
 
     let sampleRecord = sampleRecords.find((r) => r.lane === lane && _.isEqual(r.tags, tags));
     if (!sampleRecord)
-      sampleRecords.push(sampleRecord = {
-        tags, lane, files: {},
-      });
+      sampleRecords.push(
+        (sampleRecord = {
+          tags,
+          lane,
+          files: {},
+        }),
+      );
 
     sampleRecord.files[readIndex] = f.handle;
   }
 }
 
 /** XSV */
-function addXsvDatasetContent(
-  contentData: DSContentXsv['data'],
-) {
+function addXsvDatasetContent(contentData: DSContentXsv["data"]) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
-    throw new Error('Dataset has read or lane matcher, trying to add XSV dataset');
+    throw new Error("Dataset has read or lane matcher, trying to add XSV dataset");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -416,12 +399,9 @@ function addXsvDatasetContent(
 }
 
 /** TAGGED XSV */
-function addTaggedXsvDatasetContent(
-  contentData: DSContentTaggedXsv['data'],
-) {
+function addTaggedXsvDatasetContent(contentData: DSContentTaggedXsv["data"]) {
   const pattern = compiledPattern.value;
-  if (!pattern)
-    throw new Error('No pattern');
+  if (!pattern) throw new Error("No pattern");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -437,16 +417,17 @@ function addTaggedXsvDatasetContent(
 
     let sampleRecord = sampleRecords.find((r) => _.isEqual(r.tags, tags));
     if (!sampleRecord)
-      sampleRecords.push(sampleRecord = {
-        tags, file: f.handle,
-      });
+      sampleRecords.push(
+        (sampleRecord = {
+          tags,
+          file: f.handle,
+        }),
+      );
   }
 }
 
 /** CellRanger MTX */
-function addCellRangerMtxDatasetContent(
-  contentData: DSContentCellRangerMtx['data'],
-) {
+function addCellRangerMtxDatasetContent(contentData: DSContentCellRangerMtx["data"]) {
   for (const f of parsedFiles.value) {
     if (!f.match || !f.match.cellRangerFileRole) continue;
     const sample = f.match.sample.value;
@@ -463,9 +444,7 @@ function addCellRangerMtxDatasetContent(
 }
 
 /** H5AD */
-function addH5adDatasetContent(
-  contentData: DSContentH5ad['data'],
-) {
+function addH5adDatasetContent(contentData: DSContentH5ad["data"]) {
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
@@ -475,9 +454,7 @@ function addH5adDatasetContent(
 }
 
 /** H5 */
-function addH5DatasetContent(
-  contentData: DSContentH5['data'],
-) {
+function addH5DatasetContent(contentData: DSContentH5["data"]) {
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
@@ -487,9 +464,7 @@ function addH5DatasetContent(
 }
 
 /** Seurat */
-function addSeuratDatasetContent(
-  contentData: DSContentSeurat['data'],
-) {
+function addSeuratDatasetContent(contentData: DSContentSeurat["data"]) {
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
     const sample = f.match.sample.value;
@@ -501,10 +476,10 @@ function addSeuratDatasetContent(
 /** Multi-Sample H5AD */
 function addMultiSampleH5adDatasetContent(
   groupLabels: Record<PlId, string>,
-  contentData: DSContentMultiSampleH5ad['data'],
+  contentData: DSContentMultiSampleH5ad["data"],
 ) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
-    throw new Error('Dataset has read or lane matcher, trying to add H5AD dataset');
+    throw new Error("Dataset has read or lane matcher, trying to add H5AD dataset");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -517,10 +492,10 @@ function addMultiSampleH5adDatasetContent(
 /** Multi-Sample Seurat */
 function addMultiSampleSeuratDatasetContent(
   groupLabels: Record<PlId, string>,
-  contentData: DSContentMultiSampleSeurat['data'],
+  contentData: DSContentMultiSampleSeurat["data"],
 ) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
-    throw new Error('Dataset has read or lane matcher, trying to add Seurat dataset');
+    throw new Error("Dataset has read or lane matcher, trying to add Seurat dataset");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -533,10 +508,10 @@ function addMultiSampleSeuratDatasetContent(
 /** Bulk Count Matrix */
 function addBulkCountMatrixDatasetContent(
   groupLabels: Record<PlId, string>,
-  contentData: DSContentBulkCountMatrix['data'],
+  contentData: DSContentBulkCountMatrix["data"],
 ) {
   if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
-    throw new Error('Dataset has read or lane matcher, trying to add XSV dataset');
+    throw new Error("Dataset has read or lane matcher, trying to add XSV dataset");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -549,10 +524,10 @@ function addBulkCountMatrixDatasetContent(
 /** Multiplexed FASTQ */
 function addMultiplexedFastqDatasetContent(
   groupLabels: Record<PlId, string>,
-  contentData: DSContentMultiplexedFastq['data'],
+  contentData: DSContentMultiplexedFastq["data"],
 ) {
   if (compiledPattern.value?.hasLaneMatcher)
-    throw new Error('Dataset has no lanes, trying to add data with lanes');
+    throw new Error("Dataset has no lanes, trying to add data with lanes");
 
   for (const f of parsedFiles.value) {
     if (!f.match) continue;
@@ -571,11 +546,9 @@ function addMultiplexedFastqDatasetContent(
 async function createOrAdd() {
   try {
     data.importing = true;
-    console.log('createOrAdd', data.mode);
-    if (data.mode === 'add-to-existing')
-      await addToExistingDataset();
-    else
-      await createNewDataset();
+    console.log("createOrAdd", data.mode);
+    if (data.mode === "add-to-existing") await addToExistingDataset();
+    else await createNewDataset();
   } finally {
     doClose();
   }
@@ -584,66 +557,65 @@ async function createOrAdd() {
 async function addToExistingDataset() {
   const datasetId = data.targetAddDataset!;
   const dataset = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (dataset === undefined)
-    throw new Error('Dataset not found');
+  if (dataset === undefined) throw new Error("Dataset not found");
 
   switch (dataset.content.type) {
-    case 'Fasta':
+    case "Fasta":
       addFastaDatasetContent(dataset.content.data);
       break;
-    case 'Fastq':
+    case "Fastq":
       addFastqDatasetContent(dataset.content.data);
       break;
-    case 'MultilaneFastq':
+    case "MultilaneFastq":
       addMultilaneFastqDatasetContent(dataset.content.data);
       break;
-    case 'MultiplexedFastq':
+    case "MultiplexedFastq":
       addMultiplexedFastqDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
-    case 'Xsv':
+    case "Xsv":
       addXsvDatasetContent(dataset.content.data);
       break;
-    case 'TaggedXsv':
+    case "TaggedXsv":
       addTaggedXsvDatasetContent(dataset.content.data);
       break;
-    case 'CellRangerMTX':
+    case "CellRangerMTX":
       addCellRangerMtxDatasetContent(dataset.content.data);
       break;
-    case 'H5AD':
+    case "H5AD":
       addH5adDatasetContent(dataset.content.data);
       break;
-    case 'H5':
+    case "H5":
       addH5DatasetContent(dataset.content.data);
       break;
-    case 'Seurat':
+    case "Seurat":
       addSeuratDatasetContent(dataset.content.data);
       break;
-    case 'MultiSampleH5AD':
+    case "MultiSampleH5AD":
       addMultiSampleH5adDatasetContent(dataset.content.groupLabels, dataset.content.data);
       // Update sample column name if it was changed
       if (data.sampleColumnName) {
         dataset.content.sampleColumnName = data.sampleColumnName;
       }
       break;
-    case 'MultiSampleSeurat':
+    case "MultiSampleSeurat":
       addMultiSampleSeuratDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
-    case 'BulkCountMatrix':
+    case "BulkCountMatrix":
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
     default:
-      throw new Error('Unknown dataset type');
+      throw new Error("Unknown dataset type");
   }
 
   await app.navigateTo(`/dataset?id=${datasetId}`);
   navigated.value = true;
 }
 
-const xsvType = (): 'csv' | 'tsv' => {
+const xsvType = (): "csv" | "tsv" => {
   const fileNames = parsedFiles.value.map((f) => f.fileName);
-  if (fileNames.every((f) => f.endsWith('.csv') || f.endsWith('.csv.gz'))) return 'csv';
-  if (fileNames.every((f) => f.endsWith('.tsv') || f.endsWith('.tsv.gz'))) return 'tsv';
-  throw new Error('Files are not all csv or tsv');
+  if (fileNames.every((f) => f.endsWith(".csv") || f.endsWith(".csv.gz"))) return "csv";
+  if (fileNames.every((f) => f.endsWith(".tsv") || f.endsWith(".tsv.gz"))) return "tsv";
+  throw new Error("Files are not all csv or tsv");
 };
 
 async function createNewDataset() {
@@ -651,19 +623,17 @@ async function createNewDataset() {
 
   const pattern = compiledPattern.value;
   const datasetType = data.datasetType;
-  if (!datasetType)
-    throw new Error('Dataset type is not set');
-  if (!pattern)
-    throw new Error('Pattern type is not set');
+  if (!datasetType) throw new Error("Dataset type is not set");
+  if (!pattern) throw new Error("Pattern type is not set");
   switch (datasetType) {
-    case 'TaggedXsv': {
-      const contentData: DSContentTaggedXsv['data'] = {};
+    case "TaggedXsv": {
+      const contentData: DSContentTaggedXsv["data"] = {};
       addTaggedXsvDatasetContent(contentData);
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'TaggedXsv',
+          type: "TaggedXsv",
           xsvType: xsvType(),
           gzipped: data.gzipped,
           tags: pattern.tags,
@@ -672,43 +642,45 @@ async function createNewDataset() {
       });
       break;
     }
-    case 'Xsv':{
-      const contentData: DSContentXsv['data'] = {};
+    case "Xsv": {
+      const contentData: DSContentXsv["data"] = {};
       addXsvDatasetContent(contentData);
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'Xsv',
+          type: "Xsv",
           xsvType: xsvType(),
           gzipped: data.gzipped,
           data: contentData,
         },
       });
       break;
-    } case 'Fasta': {
-      const contentData: DSContentFasta['data'] = {};
+    }
+    case "Fasta": {
+      const contentData: DSContentFasta["data"] = {};
       addFastaDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'Fasta',
+          type: "Fasta",
           gzipped: data.gzipped,
           data: contentData,
         },
       });
       break;
-    } case 'TaggedFastq': {
-      const contentData: DSContentTaggedFastq['data'] = {};
+    }
+    case "TaggedFastq": {
+      const contentData: DSContentTaggedFastq["data"] = {};
       addTaggedFastqDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'TaggedFastq',
+          type: "TaggedFastq",
           gzipped: data.gzipped,
           tags: pattern.tags,
           hasLanes: pattern.hasLaneMatcher,
@@ -717,102 +689,109 @@ async function createNewDataset() {
         },
       });
       break;
-    } case 'MultilaneFastq': {
-      const contentData: DSContentMultilaneFastq['data'] = {};
+    }
+    case "MultilaneFastq": {
+      const contentData: DSContentMultilaneFastq["data"] = {};
       addMultilaneFastqDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'MultilaneFastq',
+          type: "MultilaneFastq",
           gzipped: data.gzipped,
           readIndices: data.readIndices as ReadIndices,
           data: contentData,
         },
       });
       break;
-    } case 'Fastq': {
-      const contentData: DSContentFastq['data'] = {};
+    }
+    case "Fastq": {
+      const contentData: DSContentFastq["data"] = {};
       addFastqDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'Fastq',
+          type: "Fastq",
           gzipped: data.gzipped,
           readIndices: data.readIndices as ReadIndices,
           data: contentData,
         },
       });
       break;
-    } case 'CellRangerMTX': {
-      const contentData: DSContentCellRangerMtx['data'] = {};
+    }
+    case "CellRangerMTX": {
+      const contentData: DSContentCellRangerMtx["data"] = {};
       addCellRangerMtxDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'CellRangerMTX',
+          type: "CellRangerMTX",
           gzipped: data.gzipped,
           data: contentData,
         },
       });
       break;
-    } case 'H5AD': {
-      const contentData: DSContentH5ad['data'] = {};
+    }
+    case "H5AD": {
+      const contentData: DSContentH5ad["data"] = {};
       addH5adDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'H5AD',
+          type: "H5AD",
           gzipped: false,
           data: contentData,
         },
       });
       break;
-    } case 'H5': {
-      const contentData: DSContentH5['data'] = {};
+    }
+    case "H5": {
+      const contentData: DSContentH5["data"] = {};
       addH5DatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'H5',
+          type: "H5",
           gzipped: false,
           data: contentData,
         },
       });
       break;
-    } case 'Seurat': {
-      const contentData: DSContentSeurat['data'] = {};
+    }
+    case "Seurat": {
+      const contentData: DSContentSeurat["data"] = {};
       addSeuratDatasetContent(contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'Seurat',
+          type: "Seurat",
           gzipped: false,
           data: contentData,
         },
       });
       break;
-    } case 'MultiSampleH5AD': {
+    }
+    case "MultiSampleH5AD": {
       const groupLabels: Record<PlId, string> = {};
-      const contentData: DSContentMultiSampleH5ad['data'] = {};
+      const contentData: DSContentMultiSampleH5ad["data"] = {};
       addMultiSampleH5adDatasetContent(groupLabels, contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'MultiSampleH5AD',
+          type: "MultiSampleH5AD",
           gzipped: false,
           sampleGroups: undefined,
           data: contentData,
@@ -821,34 +800,36 @@ async function createNewDataset() {
         },
       });
       break;
-    } case 'MultiSampleSeurat': {
+    }
+    case "MultiSampleSeurat": {
       const groupLabels: Record<PlId, string> = {};
-      const contentData: DSContentMultiSampleSeurat['data'] = {};
+      const contentData: DSContentMultiSampleSeurat["data"] = {};
       addMultiSampleSeuratDatasetContent(groupLabels, contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'MultiSampleSeurat',
+          type: "MultiSampleSeurat",
           gzipped: false,
           sampleGroups: undefined,
           data: contentData,
           groupLabels: groupLabels,
-          sampleColumnName: data.sampleColumnName
+          sampleColumnName: data.sampleColumnName,
         },
       });
       break;
-    } case 'BulkCountMatrix': {
+    }
+    case "BulkCountMatrix": {
       const groupLabels: Record<PlId, string> = {};
-      const contentData: DSContentBulkCountMatrix['data'] = {};
+      const contentData: DSContentBulkCountMatrix["data"] = {};
       addBulkCountMatrixDatasetContent(groupLabels, contentData);
 
       app.model.data.datasets.push({
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'BulkCountMatrix',
+          type: "BulkCountMatrix",
           gzipped: data.gzipped,
           xsvType: xsvType(),
           sampleGroups: undefined,
@@ -857,9 +838,10 @@ async function createNewDataset() {
         },
       });
       break;
-    } case 'MultiplexedFastq': {
+    }
+    case "MultiplexedFastq": {
       const groupLabels: Record<PlId, string> = {};
-      const contentData: DSContentMultiplexedFastq['data'] = {};
+      const contentData: DSContentMultiplexedFastq["data"] = {};
       addMultiplexedFastqDatasetContent(groupLabels, contentData);
 
       // For MultiplexedFastq, initialize with completely empty sampleGroups
@@ -870,7 +852,7 @@ async function createNewDataset() {
         label: data.newDatasetLabel,
         id: newDatasetId,
         content: {
-          type: 'MultiplexedFastq',
+          type: "MultiplexedFastq",
           gzipped: data.gzipped,
           readIndices: data.readIndices as ReadIndices,
           sampleGroups: sampleGroups,
@@ -885,7 +867,7 @@ async function createNewDataset() {
       break;
     }
     default:
-      throw new Error('Unknown dataset type: ' + datasetType);
+      throw new Error("Unknown dataset type: " + datasetType);
   }
   await app.allSettled();
   await app.navigateTo(`/dataset?id=${newDatasetId}`);
@@ -921,59 +903,51 @@ const availableColumnsOptions = computed<ListOption<string>[]>(() => {
 watch(
   () => [data.files.length, data.datasetType] as const,
   ([filesCount, dsType]) => {
-    if ((dsType === 'MultiSampleH5AD' || dsType === 'MultiSampleSeurat') && filesCount > 0) {
+    if ((dsType === "MultiSampleH5AD" || dsType === "MultiSampleSeurat") && filesCount > 0) {
       data.loadingColumns = true;
     }
   },
 );
 
 // Watch for when columns become available to stop parsing indicator
-watch(
-  availableColumnsOptions,
-  (options) => {
-    if (options.length > 0) {
-      data.loadingColumns = false;
+watch(availableColumnsOptions, (options) => {
+  if (options.length > 0) {
+    data.loadingColumns = false;
 
-      // Auto-select a default sample column name only if not already set
-      // (e.g., from existing dataset or previous selection)
-      if (!data.sampleColumnName) {
-        const priorityNames = ['sample', 'samples', 'replicate', 'replicates'];
-        const foundOption = options.find((opt) =>
-          priorityNames.some((name) => opt.value.toLowerCase() === name),
-        );
-        data.sampleColumnName = foundOption ? foundOption.value : options[0].value;
-      }
+    // Auto-select a default sample column name only if not already set
+    // (e.g., from existing dataset or previous selection)
+    if (!data.sampleColumnName) {
+      const priorityNames = ["sample", "samples", "replicate", "replicates"];
+      const foundOption = options.find((opt) =>
+        priorityNames.some((name) => opt.value.toLowerCase() === name),
+      );
+      data.sampleColumnName = foundOption ? foundOption.value : options[0].value;
     }
-  },
-);
+  }
+});
 
-const canCreateOrAdd = computed(
-  () => {
-    const basicConditions = hasMatchedFiles.value
-      && (data.mode === 'create-new-dataset' || data.targetAddDataset !== undefined)
-      && data.datasetType !== undefined
-      && !data.loadingColumns
+const canCreateOrAdd = computed(() => {
+  const basicConditions =
+    hasMatchedFiles.value &&
+    (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
+    data.datasetType !== undefined &&
+    !data.loadingColumns &&
     // This prevents selecting fasta as type while having read index matcher in pattern
-      && (data.readIndices.length !== 0
-        || (compiledPattern.value?.hasReadIndexMatcher === false
-          && compiledPattern.value?.hasLaneMatcher === false));
+    (data.readIndices.length !== 0 ||
+      (compiledPattern.value?.hasReadIndexMatcher === false &&
+        compiledPattern.value?.hasLaneMatcher === false));
 
-    // For MultiSampleH5AD datasets, also require sampleColumnName
-    if (data.datasetType === 'MultiSampleH5AD') {
-      return basicConditions && data.sampleColumnName !== '';
-    }
+  // For MultiSampleH5AD datasets, also require sampleColumnName
+  if (data.datasetType === "MultiSampleH5AD") {
+    return basicConditions && data.sampleColumnName !== "";
+  }
 
-    return basicConditions;
-  },
-);
+  return basicConditions;
+});
 </script>
 
 <template>
-  <PlDialogModal
-    v-model="data.datasetDialogOpened"
-    width="70%"
-    :close-on-outside-click="false"
-  >
+  <PlDialogModal v-model="data.datasetDialogOpened" width="70%" :close-on-outside-click="false">
     <template #title>Import files</template>
 
     <PlBtnGroup v-model="data.mode" :options="modesOptions" :disabled="addingToFixedDataset" />
@@ -987,7 +961,8 @@ const canCreateOrAdd = computed(
         :disabled="addingToFixedDataset"
       />
       <PlDropdown
-        v-else v-model="data.targetAddDataset"
+        v-else
+        v-model="data.targetAddDataset"
         :options="addToExistingOptions"
         :disabled="addingToFixedDataset"
         label="Dataset"
@@ -1006,23 +981,21 @@ const canCreateOrAdd = computed(
         :style="{ flexBasis: '180px', flexShrink: 0 }"
       />
 
-      <PlCheckbox v-model="data.gzipped" disabled > Gzipped </PlCheckbox>
+      <PlCheckbox v-model="data.gzipped" disabled> Gzipped </PlCheckbox>
     </PlRow>
 
-    <PlTextField
-      v-model="data.pattern"
-      label="Pattern"
-      :error="patternError"
-    />
+    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError" />
 
     <div v-if="data.datasetType === 'MultiSampleH5AD' || data.datasetType === 'MultiSampleSeurat'">
-      <div v-if="data.loadingColumns">
-        Parsing files to extract column information...
-      </div>
+      <div v-if="data.loadingColumns">Parsing files to extract column information...</div>
       <PlRow v-else-if="availableColumnsOptions.length > 0" alignCenter>
         <PlDropdown
           v-model="data.sampleColumnName"
-          :label="data.datasetType === 'MultiSampleH5AD' ? 'Sample Column Name in anndata.obs' : 'Sample Column Name in Seurat metadata'"
+          :label="
+            data.datasetType === 'MultiSampleH5AD'
+              ? 'Sample Column Name in anndata.obs'
+              : 'Sample Column Name in Seurat metadata'
+          "
           :options="availableColumnsOptions"
           :error="undefined"
           class="flex-grow-1"
@@ -1032,26 +1005,16 @@ const canCreateOrAdd = computed(
 
     <ParsedFilesList :items="parsedFiles" />
 
-    <PlBtnSecondary
-      @click="() => (data.fileDialogOpened = true)"
-    >
+    <PlBtnSecondary @click="() => (data.fileDialogOpened = true)">
       + add more files
     </PlBtnSecondary>
 
     <template #actions>
-      <PlBtnPrimary
-        :disabled="!canCreateOrAdd"
-        :loading="data.importing"
-        @click="createOrAdd"
-      >
-        {{ data.mode === 'create-new-dataset' ? 'Create' : 'Add' }}
+      <PlBtnPrimary :disabled="!canCreateOrAdd" :loading="data.importing" @click="createOrAdd">
+        {{ data.mode === "create-new-dataset" ? "Create" : "Add" }}
       </PlBtnPrimary>
 
-      <PlBtnGhost
-        @click.stop="() => doClose()"
-      >
-        Cancel
-      </PlBtnGhost>
+      <PlBtnGhost @click.stop="() => doClose()"> Cancel </PlBtnGhost>
     </template>
   </PlDialogModal>
 

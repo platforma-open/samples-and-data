@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { AgGridVue } from 'ag-grid-vue3';
+import { AgGridVue } from "ag-grid-vue3";
 
-import type { DSSeurat } from '@platforma-open/milaboratories.samples-and-data.model';
-import { AgGridTheme } from '@platforma-sdk/ui-vue';
-import { useFileDatasetPage } from '../composables/useFileDatasetPage';
+import type { DSSeurat } from "@platforma-open/milaboratories.samples-and-data.model";
+import { AgGridTheme } from "@platforma-sdk/ui-vue";
+import { useFileDatasetPage } from "../composables/useFileDatasetPage";
 
 const { rowData, defaultColDef, columnDefs, gridOptions } = useFileDatasetPage<DSSeurat>({
-  headerName: 'Seurat RDS file',
-  extensions: ['rds', 'RDS'],
+  headerName: "Seurat RDS file",
+  extensions: ["rds", "RDS"],
 });
 </script>
 

@@ -1,4 +1,4 @@
-import { DataModelBuilder } from '@platforma-sdk/model';
+import { DataModelBuilder } from "@platforma-sdk/model";
 import type {
   BarcodeRule,
   BlockDataV20260427,
@@ -8,8 +8,8 @@ import type {
   LegacyBlockArgs,
   LegacyBlockUiState,
   PlId,
-} from './args';
-import { makeRuleId } from './args';
+} from "./args";
+import { makeRuleId } from "./args";
 
 /**
  * Walk every MultiplexedFastq dataset and:
@@ -22,11 +22,11 @@ import { makeRuleId } from './args';
  */
 function upgradeMultiplexedDatasets(prev: BlockDataV20260427): BlockDataV20260428 {
   const barcodeIdColumn = prev.metadata.find(
-    (col) => col.label === 'Barcode ID' && col.valueType === 'String',
+    (col) => col.label === "Barcode ID" && col.valueType === "String",
   );
 
   const datasets: DSAny[] = prev.datasets.map((ds) => {
-    if (ds.content.type !== 'MultiplexedFastq') return ds;
+    if (ds.content.type !== "MultiplexedFastq") return ds;
 
     const c = ds.content as DSContentMultiplexedFastq & {
       barcodeTags?: string[];
@@ -55,7 +55,7 @@ function upgradeMultiplexedDatasets(prev: BlockDataV20260427): BlockDataV2026042
         }
       }
       if (seeded.length > 0) {
-        barcodeTags = barcodeTags.length > 0 ? barcodeTags : ['BarcodeID'];
+        barcodeTags = barcodeTags.length > 0 ? barcodeTags : ["BarcodeID"];
         barcodeRules = seeded;
       }
     }
@@ -74,17 +74,17 @@ function upgradeMultiplexedDatasets(prev: BlockDataV20260427): BlockDataV2026042
 }
 
 export const blockDataModel = new DataModelBuilder()
-  .from<BlockDataV20260427>('V20260427')
+  .from<BlockDataV20260427>("V20260427")
   .upgradeLegacy<LegacyBlockArgs, LegacyBlockUiState>(({ args, uiState }) => ({
     ...args,
     suggestedImport: uiState?.suggestedImport ?? false,
   }))
-  .migrate<BlockDataV20260428>('V20260428', upgradeMultiplexedDatasets)
+  .migrate<BlockDataV20260428>("V20260428", upgradeMultiplexedDatasets)
   .init(() => ({
     datasets: [],
     metadata: [],
     sampleIds: [],
-    sampleLabelColumnLabel: 'Sample',
+    sampleLabelColumnLabel: "Sample",
     sampleLabels: {},
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [],

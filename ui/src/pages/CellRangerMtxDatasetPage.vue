@@ -6,20 +6,25 @@ import {
   MenuModule,
   ModuleRegistry,
   RichSelectModule,
-} from 'ag-grid-enterprise';
-import { AgGridVue } from 'ag-grid-vue3';
+} from "ag-grid-enterprise";
+import { AgGridVue } from "ag-grid-vue3";
 
 import type {
   CellRangerMtxFileGroup,
   DSCellRangerMtx,
   PlId,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import { agSampleIdColumnDef, getSelectedSamples } from '../util';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import { agSampleIdColumnDef, getSelectedSamples } from "../util";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -29,8 +34,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = (() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSCellRangerMtx;
 })();
 
@@ -39,11 +43,12 @@ type CellRangerMtxDatasetRow = {
   readonly files: CellRangerMtxFileGroup;
 };
 
-const rowData = computed(() => Object.entries(dataset.content.data).map(
-  ([sampleId, files]) => ({
+const rowData = computed(() =>
+  Object.entries(dataset.content.data).map(([sampleId, files]) => ({
     sample: sampleId as PlId,
     files: files!,
-  })));
+  })),
+);
 
 const defaultColDef: ColDef = {
   suppressHeaderMenuButton: true,
@@ -51,29 +56,26 @@ const defaultColDef: ColDef = {
 
 const roleConfig = computed(() => [
   {
-    role: 'matrix.mtx' as const,
-    label: 'Matrix',
-    extensions: dataset.content.gzipped ? ['mtx.gz'] : ['mtx'],
+    role: "matrix.mtx" as const,
+    label: "Matrix",
+    extensions: dataset.content.gzipped ? ["mtx.gz"] : ["mtx"],
   },
   {
-    role: 'features.tsv' as const,
-    label: 'Features',
-    extensions: dataset.content.gzipped ? ['tsv.gz'] : ['tsv'],
+    role: "features.tsv" as const,
+    label: "Features",
+    extensions: dataset.content.gzipped ? ["tsv.gz"] : ["tsv"],
   },
   {
-    role: 'barcodes.tsv' as const,
-    label: 'Barcodes',
-    extensions: dataset.content.gzipped ? ['tsv.gz'] : ['tsv'],
+    role: "barcodes.tsv" as const,
+    label: "Barcodes",
+    extensions: dataset.content.gzipped ? ["tsv.gz"] : ["tsv"],
   },
 ]);
 
 const columnDefs = computed(() => {
   const progresses = app.progresses;
 
-  const res: ColDef<CellRangerMtxDatasetRow>[] = [
-    makeRowNumberColDef(),
-    agSampleIdColumnDef(app),
-  ];
+  const res: ColDef<CellRangerMtxDatasetRow>[] = [makeRowNumberColDef(), agSampleIdColumnDef(app)];
 
   for (const { role, label, extensions } of roleConfig.value)
     res.push({
@@ -81,21 +83,19 @@ const columnDefs = computed(() => {
       flex: 2,
       cellStyle: { padding: 0 },
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "File" } satisfies PlAgHeaderComponentParams,
 
       cellRendererParams: {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
-          if (!fileHandle)
-            return undefined;
-          else
-            return progresses[fileHandle];
+          if (!fileHandle) return undefined;
+          else return progresses[fileHandle];
         },
       },
 
       cellRendererSelector: (params) =>
         params.data?.sample
           ? {
-              component: 'PlAgCellFile',
+              component: "PlAgCellFile",
               params: {
                 extensions,
               },
@@ -103,14 +103,11 @@ const columnDefs = computed(() => {
           : undefined,
 
       valueGetter: (params) =>
-        params.data?.sample
-          ? dataset.content.data[params.data.sample]?.[role]
-          : undefined,
+        params.data?.sample ? dataset.content.data[params.data.sample]?.[role] : undefined,
 
       valueSetter: (params) => {
         const sample = params.data.sample;
-        if (!dataset.content.data[sample])
-          dataset.content.data[sample] = {};
+        if (!dataset.content.data[sample]) dataset.content.data[sample] = {};
         dataset.content.data[sample]![role] = params.newValue ? params.newValue : undefined;
         return true;
       },
@@ -123,7 +120,7 @@ const gridOptions: GridOptions<CellRangerMtxDatasetRow> = {
   getRowId: (row) => row.data.sample,
 
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
@@ -135,15 +132,13 @@ const gridOptions: GridOptions<CellRangerMtxDatasetRow> = {
   },
 
   getContextMenuItems: (params) => {
-    if (getSelectedSamples(params.api, params.node).length === 0)
-      return [];
+    if (getSelectedSamples(params.api, params.node).length === 0) return [];
     return [
       {
-        name: 'Delete',
+        name: "Delete",
         action: (params) => {
           const samplesToDelete = getSelectedSamples(params.api, params.node);
-          for (const s of samplesToDelete)
-            delete dataset.content.data[s];
+          for (const s of samplesToDelete) delete dataset.content.data[s];
         },
       },
     ];
@@ -165,4 +160,3 @@ const gridOptions: GridOptions<CellRangerMtxDatasetRow> = {
     :gridOptions="gridOptions"
   />
 </template>
-

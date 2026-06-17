@@ -1,5 +1,5 @@
-import type { MTValueType } from '@platforma-open/milaboratories.samples-and-data.model';
-import * as XLSX from 'xlsx';
+import type { MTValueType } from "@platforma-open/milaboratories.samples-and-data.model";
+import * as XLSX from "xlsx";
 
 export type ImportDataColumn = {
   readonly type: MTValueType;
@@ -24,7 +24,7 @@ export type ImportResult = {
 };
 
 function validateHeader(headerLine: unknown): (string | undefined)[] {
-  if (!headerLine || !Array.isArray(headerLine)) throw new Error('Can\'t parse header line');
+  if (!headerLine || !Array.isArray(headerLine)) throw new Error("Can't parse header line");
   return headerLine.map((c) => (!c ? undefined : String(c).trim()));
 }
 
@@ -35,12 +35,12 @@ const TypeCodeString = 2;
 
 function validateAndCleanRow(row: unknown): ImportDataRow | undefined {
   if (!row || !Array.isArray(row)) return undefined;
-  if (row.findIndex((c) => c && typeof c !== 'string' && typeof c !== 'number') !== -1)
+  if (row.findIndex((c) => c && typeof c !== "string" && typeof c !== "number") !== -1)
     return undefined;
   const result: ImportDataRow = [];
   for (const c of row) {
-    if (typeof c === 'string') result.push(c.trim());
-    else if (typeof c === 'number') result.push(c);
+    if (typeof c === "string") result.push(c.trim());
+    else if (typeof c === "number") result.push(c);
     else if (!c) result.push(undefined);
     else {
       console.log(`Can't parse cell (see below). Type = ${typeof c}`);
@@ -53,7 +53,7 @@ function validateAndCleanRow(row: unknown): ImportDataRow | undefined {
 
 function readOptionsFor(fileName: string | undefined): XLSX.ParsingOptions | undefined {
   const ext = fileName?.toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
-  if (ext === 'tsv') return { type: 'array', FS: '\t' };
+  if (ext === "tsv") return { type: "array", FS: "\t" };
   return undefined;
 }
 
@@ -87,12 +87,12 @@ export function readFileForImport(data: Uint8Array, fileName?: string): ImportRe
 
       // detecting type
       const c = row[colIdx];
-      if (c === '' || c === undefined) continue;
+      if (c === "" || c === undefined) continue;
 
       isEmpty = false;
 
-      const type
-        = typeof c === 'string'
+      const type =
+        typeof c === "string"
           ? TypeCodeString
           : Number.isInteger(c)
             ? TypeCodeLong
@@ -123,7 +123,7 @@ export function readFileForImport(data: Uint8Array, fileName?: string): ImportRe
     idxMapping.push(colIdx);
     columns.push({
       header,
-      type: type === TypeCodeLong ? 'Long' : type === TypeCodeDouble ? 'Double' : 'String',
+      type: type === TypeCodeLong ? "Long" : type === TypeCodeDouble ? "Double" : "String",
     });
   }
 
@@ -134,7 +134,7 @@ export function readFileForImport(data: Uint8Array, fileName?: string): ImportRe
       const colIdx = idxMapping[newColIdx];
       const c = rowTmp[colIdx];
       newRow.push(
-        c === undefined ? undefined : columns[newColIdx].type === 'String' ? String(c) : c,
+        c === undefined ? undefined : columns[newColIdx].type === "String" ? String(c) : c,
       );
     }
     rows.push(newRow);

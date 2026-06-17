@@ -1,89 +1,93 @@
-import type { BlockData, DSType } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle, PlId } from '@platforma-sdk/model';
-import { getFileNameFromHandle, uniquePlId } from '@platforma-sdk/model';
-import type { AppV3, SimpleOption } from '@platforma-sdk/ui-vue';
-import type { ComputedRef, Reactive, ShallowRef } from 'vue';
-import { computed, ref, shallowRef, watch } from 'vue';
-import type { FileContentType, FileNamePatternMatch } from './file_name_parser';
-import { FileNamePattern } from './file_name_parser';
+import type { BlockData, DSType } from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle, PlId } from "@platforma-sdk/model";
+import { getFileNameFromHandle, uniquePlId } from "@platforma-sdk/model";
+import type { AppV3, SimpleOption } from "@platforma-sdk/ui-vue";
+import type { ComputedRef, Reactive, ShallowRef } from "vue";
+import { computed, ref, shallowRef, watch } from "vue";
+import type { FileContentType, FileNamePatternMatch } from "./file_name_parser";
+import { FileNamePattern } from "./file_name_parser";
 
 // Dataset import mode
-export type ImportMode = 'create-new-dataset' | 'add-to-existing';
+export type ImportMode = "create-new-dataset" | "add-to-existing";
 
-export const datasetTypes: Record<DSType, { label: string; fileType: FileContentType; hasTags: boolean }> = {
+export const datasetTypes: Record<
+  DSType,
+  { label: string; fileType: FileContentType; hasTags: boolean }
+> = {
   Fastq: {
-    label: 'FASTQ',
-    fileType: 'Fastq',
+    label: "FASTQ",
+    fileType: "Fastq",
     hasTags: false,
   },
   MultilaneFastq: {
-    label: 'Multi-lane FASTQ',
-    fileType: 'Fastq',
+    label: "Multi-lane FASTQ",
+    fileType: "Fastq",
     hasTags: false,
   },
   MultiplexedFastq: {
-    label: 'Multiplexed FASTQ',
-    fileType: 'Fastq',
+    label: "Multiplexed FASTQ",
+    fileType: "Fastq",
     hasTags: false,
   },
   TaggedFastq: {
-    label: 'Tagged FASTQ',
-    fileType: 'Fastq',
+    label: "Tagged FASTQ",
+    fileType: "Fastq",
     hasTags: true,
   },
   Fasta: {
-    label: 'FASTA',
-    fileType: 'Fasta',
+    label: "FASTA",
+    fileType: "Fasta",
     hasTags: false,
   },
   Xsv: {
-    label: 'Per sample CSV/TSV',
-    fileType: 'Xsv',
+    label: "Per sample CSV/TSV",
+    fileType: "Xsv",
     hasTags: false,
   },
   TaggedXsv: {
-    label: 'Tagged per sample CSV/TSV',
-    fileType: 'Xsv',
+    label: "Tagged per sample CSV/TSV",
+    fileType: "Xsv",
     hasTags: true,
   },
   CellRangerMTX: {
-    label: 'CellRanger MTX',
-    fileType: 'CellRangerMTX',
+    label: "CellRanger MTX",
+    fileType: "CellRangerMTX",
     hasTags: false,
   },
   H5AD: {
-    label: 'H5AD',
-    fileType: 'H5AD',
+    label: "H5AD",
+    fileType: "H5AD",
     hasTags: false,
   },
   H5: {
-    label: 'H5',
-    fileType: 'H5',
+    label: "H5",
+    fileType: "H5",
     hasTags: false,
   },
   Seurat: {
-    label: 'Seurat RDS',
-    fileType: 'Seurat',
+    label: "Seurat RDS",
+    fileType: "Seurat",
     hasTags: false,
   },
   MultiSampleH5AD: {
-    label: 'Multisample H5AD',
-    fileType: 'H5AD',
+    label: "Multisample H5AD",
+    fileType: "H5AD",
     hasTags: false,
   },
   MultiSampleSeurat: {
-    label: 'Multisample Seurat RDS',
-    fileType: 'Seurat',
+    label: "Multisample Seurat RDS",
+    fileType: "Seurat",
     hasTags: false,
   },
   BulkCountMatrix: {
-    label: 'Bulk count matrix',
-    fileType: 'Xsv',
+    label: "Bulk count matrix",
+    fileType: "Xsv",
     hasTags: false,
   },
 };
 export const datasetTypeOptions = Object.entries(datasetTypes).map(([value, { label }]) => ({
-  value, label,
+  value,
+  label,
 }));
 
 export const datasetTypeLabels = datasetTypeOptions.reduce(
@@ -109,17 +113,17 @@ export const datasetTypeOptionsByFileType = (() => {
 
 export const modesOptions: SimpleOption<ImportMode>[] = [
   {
-    value: 'create-new-dataset',
-    text: 'Create new dataset',
+    value: "create-new-dataset",
+    text: "Create new dataset",
   },
   {
-    value: 'add-to-existing',
-    text: 'Add to existing dataset',
+    value: "add-to-existing",
+    text: "Add to existing dataset",
   },
 ];
 
 export function extractFileName(filePath: string) {
-  return filePath.replace(/^.*[\\/]/, '');
+  return filePath.replace(/^.*[\\/]/, "");
 }
 
 // Pattern compilation and file name matching
@@ -175,7 +179,9 @@ export function useParsedFiles(
 
 export function getOrCreateSample(appUt: unknown, sampleName: string): PlId {
   const app = appUt as AppV3<BlockData>;
-  const id = Object.entries(app.model.data.sampleLabels).find(([, label]) => label === sampleName)?.[0];
+  const id = Object.entries(app.model.data.sampleLabels).find(
+    ([, label]) => label === sampleName,
+  )?.[0];
   if (id) return id as PlId;
   const newId = uniquePlId();
   app.model.data.sampleIds.push(newId);

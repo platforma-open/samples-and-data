@@ -1,14 +1,15 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.workflow",
   "version": "2.7.1",
-  "type": "module",
+  "description": "Tengo-based template",
   "files": [
     "./dist/**/*"
   ],
-  "description": "Tengo-based template",
+  "type": "module",
   "scripts": {
-    "build": "shx rm -rf dist/* && pl-tengo check && pl-tengo build",
-    "format": "/usr/bin/env emacs --script ./format.el"
+    "build": "shx rm -rf dist && pl-tengo build",
+    "format": "/usr/bin/env emacs --script ./format.el || echo 'No emacs.'",
+    "check": "pl-tengo check"
   },
   "dependencies": {
     "@platforma-open/milaboratories.samples-and-data.parse-h5ad": "workspace:*",
@@ -16,6 +17,8 @@
     "@platforma-sdk/workflow-tengo": "catalog:"
   },
   "devDependencies": {
-    "@platforma-sdk/tengo-builder": "catalog:"
+    "@platforma-sdk/tengo-builder": "catalog:",
+    "@platforma-sdk/test": "catalog:",
+    "shx": "catalog:"
   }
 }

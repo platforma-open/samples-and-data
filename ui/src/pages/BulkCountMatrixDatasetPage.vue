@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import type {
-  ColDef,
-  GridOptions,
-} from 'ag-grid-enterprise';
+import type { ColDef, GridOptions } from "ag-grid-enterprise";
 import {
   ClientSideRowModelModule,
   MenuModule,
   ModuleRegistry,
   RichSelectModule,
-} from 'ag-grid-enterprise';
+} from "ag-grid-enterprise";
 
-import { AgGridVue } from 'ag-grid-vue3';
+import { AgGridVue } from "ag-grid-vue3";
 
-import type { DSBulkCountMatrix, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
-import { agGroupIdColumnDef } from '../util';
+import type {
+  DSBulkCountMatrix,
+  PlId,
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import SyncDatasetDialog from "../dialogs/SyncDatasetDialog.vue";
+import { agGroupIdColumnDef } from "../util";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -28,8 +33,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = computed(() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSBulkCountMatrix;
 });
 
@@ -48,16 +52,12 @@ const parsedSampleGroups = computed(() => {
 
 const rowData = computed(() => {
   const groupToSample = parsedSampleGroups.value;
-  return Object.entries(dataset.value.content.data).flatMap(
-    ([groupId, data]) => (
-      {
-        groupId: groupId as PlId,
-        groupLabel: dataset.value.content.groupLabels[groupId as PlId],
-        nSamples: groupToSample?.[groupId as PlId]?.length,
-        data,
-      }
-    ),
-  );
+  return Object.entries(dataset.value.content.data).flatMap(([groupId, data]) => ({
+    groupId: groupId as PlId,
+    groupLabel: dataset.value.content.groupLabels[groupId as PlId],
+    nSamples: groupToSample?.[groupId as PlId]?.length,
+    data,
+  }));
 });
 
 const defaultColDef: ColDef = {
@@ -68,22 +68,22 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
   return [
     makeRowNumberColDef(),
     {
-      headerName: 'Samples',
+      headerName: "Samples",
       flex: 1,
       valueGetter: (params) => params.data?.nSamples,
       editable: false,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Number' },
+      headerComponentParams: { type: "Number" },
     },
     agGroupIdColumnDef(),
     {
-      headerName: 'Data',
+      headerName: "Data",
       flex: 2,
       cellStyle: { padding: 0 },
       spanRows: true,
 
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' },
+      headerComponentParams: { type: "File" },
 
       cellRendererParams: {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
@@ -93,29 +93,33 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
         },
       },
 
-      cellRendererSelector: (_) =>
-        ({
-          component: 'PlAgCellFile',
-          params: {
-            extensions: dataset.value.content.gzipped ? (dataset.value.content.xsvType ? [dataset.value.content.xsvType + '.gz'] : ['csv.gz', 'tsv.gz']) : (dataset.value.content.xsvType ? [dataset.value.content.xsvType] : ['csv', 'tsv']),
-          },
-        }),
+      cellRendererSelector: (_) => ({
+        component: "PlAgCellFile",
+        params: {
+          extensions: dataset.value.content.gzipped
+            ? dataset.value.content.xsvType
+              ? [dataset.value.content.xsvType + ".gz"]
+              : ["csv.gz", "tsv.gz"]
+            : dataset.value.content.xsvType
+              ? [dataset.value.content.xsvType]
+              : ["csv", "tsv"],
+        },
+      }),
       valueGetter: (params) =>
-        params.data?.groupId
-          ? dataset.value.content.data[params.data.groupId]
-          : undefined,
+        params.data?.groupId ? dataset.value.content.data[params.data.groupId] : undefined,
       valueSetter: (params) => {
         const group = params.data.groupId;
         dataset.value.content.data[group] = params.newValue ?? null;
         return true;
       },
-    }];
+    },
+  ];
 });
 
 const gridOptions: GridOptions<DatasetRow> = {
   getRowId: (row) => row.data.groupId,
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },

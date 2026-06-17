@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { onMounted } from 'vue';
-import { useApp } from '../app';
-import ImportDatasetDialog from '../dialogs/ImportDatasetDialog.vue';
+import { onMounted } from "vue";
+import { useApp } from "../app";
+import ImportDatasetDialog from "../dialogs/ImportDatasetDialog.vue";
 
 const app = useApp();
 
-onMounted(() => app.showImportDataset = true);
+onMounted(() => (app.showImportDataset = true));
 
 const onClose = (navigated: boolean) => {
-  if (!navigated) app.navigateTo('/');
+  if (!navigated) app.navigateTo("/");
 };
 </script>
 

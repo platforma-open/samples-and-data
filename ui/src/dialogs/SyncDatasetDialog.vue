@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import type { Dataset, DSContent, DSMultiplexedFastq, PlId, WithSampleGroupsData } from '@platforma-open/milaboratories.samples-and-data.model';
-import { uniquePlId } from '@platforma-sdk/model';
-import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from '@platforma-sdk/ui-vue';
-import * as _ from 'radashi';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import ImportErrorDialog from '../components/ImportErrorDialog.vue';
-import { useTableImport } from '../composables/useTableImport';
-import { parseCsvNestedMapFromHandles, setEquals } from '../util';
-import { getOrCreateSample } from './datasets';
-import type { SamplesheetImportData } from './ImportSamplesheetDialog.vue';
-import ImportSamplesheetDialog from './ImportSamplesheetDialog.vue';
+import type {
+  Dataset,
+  DSContent,
+  DSMultiplexedFastq,
+  PlId,
+  WithSampleGroupsData,
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import { uniquePlId } from "@platforma-sdk/model";
+import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from "@platforma-sdk/ui-vue";
+import * as _ from "radashi";
+import { computed } from "vue";
+import { useApp } from "../app";
+import ImportErrorDialog from "../components/ImportErrorDialog.vue";
+import { useTableImport } from "../composables/useTableImport";
+import { parseCsvNestedMapFromHandles, setEquals } from "../util";
+import { getOrCreateSample } from "./datasets";
+import type { SamplesheetImportData } from "./ImportSamplesheetDialog.vue";
+import ImportSamplesheetDialog from "./ImportSamplesheetDialog.vue";
 
 const app = useApp();
 const reactiveFileContent = ReactiveFileContent.useGlobal();
@@ -25,31 +31,36 @@ type GroupedDataset = Dataset<DSContent & WithSampleGroupsData<unknown>>;
 const datasets = computed(() => {
   return props.datasetIds.map((datasetId) => {
     const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-    if (!ds)
-      throw new Error('Dataset not found');
+    if (!ds) throw new Error("Dataset not found");
     return ds as GroupedDataset;
   });
 });
 
 // Check if any dataset is MultiplexedFastq (requires samplesheet import)
-const multiplexedFastqDatasets = computed(() =>
-  datasets.value.filter((ds) => ds.content.type === 'MultiplexedFastq') as DSMultiplexedFastq[],
+const multiplexedFastqDatasets = computed(
+  () =>
+    datasets.value.filter((ds) => ds.content.type === "MultiplexedFastq") as DSMultiplexedFastq[],
 );
 
 // Datasets that support auto-extraction (BulkCountMatrix, MultiSampleH5AD, MultiSampleSeurat)
 const autoExtractDatasets = computed(() =>
   datasets.value.filter((ds) =>
-    ['BulkCountMatrix', 'MultiSampleH5AD', 'MultiSampleSeurat'].includes(ds.content.type),
+    ["BulkCountMatrix", "MultiSampleH5AD", "MultiSampleSeurat"].includes(ds.content.type),
   ),
 );
 
 // Samplesheet import logic
-const { state: importState, importTable, clearImportCandidate, clearErrorMessage } = useTableImport();
+const {
+  state: importState,
+  importTable,
+  clearImportCandidate,
+  clearErrorMessage,
+} = useTableImport();
 
 async function importSamplesheet() {
   await importTable({
-    title: 'Import samplesheet',
-    buttonLabel: 'Import',
+    title: "Import samplesheet",
+    buttonLabel: "Import",
   });
 }
 
@@ -62,7 +73,10 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
   for (const dataset of multiplexedFastqDatasets.value) {
     // Create group label to groupId lookup map for O(1) access
     const groupLabelToId = new Map(
-      Object.entries(dataset.content.groupLabels).map(([groupId, label]) => [label, groupId as PlId]),
+      Object.entries(dataset.content.groupLabels).map(([groupId, label]) => [
+        label,
+        groupId as PlId,
+      ]),
     );
 
     // Merge any newly-declared tags from the dialog into the dataset's tag
@@ -76,7 +90,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       updatedTags = [...existingTags, ...newTags];
       updatedRules = updatedRules.map((rule) => {
         const patch: Record<string, string> = {};
-        for (const t of newTags) patch[t] = '';
+        for (const t of newTags) patch[t] = "";
         return { ...rule, barcodes: { ...rule.barcodes, ...patch } };
       });
     }
@@ -113,7 +127,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       // Populate metadata for this sample using lookup map
       for (const [columnId, value] of Object.entries(row.metadata)) {
         const column = metadataColumnsMap.get(columnId);
-        if (column && (typeof value === 'string' || typeof value === 'number')) {
+        if (column && (typeof value === "string" || typeof value === "number")) {
           column.data[sampleId] = value;
         }
       }
@@ -122,7 +136,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
       // (When the dataset has no declared tags, `row.barcodes` is `{}` and we
       // skip rule creation — the operator must declare tags first.)
       const tagEntries = Object.entries(row.barcodes ?? {});
-      if (tagEntries.length > 0 && tagEntries.every(([, v]) => v !== '')) {
+      if (tagEntries.length > 0 && tagEntries.every(([, v]) => v !== "")) {
         updatedRules.push({
           ruleId: uniquePlId(),
           sampleGroupId: groupId,
@@ -150,8 +164,8 @@ const availableGroupLabels = computed(() =>
 // Declared barcode tags. The dialog handles a single dataset page at a time
 // (props.datasetIds always carries one id when SyncDatasetDialog is mounted
 // from MultiplexedFastqDatasetPage), so we read the first dataset's tags.
-const barcodeTags = computed<string[]>(() =>
-  multiplexedFastqDatasets.value[0]?.content.barcodeTags ?? [],
+const barcodeTags = computed<string[]>(
+  () => multiplexedFastqDatasets.value[0]?.content.barcodeTags ?? [],
 );
 
 // Check if there are rows without samples (for highlighting import button)
@@ -179,14 +193,16 @@ const parsedSampleGroups = computed(() => {
     if (!dataset) continue;
 
     // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
-    if (dataset.content.type === 'BulkCountMatrix') {
+    if (dataset.content.type === "BulkCountMatrix") {
       result[datasetId as PlId] = groups as Record<PlId, PlId[]>;
-    } else if (dataset.content.type === 'MultiSampleH5AD' || dataset.content.type === 'MultiSampleSeurat') {
+    } else if (
+      dataset.content.type === "MultiSampleH5AD" ||
+      dataset.content.type === "MultiSampleSeurat"
+    ) {
       // MultiSampleH5AD and MultiSampleSeurat: need to parse CSV files
-      const parsedGroups = parseCsvNestedMapFromHandles<PlId, PlId, PlId>(
-        reactiveFileContent,
-        { [datasetId as PlId]: groups } as Parameters<typeof parseCsvNestedMapFromHandles>[1],
-      );
+      const parsedGroups = parseCsvNestedMapFromHandles<PlId, PlId, PlId>(reactiveFileContent, {
+        [datasetId as PlId]: groups,
+      } as Parameters<typeof parseCsvNestedMapFromHandles>[1]);
       if (parsedGroups && parsedGroups[datasetId as PlId]) {
         result[datasetId as PlId] = parsedGroups[datasetId as PlId];
       }
@@ -201,8 +217,7 @@ const parsedSampleGroups = computed(() => {
  */
 function sampleGroupsAreCalculated(dataset: GroupedDataset): boolean {
   const sg = parsedSampleGroups.value?.[dataset.id];
-  if (!sg)
-    return false;
+  if (!sg) return false;
 
   for (const [groupId, _] of Object.entries(dataset.content.data)) {
     if (!sg[groupId as PlId]) {
@@ -217,8 +232,7 @@ function sampleGroupsAreCalculated(dataset: GroupedDataset): boolean {
  */
 function sampleGroupsAreSynced(dataset: GroupedDataset): boolean {
   const calculatedGroups = parsedSampleGroups.value?.[dataset.id];
-  if (!calculatedGroups)
-    return false;
+  if (!calculatedGroups) return false;
 
   for (const groupId of Object.keys(dataset.content.data)) {
     const calculatedGroup: PlId[] | undefined = calculatedGroups[groupId as PlId];
@@ -226,7 +240,9 @@ function sampleGroupsAreSynced(dataset: GroupedDataset): boolean {
       return false;
     }
 
-    const datasetGroup = Object.values(dataset.content.sampleGroups?.[groupId as PlId] ?? {}) as string[];
+    const datasetGroup = Object.values(
+      dataset.content.sampleGroups?.[groupId as PlId] ?? {},
+    ) as string[];
 
     if (!setEquals(calculatedGroup, datasetGroup)) {
       return false;
@@ -243,8 +259,7 @@ function syncGroupsToDataset(dataset: GroupedDataset): void {
     // update data
     const groupToSample = {} as Record<PlId, Record<PlId, string>>;
     for (const [groupId, sampleNames] of Object.entries(calculatedGroups)) {
-      if (!sampleNames)
-        return;
+      if (!sampleNames) return;
       const mapping = {} as Record<PlId, string>;
       for (const sampleName of sampleNames) {
         const sampleId = getOrCreateSample(app, sampleName);
@@ -259,17 +274,21 @@ function syncGroupsToDataset(dataset: GroupedDataset): void {
   app.allSettled();
 }
 
-const loadingDatasets = computed(() => autoExtractDatasets.value.filter((ds) => !sampleGroupsAreCalculated(ds)));
+const loadingDatasets = computed(() =>
+  autoExtractDatasets.value.filter((ds) => !sampleGroupsAreCalculated(ds)),
+);
 
-const datasetsToUpdate = computed(() => autoExtractDatasets.value.filter((ds) => !sampleGroupsAreSynced(ds)));
+const datasetsToUpdate = computed(() =>
+  autoExtractDatasets.value.filter((ds) => !sampleGroupsAreSynced(ds)),
+);
 
 const nSamples = computed(() =>
   datasetsToUpdate.value
     .flatMap((ds) =>
-      Object
-        .values(parsedSampleGroups.value?.[ds.id] ?? {})
-        .map((s) => s?.length ?? 0),
-    ).reduce((a, b) => a + b, 0));
+      Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).map((s) => s?.length ?? 0),
+    )
+    .reduce((a, b) => a + b, 0),
+);
 
 async function updateSamples() {
   for (const ds of datasetsToUpdate.value) {
@@ -282,7 +301,7 @@ async function updateSamples() {
 <template>
   <!-- MultiplexedFastq datasets: show import samplesheet button -->
   <PlAlert v-if="hasRowsWithoutSamples" type="success">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; justify-content: space-between">
       <span>Import samplesheet to assign samples to file groups.</span>
       <PlBtnPrimary justifyCenter @click.stop="importSamplesheet">Import samplesheet</PlBtnPrimary>
     </div>
@@ -290,14 +309,13 @@ async function updateSamples() {
 
   <!-- Auto-extract datasets: show progress or import button -->
   <div v-if="loadingDatasets.length > 0" class="progress-container">
-    <PlProgressCell
-      stage="running"
-      step="Extracting samples..."
-    />
+    <PlProgressCell stage="running" step="Extracting samples..." />
   </div>
   <PlAlert v-else-if="datasetsToUpdate.length > 0" type="success">
-    <div style="display: flex; align-items: center; justify-content: space-between;">
-      <span>There are {{ nSamples }} samples in file groups: click "Import Samples" to proceed.</span>
+    <div style="display: flex; align-items: center; justify-content: space-between">
+      <span
+        >There are {{ nSamples }} samples in file groups: click "Import Samples" to proceed.</span
+      >
       <PlBtnPrimary justifyCenter @click.stop="updateSamples">Import samples</PlBtnPrimary>
     </div>
   </PlAlert>
@@ -313,10 +331,7 @@ async function updateSamples() {
   />
 
   <!-- Import error dialog -->
-  <ImportErrorDialog
-    :error-message="importState.errorMessage"
-    @close="clearErrorMessage"
-  />
+  <ImportErrorDialog :error-message="importState.errorMessage" @close="clearErrorMessage" />
 </template>
 
 <style>

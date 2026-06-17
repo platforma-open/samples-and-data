@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PlBtnPrimary, PlDialogModal } from '@platforma-sdk/ui-vue';
+import { PlBtnPrimary, PlDialogModal } from "@platforma-sdk/ui-vue";
 
 const props = defineProps<{
   errorMessage?: { title: string; message?: string };
@@ -27,4 +27,3 @@ const emit = defineEmits<{
     </template>
   </PlDialogModal>
 </template>
-

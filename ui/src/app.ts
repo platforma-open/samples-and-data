@@ -1,9 +1,9 @@
-import { platforma } from '@platforma-open/milaboratories.samples-and-data.model';
-import { defineAppV3 } from '@platforma-sdk/ui-vue';
-import { computed, ref } from 'vue';
-import DatasetPage from './pages/DatasetPage.vue';
-import MetadataPage from './pages/MetadataPage.vue';
-import NewDatasetPage from './pages/NewDatasetPage.vue';
+import { platforma } from "@platforma-open/milaboratories.samples-and-data.model";
+import { defineAppV3 } from "@platforma-sdk/ui-vue";
+import { computed, ref } from "vue";
+import DatasetPage from "./pages/DatasetPage.vue";
+import MetadataPage from "./pages/MetadataPage.vue";
+import NewDatasetPage from "./pages/NewDatasetPage.vue";
 
 export const sdkPlugin = defineAppV3(platforma, (app) => {
   const showImportDataset = ref(false);
@@ -18,14 +18,14 @@ export const sdkPlugin = defineAppV3(platforma, (app) => {
   function inferNewDatasetLabel() {
     let i = app.model.data.datasets.length + 1;
     while (i < 1000) {
-      let label = 'My Dataset';
+      let label = "My Dataset";
       if (i > 0) {
         label = label + ` (${i})`;
       }
       if (app.model.data.datasets.findIndex((d) => d.label === label) === -1) return label;
       ++i;
     }
-    return 'New Dataset';
+    return "New Dataset";
   }
 
   return {
@@ -60,24 +60,22 @@ export const sdkPlugin = defineAppV3(platforma, (app) => {
         //   totalWithUnknownSize,
         //   doneWithUnknownSize,
         // });
-        if (totalDone === totalImports)
-          return false;
+        if (totalDone === totalImports) return false;
         const knownSizeProgress = doneBytes / totalBytes;
         const unknownSizeProgress = doneWithUnknownSize / totalWithUnknownSize;
         let progress = 0;
         if (totalImports - totalWithUnknownSize > 0 && totalBytes > 0)
           progress += knownSizeProgress * (totalImports - totalWithUnknownSize);
-        if (totalWithUnknownSize > 0)
-          progress += unknownSizeProgress * totalWithUnknownSize;
+        if (totalWithUnknownSize > 0) progress += unknownSizeProgress * totalWithUnknownSize;
         progress = progress / totalImports;
         // console.log(progress);
         return progress;
       }
     },
     routes: {
-      '/': () => MetadataPage,
-      '/dataset': () => DatasetPage,
-      '/new-dataset': () => NewDatasetPage,
+      "/": () => MetadataPage,
+      "/dataset": () => DatasetPage,
+      "/new-dataset": () => NewDatasetPage,
     },
   };
 });
