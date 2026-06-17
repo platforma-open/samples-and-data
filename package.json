@@ -12,7 +12,7 @@
     "fmt": "turbo run fmt",
     "check": "turbo run check",
     "do-pack": "turbo run do-pack",
-    "update": "block-tools structure refresh --update-deps-only && pnpm i && block-tools structure refresh && pnpm fmt"
+    "update": "block-tools structure refresh --update-deps-only && pnpm i && block-tools structure refresh && pnpm i && pnpm fmt"
   },
   "devDependencies": {
     "@changesets/cli": "catalog:",
