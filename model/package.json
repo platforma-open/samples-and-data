@@ -29,8 +29,7 @@
     "@milaboratories/ts-builder": "catalog:",
     "@milaboratories/ts-configs": "catalog:",
     "@platforma-sdk/block-tools": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:",
-    "vitest": "catalog:"
+    "@platforma-sdk/eslint-config": "catalog:"
   },
   "peerDependencies": {
     "@types/node": "*",
