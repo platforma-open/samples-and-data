@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data",
-  "version": "1.17.3",
+  "version": "1.17.4",
   "files": [
     "index.d.ts",
     "index.js"

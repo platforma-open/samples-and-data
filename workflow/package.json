@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.workflow",
-  "version": "2.7.1",
+  "version": "2.7.2",
   "description": "Tengo-based template",
   "files": [
     "./dist/**/*"

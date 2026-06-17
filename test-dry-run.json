@@ -1,16 +1,16 @@
 
-> @platforma-open/milaboratories.samples-and-data@ test:dry-run /home/runner/work/samples-and-data/samples-and-data
-> PL_PKG_DEV=local turbo run test --dry-run=json
+> @ test:dry-run /home/runner/work/samples-and-data/samples-and-data
+> env PL_PKG_DEV=local turbo run test --dry-run=json
 
 {
-  "id": "3E3FjvL7ofaqKNQOA2KqYa4sjO7",
+  "id": "3FHF5pRKLslbi5zp9UCYlmFFGMr",
   "version": "1",
   "turboVersion": "2.6.1",
   "monorepo": true,
   "globalCacheInputs": {
     "rootKey": "I can’t see ya, but I know you’re here",
     "files": {},
-    "hashOfExternalDependencies": "527da41541935d98",
+    "hashOfExternalDependencies": "e7715ec7d4910e11",
     "hashOfInternalDependencies": "",
     "environmentVariables": {
       "specified": {
@@ -39,21 +39,21 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "c72d3bfa354139ed",
+      "hash": "4ac4ef5fdca14c03",
       "inputs": {
-        "CHANGELOG.md": "155b83860751f4a2b86ef204595f1002397aeb82",
-        "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
-        "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "b10548141c3583bea50b7ffab47c19a904618278"
+        "CHANGELOG.md": "01d3749476f6f736ebdaa41e1e5c2df13e91e22e",
+        "index.d.ts": "d2bd596504f42fc0741862d0c497b1f270db9e4b",
+        "index.js": "469ef77cb2825c26a3184199b5d5eb1cabc20c09",
+        "package.json": "8aa054a8310fb74b0ff7634e3991b54634cafc9e"
       },
-      "hashOfExternalDependencies": "19f12c15d41cc7b5",
+      "hashOfExternalDependencies": "239afa3d3e5e283f",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "shx rm -rf block-pack && block-tools pack",
+      "command": "shx rm -rf ./block-pack && block-tools pack",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -64,13 +64,15 @@
       "logFile": "block/.turbo/turbo-build.log",
       "directory": "block",
       "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data#check",
         "@platforma-open/milaboratories.samples-and-data.model#build",
         "@platforma-open/milaboratories.samples-and-data.ui#build",
         "@platforma-open/milaboratories.samples-and-data.workflow#build"
       ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data#test",
-        "@platforma-open/milaboratories.samples-and-data.test#build"
+        "@platforma-open/milaboratories.samples-and-data.test#build",
+        "@platforma-open/milaboratories.samples-and-data.test#check"
       ],
       "with": [],
       "resolvedTaskDefinition": {
@@ -81,7 +83,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -90,6 +93,7 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
@@ -101,13 +105,76 @@
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data#check",
+      "task": "check",
+      "package": "@platforma-open/milaboratories.samples-and-data",
+      "hash": "851e579563d76f1b",
+      "inputs": {
+        "CHANGELOG.md": "01d3749476f6f736ebdaa41e1e5c2df13e91e22e",
+        "index.d.ts": "d2bd596504f42fc0741862d0c497b1f270db9e4b",
+        "index.js": "469ef77cb2825c26a3184199b5d5eb1cabc20c09",
+        "package.json": "8aa054a8310fb74b0ff7634e3991b54634cafc9e"
+      },
+      "hashOfExternalDependencies": "239afa3d3e5e283f",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "block/.turbo/turbo-check.log",
+      "directory": "block",
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data.model#build",
+        "@platforma-open/milaboratories.samples-and-data.ui#build",
+        "@platforma-open/milaboratories.samples-and-data.workflow#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data#build",
+        "@platforma-open/milaboratories.samples-and-data#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
         "inferred": [],
         "passthrough": null
       }
@@ -116,14 +183,14 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data",
-      "hash": "28447bd72f808f06",
+      "hash": "e7636fa0dd669f84",
       "inputs": {
-        "CHANGELOG.md": "155b83860751f4a2b86ef204595f1002397aeb82",
-        "index.d.ts": "1ba908d82f37b11a66fc326a88a79ee6ef965fc7",
-        "index.js": "e7798d420641e13b2104408b1cf4df20f67c654e",
-        "package.json": "b10548141c3583bea50b7ffab47c19a904618278"
+        "CHANGELOG.md": "01d3749476f6f736ebdaa41e1e5c2df13e91e22e",
+        "index.d.ts": "d2bd596504f42fc0741862d0c497b1f270db9e4b",
+        "index.js": "469ef77cb2825c26a3184199b5d5eb1cabc20c09",
+        "package.json": "8aa054a8310fb74b0ff7634e3991b54634cafc9e"
       },
-      "hashOfExternalDependencies": "19f12c15d41cc7b5",
+      "hashOfExternalDependencies": "239afa3d3e5e283f",
       "cache": {
         "local": false,
         "remote": false,
@@ -137,7 +204,8 @@
       "logFile": "block/.turbo/turbo-test.log",
       "directory": "block",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data#build"
+        "@platforma-open/milaboratories.samples-and-data#build",
+        "@platforma-open/milaboratories.samples-and-data#check"
       ],
       "dependents": [],
       "with": [],
@@ -145,7 +213,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -188,26 +257,26 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.model#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.model",
-      "hash": "90d146e93d07545d",
+      "hash": "f100c9af565aaa3c",
       "inputs": {
-        "CHANGELOG.md": "7e3af3723d056ab7cec1ab412bd98c7b80b11d2a",
-        "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "60a57bb3eb902d551f432cd2060846448f448d92",
-        "src/args.ts": "d1cb87d07a6346a133e87a97e41e82cdfb2f1479",
-        "src/data_model.ts": "1e9ec10b3be0fa4b32ec87d1527940d7cb132890",
-        "src/index.ts": "60b898c2eec390a4c438bb5992f0d16e03d29be9",
-        "src/multiplexing-rules-validation.ts": "5af2bc9fbd64ea27485ebc50498038b1fabd6db5",
-        "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
-        "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97"
+        ".oxfmtrc.json": "7eff5e7af0f22a7f35ea93588fc49e4e334d9673",
+        ".oxlintrc.json": "70ab6b8dc2ea269c627ab5a96ee7fef9e1db1775",
+        "CHANGELOG.md": "a8ccb6035368b5dc64b143dd60ba12f603dbaa7b",
+        "package.json": "a0ebf302376737e887fea7f4d7d5e32047e0612c",
+        "src/args.ts": "6218d4af1c8ae35a9d4c13851f8d338308eaa353",
+        "src/data_model.ts": "d582da67a8246c374b3f04b5b79685274310883b",
+        "src/index.ts": "b460f9878db20e2a4778dc16935486a44cbdfa9b",
+        "src/multiplexing-rules-validation.ts": "06a295c57f7e5023f66c636d4d562b1b9fc27d40",
+        "tsconfig.json": "ccde31405fe6ea30cb92f3d13c2388b4df582222"
       },
-      "hashOfExternalDependencies": "994143a3a97d5a16",
+      "hashOfExternalDependencies": "ccf5b1d529e10ffe",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "tsup && vite build && block-tools build-model",
+      "command": "ts-builder build --target block-model && block-tools build-model",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -217,12 +286,17 @@
       "excludedOutputs": null,
       "logFile": "model/.turbo/turbo-build.log",
       "directory": "model",
-      "dependencies": [],
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data.model#check"
+      ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data#build",
+        "@platforma-open/milaboratories.samples-and-data#check",
         "@platforma-open/milaboratories.samples-and-data.model#test",
         "@platforma-open/milaboratories.samples-and-data.test#build",
-        "@platforma-open/milaboratories.samples-and-data.ui#build"
+        "@platforma-open/milaboratories.samples-and-data.test#check",
+        "@platforma-open/milaboratories.samples-and-data.ui#build",
+        "@platforma-open/milaboratories.samples-and-data.ui#check"
       ],
       "with": [],
       "resolvedTaskDefinition": {
@@ -233,7 +307,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -242,24 +317,90 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
         "interactive": false
       },
       "expandedOutputs": [],
-      "framework": "vite",
+      "framework": "",
       "envMode": "strict",
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data.model#check",
+      "task": "check",
+      "package": "@platforma-open/milaboratories.samples-and-data.model",
+      "hash": "895784c9009b4370",
+      "inputs": {
+        ".oxfmtrc.json": "7eff5e7af0f22a7f35ea93588fc49e4e334d9673",
+        ".oxlintrc.json": "70ab6b8dc2ea269c627ab5a96ee7fef9e1db1775",
+        "CHANGELOG.md": "a8ccb6035368b5dc64b143dd60ba12f603dbaa7b",
+        "package.json": "a0ebf302376737e887fea7f4d7d5e32047e0612c",
+        "src/args.ts": "6218d4af1c8ae35a9d4c13851f8d338308eaa353",
+        "src/data_model.ts": "d582da67a8246c374b3f04b5b79685274310883b",
+        "src/index.ts": "b460f9878db20e2a4778dc16935486a44cbdfa9b",
+        "src/multiplexing-rules-validation.ts": "06a295c57f7e5023f66c636d4d562b1b9fc27d40",
+        "tsconfig.json": "ccde31405fe6ea30cb92f3d13c2388b4df582222"
+      },
+      "hashOfExternalDependencies": "ccf5b1d529e10ffe",
+      "cache": {
+        "local": true,
+        "remote": false,
+        "status": "HIT",
+        "source": "LOCAL",
+        "timeSaved": 2793
+      },
+      "command": "ts-builder check --target block-model",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "model/.turbo/turbo-check.log",
+      "directory": "model",
+      "dependencies": [],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data.model#build",
+        "@platforma-open/milaboratories.samples-and-data.model#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
         "inferred": [],
         "passthrough": null
       }
@@ -268,19 +409,19 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.model#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.model",
-      "hash": "bb569cd0be746ca3",
+      "hash": "f920d55e4b03b282",
       "inputs": {
-        "CHANGELOG.md": "7e3af3723d056ab7cec1ab412bd98c7b80b11d2a",
-        "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "60a57bb3eb902d551f432cd2060846448f448d92",
-        "src/args.ts": "d1cb87d07a6346a133e87a97e41e82cdfb2f1479",
-        "src/data_model.ts": "1e9ec10b3be0fa4b32ec87d1527940d7cb132890",
-        "src/index.ts": "60b898c2eec390a4c438bb5992f0d16e03d29be9",
-        "src/multiplexing-rules-validation.ts": "5af2bc9fbd64ea27485ebc50498038b1fabd6db5",
-        "tsconfig.json": "4593cbadcd4a4144c813512c01f58573b4b0425c",
-        "vite.config.mts": "a500058540e1b93dbfd5840e46f7823affd46a97"
+        ".oxfmtrc.json": "7eff5e7af0f22a7f35ea93588fc49e4e334d9673",
+        ".oxlintrc.json": "70ab6b8dc2ea269c627ab5a96ee7fef9e1db1775",
+        "CHANGELOG.md": "a8ccb6035368b5dc64b143dd60ba12f603dbaa7b",
+        "package.json": "a0ebf302376737e887fea7f4d7d5e32047e0612c",
+        "src/args.ts": "6218d4af1c8ae35a9d4c13851f8d338308eaa353",
+        "src/data_model.ts": "d582da67a8246c374b3f04b5b79685274310883b",
+        "src/index.ts": "b460f9878db20e2a4778dc16935486a44cbdfa9b",
+        "src/multiplexing-rules-validation.ts": "06a295c57f7e5023f66c636d4d562b1b9fc27d40",
+        "tsconfig.json": "ccde31405fe6ea30cb92f3d13c2388b4df582222"
       },
-      "hashOfExternalDependencies": "994143a3a97d5a16",
+      "hashOfExternalDependencies": "ccf5b1d529e10ffe",
       "cache": {
         "local": false,
         "remote": false,
@@ -294,7 +435,8 @@
       "logFile": "model/.turbo/turbo-test.log",
       "directory": "model",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.model#build"
+        "@platforma-open/milaboratories.samples-and-data.model#build",
+        "@platforma-open/milaboratories.samples-and-data.model#check"
       ],
       "dependents": [],
       "with": [],
@@ -302,7 +444,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -319,7 +462,7 @@
         "interactive": false
       },
       "expandedOutputs": [],
-      "framework": "vite",
+      "framework": "",
       "envMode": "strict",
       "environmentVariables": {
         "specified": {
@@ -345,22 +488,22 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
-      "hash": "728b80f6724a2198",
+      "hash": "d8fb55af94d710cf",
       "inputs": {
-        "CHANGELOG.md": "d5a43c3970653b4bf769b448f6c59d76cc5ca9e2",
-        "package.json": "6c78aa65e28dcf6d4ec850de8fde9c8dbb5ea172",
+        "CHANGELOG.md": "67fc099c463985f56c47efc5da2d8de9eddbaa4f",
+        "package.json": "bc489f5483da1a1da5fce9b4d92d2cacb656041b",
         "src/README.md": "c567449f53d8c70c0f01b282710a46e81815c5be",
         "src/main.py": "4e418b8e3e58fba3fcd18c3d4efe17e7b3d47921",
         "src/requirements.txt": "6bdb32f13285ccec2da95efdd9b5ec60621f7320"
       },
-      "hashOfExternalDependencies": "a6b8a3d9585e10f9",
+      "hashOfExternalDependencies": "0c832a67a7ecbffa",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "shx rm -f *.tgz && shx rm -rf dist && pl-pkg build",
+      "command": "pl-pkg build",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -370,10 +513,13 @@
       "excludedOutputs": null,
       "logFile": "software/parse-h5ad/.turbo/turbo-build.log",
       "directory": "software/parse-h5ad",
-      "dependencies": [],
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#check"
+      ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data.parse-h5ad#test",
-        "@platforma-open/milaboratories.samples-and-data.workflow#build"
+        "@platforma-open/milaboratories.samples-and-data.workflow#build",
+        "@platforma-open/milaboratories.samples-and-data.workflow#check"
       ],
       "with": [],
       "resolvedTaskDefinition": {
@@ -384,7 +530,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -393,6 +540,7 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
@@ -404,13 +552,73 @@
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data.parse-h5ad#check",
+      "task": "check",
+      "package": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
+      "hash": "ad333dd518c73264",
+      "inputs": {
+        "CHANGELOG.md": "67fc099c463985f56c47efc5da2d8de9eddbaa4f",
+        "package.json": "bc489f5483da1a1da5fce9b4d92d2cacb656041b",
+        "src/README.md": "c567449f53d8c70c0f01b282710a46e81815c5be",
+        "src/main.py": "4e418b8e3e58fba3fcd18c3d4efe17e7b3d47921",
+        "src/requirements.txt": "6bdb32f13285ccec2da95efdd9b5ec60621f7320"
+      },
+      "hashOfExternalDependencies": "0c832a67a7ecbffa",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "software/parse-h5ad/.turbo/turbo-check.log",
+      "directory": "software/parse-h5ad",
+      "dependencies": [],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build",
+        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
         "inferred": [],
         "passthrough": null
       }
@@ -419,15 +627,15 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-h5ad#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-h5ad",
-      "hash": "262c4d88e1fd57aa",
+      "hash": "7b0ac72f30be3f14",
       "inputs": {
-        "CHANGELOG.md": "d5a43c3970653b4bf769b448f6c59d76cc5ca9e2",
-        "package.json": "6c78aa65e28dcf6d4ec850de8fde9c8dbb5ea172",
+        "CHANGELOG.md": "67fc099c463985f56c47efc5da2d8de9eddbaa4f",
+        "package.json": "bc489f5483da1a1da5fce9b4d92d2cacb656041b",
         "src/README.md": "c567449f53d8c70c0f01b282710a46e81815c5be",
         "src/main.py": "4e418b8e3e58fba3fcd18c3d4efe17e7b3d47921",
         "src/requirements.txt": "6bdb32f13285ccec2da95efdd9b5ec60621f7320"
       },
-      "hashOfExternalDependencies": "a6b8a3d9585e10f9",
+      "hashOfExternalDependencies": "0c832a67a7ecbffa",
       "cache": {
         "local": false,
         "remote": false,
@@ -441,7 +649,8 @@
       "logFile": "software/parse-h5ad/.turbo/turbo-test.log",
       "directory": "software/parse-h5ad",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build"
+        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build",
+        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#check"
       ],
       "dependents": [],
       "with": [],
@@ -449,7 +658,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -492,24 +702,24 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-      "hash": "4da4e387bb52bbeb",
+      "hash": "ceb310ef6b1530e6",
       "inputs": {
-        "CHANGELOG.md": "5f629269ff09da4ab0429452fda6bb06f1855552",
+        "CHANGELOG.md": "2acb0f12961fa69c41cb2554f95d47e729f9d3fc",
         "Dockerfile": "f52729b1af1354bb3a78ed5b11a408aba7aef759",
-        "package.json": "4eb7767e74f3b939a7e193b7043f4fde9c2cbfea",
+        "package.json": "b36ad5890f09a8f2f1a113571290c53213bd36c6",
         "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
         "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
         "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
         "src/requirements.txt": "434c5c3ea85e062a05bc8e6627e98966bcab63e3"
       },
-      "hashOfExternalDependencies": "1aa068bfa2df2fb9",
+      "hashOfExternalDependencies": "d371fad6d46109c5",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "shx rm -f *.tgz && shx rm -rf dist && pl-pkg build",
+      "command": "pl-pkg build",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -519,10 +729,13 @@
       "excludedOutputs": null,
       "logFile": "software/parse-seurat/.turbo/turbo-build.log",
       "directory": "software/parse-seurat",
-      "dependencies": [],
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#check"
+      ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data.parse-seurat#test",
-        "@platforma-open/milaboratories.samples-and-data.workflow#build"
+        "@platforma-open/milaboratories.samples-and-data.workflow#build",
+        "@platforma-open/milaboratories.samples-and-data.workflow#check"
       ],
       "with": [],
       "resolvedTaskDefinition": {
@@ -533,7 +746,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -542,6 +756,7 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
@@ -553,13 +768,75 @@
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#check",
+      "task": "check",
+      "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
+      "hash": "aa8aa06c25ef8a9b",
+      "inputs": {
+        "CHANGELOG.md": "2acb0f12961fa69c41cb2554f95d47e729f9d3fc",
+        "Dockerfile": "f52729b1af1354bb3a78ed5b11a408aba7aef759",
+        "package.json": "b36ad5890f09a8f2f1a113571290c53213bd36c6",
+        "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
+        "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
+        "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
+        "src/requirements.txt": "434c5c3ea85e062a05bc8e6627e98966bcab63e3"
+      },
+      "hashOfExternalDependencies": "d371fad6d46109c5",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "<NONEXISTENT>",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "software/parse-seurat/.turbo/turbo-check.log",
+      "directory": "software/parse-seurat",
+      "dependencies": [],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#build",
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
         "inferred": [],
         "passthrough": null
       }
@@ -568,17 +845,17 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.parse-seurat#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.parse-seurat",
-      "hash": "892086336db16c10",
+      "hash": "61db843c41a768f2",
       "inputs": {
-        "CHANGELOG.md": "5f629269ff09da4ab0429452fda6bb06f1855552",
+        "CHANGELOG.md": "2acb0f12961fa69c41cb2554f95d47e729f9d3fc",
         "Dockerfile": "f52729b1af1354bb3a78ed5b11a408aba7aef759",
-        "package.json": "4eb7767e74f3b939a7e193b7043f4fde9c2cbfea",
+        "package.json": "b36ad5890f09a8f2f1a113571290c53213bd36c6",
         "src/README.md": "13f96ae33f2e0556bcf98ed946f5f028432a75ca",
         "src/main.R": "f373e87ffbdf863ce24ef62a386cfb5b0167d8ef",
         "src/renv.lock": "e3b2c301d3a1491820cd9af440df011c0c740037",
         "src/requirements.txt": "434c5c3ea85e062a05bc8e6627e98966bcab63e3"
       },
-      "hashOfExternalDependencies": "1aa068bfa2df2fb9",
+      "hashOfExternalDependencies": "d371fad6d46109c5",
       "cache": {
         "local": false,
         "remote": false,
@@ -592,7 +869,8 @@
       "logFile": "software/parse-seurat/.turbo/turbo-test.log",
       "directory": "software/parse-seurat",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.parse-seurat#build"
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#build",
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#check"
       ],
       "dependents": [],
       "with": [],
@@ -600,7 +878,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -643,22 +922,23 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "7597787e8f0c8866",
+      "hash": "65c2ffdda7a1d90e",
       "inputs": {
-        "CHANGELOG.md": "3d7b4441171304163a1f4122336e66da85e809e2",
+        ".oxfmtrc.json": "7eff5e7af0f22a7f35ea93588fc49e4e334d9673",
+        ".oxlintrc.json": "55dd4d40f6eddd0c6283f1db3f7a8196c0b853cb",
+        "CHANGELOG.md": "f3a0912ccbd75c6b32785a32197850e563110b80",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "assets/small_data_R1.fastq.gz": "78e126e7f7d6a5a21dff0ce18334fe5cf0cce622",
         "assets/small_data_R2.fastq.gz": "0f80a37feffeba95e018ef60ff1dde37e1ba68f4",
         "assets/test.h5": "9daeafb9864cf43055ae93beb0afd6c7d144bfa4",
         "assets/test.h5ad": "13adc1dc4ad66578b1df6c3a58ccb2cb3a833b3a",
         "assets/test.rds": "926386adc628d1f64597e5411633267d517356d2",
-        "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "748eee67e4118877496551c5a8443e0a5ea87d04",
-        "src/wf.test.ts": "a1d8ef8308e3df0a471f35a2db68743b64b0bf9e",
-        "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
-        "vitest.config.mts": "c4ce64590b6453ee6d197ee2322c9e7d564410d5"
+        "package.json": "d4fe9d88b822c35f29f904d7495fb04955d01013",
+        "src/wf.test.ts": "acda5874599b716447d1219a0a4f94b813026017",
+        "tsconfig.json": "d7ac02fb732f19ca657d5900b8e0ef2dd1e60e6b",
+        "vitest.config.mts": "d823375d7b1f5552f5db51feb83dbd1b35523754"
       },
-      "hashOfExternalDependencies": "c1c8b28fe9e4d4ff",
+      "hashOfExternalDependencies": "c1dfb678bed6b43f",
       "cache": {
         "local": false,
         "remote": false,
@@ -677,7 +957,8 @@
       "directory": "test",
       "dependencies": [
         "@platforma-open/milaboratories.samples-and-data#build",
-        "@platforma-open/milaboratories.samples-and-data.model#build"
+        "@platforma-open/milaboratories.samples-and-data.model#build",
+        "@platforma-open/milaboratories.samples-and-data.test#check"
       ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data.test#test"
@@ -691,7 +972,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -700,6 +982,7 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
@@ -711,13 +994,84 @@
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data.test#check",
+      "task": "check",
+      "package": "@platforma-open/milaboratories.samples-and-data.test",
+      "hash": "342650751c381f8c",
+      "inputs": {
+        ".oxfmtrc.json": "7eff5e7af0f22a7f35ea93588fc49e4e334d9673",
+        ".oxlintrc.json": "55dd4d40f6eddd0c6283f1db3f7a8196c0b853cb",
+        "CHANGELOG.md": "f3a0912ccbd75c6b32785a32197850e563110b80",
+        "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+        "assets/small_data_R1.fastq.gz": "78e126e7f7d6a5a21dff0ce18334fe5cf0cce622",
+        "assets/small_data_R2.fastq.gz": "0f80a37feffeba95e018ef60ff1dde37e1ba68f4",
+        "assets/test.h5": "9daeafb9864cf43055ae93beb0afd6c7d144bfa4",
+        "assets/test.h5ad": "13adc1dc4ad66578b1df6c3a58ccb2cb3a833b3a",
+        "assets/test.rds": "926386adc628d1f64597e5411633267d517356d2",
+        "package.json": "d4fe9d88b822c35f29f904d7495fb04955d01013",
+        "src/wf.test.ts": "acda5874599b716447d1219a0a4f94b813026017",
+        "tsconfig.json": "d7ac02fb732f19ca657d5900b8e0ef2dd1e60e6b",
+        "vitest.config.mts": "d823375d7b1f5552f5db51feb83dbd1b35523754"
+      },
+      "hashOfExternalDependencies": "c1dfb678bed6b43f",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "ts-builder check --target block-test",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "test/.turbo/turbo-check.log",
+      "directory": "test",
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data#build",
+        "@platforma-open/milaboratories.samples-and-data.model#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data.test#build",
+        "@platforma-open/milaboratories.samples-and-data.test#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
         "inferred": [],
         "passthrough": null
       }
@@ -726,36 +1080,38 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.test#test",
       "task": "test",
       "package": "@platforma-open/milaboratories.samples-and-data.test",
-      "hash": "95cf4b8161dc435b",
+      "hash": "7262b3d9e6e108bd",
       "inputs": {
-        "CHANGELOG.md": "3d7b4441171304163a1f4122336e66da85e809e2",
+        ".oxfmtrc.json": "7eff5e7af0f22a7f35ea93588fc49e4e334d9673",
+        ".oxlintrc.json": "55dd4d40f6eddd0c6283f1db3f7a8196c0b853cb",
+        "CHANGELOG.md": "f3a0912ccbd75c6b32785a32197850e563110b80",
         "assets/.gitkeep": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
         "assets/small_data_R1.fastq.gz": "78e126e7f7d6a5a21dff0ce18334fe5cf0cce622",
         "assets/small_data_R2.fastq.gz": "0f80a37feffeba95e018ef60ff1dde37e1ba68f4",
         "assets/test.h5": "9daeafb9864cf43055ae93beb0afd6c7d144bfa4",
         "assets/test.h5ad": "13adc1dc4ad66578b1df6c3a58ccb2cb3a833b3a",
         "assets/test.rds": "926386adc628d1f64597e5411633267d517356d2",
-        "eslint.config.mjs": "0c8c7ff451678d3ed2767ddd0d018c90d3317298",
-        "package.json": "748eee67e4118877496551c5a8443e0a5ea87d04",
-        "src/wf.test.ts": "a1d8ef8308e3df0a471f35a2db68743b64b0bf9e",
-        "tsconfig.json": "64ebfa332d028a50e3ddadaab4ad97b44a191599",
-        "vitest.config.mts": "c4ce64590b6453ee6d197ee2322c9e7d564410d5"
+        "package.json": "d4fe9d88b822c35f29f904d7495fb04955d01013",
+        "src/wf.test.ts": "acda5874599b716447d1219a0a4f94b813026017",
+        "tsconfig.json": "d7ac02fb732f19ca657d5900b8e0ef2dd1e60e6b",
+        "vitest.config.mts": "d823375d7b1f5552f5db51feb83dbd1b35523754"
       },
-      "hashOfExternalDependencies": "c1c8b28fe9e4d4ff",
+      "hashOfExternalDependencies": "c1dfb678bed6b43f",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "vitest",
+      "command": "vitest run --passWithNoTests",
       "cliArguments": [],
       "outputs": null,
       "excludedOutputs": null,
       "logFile": "test/.turbo/turbo-test.log",
       "directory": "test",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.test#build"
+        "@platforma-open/milaboratories.samples-and-data.test#build",
+        "@platforma-open/milaboratories.samples-and-data.test#check"
       ],
       "dependents": [],
       "with": [],
@@ -763,7 +1119,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -806,54 +1163,55 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.ui#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.ui",
-      "hash": "31773a7713302575",
+      "hash": "a0d9c85f0e68cbf2",
       "inputs": {
-        "CHANGELOG.md": "34bd4394e90edc8f6cb605f02c95877b75763b21",
-        "eslint.config.mjs": "30e2871b6d4cc4776ac969c3a0e034a23e2fe766",
-        "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "8b0af29ad25c4e3340c3de2af5a78a4df6a4f93e",
-        "src/app.ts": "4d659c64a88e2df8dde77b98862a31a0548043f8",
-        "src/components/DatasetCell.vue": "8b635120fd9ccaabe98e429425b5162c25e6273d",
-        "src/components/ImportErrorDialog.vue": "86a8df112092ef1ce5f820791fbab75fed894d03",
-        "src/components/MultiplexingRulesSection.vue": "d7d43b20948190d1658458c19b2192693ec6f7ba",
-        "src/composables/useFileDatasetPage.ts": "299e0be0c8bd540c34de4c391b25a07d7dc573b3",
-        "src/composables/useMetadataImport.ts": "4b84e6af208c85205c69828e9ec9557a417d9f4c",
-        "src/composables/useTableImport.ts": "ec050f6edf1f05f7ad31fa073186ed7e81774619",
-        "src/dataimport.test.ts": "ef5ddf399842109fb9fc078a7ecb8a3f9b804a0e",
-        "src/dataimport.ts": "7068fededb50ad10b3e7215350486eba682fe82a",
-        "src/dialogs/ImportDatasetDialog.vue": "0ecf0c0ce776f6a12749d868d86913f9a3119b0b",
-        "src/dialogs/ImportMetadataDialog.vue": "b958669dc9ea32ddce60443d0127b376b4249280",
-        "src/dialogs/ImportSamplesheetDialog.vue": "24aad61f0b81c1c07d95b5a6e09ef6d69269686a",
-        "src/dialogs/ParsedFilesList.vue": "1e86beb389da2c63b1b74c8e99f93eb2e3f45cc1",
-        "src/dialogs/SyncDatasetDialog.vue": "7c0934571e2a964f32d641216a3c929d9a822a83",
-        "src/dialogs/datasets.ts": "5f53750b5555cb542224d10df282f039e81708db",
-        "src/dialogs/file_name_parser.test.ts": "846424bfc7e39bd32800917e712e0912e37e0550",
-        "src/dialogs/file_name_parser.ts": "b4798fee35dfe72b1dc507c938f3a15dcc85c627",
-        "src/main.ts": "6090aa57e77e5fecbb7a24f608c0664b1aebf48b",
-        "src/pages/BulkCountMatrixDatasetPage.vue": "49dfcc495b4de2b152994152259657e2c13cd9a8",
-        "src/pages/CellRangerMtxDatasetPage.vue": "d601dcbeac06b16d7bb79d112917853b8535c069",
-        "src/pages/DatasetPage.vue": "3653a45ee5b7b42b036f14008ad28cfb6e140c52",
-        "src/pages/FastaDatasetPage.vue": "a81974c49477df7b16116d6fbbd67503e7b5c145",
-        "src/pages/FastqDatasetPage.vue": "7a05dbe82a1fa8d4bd7197bede95c3d501051c87",
-        "src/pages/H5DatasetPage.vue": "13a4d1a83f05d1681442d039d9651a3162caa646",
-        "src/pages/H5adDatasetPage.vue": "0dfa8c4f6984b5e1e8376bc907bbc9715d96b1ff",
-        "src/pages/MetadataPage.vue": "109472ba9f4252bccf431e63bca9d7a596b440c5",
-        "src/pages/MultiSampleH5adDatasetPage.vue": "1df64c7fcfdc658262a006a4c6688ee0e9e331c8",
-        "src/pages/MultiSampleSeuratDatasetPage.vue": "92e6f1477cee76a129b8386d475f67a61afa9deb",
-        "src/pages/MultilaneFastqDatasetPage.vue": "95440ec82809a3e35ea1f5391262797971d4019b",
-        "src/pages/MultiplexedFastqDatasetPage.vue": "bdec66e718ac5ee2591135d610317e8031eb173c",
-        "src/pages/NewDatasetPage.vue": "abc9ab1b8dc8215a652835179b305fdf3d449a32",
-        "src/pages/SeuratDatasetPage.vue": "1b406876ca23f675888a2ef931c5f398f4dbb26c",
-        "src/pages/TaggedFastqDatasetPage.vue": "9a4034c804bbfb677e2d99ee4dccc23c6a32a27c",
-        "src/pages/TaggedXsvDatasetPage.vue": "2d234d9a13dc4ddd899770953f1259cb0e9e2278",
-        "src/pages/XsvDatasetPage.vue": "ad2982076b3adb74761d54cefa2ab38829ee4aa4",
-        "src/sample_matching.test.ts": "5f41af4a32aeb5aae753a15dd1b3a99dc99bc6cf",
-        "src/sample_matching.ts": "e29778866f6db4d27214d1b74b247f21cd1d4304",
-        "src/string_utils.ts": "862a0564a0e473ca8a4bebf68521d30be6ef868c",
-        "src/util.ts": "5ec802cbf6974c9b68c11237f2ba5ebc39b213c8",
-        "src/utils/metadata.ts": "0a38b88c4186d16505345f22f02a6fa7f0612e50",
-        "src/utils/samplesheet-bindings.test.ts": "5816b38fbe5b6ebc3336261362634037bbc63ef4",
-        "src/utils/samplesheet-bindings.ts": "a2fee453622ae86f87c512d80a2e4eab67f8389f",
+        ".oxfmtrc.json": "ba9bb8f00da0731ad7aaa6b890a7b6b58b1ef6dc",
+        ".oxlintrc.json": "5cb552278874420ef1e73b616be46add8b53f0c1",
+        "CHANGELOG.md": "45176db1426a14746b8dcf6aae050b6dd93f5a05",
+        "index.html": "c6049362616b9b9a9715ebb6d4088bdd47a544a6",
+        "package.json": "ce76aa395f07ef753245a3a44ff8af2ec2dc1c77",
+        "src/app.ts": "a4adb455e4670ac58c491decc026a0a506f34483",
+        "src/components/DatasetCell.vue": "0e614b3ddb26fab9c1f9aad78c63c07eb51ae7a9",
+        "src/components/ImportErrorDialog.vue": "36bab8ce2663a69e17d690fe8c86ffb7745b14a1",
+        "src/components/MultiplexingRulesSection.vue": "3f9004c015707a8de030a4c7c63ae48436ceff47",
+        "src/composables/useFileDatasetPage.ts": "7f4c79eab28e9880c90b02b2702d789df946f5c0",
+        "src/composables/useMetadataImport.ts": "8f90ffb4a4d0360ae5625ba8f802b55a9d9599b3",
+        "src/composables/useTableImport.ts": "40f33c531c9cdf73b17c4f9339566d4a2874246a",
+        "src/dataimport.test.ts": "6a67a3afb3bce2c8d7b4e1673b8cd8512aa1cb32",
+        "src/dataimport.ts": "01fe92c879963c4e55b076062c67df5f902212c0",
+        "src/dialogs/ImportDatasetDialog.vue": "93f852745bfbbb310ad3940b98b46651a795506a",
+        "src/dialogs/ImportMetadataDialog.vue": "41f12c620b2d9b233021a450dd3c9eeb1d28a755",
+        "src/dialogs/ImportSamplesheetDialog.vue": "f522b5535414865d60b373c7ae659ee24cb041bb",
+        "src/dialogs/ParsedFilesList.vue": "bc643ab4d90a556ffdb6605be0f1de6666a15910",
+        "src/dialogs/SyncDatasetDialog.vue": "8335739c309e79163d2443a54bad6f62ed9e015c",
+        "src/dialogs/datasets.ts": "af900adc579b79a91fc572d2ade10be54aee28a9",
+        "src/dialogs/file_name_parser.test.ts": "7f698010e685beaf293879cff5a2c400ae07a7f4",
+        "src/dialogs/file_name_parser.ts": "d7374776f0965fb34a8140faa42eaf54acb7503c",
+        "src/main.ts": "d583d5f21591d1dfada81bbfb1858cd31a9a11c4",
+        "src/pages/BulkCountMatrixDatasetPage.vue": "0b05468095caf9c246668570ed6fde84d1ff6bfd",
+        "src/pages/CellRangerMtxDatasetPage.vue": "d0fd7164ebc05ebcb377c1ddf9d6caab0ad051d7",
+        "src/pages/DatasetPage.vue": "f678aa147c4f3ead8316fcb487417f4cf544ea62",
+        "src/pages/FastaDatasetPage.vue": "df3986e1006dc6d3576f7943ead9affc7be1bd8e",
+        "src/pages/FastqDatasetPage.vue": "57058b98adda455c72b1aa7ead9632bc0d27d9a4",
+        "src/pages/H5DatasetPage.vue": "5034dfa825b16b6f95b391d44e2074151f98b591",
+        "src/pages/H5adDatasetPage.vue": "d639147b5ed8b675673c1a88f926e0e9ac044cfb",
+        "src/pages/MetadataPage.vue": "ce0f1b1d27219fc8cf62da32d2535962ac551e2e",
+        "src/pages/MultiSampleH5adDatasetPage.vue": "4df3c90703e29aafe8ab8db51026d5cbdcafe9a1",
+        "src/pages/MultiSampleSeuratDatasetPage.vue": "aca99e1f641ab4cb7486f642b5da9f925852b9db",
+        "src/pages/MultilaneFastqDatasetPage.vue": "c90b6d2e4d35c14d06d4b2f6b17fd42925bf6e85",
+        "src/pages/MultiplexedFastqDatasetPage.vue": "efd517a961e2734d5f22c931568b21b62ed008ee",
+        "src/pages/NewDatasetPage.vue": "f55fe1492e1ecb996c789c009d6d51e83d6b0145",
+        "src/pages/SeuratDatasetPage.vue": "afd3e15f6968bc864b868c3def13be13fbf14b8b",
+        "src/pages/TaggedFastqDatasetPage.vue": "db3cdf3f993a0685a79a91c0eb5eeccca2d50b09",
+        "src/pages/TaggedXsvDatasetPage.vue": "c6c14509511fedeb13ee07486291913d89d3e927",
+        "src/pages/XsvDatasetPage.vue": "117d283172491736d7af26f7ac88289326e8f50f",
+        "src/sample_matching.test.ts": "afefabb179464f8a856d273109c2a1983e937519",
+        "src/sample_matching.ts": "2dd6539d575576180c0570d66eadac3ecb9583db",
+        "src/string_utils.ts": "82c478c8c023c6016c4d2130166eb4d6aa551938",
+        "src/util.ts": "c8ad2b7faca3bbe6e4cf5e208bf027d9feccc01a",
+        "src/utils/metadata.ts": "66ad4e7baea04100ec8fbd083c9aeaf055c0f808",
+        "src/utils/samplesheet-bindings.test.ts": "b29a69d14d4e13dfc1d1f11c9b4766d6977edd54",
+        "src/utils/samplesheet-bindings.ts": "a5870b84909d42fa289210b07d3f31945e452c87",
         "test_assets/takara-bcr-project-metadata.csv": "37750af3c4c6c372689e748bc926bdd1a9f5865a",
         "test_assets/takara-bcr-project-metadata.tsv": "f2063774e22ffa709e86e02632a0023a614cb76e",
         "test_assets/takara-bcr-project-metadata.xlsx": "166c51010ed8cf35d67b0544d75876a1edc33653",
@@ -864,20 +1222,17 @@
         "test_assets/test_table.tsv": "0451fe1abc7874a03b26fa5f7adb60392f97a200",
         "test_assets/test_table.xlsx": "bc6e73c92f29d91ddaf780fc355c14bad32b8b0b",
         "test_assets/trees-metadata.tsv": "804fadda86fab9ba26e5b9692490ad243056947b",
-        "tsconfig.app.json": "3b0211748cdc9d79d4688ce740e01a5d83834ef4",
-        "tsconfig.json": "ea9d0cd8255683d84f125948115daf1de0f06b1f",
-        "tsconfig.node.json": "3afdd6e38438be7612befbd4b656af7bed27a31a",
-        "vite.config.ts": "e6f712bd4d645e8f7b552c034a0ed64c8ad7c50c",
-        "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
+        "tsconfig.json": "485d5a101dacea26530495a7fdeeafafd4e0bab0",
+        "vitest.config.mts": "609455dd98af8059d618c33eccb0ab89e3330b9d"
       },
-      "hashOfExternalDependencies": "5c6d37298283e031",
+      "hashOfExternalDependencies": "7943f39297293593",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "vue-tsc -b && vite build",
+      "command": "ts-builder build --target block-ui",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -888,10 +1243,12 @@
       "logFile": "ui/.turbo/turbo-build.log",
       "directory": "ui",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.model#build"
+        "@platforma-open/milaboratories.samples-and-data.model#build",
+        "@platforma-open/milaboratories.samples-and-data.ui#check"
       ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data#build",
+        "@platforma-open/milaboratories.samples-and-data#check",
         "@platforma-open/milaboratories.samples-and-data.ui#test"
       ],
       "with": [],
@@ -903,7 +1260,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -912,22 +1270,25 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
         "interactive": false
       },
       "expandedOutputs": [],
-      "framework": "vite",
+      "framework": "",
       "envMode": "strict",
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
@@ -935,57 +1296,58 @@
       }
     },
     {
-      "taskId": "@platforma-open/milaboratories.samples-and-data.ui#test",
-      "task": "test",
+      "taskId": "@platforma-open/milaboratories.samples-and-data.ui#check",
+      "task": "check",
       "package": "@platforma-open/milaboratories.samples-and-data.ui",
-      "hash": "6c8d06dbcf0126e7",
+      "hash": "0153f7536a0a7ea3",
       "inputs": {
-        "CHANGELOG.md": "34bd4394e90edc8f6cb605f02c95877b75763b21",
-        "eslint.config.mjs": "30e2871b6d4cc4776ac969c3a0e034a23e2fe766",
-        "index.html": "e37ab12ef6090a1380237b55964f225b48d02cfc",
-        "package.json": "8b0af29ad25c4e3340c3de2af5a78a4df6a4f93e",
-        "src/app.ts": "4d659c64a88e2df8dde77b98862a31a0548043f8",
-        "src/components/DatasetCell.vue": "8b635120fd9ccaabe98e429425b5162c25e6273d",
-        "src/components/ImportErrorDialog.vue": "86a8df112092ef1ce5f820791fbab75fed894d03",
-        "src/components/MultiplexingRulesSection.vue": "d7d43b20948190d1658458c19b2192693ec6f7ba",
-        "src/composables/useFileDatasetPage.ts": "299e0be0c8bd540c34de4c391b25a07d7dc573b3",
-        "src/composables/useMetadataImport.ts": "4b84e6af208c85205c69828e9ec9557a417d9f4c",
-        "src/composables/useTableImport.ts": "ec050f6edf1f05f7ad31fa073186ed7e81774619",
-        "src/dataimport.test.ts": "ef5ddf399842109fb9fc078a7ecb8a3f9b804a0e",
-        "src/dataimport.ts": "7068fededb50ad10b3e7215350486eba682fe82a",
-        "src/dialogs/ImportDatasetDialog.vue": "0ecf0c0ce776f6a12749d868d86913f9a3119b0b",
-        "src/dialogs/ImportMetadataDialog.vue": "b958669dc9ea32ddce60443d0127b376b4249280",
-        "src/dialogs/ImportSamplesheetDialog.vue": "24aad61f0b81c1c07d95b5a6e09ef6d69269686a",
-        "src/dialogs/ParsedFilesList.vue": "1e86beb389da2c63b1b74c8e99f93eb2e3f45cc1",
-        "src/dialogs/SyncDatasetDialog.vue": "7c0934571e2a964f32d641216a3c929d9a822a83",
-        "src/dialogs/datasets.ts": "5f53750b5555cb542224d10df282f039e81708db",
-        "src/dialogs/file_name_parser.test.ts": "846424bfc7e39bd32800917e712e0912e37e0550",
-        "src/dialogs/file_name_parser.ts": "b4798fee35dfe72b1dc507c938f3a15dcc85c627",
-        "src/main.ts": "6090aa57e77e5fecbb7a24f608c0664b1aebf48b",
-        "src/pages/BulkCountMatrixDatasetPage.vue": "49dfcc495b4de2b152994152259657e2c13cd9a8",
-        "src/pages/CellRangerMtxDatasetPage.vue": "d601dcbeac06b16d7bb79d112917853b8535c069",
-        "src/pages/DatasetPage.vue": "3653a45ee5b7b42b036f14008ad28cfb6e140c52",
-        "src/pages/FastaDatasetPage.vue": "a81974c49477df7b16116d6fbbd67503e7b5c145",
-        "src/pages/FastqDatasetPage.vue": "7a05dbe82a1fa8d4bd7197bede95c3d501051c87",
-        "src/pages/H5DatasetPage.vue": "13a4d1a83f05d1681442d039d9651a3162caa646",
-        "src/pages/H5adDatasetPage.vue": "0dfa8c4f6984b5e1e8376bc907bbc9715d96b1ff",
-        "src/pages/MetadataPage.vue": "109472ba9f4252bccf431e63bca9d7a596b440c5",
-        "src/pages/MultiSampleH5adDatasetPage.vue": "1df64c7fcfdc658262a006a4c6688ee0e9e331c8",
-        "src/pages/MultiSampleSeuratDatasetPage.vue": "92e6f1477cee76a129b8386d475f67a61afa9deb",
-        "src/pages/MultilaneFastqDatasetPage.vue": "95440ec82809a3e35ea1f5391262797971d4019b",
-        "src/pages/MultiplexedFastqDatasetPage.vue": "bdec66e718ac5ee2591135d610317e8031eb173c",
-        "src/pages/NewDatasetPage.vue": "abc9ab1b8dc8215a652835179b305fdf3d449a32",
-        "src/pages/SeuratDatasetPage.vue": "1b406876ca23f675888a2ef931c5f398f4dbb26c",
-        "src/pages/TaggedFastqDatasetPage.vue": "9a4034c804bbfb677e2d99ee4dccc23c6a32a27c",
-        "src/pages/TaggedXsvDatasetPage.vue": "2d234d9a13dc4ddd899770953f1259cb0e9e2278",
-        "src/pages/XsvDatasetPage.vue": "ad2982076b3adb74761d54cefa2ab38829ee4aa4",
-        "src/sample_matching.test.ts": "5f41af4a32aeb5aae753a15dd1b3a99dc99bc6cf",
-        "src/sample_matching.ts": "e29778866f6db4d27214d1b74b247f21cd1d4304",
-        "src/string_utils.ts": "862a0564a0e473ca8a4bebf68521d30be6ef868c",
-        "src/util.ts": "5ec802cbf6974c9b68c11237f2ba5ebc39b213c8",
-        "src/utils/metadata.ts": "0a38b88c4186d16505345f22f02a6fa7f0612e50",
-        "src/utils/samplesheet-bindings.test.ts": "5816b38fbe5b6ebc3336261362634037bbc63ef4",
-        "src/utils/samplesheet-bindings.ts": "a2fee453622ae86f87c512d80a2e4eab67f8389f",
+        ".oxfmtrc.json": "ba9bb8f00da0731ad7aaa6b890a7b6b58b1ef6dc",
+        ".oxlintrc.json": "5cb552278874420ef1e73b616be46add8b53f0c1",
+        "CHANGELOG.md": "45176db1426a14746b8dcf6aae050b6dd93f5a05",
+        "index.html": "c6049362616b9b9a9715ebb6d4088bdd47a544a6",
+        "package.json": "ce76aa395f07ef753245a3a44ff8af2ec2dc1c77",
+        "src/app.ts": "a4adb455e4670ac58c491decc026a0a506f34483",
+        "src/components/DatasetCell.vue": "0e614b3ddb26fab9c1f9aad78c63c07eb51ae7a9",
+        "src/components/ImportErrorDialog.vue": "36bab8ce2663a69e17d690fe8c86ffb7745b14a1",
+        "src/components/MultiplexingRulesSection.vue": "3f9004c015707a8de030a4c7c63ae48436ceff47",
+        "src/composables/useFileDatasetPage.ts": "7f4c79eab28e9880c90b02b2702d789df946f5c0",
+        "src/composables/useMetadataImport.ts": "8f90ffb4a4d0360ae5625ba8f802b55a9d9599b3",
+        "src/composables/useTableImport.ts": "40f33c531c9cdf73b17c4f9339566d4a2874246a",
+        "src/dataimport.test.ts": "6a67a3afb3bce2c8d7b4e1673b8cd8512aa1cb32",
+        "src/dataimport.ts": "01fe92c879963c4e55b076062c67df5f902212c0",
+        "src/dialogs/ImportDatasetDialog.vue": "93f852745bfbbb310ad3940b98b46651a795506a",
+        "src/dialogs/ImportMetadataDialog.vue": "41f12c620b2d9b233021a450dd3c9eeb1d28a755",
+        "src/dialogs/ImportSamplesheetDialog.vue": "f522b5535414865d60b373c7ae659ee24cb041bb",
+        "src/dialogs/ParsedFilesList.vue": "bc643ab4d90a556ffdb6605be0f1de6666a15910",
+        "src/dialogs/SyncDatasetDialog.vue": "8335739c309e79163d2443a54bad6f62ed9e015c",
+        "src/dialogs/datasets.ts": "af900adc579b79a91fc572d2ade10be54aee28a9",
+        "src/dialogs/file_name_parser.test.ts": "7f698010e685beaf293879cff5a2c400ae07a7f4",
+        "src/dialogs/file_name_parser.ts": "d7374776f0965fb34a8140faa42eaf54acb7503c",
+        "src/main.ts": "d583d5f21591d1dfada81bbfb1858cd31a9a11c4",
+        "src/pages/BulkCountMatrixDatasetPage.vue": "0b05468095caf9c246668570ed6fde84d1ff6bfd",
+        "src/pages/CellRangerMtxDatasetPage.vue": "d0fd7164ebc05ebcb377c1ddf9d6caab0ad051d7",
+        "src/pages/DatasetPage.vue": "f678aa147c4f3ead8316fcb487417f4cf544ea62",
+        "src/pages/FastaDatasetPage.vue": "df3986e1006dc6d3576f7943ead9affc7be1bd8e",
+        "src/pages/FastqDatasetPage.vue": "57058b98adda455c72b1aa7ead9632bc0d27d9a4",
+        "src/pages/H5DatasetPage.vue": "5034dfa825b16b6f95b391d44e2074151f98b591",
+        "src/pages/H5adDatasetPage.vue": "d639147b5ed8b675673c1a88f926e0e9ac044cfb",
+        "src/pages/MetadataPage.vue": "ce0f1b1d27219fc8cf62da32d2535962ac551e2e",
+        "src/pages/MultiSampleH5adDatasetPage.vue": "4df3c90703e29aafe8ab8db51026d5cbdcafe9a1",
+        "src/pages/MultiSampleSeuratDatasetPage.vue": "aca99e1f641ab4cb7486f642b5da9f925852b9db",
+        "src/pages/MultilaneFastqDatasetPage.vue": "c90b6d2e4d35c14d06d4b2f6b17fd42925bf6e85",
+        "src/pages/MultiplexedFastqDatasetPage.vue": "efd517a961e2734d5f22c931568b21b62ed008ee",
+        "src/pages/NewDatasetPage.vue": "f55fe1492e1ecb996c789c009d6d51e83d6b0145",
+        "src/pages/SeuratDatasetPage.vue": "afd3e15f6968bc864b868c3def13be13fbf14b8b",
+        "src/pages/TaggedFastqDatasetPage.vue": "db3cdf3f993a0685a79a91c0eb5eeccca2d50b09",
+        "src/pages/TaggedXsvDatasetPage.vue": "c6c14509511fedeb13ee07486291913d89d3e927",
+        "src/pages/XsvDatasetPage.vue": "117d283172491736d7af26f7ac88289326e8f50f",
+        "src/sample_matching.test.ts": "afefabb179464f8a856d273109c2a1983e937519",
+        "src/sample_matching.ts": "2dd6539d575576180c0570d66eadac3ecb9583db",
+        "src/string_utils.ts": "82c478c8c023c6016c4d2130166eb4d6aa551938",
+        "src/util.ts": "c8ad2b7faca3bbe6e4cf5e208bf027d9feccc01a",
+        "src/utils/metadata.ts": "66ad4e7baea04100ec8fbd083c9aeaf055c0f808",
+        "src/utils/samplesheet-bindings.test.ts": "b29a69d14d4e13dfc1d1f11c9b4766d6977edd54",
+        "src/utils/samplesheet-bindings.ts": "a5870b84909d42fa289210b07d3f31945e452c87",
         "test_assets/takara-bcr-project-metadata.csv": "37750af3c4c6c372689e748bc926bdd1a9f5865a",
         "test_assets/takara-bcr-project-metadata.tsv": "f2063774e22ffa709e86e02632a0023a614cb76e",
         "test_assets/takara-bcr-project-metadata.xlsx": "166c51010ed8cf35d67b0544d75876a1edc33653",
@@ -996,27 +1358,139 @@
         "test_assets/test_table.tsv": "0451fe1abc7874a03b26fa5f7adb60392f97a200",
         "test_assets/test_table.xlsx": "bc6e73c92f29d91ddaf780fc355c14bad32b8b0b",
         "test_assets/trees-metadata.tsv": "804fadda86fab9ba26e5b9692490ad243056947b",
-        "tsconfig.app.json": "3b0211748cdc9d79d4688ce740e01a5d83834ef4",
-        "tsconfig.json": "ea9d0cd8255683d84f125948115daf1de0f06b1f",
-        "tsconfig.node.json": "3afdd6e38438be7612befbd4b656af7bed27a31a",
-        "vite.config.ts": "e6f712bd4d645e8f7b552c034a0ed64c8ad7c50c",
-        "vitest.config.mts": "d0d1b5e288dd7913deea21698b81b68641c465a0"
+        "tsconfig.json": "485d5a101dacea26530495a7fdeeafafd4e0bab0",
+        "vitest.config.mts": "609455dd98af8059d618c33eccb0ab89e3330b9d"
       },
-      "hashOfExternalDependencies": "5c6d37298283e031",
+      "hashOfExternalDependencies": "7943f39297293593",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "<NONEXISTENT>",
+      "command": "ts-builder check --target block-ui",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "ui/.turbo/turbo-check.log",
+      "directory": "ui",
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data.model#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data.ui#build",
+        "@platforma-open/milaboratories.samples-and-data.ui#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data.ui#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.samples-and-data.ui",
+      "hash": "a788a0b6924ff6d8",
+      "inputs": {
+        ".oxfmtrc.json": "ba9bb8f00da0731ad7aaa6b890a7b6b58b1ef6dc",
+        ".oxlintrc.json": "5cb552278874420ef1e73b616be46add8b53f0c1",
+        "CHANGELOG.md": "45176db1426a14746b8dcf6aae050b6dd93f5a05",
+        "index.html": "c6049362616b9b9a9715ebb6d4088bdd47a544a6",
+        "package.json": "ce76aa395f07ef753245a3a44ff8af2ec2dc1c77",
+        "src/app.ts": "a4adb455e4670ac58c491decc026a0a506f34483",
+        "src/components/DatasetCell.vue": "0e614b3ddb26fab9c1f9aad78c63c07eb51ae7a9",
+        "src/components/ImportErrorDialog.vue": "36bab8ce2663a69e17d690fe8c86ffb7745b14a1",
+        "src/components/MultiplexingRulesSection.vue": "3f9004c015707a8de030a4c7c63ae48436ceff47",
+        "src/composables/useFileDatasetPage.ts": "7f4c79eab28e9880c90b02b2702d789df946f5c0",
+        "src/composables/useMetadataImport.ts": "8f90ffb4a4d0360ae5625ba8f802b55a9d9599b3",
+        "src/composables/useTableImport.ts": "40f33c531c9cdf73b17c4f9339566d4a2874246a",
+        "src/dataimport.test.ts": "6a67a3afb3bce2c8d7b4e1673b8cd8512aa1cb32",
+        "src/dataimport.ts": "01fe92c879963c4e55b076062c67df5f902212c0",
+        "src/dialogs/ImportDatasetDialog.vue": "93f852745bfbbb310ad3940b98b46651a795506a",
+        "src/dialogs/ImportMetadataDialog.vue": "41f12c620b2d9b233021a450dd3c9eeb1d28a755",
+        "src/dialogs/ImportSamplesheetDialog.vue": "f522b5535414865d60b373c7ae659ee24cb041bb",
+        "src/dialogs/ParsedFilesList.vue": "bc643ab4d90a556ffdb6605be0f1de6666a15910",
+        "src/dialogs/SyncDatasetDialog.vue": "8335739c309e79163d2443a54bad6f62ed9e015c",
+        "src/dialogs/datasets.ts": "af900adc579b79a91fc572d2ade10be54aee28a9",
+        "src/dialogs/file_name_parser.test.ts": "7f698010e685beaf293879cff5a2c400ae07a7f4",
+        "src/dialogs/file_name_parser.ts": "d7374776f0965fb34a8140faa42eaf54acb7503c",
+        "src/main.ts": "d583d5f21591d1dfada81bbfb1858cd31a9a11c4",
+        "src/pages/BulkCountMatrixDatasetPage.vue": "0b05468095caf9c246668570ed6fde84d1ff6bfd",
+        "src/pages/CellRangerMtxDatasetPage.vue": "d0fd7164ebc05ebcb377c1ddf9d6caab0ad051d7",
+        "src/pages/DatasetPage.vue": "f678aa147c4f3ead8316fcb487417f4cf544ea62",
+        "src/pages/FastaDatasetPage.vue": "df3986e1006dc6d3576f7943ead9affc7be1bd8e",
+        "src/pages/FastqDatasetPage.vue": "57058b98adda455c72b1aa7ead9632bc0d27d9a4",
+        "src/pages/H5DatasetPage.vue": "5034dfa825b16b6f95b391d44e2074151f98b591",
+        "src/pages/H5adDatasetPage.vue": "d639147b5ed8b675673c1a88f926e0e9ac044cfb",
+        "src/pages/MetadataPage.vue": "ce0f1b1d27219fc8cf62da32d2535962ac551e2e",
+        "src/pages/MultiSampleH5adDatasetPage.vue": "4df3c90703e29aafe8ab8db51026d5cbdcafe9a1",
+        "src/pages/MultiSampleSeuratDatasetPage.vue": "aca99e1f641ab4cb7486f642b5da9f925852b9db",
+        "src/pages/MultilaneFastqDatasetPage.vue": "c90b6d2e4d35c14d06d4b2f6b17fd42925bf6e85",
+        "src/pages/MultiplexedFastqDatasetPage.vue": "efd517a961e2734d5f22c931568b21b62ed008ee",
+        "src/pages/NewDatasetPage.vue": "f55fe1492e1ecb996c789c009d6d51e83d6b0145",
+        "src/pages/SeuratDatasetPage.vue": "afd3e15f6968bc864b868c3def13be13fbf14b8b",
+        "src/pages/TaggedFastqDatasetPage.vue": "db3cdf3f993a0685a79a91c0eb5eeccca2d50b09",
+        "src/pages/TaggedXsvDatasetPage.vue": "c6c14509511fedeb13ee07486291913d89d3e927",
+        "src/pages/XsvDatasetPage.vue": "117d283172491736d7af26f7ac88289326e8f50f",
+        "src/sample_matching.test.ts": "afefabb179464f8a856d273109c2a1983e937519",
+        "src/sample_matching.ts": "2dd6539d575576180c0570d66eadac3ecb9583db",
+        "src/string_utils.ts": "82c478c8c023c6016c4d2130166eb4d6aa551938",
+        "src/util.ts": "c8ad2b7faca3bbe6e4cf5e208bf027d9feccc01a",
+        "src/utils/metadata.ts": "66ad4e7baea04100ec8fbd083c9aeaf055c0f808",
+        "src/utils/samplesheet-bindings.test.ts": "b29a69d14d4e13dfc1d1f11c9b4766d6977edd54",
+        "src/utils/samplesheet-bindings.ts": "a5870b84909d42fa289210b07d3f31945e452c87",
+        "test_assets/takara-bcr-project-metadata.csv": "37750af3c4c6c372689e748bc926bdd1a9f5865a",
+        "test_assets/takara-bcr-project-metadata.tsv": "f2063774e22ffa709e86e02632a0023a614cb76e",
+        "test_assets/takara-bcr-project-metadata.xlsx": "166c51010ed8cf35d67b0544d75876a1edc33653",
+        "test_assets/takara-tcr-project-metadata.csv": "d8423a602b0404fe0156fd9a61c114429abe7bc2",
+        "test_assets/takara-tcr-project-metadata.tsv": "4666e16aaf43f5d30542e661541f15b14b364669",
+        "test_assets/takara-tcr-project-metadata.xlsx": "667f16a2247781fee30301a429f1483344182841",
+        "test_assets/test_table.csv": "aa796a481d02dfc9dfe6354760d9914f298417cf",
+        "test_assets/test_table.tsv": "0451fe1abc7874a03b26fa5f7adb60392f97a200",
+        "test_assets/test_table.xlsx": "bc6e73c92f29d91ddaf780fc355c14bad32b8b0b",
+        "test_assets/trees-metadata.tsv": "804fadda86fab9ba26e5b9692490ad243056947b",
+        "tsconfig.json": "485d5a101dacea26530495a7fdeeafafd4e0bab0",
+        "vitest.config.mts": "609455dd98af8059d618c33eccb0ab89e3330b9d"
+      },
+      "hashOfExternalDependencies": "7943f39297293593",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "vitest run --passWithNoTests",
       "cliArguments": [],
       "outputs": null,
       "excludedOutputs": null,
       "logFile": "ui/.turbo/turbo-test.log",
       "directory": "ui",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.ui#build"
+        "@platforma-open/milaboratories.samples-and-data.ui#build",
+        "@platforma-open/milaboratories.samples-and-data.ui#check"
       ],
       "dependents": [],
       "with": [],
@@ -1024,7 +1498,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -1041,7 +1516,7 @@
         "interactive": false
       },
       "expandedOutputs": [],
-      "framework": "vite",
+      "framework": "",
       "envMode": "strict",
       "environmentVariables": {
         "specified": {
@@ -1067,11 +1542,11 @@
       "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#build",
       "task": "build",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "3fdb63cd02ad2a0f",
+      "hash": "b9e6a323db46c5ef",
       "inputs": {
-        "CHANGELOG.md": "435fd08ed22a14f7afa47e5e384f995955f91a04",
-        "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "e8c928aca53fdd0290b0752f30455e8d77202d98",
+        "CHANGELOG.md": "eb0d7ccd43aa569b76cc278aca24b63629985426",
+        "format.el": "dff4aa786d9440b21abe30b75d0a28ccb2d4354e",
+        "package.json": "7d31d6a9c1ed60d1b3a474f50e25e098b7bb16ce",
         "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
         "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
         "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
@@ -1094,14 +1569,14 @@
         "src/prerun.tpl.tengo": "c912fac967eae5a929ebf4521432227aeed786e8",
         "src/util.lib.tengo": "7b818f9305159faf96f868241d9e94274ad9c949"
       },
-      "hashOfExternalDependencies": "50918c1e19a0aace",
+      "hashOfExternalDependencies": "b7b8be18b8315542",
       "cache": {
         "local": false,
         "remote": false,
         "status": "MISS",
         "timeSaved": 0
       },
-      "command": "shx rm -rf dist/* && pl-tengo check && pl-tengo build",
+      "command": "shx rm -rf dist && pl-tengo build",
       "cliArguments": [],
       "outputs": [
         "./block-pack/**",
@@ -1113,10 +1588,12 @@
       "directory": "workflow",
       "dependencies": [
         "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build",
-        "@platforma-open/milaboratories.samples-and-data.parse-seurat#build"
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#build",
+        "@platforma-open/milaboratories.samples-and-data.workflow#check"
       ],
       "dependents": [
         "@platforma-open/milaboratories.samples-and-data#build",
+        "@platforma-open/milaboratories.samples-and-data#check",
         "@platforma-open/milaboratories.samples-and-data.workflow#test"
       ],
       "with": [],
@@ -1128,7 +1605,8 @@
         ],
         "cache": true,
         "dependsOn": [
-          "^build"
+          "^build",
+          "check"
         ],
         "inputs": [
           "$TURBO_DEFAULT$"
@@ -1137,6 +1615,7 @@
         "persistent": false,
         "interruptible": false,
         "env": [
+          "PL_DOCKER_REGISTRY_PUSH_TO",
           "PL_PKG_DEV"
         ],
         "passThroughEnv": null,
@@ -1148,11 +1627,13 @@
       "environmentVariables": {
         "specified": {
           "env": [
+            "PL_DOCKER_REGISTRY_PUSH_TO",
             "PL_PKG_DEV"
           ],
           "passThroughEnv": null
         },
         "configured": [
+          "PL_DOCKER_REGISTRY_PUSH_TO=bd8bdd0f1979c3b85f55d7a7431f7d3c0924915a505d77b90291290525b4bfc0",
           "PL_PKG_DEV=25bf8e1a2393f1108d37029b3df5593236c755742ec93465bbafa9b290bddcf6"
         ],
         "inferred": [],
@@ -1160,14 +1641,14 @@
       }
     },
     {
-      "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#test",
-      "task": "test",
+      "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#check",
+      "task": "check",
       "package": "@platforma-open/milaboratories.samples-and-data.workflow",
-      "hash": "52d14079867dbd7b",
+      "hash": "ce7077485871b0d2",
       "inputs": {
-        "CHANGELOG.md": "435fd08ed22a14f7afa47e5e384f995955f91a04",
-        "format.el": "b168a1ac097463794e06d0e92c1e11da73486887",
-        "package.json": "e8c928aca53fdd0290b0752f30455e8d77202d98",
+        "CHANGELOG.md": "eb0d7ccd43aa569b76cc278aca24b63629985426",
+        "format.el": "dff4aa786d9440b21abe30b75d0a28ccb2d4354e",
+        "package.json": "7d31d6a9c1ed60d1b3a474f50e25e098b7bb16ce",
         "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
         "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
         "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
@@ -1190,7 +1671,87 @@
         "src/prerun.tpl.tengo": "c912fac967eae5a929ebf4521432227aeed786e8",
         "src/util.lib.tengo": "7b818f9305159faf96f868241d9e94274ad9c949"
       },
-      "hashOfExternalDependencies": "50918c1e19a0aace",
+      "hashOfExternalDependencies": "b7b8be18b8315542",
+      "cache": {
+        "local": false,
+        "remote": false,
+        "status": "MISS",
+        "timeSaved": 0
+      },
+      "command": "pl-tengo check",
+      "cliArguments": [],
+      "outputs": null,
+      "excludedOutputs": null,
+      "logFile": "workflow/.turbo/turbo-check.log",
+      "directory": "workflow",
+      "dependencies": [
+        "@platforma-open/milaboratories.samples-and-data.parse-h5ad#build",
+        "@platforma-open/milaboratories.samples-and-data.parse-seurat#build"
+      ],
+      "dependents": [
+        "@platforma-open/milaboratories.samples-and-data.workflow#build",
+        "@platforma-open/milaboratories.samples-and-data.workflow#test"
+      ],
+      "with": [],
+      "resolvedTaskDefinition": {
+        "outputs": [],
+        "cache": true,
+        "dependsOn": [
+          "^build"
+        ],
+        "inputs": [],
+        "outputLogs": "full",
+        "persistent": false,
+        "interruptible": false,
+        "env": [],
+        "passThroughEnv": null,
+        "interactive": false
+      },
+      "expandedOutputs": [],
+      "framework": "",
+      "envMode": "strict",
+      "environmentVariables": {
+        "specified": {
+          "env": [],
+          "passThroughEnv": null
+        },
+        "configured": [],
+        "inferred": [],
+        "passthrough": null
+      }
+    },
+    {
+      "taskId": "@platforma-open/milaboratories.samples-and-data.workflow#test",
+      "task": "test",
+      "package": "@platforma-open/milaboratories.samples-and-data.workflow",
+      "hash": "5ce0ddc5ac029bb0",
+      "inputs": {
+        "CHANGELOG.md": "eb0d7ccd43aa569b76cc278aca24b63629985426",
+        "format.el": "dff4aa786d9440b21abe30b75d0a28ccb2d4354e",
+        "package.json": "7d31d6a9c1ed60d1b3a474f50e25e098b7bb16ce",
+        "src/ds-bulk-count-matrix.lib.tengo": "18b45f9308933ca7a73ed6add62abac978171827",
+        "src/ds-cellranger-mtx.lib.tengo": "2761aec5a43fac44c35bd1c97e4ee201a98ea13e",
+        "src/ds-fasta.lib.tengo": "e83415f12871f16b85d3e10e3ae020e88f14ed5e",
+        "src/ds-fastq.lib.tengo": "d77e833101ff94d94405d2bd25a383c33a674695",
+        "src/ds-h5.lib.tengo": "bd514b3e1db3d7e34898fa161fb7c5450312ecc1",
+        "src/ds-h5ad.lib.tengo": "9c6effcda837a451c86f7d5aa89e4dd14b8fdb0c",
+        "src/ds-multilane-fastq.lib.tengo": "79f72ff81a82d3d3f7fafd4e82638d7baac52857",
+        "src/ds-multiplexed-fastq.lib.tengo": "9c488e14b6ef8dd9bb228184495b605536de6587",
+        "src/ds-multisample-h5ad.lib.tengo": "aae551734e895ad2517c76c2188e075b44b07c69",
+        "src/ds-multisample-seurat.lib.tengo": "a7dbd8c02ed62e389ea39ae8d0b098ff5f5fa223",
+        "src/ds-seurat.lib.tengo": "2b8365c01f96c18f442ff2fa3143f449552bbcad",
+        "src/ds-tagged-fastq.lib.tengo": "3b34f1fe1ed2b58e0ce8cf7181e87a49ec118f6a",
+        "src/ds-tagged-xsv.lib.tengo": "ac038974197f4143559a138e6ddc5148fd4078b1",
+        "src/ds-xsv.lib.tengo": "83f6e60430466bc1584e029525938cf8a69e39a8",
+        "src/main.tpl.tengo": "8cc9532a9bf44924c7afe018aa6a3afe8e095f18",
+        "src/metadata.lib.tengo": "60f657fb770e8069c913271a21c57cdab064867c",
+        "src/parse-bulk-count-matrix.tpl.tengo": "7645a21746eec935936b6b5aaff92c0fdc1c1603",
+        "src/parse-multisample-h5ad.tpl.tengo": "51d2ef3eea1c95d48d2cd5bc03c0403331cbc80f",
+        "src/parse-multisample-seurat.tpl.tengo": "cd19f0d36d6e2977ea71102f97823a8a4db47e31",
+        "src/prerun.tpl.tengo": "c912fac967eae5a929ebf4521432227aeed786e8",
+        "src/util.lib.tengo": "7b818f9305159faf96f868241d9e94274ad9c949"
+      },
+      "hashOfExternalDependencies": "b7b8be18b8315542",
       "cache": {
         "local": false,
         "remote": false,
@@ -1204,7 +1765,8 @@
       "logFile": "workflow/.turbo/turbo-test.log",
       "directory": "workflow",
       "dependencies": [
-        "@platforma-open/milaboratories.samples-and-data.workflow#build"
+        "@platforma-open/milaboratories.samples-and-data.workflow#build",
+        "@platforma-open/milaboratories.samples-and-data.workflow#check"
       ],
       "dependents": [],
       "with": [],
@@ -1212,7 +1774,8 @@
         "outputs": [],
         "cache": true,
         "dependsOn": [
-          "build"
+          "build",
+          "check"
         ],
         "inputs": [],
         "outputLogs": "full",
@@ -1255,7 +1818,7 @@
   "user": "github-merge-queue[bot]",
   "scm": {
     "type": "git",
-    "sha": "6a39528f56672e9066442a4877daefe9ae566004",
+    "sha": "75ab9a67932b5cd98f32f0ff54044848d0f9af8e",
     "branch": "main"
   }
 }
