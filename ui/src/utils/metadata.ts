@@ -1,6 +1,6 @@
-import type { MTColumn, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
-import { uniquePlId } from '@platforma-sdk/model';
-import type { ImportResult } from '../dataimport';
+import type { MTColumn, PlId } from "@platforma-open/milaboratories.samples-and-data.model";
+import { uniquePlId } from "@platforma-sdk/model";
+import type { ImportResult } from "../dataimport";
 
 export function columnNamesMatch(existingColumn: string, importColumn: string): boolean {
   return existingColumn.toLocaleLowerCase().trim() === importColumn.toLocaleLowerCase().trim();
@@ -69,7 +69,7 @@ export function populateMetadataFromRow(
     const column = modelColumns[cIdx];
     if (column === undefined) continue; // Skip columns
     const val = row[cIdx];
-    if (val !== undefined && val !== null && (typeof val === 'string' || typeof val === 'number')) {
+    if (val !== undefined && val !== null && (typeof val === "string" || typeof val === "number")) {
       column.data[sampleId] = val;
     }
   }
@@ -93,4 +93,3 @@ export function extractMetadataFromRow(
   }
   return metadata;
 }
-

@@ -1,33 +1,36 @@
-import type { DSType } from '@platforma-open/milaboratories.samples-and-data.model';
-import * as _ from 'radashi';
-import { escapeRegExp } from '../string_utils';
+import type { DSType } from "@platforma-open/milaboratories.samples-and-data.model";
+import * as _ from "radashi";
+import { escapeRegExp } from "../string_utils";
 
 /** Derived from file extension */
-export type FileContentType = 'Fastq' | 'Fasta' | 'Xsv' | 'CellRangerMTX' | 'H5AD' | 'H5' | 'Seurat';
+export type FileContentType =
+  | "Fastq"
+  | "Fasta"
+  | "Xsv"
+  | "CellRangerMTX"
+  | "H5AD"
+  | "H5"
+  | "Seurat";
 
 function extractFileContentType(pattern: string): FileContentType {
-  if (pattern.includes('CellRangerFileRole'))
-    return 'CellRangerMTX';
+  if (pattern.includes("CellRangerFileRole")) return "CellRangerMTX";
 
   let pt = pattern;
-  if (pt.endsWith('.gz'))
-    pt = pt.substring(0, pt.length - 3);
-  if (['fastq', 'fq'].some((fq) => pt.endsWith(fq)))
-    return 'Fastq';
-  else if (['fasta', 'fa'].some((fa) => pt.endsWith(fa)))
-    return 'Fasta';
-  else if (['csv', 'tsv'].some((xs) => pt.endsWith(xs)))
-    return 'Xsv';
-  else if (pt.endsWith('h5ad'))
-    return 'H5AD';
-  else if (pt.endsWith('h5'))
-    return 'H5';
-  else if (['rds', 'RDS'].some((rds) => pt.endsWith(rds)))
-    return 'Seurat';
-  else if (pt.endsWith('matrix.mtx') || pt.endsWith('features.tsv') || pt.endsWith('genes.tsv') || pt.endsWith('barcodes.tsv'))
-    return 'CellRangerMTX';
-  else
-    throw new Error(`Unknown file content type: ${pt}`);
+  if (pt.endsWith(".gz")) pt = pt.substring(0, pt.length - 3);
+  if (["fastq", "fq"].some((fq) => pt.endsWith(fq))) return "Fastq";
+  else if (["fasta", "fa"].some((fa) => pt.endsWith(fa))) return "Fasta";
+  else if (["csv", "tsv"].some((xs) => pt.endsWith(xs))) return "Xsv";
+  else if (pt.endsWith("h5ad")) return "H5AD";
+  else if (pt.endsWith("h5")) return "H5";
+  else if (["rds", "RDS"].some((rds) => pt.endsWith(rds))) return "Seurat";
+  else if (
+    pt.endsWith("matrix.mtx") ||
+    pt.endsWith("features.tsv") ||
+    pt.endsWith("genes.tsv") ||
+    pt.endsWith("barcodes.tsv")
+  )
+    return "CellRangerMTX";
+  else throw new Error(`Unknown file content type: ${pt}`);
 }
 
 export type Range = {
@@ -97,36 +100,33 @@ export class FileNamePattern {
 
   public get datasetType(): DSType | undefined {
     switch (this.fileContentType) {
-      case 'Fastq':
+      case "Fastq":
         if (this.hasTagMatchers) {
-          return 'TaggedFastq';
-        } else if (this.hasLaneMatcher)
-          return 'MultilaneFastq';
-        else
-          return 'Fastq';
-      case 'Fasta':
-        return 'Fasta';
-      case 'H5AD':
-        return 'H5AD';
-      case 'H5':
-        return 'H5';
-      case 'Seurat':
-        return 'Seurat';
-      case 'CellRangerMTX':
-        return 'CellRangerMTX';
+          return "TaggedFastq";
+        } else if (this.hasLaneMatcher) return "MultilaneFastq";
+        else return "Fastq";
+      case "Fasta":
+        return "Fasta";
+      case "H5AD":
+        return "H5AD";
+      case "H5":
+        return "H5";
+      case "Seurat":
+        return "Seurat";
+      case "CellRangerMTX":
+        return "CellRangerMTX";
       default:
         return undefined;
     }
   }
 
   public get gzipped(): boolean {
-    return this.rawPattern.endsWith('.gz');
+    return this.rawPattern.endsWith(".gz");
   }
 
   public match(fileName: string): FileNamePatternMatch | undefined {
     const match = fileName.match(this.pattern);
-    if (!match)
-      return undefined;
+    if (!match) return undefined;
 
     const result: FileNamePatternMatch = {
       sample: getMatch(match, this.groups.sample),
@@ -136,27 +136,22 @@ export class FileNamePattern {
 
     if (this.groups.readIndex !== undefined)
       result.readIndex = getMatch(match, this.groups.readIndex);
-    if (this.groups.lane !== undefined)
-      result.lane = getMatch(match, this.groups.lane);
+    if (this.groups.lane !== undefined) result.lane = getMatch(match, this.groups.lane);
     if (this.groups.cellRangerFileRole !== undefined)
       result.cellRangerFileRole = getMatch(match, this.groups.cellRangerFileRole);
     if (this.groups.tags !== undefined)
       result.tags = _.mapValues(this.groups.tags, (gi) => getMatch(match, gi));
-    for (const gi of this.groups.anyMatchers)
-      result.anyMatchers!.push(getMatch(match, gi));
+    for (const gi of this.groups.anyMatchers) result.anyMatchers!.push(getMatch(match, gi));
     for (const gi of this.groups.anyNumberMatchers)
       result.anyNumberMatchers!.push(getMatch(match, gi));
     return result;
   }
 
-  private static patternElement
-    = /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?:(?<anytag>[a-zA-Z0-9_]+)|n:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
+  private static patternElement =
+    /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?:(?<anytag>[a-zA-Z0-9_]+)|n:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
 
-  static parse(
-    fileNamePattern: string,
-    ops?: FileNamePatternParsingOps,
-  ): FileNamePattern {
-    let regexp = '^';
+  static parse(fileNamePattern: string, ops?: FileNamePatternParsingOps): FileNamePattern {
+    let regexp = "^";
     let lastIndex = 0;
     let groupCounter = 1;
     const groups: Partial<FileNameGroups<number>> = {
@@ -177,62 +172,62 @@ export class FileNamePattern {
       const range = { from, to };
       appendInsert(fileNamePattern.substring(lastIndex, from));
       lastIndex = to;
-      if (match.groups!['r']) {
+      if (match.groups!["r"]) {
         if (groups.readIndex !== undefined)
           throw new Error(`Repeated {{R}} / {{RR}} read index matcher`);
         groups.readIndex = groupCounter++;
-        regexp += '_?([rR]?[12])_?';
+        regexp += "_?([rR]?[12])_?";
         rawElements.readIndex = range;
-      } else if (match.groups!['rr']) {
+      } else if (match.groups!["rr"]) {
         // stricter matcher, requiring an "R" letter to be present in the read index before the digit
         if (groups.readIndex !== undefined)
           throw new Error(`Repeated {{R}} / {{RR}} read index matcher`);
         groups.readIndex = groupCounter++;
-        regexp += '_?([rR][12])_?';
+        regexp += "_?([rR][12])_?";
         rawElements.readIndex = range;
-      } else if (match.groups!['lane']) {
+      } else if (match.groups!["lane"]) {
         if (groups.lane !== undefined) throw new Error(`Repeated {{L}} / {{Lane}} matcher`);
         groups.lane = groupCounter++;
-        regexp += '([0-9]+)';
+        regexp += "([0-9]+)";
         rawElements.lane = range;
-      } else if (match.groups!['sample']) {
+      } else if (match.groups!["sample"]) {
         if (groups.sample !== undefined)
           throw new Error(`Repeated {{S}} / {{Sample}} sample name matcher`);
         groups.sample = groupCounter++;
-        regexp += '(.+?)';
+        regexp += "(.+?)";
         rawElements.sample = range;
-      } else if (match.groups!['any']) {
+      } else if (match.groups!["any"]) {
         groups.anyMatchers!.push(groupCounter++);
-        regexp += '(.+?)';
+        regexp += "(.+?)";
         rawElements.anyMatchers!.push(range);
-      } else if (match.groups?.['anytag']) {
+      } else if (match.groups?.["anytag"]) {
         if (groups.tags === undefined) groups.tags = {};
-        groups.tags[match.groups['anytag']] = groupCounter++;
-        regexp += '(.+?)';
+        groups.tags[match.groups["anytag"]] = groupCounter++;
+        regexp += "(.+?)";
         if (rawElements.tags === undefined) rawElements.tags = {};
-        rawElements.tags[match.groups['anytag']] = range;
-      } else if (match.groups?.['anynumbertag']) {
+        rawElements.tags[match.groups["anytag"]] = range;
+      } else if (match.groups?.["anynumbertag"]) {
         if (groups.tags === undefined) groups.tags = {};
-        groups.tags[match.groups['anynumbertag']] = groupCounter++;
-        regexp += '([0-9]+)';
+        groups.tags[match.groups["anynumbertag"]] = groupCounter++;
+        regexp += "([0-9]+)";
         if (rawElements.tags === undefined) rawElements.tags = {};
-        rawElements.tags[match.groups['anynumbertag']] = range;
-      } else if (match.groups!['anynumber']) {
+        rawElements.tags[match.groups["anynumbertag"]] = range;
+      } else if (match.groups!["anynumber"]) {
         groups.anyNumberMatchers!.push(groupCounter++);
-        regexp += '([0-9]+)';
+        regexp += "([0-9]+)";
         rawElements.anyNumberMatchers!.push(range);
-      } else if (match.groups!['cellRangerFileRole']) {
+      } else if (match.groups!["cellRangerFileRole"]) {
         if (groups.cellRangerFileRole !== undefined)
           throw new Error(`Repeated {{CellRangerFileRole}} matcher`);
         groups.cellRangerFileRole = groupCounter++;
-        regexp += '(matrix\\.mtx|features\\.tsv|genes\\.tsv|barcodes\\.tsv)';
+        regexp += "(matrix\\.mtx|features\\.tsv|genes\\.tsv|barcodes\\.tsv)";
         rawElements.cellRangerFileRole = range;
       } else {
         throw new Error(`Unexpected token match: ${match[0]} in ${fileNamePattern}`);
       }
     }
     appendInsert(fileNamePattern.substring(lastIndex));
-    regexp += '$';
+    regexp += "$";
     if (groups.sample === undefined)
       throw new Error(`No {{S}} / {{Sample}} sample name matcher in the pattern`);
     if (ops?.requireReadIndex && groups.readIndex === undefined)
@@ -240,7 +235,7 @@ export class FileNamePattern {
     if (ops?.requireLane && groups.lane === undefined)
       throw new Error(`No {{L}} / {{Lane}} read index matcher in the pattern`);
     return new FileNamePattern(
-      new RegExp(regexp, 'id'),
+      new RegExp(regexp, "id"),
       extractFileContentType(fileNamePattern),
       groups as FileNameGroups<number>,
       fileNamePattern,
@@ -279,11 +274,11 @@ export class HighlightedStringBuilder {
     let result = this.target;
     let lastPosition: number = NaN;
     for (const w of this.wraps) {
-      if (!isNaN(lastPosition) && w.range.to > lastPosition) throw new Error('Intersecting ranges');
+      if (!isNaN(lastPosition) && w.range.to > lastPosition) throw new Error("Intersecting ranges");
       lastPosition = w.range.from;
       result = result.substring(0, w.range.to) + w.wrapping.end + result.substring(w.range.to);
-      result
-        = result.substring(0, w.range.from) + w.wrapping.begin + result.substring(w.range.from);
+      result =
+        result.substring(0, w.range.from) + w.wrapping.begin + result.substring(w.range.from);
     }
     return result;
   }
@@ -293,7 +288,7 @@ export type Wrapping = { begin: string; end: string };
 
 export type FileNameFormattingOpts = Omit<
   Partial<FileNameGroups<Wrapping>>,
-  'anyMatchers' | 'anyNumberMatchers'
+  "anyMatchers" | "anyNumberMatchers"
 > & {
   anyMatchers?: Wrapping;
   anyNumberMatchers?: Wrapping;
@@ -331,23 +326,20 @@ export function buildWrappedString(
   return builder.build();
 }
 
-export function getWellFormattedReadIndex(match: FileNameGroups<Match>): 'R1' | 'R2' {
-  if (match.readIndex === undefined) return 'R1';
+export function getWellFormattedReadIndex(match: FileNameGroups<Match>): "R1" | "R2" {
+  if (match.readIndex === undefined) return "R1";
   const readIndex = match.readIndex.value.toUpperCase();
-  if (readIndex.length === 1) return ('R' + readIndex) as 'R1' | 'R2';
-  else return readIndex as 'R1' | 'R2';
+  if (readIndex.length === 1) return ("R" + readIndex) as "R1" | "R2";
+  else return readIndex as "R1" | "R2";
 }
 
 /**
  * Collects read indices matched by a compiled pattern across provided file names.
  */
-export function collectReadIndices(
-  pattern: FileNamePattern,
-  fileNames: string[],
-): string[] {
-  if (pattern.fileContentType !== 'Fastq') return [];
+export function collectReadIndices(pattern: FileNamePattern, fileNames: string[]): string[] {
+  if (pattern.fileContentType !== "Fastq") return [];
 
-  if (!pattern.hasReadIndexMatcher) return ['R1'];
+  if (!pattern.hasReadIndexMatcher) return ["R1"];
 
   const readIndices = new Set<string>();
   for (const fileName of fileNames) {
@@ -355,15 +347,16 @@ export function collectReadIndices(
     if (match?.readIndex) readIndices.add(getWellFormattedReadIndex(match));
   }
 
-  if (readIndices.size === 0) return ['R1'];
+  if (readIndices.size === 0) return ["R1"];
 
   return [...readIndices].sort();
 }
 
-export function normalizeCellRangerFileRole(role: string): 'matrix.mtx' | 'features.tsv' | 'barcodes.tsv' {
-  if (role === 'genes.tsv') return 'features.tsv';
-  if (role === 'matrix.mtx' || role === 'features.tsv' || role === 'barcodes.tsv')
-    return role;
+export function normalizeCellRangerFileRole(
+  role: string,
+): "matrix.mtx" | "features.tsv" | "barcodes.tsv" {
+  if (role === "genes.tsv") return "features.tsv";
+  if (role === "matrix.mtx" || role === "features.tsv" || role === "barcodes.tsv") return role;
   throw new Error(`Unknown CellRanger file role: ${role}`);
 }
 
@@ -376,105 +369,105 @@ type WellKnownPattern = {
 
 const wellKnownPattern: WellKnownPattern[] = [
   {
-    patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}_{{n}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}_L{{n}}_{{RR}}_{{n}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.49,
   },
   {
-    patternWithoutExtension: '{{Sample}}_L{{n}}_{{RR}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}_L{{n}}_{{RR}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.49,
   },
   {
-    patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}_{{n}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}_L{{L}}_{{RR}}_{{n}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.49,
   },
   {
-    patternWithoutExtension: '{{Sample}}_L{{L}}_{{RR}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}_L{{L}}_{{RR}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.49,
   },
   {
-    patternWithoutExtension: '{{Sample}}{{RR}}_{{n}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}{{RR}}_{{n}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.49,
   },
   {
-    patternWithoutExtension: '{{Sample}}{{RR}}_L{{n}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}{{RR}}_L{{n}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.49,
   },
   {
-    patternWithoutExtension: '{{Sample}}_{{RR}}_{{*}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}_{{RR}}_{{*}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}_{{R}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}_{{R}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}{{RR}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}{{RR}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
+    patternWithoutExtension: "{{Sample}}",
     defaultReadIndices: [], // also serves as a sign of FASTA format
-    extensions: ['fasta', 'fa', 'fasta.gz', 'fa.gz'],
+    extensions: ["fasta", "fa", "fasta.gz", "fa.gz"],
     minimalPercent: 0.7,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
-    defaultReadIndices: ['R1'],
-    extensions: ['fastq', 'fastq.gz', 'fq', 'fq.gz'],
+    patternWithoutExtension: "{{Sample}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
+    patternWithoutExtension: "{{Sample}}",
     defaultReadIndices: [],
-    extensions: ['csv', 'tsv', 'csv.gz', 'tsv.gz'],
+    extensions: ["csv", "tsv", "csv.gz", "tsv.gz"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}_{{CellRangerFileRole}}',
+    patternWithoutExtension: "{{Sample}}_{{CellRangerFileRole}}",
     defaultReadIndices: [],
-    extensions: ['gz', ''],
+    extensions: ["gz", ""],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}-{{CellRangerFileRole}}',
+    patternWithoutExtension: "{{Sample}}-{{CellRangerFileRole}}",
     defaultReadIndices: [],
-    extensions: ['gz', ''],
+    extensions: ["gz", ""],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
+    patternWithoutExtension: "{{Sample}}",
     defaultReadIndices: [],
-    extensions: ['h5ad'],
+    extensions: ["h5ad"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
+    patternWithoutExtension: "{{Sample}}",
     defaultReadIndices: [],
-    extensions: ['h5'],
+    extensions: ["h5"],
     minimalPercent: 0.9,
   },
   {
-    patternWithoutExtension: '{{Sample}}',
+    patternWithoutExtension: "{{Sample}}",
     defaultReadIndices: [],
-    extensions: ['rds', 'RDS'],
+    extensions: ["rds", "RDS"],
     minimalPercent: 0.9,
   },
 ];
@@ -498,16 +491,17 @@ export function inferFileNamePattern(
   fileNames: string[],
   ops?: InferFileNamePatternOps,
 ): InferFileNamePatternResult | undefined {
-  outer:
-  for (const wkPattern of wellKnownPattern) {
+  outer: for (const wkPattern of wellKnownPattern) {
     if (ops?.expectedReadIndices?.length === 0 && wkPattern.defaultReadIndices.length !== 0)
       // don't consider fasta pattern if non-zero set of read indices is expected
       continue;
 
     for (const extension of wkPattern.extensions) {
-      if (ops?.isGzipped !== undefined && extension.endsWith('.gz') !== ops.isGzipped) continue;
+      if (ops?.isGzipped !== undefined && extension.endsWith(".gz") !== ops.isGzipped) continue;
 
-      const patternStr = extension ? wkPattern.patternWithoutExtension + '.' + extension : wkPattern.patternWithoutExtension;
+      const patternStr = extension
+        ? wkPattern.patternWithoutExtension + "." + extension
+        : wkPattern.patternWithoutExtension;
       const pattern = FileNamePattern.parse(patternStr);
 
       let matchedFiles = 0;
@@ -517,9 +511,9 @@ export function inferFileNamePattern(
         const match = pattern.match(file);
         if (match !== undefined) {
           let sample = match.sample.value;
-          if (match.lane) sample += '___' + match.lane.value;
-          if (match.readIndex) sample += '___' + match.readIndex.value;
-          if (match.cellRangerFileRole) sample += '___' + match.cellRangerFileRole.value;
+          if (match.lane) sample += "___" + match.lane.value;
+          if (match.readIndex) sample += "___" + match.readIndex.value;
+          if (match.cellRangerFileRole) sample += "___" + match.cellRangerFileRole.value;
           if (samples.has(sample)) continue outer;
           samples.add(sample);
           matchedFiles++;
@@ -527,12 +521,12 @@ export function inferFileNamePattern(
         }
       }
 
-      const resultReadIndices
-        = readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
+      const resultReadIndices =
+        readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
 
       if (
-        ops?.expectedReadIndices !== undefined
-        && !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
+        ops?.expectedReadIndices !== undefined &&
+        !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
       )
         continue;
 

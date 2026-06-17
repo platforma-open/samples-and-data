@@ -6,34 +6,31 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "sources": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./dist/*": "./dist/*"
+  },
   "scripts": {
-    "build": "tsup && vite build && block-tools build-model",
-    "lint": "eslint ."
+    "build": "ts-builder build --target block-model && block-tools build-model",
+    "fmt": "ts-builder format",
+    "watch": "ts-builder build --target block-model --watch",
+    "check": "ts-builder check --target block-model"
   },
   "dependencies": {
     "@platforma-sdk/model": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@platforma-sdk/block-tools": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "tsup": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:"
+    "@milaboratories/ts-builder": "catalog:",
+    "@milaboratories/ts-configs": "catalog:",
+    "@platforma-sdk/block-tools": "catalog:"
   },
-  "tsup": {
-    "entry": [
-      "src/index.ts"
-    ],
-    "splitting": false,
-    "treeshake": true,
-    "clean": true,
-    "format": [
-      "cjs",
-      "esm"
-    ],
-    "dts": true,
-    "minify": false,
-    "sourcemap": true
+  "peerDependencies": {
+    "@types/node": "*",
+    "typescript": "*"
   }
 }

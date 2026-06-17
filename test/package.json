@@ -1,24 +1,28 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.test",
-  "private": true,
   "version": "2.3.9",
+  "private": true,
   "description": "Block tests",
+  "keywords": [],
+  "files": [],
   "type": "module",
   "scripts": {
-    "test": "vitest",
-    "lint": "eslint ."
+    "test": "vitest run --passWithNoTests",
+    "check": "ts-builder check --target block-test",
+    "fmt": "ts-builder format"
   },
-  "files": [],
-  "keywords": [],
   "dependencies": {
-    "this-block": "workspace:@platforma-open/milaboratories.samples-and-data@*",
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
-    "@platforma-sdk/model": "catalog:"
+    "@platforma-sdk/model": "catalog:",
+    "this-block": "workspace:@platforma-open/milaboratories.samples-and-data@*"
   },
   "devDependencies": {
+    "@milaboratories/ts-builder": "catalog:",
+    "@milaboratories/ts-configs": "catalog:",
     "@platforma-sdk/test": "catalog:",
-    "vitest": "catalog:",
-    "typescript": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:"
+    "vitest": "catalog:"
+  },
+  "peerDependencies": {
+    "typescript": "*"
   }
 }

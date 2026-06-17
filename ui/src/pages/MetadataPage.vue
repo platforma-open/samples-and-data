@@ -8,19 +8,17 @@ import {
   type IRowNode,
   MenuModule,
   ModuleRegistry,
-} from 'ag-grid-enterprise';
-import { AgGridVue } from 'ag-grid-vue3';
+} from "ag-grid-enterprise";
+import { AgGridVue } from "ag-grid-vue3";
 
-import { notEmpty } from '@milaboratories/helpers';
-import type {
-  WithSampleGroupsData,
-} from '@platforma-open/milaboratories.samples-and-data.model';
+import { notEmpty } from "@milaboratories/helpers";
+import type { WithSampleGroupsData } from "@platforma-open/milaboratories.samples-and-data.model";
 import {
   isGroupedDataset,
   type MTValueType,
   type PlId,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import { uniquePlId } from '@platforma-sdk/model';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import { uniquePlId } from "@platforma-sdk/model";
 import {
   AgGridTheme,
   makeRowNumberColDef,
@@ -34,16 +32,16 @@ import {
   PlFileDialog,
   PlProgressCell,
   PlTextField,
-} from '@platforma-sdk/ui-vue';
-import { computed, reactive, shallowRef, useCssModule } from 'vue';
-import { useApp } from '../app';
-import DatasetCell from '../components/DatasetCell.vue';
-import ImportErrorDialog from '../components/ImportErrorDialog.vue';
-import { DEFAULT_TABLE_FILE_EXTENSIONS } from '../composables/useTableImport';
-import { useMetadataImport } from '../composables/useMetadataImport';
-import ImportDatasetDialog from '../dialogs/ImportDatasetDialog.vue';
-import ImportMetadataModal from '../dialogs/ImportMetadataDialog.vue';
-import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
+} from "@platforma-sdk/ui-vue";
+import { computed, reactive, shallowRef, useCssModule } from "vue";
+import { useApp } from "../app";
+import DatasetCell from "../components/DatasetCell.vue";
+import ImportErrorDialog from "../components/ImportErrorDialog.vue";
+import { DEFAULT_TABLE_FILE_EXTENSIONS } from "../composables/useTableImport";
+import { useMetadataImport } from "../composables/useMetadataImport";
+import ImportDatasetDialog from "../dialogs/ImportDatasetDialog.vue";
+import ImportMetadataModal from "../dialogs/ImportMetadataDialog.vue";
+import SyncDatasetDialog from "../dialogs/SyncDatasetDialog.vue";
 
 const styles = useCssModule();
 
@@ -53,7 +51,7 @@ const groupedDatasets = computed(() => app.model.data.datasets.filter(isGroupedD
 
 // Datasets that should have automatic sample extraction (excludes MultiplexedFastq)
 const datasetsWithAutoExtraction = computed(() =>
-  groupedDatasets.value.filter((ds) => ds.content.type !== 'MultiplexedFastq'),
+  groupedDatasets.value.filter((ds) => ds.content.type !== "MultiplexedFastq"),
 );
 
 const {
@@ -71,7 +69,7 @@ const data = reactive<{
   newColumnType?: MTValueType;
 }>({
   showAddColumnDialog: false,
-  newColumnName: '',
+  newColumnName: "",
 });
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
@@ -89,7 +87,7 @@ function showAddColumnDialog(type: MTValueType) {
 
 function closeAddColumnDialog() {
   data.showAddColumnDialog = false;
-  data.newColumnName = '';
+  data.newColumnName = "";
   data.newColumnType = undefined;
 }
 
@@ -127,7 +125,6 @@ function getSelectedSamples(node: IRowNode<MetadataRow> | null): PlId[] {
   return [sample];
 }
 
-
 async function deleteSamples(sampleIds: PlId[]) {
   app.model.data.sampleIds = app.model.data.sampleIds.filter((s) => !sampleIds.includes(s));
 
@@ -164,23 +161,23 @@ const columnDefs = computed<ColDef[]>(() => {
   const colDefs: ColDef[] = [
     { ...makeRowNumberColDef(), suppressHeaderMenuButton: true },
     {
-      colId: 'label',
-      field: 'label',
+      colId: "label",
+      field: "label",
       editable: true,
       headerName: app.model.data.sampleLabelColumnLabel,
       minWidth: 100,
       maxWidth: 300,
       suppressHeaderMenuButton: true,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
     },
     {
-      colId: 'datasets',
-      field: 'datasets',
+      colId: "datasets",
+      field: "datasets",
       editable: false,
-      headerName: 'Data',
+      headerName: "Data",
       cellRendererSelector: (params) => ({
-        component: 'DatasetCell',
+        component: "DatasetCell",
         params: {
           datasets: params.data.datasets,
         },
@@ -188,7 +185,7 @@ const columnDefs = computed<ColDef[]>(() => {
       minWidth: 100,
       suppressHeaderMenuButton: true,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
     },
     ...app.model.data.metadata.map((mCol): ColDef => {
       const common: ColDef = {
@@ -200,49 +197,53 @@ const columnDefs = computed<ColDef[]>(() => {
         maxWidth: 200,
       };
       switch (mCol.valueType) {
-        case 'String':
+        case "String":
           return {
             ...common,
             headerComponent: PlAgColumnHeader,
-            headerComponentParams: { type: 'Text' } satisfies PlAgHeaderComponentParams,
+            headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
           };
-        case 'Double':
+        case "Double":
           return {
             ...common,
-            cellDataType: 'number',
-            cellEditor: 'agNumberCellEditor',
+            cellDataType: "number",
+            cellEditor: "agNumberCellEditor",
             headerComponent: PlAgColumnHeader,
-            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams,
+            headerComponentParams: { type: "Number" } satisfies PlAgHeaderComponentParams,
           };
-        case 'Long':
+        case "Long":
           return {
             ...common,
-            cellDataType: 'number',
-            cellEditor: 'agNumberCellEditor',
+            cellDataType: "number",
+            cellEditor: "agNumberCellEditor",
             cellEditorParams: {
               precision: 0,
               showStepperButtons: true,
             },
             headerComponent: PlAgColumnHeader,
-            headerComponentParams: { type: 'Number' } satisfies PlAgHeaderComponentParams,
+            headerComponentParams: { type: "Number" } satisfies PlAgHeaderComponentParams,
           };
       }
     }),
     {
-      colId: 'add',
-      headerName: '+',
+      colId: "add",
+      headerName: "+",
       headerClass: styles.plusHeader,
       suppressHeaderMenuButton: true,
       minWidth: 45,
       maxWidth: 45,
       sortable: false,
       resizable: false,
-      pinned: 'right',
+      pinned: "right",
       lockPinned: true,
     },
   ];
 
-  return colDefs.map((c, i, arr) => arr.length === i + 2 /** before last "+" column */ ? { ...c, flex: 1, minWidth: 200, maxWidth: undefined } : c);
+  return colDefs.map((c, i, arr) =>
+    arr.length === i + 2 /** before last "+" column */
+      ? { ...c, flex: 1, minWidth: 200, maxWidth: undefined }
+      : c,
+  );
 });
 
 const rowData = computed<MetadataRow[]>(() => {
@@ -278,13 +279,13 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
   getRowId: (row) => row.data.id,
 
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
 
   autoSizeStrategy: {
-    type: 'fitCellContents',
+    type: "fitCellContents",
     colIds: columnDefs.value.slice(0, -2).map((c) => c.colId!), // except last two columns
   },
 
@@ -292,8 +293,8 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
   onColumnHeaderClicked: (event) => {
     const columnId = event.column.getId();
-    if (columnId === 'add') {
-      event.api.showColumnMenu('add');
+    if (columnId === "add") {
+      event.api.showColumnMenu("add");
     }
   },
 
@@ -301,20 +302,15 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
     const columnId = event.column.getId();
     const sampleId = event.data.id;
     const newValue = event.newValue;
-    if (columnId === 'label') {
-      if (newValue)
-        app.model.data.sampleLabels[sampleId] = newValue;
-      else
-        delete app.model.data.sampleLabels[sampleId];
-    } else if (columnId.startsWith('meta.')) {
+    if (columnId === "label") {
+      if (newValue) app.model.data.sampleLabels[sampleId] = newValue;
+      else delete app.model.data.sampleLabels[sampleId];
+    } else if (columnId.startsWith("meta.")) {
       const metaColumnId = columnId.slice(5);
       const metaColumn = notEmpty(app.model.data.metadata.find((col) => col.id === metaColumnId));
-      if (newValue)
-        metaColumn.data[sampleId] = newValue;
-      else
-        delete metaColumn.data[sampleId];
-    } else
-      throw new Error('Unexpected Column Id');
+      if (newValue) metaColumn.data[sampleId] = newValue;
+      else delete metaColumn.data[sampleId];
+    } else throw new Error("Unexpected Column Id");
     await app.allSettled();
   },
 
@@ -323,22 +319,22 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
     if (!columnId) {
       return [];
     }
-    if (columnId === 'add') {
+    if (columnId === "add") {
       return [
         {
-          name: 'Add String Column',
-          action: (_) => showAddColumnDialog('String'),
+          name: "Add String Column",
+          action: (_) => showAddColumnDialog("String"),
         },
         {
-          name: 'Add Integer Column',
-          action: (_) => showAddColumnDialog('Long'),
+          name: "Add Integer Column",
+          action: (_) => showAddColumnDialog("Long"),
         },
         {
-          name: 'Add Numerical Column',
-          action: (_) => showAddColumnDialog('Double'),
+          name: "Add Numerical Column",
+          action: (_) => showAddColumnDialog("Double"),
         },
       ];
-    } else if (columnId.startsWith('meta.')) {
+    } else if (columnId.startsWith("meta.")) {
       const metaColumnId = columnId.slice(5);
       return [
         {
@@ -350,7 +346,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
   },
 
   getContextMenuItems: (params) => {
-    console.log('Ctx:', params);
+    console.log("Ctx:", params);
     const targetSamples = getSelectedSamples(params.node);
     if (getSelectedSamples(params.node).length === 0) return [];
     return [
@@ -402,10 +398,18 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
   <!-- Loading modal: remote file selected, waiting for backend to make it available -->
   <PlDialogModal
-    :model-value="app.model.data.metadataUploadHandle !== undefined && importState.importCandidate === undefined && importState.errorMessage === undefined"
+    :model-value="
+      app.model.data.metadataUploadHandle !== undefined &&
+      importState.importCandidate === undefined &&
+      importState.errorMessage === undefined
+    "
     :close-on-outside-click="false"
     closable
-    @update:model-value="(v) => { if (!v) app.model.data.metadataUploadHandle = undefined; }"
+    @update:model-value="
+      (v) => {
+        if (!v) app.model.data.metadataUploadHandle = undefined;
+      }
+    "
   >
     <template #title>Importing metadata...</template>
     <PlProgressCell stage="running" step="Downloading file..." />
@@ -442,23 +446,19 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
     <template #actions>
       <PlBtnPrimary
         :disabled="data.newColumnName.length === 0 || !data.newColumnType"
-        @click="addColumn(data.newColumnType!, data.newColumnName); closeAddColumnDialog()"
+        @click="
+          addColumn(data.newColumnType!, data.newColumnName);
+          closeAddColumnDialog();
+        "
       >
         Create
       </PlBtnPrimary>
 
-      <PlBtnGhost
-        @click.stop="closeAddColumnDialog"
-      >
-        Cancel
-      </PlBtnGhost>
+      <PlBtnGhost @click.stop="closeAddColumnDialog"> Cancel </PlBtnGhost>
     </template>
   </PlDialogModal>
 
-  <ImportErrorDialog
-    :error-message="importState.errorMessage"
-    @close="clearErrorMessage"
-  />
+  <ImportErrorDialog :error-message="importState.errorMessage" @close="clearErrorMessage" />
 </template>
 
 <style lang="css" module>

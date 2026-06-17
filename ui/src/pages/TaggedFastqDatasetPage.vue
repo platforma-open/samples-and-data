@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { ColDef, GridOptions } from 'ag-grid-enterprise';
+import type { ColDef, GridOptions } from "ag-grid-enterprise";
 
-import { AgGridVue } from 'ag-grid-vue3';
+import { AgGridVue } from "ag-grid-vue3";
 
 import type {
   DSTaggedFastq,
@@ -9,13 +9,18 @@ import type {
   Lane,
   PlId,
   TaggedDatasetRecord,
-} from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import type { PlAgHeaderComponentParams } from '@platforma-sdk/ui-vue';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import { agSampleIdColumnDef } from '../util';
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { PlAgHeaderComponentParams } from "@platforma-sdk/ui-vue";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import { agSampleIdColumnDef } from "../util";
 
 const app = useApp();
 
@@ -23,8 +28,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = (() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSTaggedFastq;
 })();
 
@@ -37,17 +41,20 @@ type TaggedFastqDatasetRow = {
 };
 
 function encodeKey(tags: readonly string[], sampleId: PlId, r: TaggedDatasetRecord): string {
-  return JSON.stringify([sampleId, ...tags.map((t) => r.tags[t]), r.lane ?? '']);
+  return JSON.stringify([sampleId, ...tags.map((t) => r.tags[t]), r.lane ?? ""]);
 }
 
-const rowData = computed(() => Object.entries(dataset.content.data).flatMap(([sampleId, rs]) =>
-  (rs ?? []).map((r) => ({
-    key: encodeKey(dataset.content.tags, sampleId as PlId, r),
-    sample: sampleId as PlId,
-    lane: r.lane,
-    tags: r.tags,
-    reads: r.files,
-  }))));
+const rowData = computed(() =>
+  Object.entries(dataset.content.data).flatMap(([sampleId, rs]) =>
+    (rs ?? []).map((r) => ({
+      key: encodeKey(dataset.content.tags, sampleId as PlId, r),
+      sample: sampleId as PlId,
+      lane: r.lane,
+      tags: r.tags,
+      reads: r.files,
+    })),
+  ),
+);
 
 const readIndices = computed(() => dataset.content.readIndices);
 
@@ -57,16 +64,13 @@ const defaultColDef: ColDef = {
 
 const columnDefs = computed(() => {
   const dsc = dataset.content;
-  const res: ColDef<TaggedFastqDatasetRow>[] = [
-    makeRowNumberColDef(),
-    agSampleIdColumnDef(app),
-  ];
+  const res: ColDef<TaggedFastqDatasetRow>[] = [makeRowNumberColDef(), agSampleIdColumnDef(app)];
 
   if (dsc.hasLanes)
     res.push({
-      headerName: 'Lane',
+      headerName: "Lane",
       flex: 1,
-      field: 'lane',
+      field: "lane",
       editable: false,
     });
 
@@ -85,11 +89,11 @@ const columnDefs = computed(() => {
       cellStyle: { padding: 0 },
 
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' } satisfies PlAgHeaderComponentParams,
+      headerComponentParams: { type: "File" } satisfies PlAgHeaderComponentParams,
 
-      cellRenderer: 'PlAgCellFile',
+      cellRenderer: "PlAgCellFile",
       cellRendererParams: {
-        extensions: dsc.gzipped ? ['fastq.gz', 'fq.gz'] : ['fastq', 'fq'],
+        extensions: dsc.gzipped ? ["fastq.gz", "fq.gz"] : ["fastq", "fq"],
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
           const progresses = app.progresses;
           if (!fileHandle) return undefined;
@@ -109,7 +113,6 @@ const gridOptions: GridOptions<TaggedFastqDatasetRow> = {
     PlAgCellFile,
   },
 };
-
 </script>
 
 <template>

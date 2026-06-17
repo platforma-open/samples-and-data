@@ -1,24 +1,30 @@
 <script setup lang="ts">
-import type {
-  ColDef,
-  GridOptions,
-} from 'ag-grid-enterprise';
+import type { ColDef, GridOptions } from "ag-grid-enterprise";
 import {
   ClientSideRowModelModule,
   MenuModule,
   ModuleRegistry,
   RichSelectModule,
-} from 'ag-grid-enterprise';
+} from "ag-grid-enterprise";
 
-import { AgGridVue } from 'ag-grid-vue3';
+import { AgGridVue } from "ag-grid-vue3";
 
-import type { DSMultiSampleSeurat, PlId } from '@platforma-open/milaboratories.samples-and-data.model';
-import type { ImportFileHandle } from '@platforma-sdk/model';
-import { AgGridTheme, makeRowNumberColDef, PlAgCellFile, PlAgColumnHeader, ReactiveFileContent } from '@platforma-sdk/ui-vue';
-import { computed } from 'vue';
-import { useApp } from '../app';
-import SyncDatasetDialog from '../dialogs/SyncDatasetDialog.vue';
-import { agGroupIdColumnDef, parseCsvMapFromHandles } from '../util';
+import type {
+  DSMultiSampleSeurat,
+  PlId,
+} from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
+import {
+  AgGridTheme,
+  makeRowNumberColDef,
+  PlAgCellFile,
+  PlAgColumnHeader,
+  ReactiveFileContent,
+} from "@platforma-sdk/ui-vue";
+import { computed } from "vue";
+import { useApp } from "../app";
+import SyncDatasetDialog from "../dialogs/SyncDatasetDialog.vue";
+import { agGroupIdColumnDef, parseCsvMapFromHandles } from "../util";
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, RichSelectModule, MenuModule]);
 
@@ -29,8 +35,7 @@ const datasetId = app.queryParams.id;
 
 const dataset = computed(() => {
   const ds = app.model.data.datasets.find((ds) => ds.id === datasetId);
-  if (!ds)
-    throw new Error('Dataset not found');
+  if (!ds) throw new Error("Dataset not found");
   return ds as DSMultiSampleSeurat;
 });
 
@@ -43,21 +48,19 @@ type DatasetRow = {
 
 const parsedSampleGroups = computed(() => {
   const fileHandles = app.model.outputs.sampleGroups?.[dataset.value.id];
-  return parseCsvMapFromHandles<PlId>(reactiveFileContent, fileHandles) as Record<PlId, PlId[]> | undefined;
+  return parseCsvMapFromHandles<PlId>(reactiveFileContent, fileHandles) as
+    | Record<PlId, PlId[]>
+    | undefined;
 });
 
 const rowData = computed(() => {
   const groupToSample = parsedSampleGroups.value;
-  return Object.entries(dataset.value.content.data).flatMap(
-    ([groupId, data]) => (
-      {
-        groupId: groupId as PlId,
-        groupLabel: dataset.value.content.groupLabels[groupId as PlId],
-        nSamples: groupToSample?.[groupId as PlId]?.length,
-        data,
-      }
-    ),
-  );
+  return Object.entries(dataset.value.content.data).flatMap(([groupId, data]) => ({
+    groupId: groupId as PlId,
+    groupLabel: dataset.value.content.groupLabels[groupId as PlId],
+    nSamples: groupToSample?.[groupId as PlId]?.length,
+    data,
+  }));
 });
 
 const defaultColDef: ColDef = {
@@ -68,22 +71,22 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
   return [
     makeRowNumberColDef(),
     {
-      headerName: 'Samples',
+      headerName: "Samples",
       flex: 1,
       valueGetter: (params) => params.data?.nSamples,
       editable: false,
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'Number' },
+      headerComponentParams: { type: "Number" },
     },
     agGroupIdColumnDef(),
     {
-      headerName: 'Seurat RDS file',
+      headerName: "Seurat RDS file",
       flex: 2,
       cellStyle: { padding: 0 },
       spanRows: true,
 
       headerComponent: PlAgColumnHeader,
-      headerComponentParams: { type: 'File' },
+      headerComponentParams: { type: "File" },
 
       cellRendererParams: {
         resolveProgress: (fileHandle: ImportFileHandle | undefined) => {
@@ -93,17 +96,14 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
         },
       },
 
-      cellRendererSelector: (_) =>
-        ({
-          component: 'PlAgCellFile',
-          params: {
-            extensions: ['rds', 'RDS'],
-          },
-        }),
+      cellRendererSelector: (_) => ({
+        component: "PlAgCellFile",
+        params: {
+          extensions: ["rds", "RDS"],
+        },
+      }),
       valueGetter: (params) =>
-        params.data?.groupId
-          ? dataset.value.content.data[params.data.groupId]
-          : undefined,
+        params.data?.groupId ? dataset.value.content.data[params.data.groupId] : undefined,
       valueSetter: (params) => {
         const group = params.data.groupId;
         const oldValue = dataset.value.content.data[group];
@@ -129,13 +129,14 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
 
         return true;
       },
-    }];
+    },
+  ];
 });
 
 const gridOptions: GridOptions<DatasetRow> = {
   getRowId: (row) => row.data.groupId,
   rowSelection: {
-    mode: 'multiRow',
+    mode: "multiRow",
     checkboxes: false,
     headerCheckbox: false,
   },
@@ -162,5 +163,3 @@ const gridOptions: GridOptions<DatasetRow> = {
     :gridOptions="gridOptions"
   />
 </template>
-
-

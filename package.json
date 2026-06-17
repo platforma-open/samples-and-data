@@ -1,52 +1,29 @@
 {
-  "name": "@platforma-open/milaboratories.samples-and-data",
   "scripts": {
-    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json,vue}\"",
     "build": "turbo run build",
     "build:dev": "env PL_PKG_DEV=local turbo run build",
-    "test": "env PL_PKG_DEV=local turbo run test --concurrency 1 --env-mode=loose",
-    "test:dry-run": "PL_PKG_DEV=local turbo run test --dry-run=json",
+    "test": "env PL_PKG_DEV=local turbo run test --concurrency 1",
+    "test:dry-run": "env PL_PKG_DEV=local turbo run test --dry-run=json",
     "mark-stable": "turbo run mark-stable",
     "watch": "turbo watch build",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "update-sdk": "pl-blocks-deps-updater"
+    "update-sdk": "block-tools structure refresh --update-deps-only",
+    "fmt": "turbo run fmt",
+    "check": "turbo run check",
+    "do-pack": "turbo run do-pack",
+    "upgrade-sdk": "block-tools structure refresh --update-deps-only && pnpm i && block-tools structure refresh && pnpm i && pnpm fmt"
   },
   "devDependencies": {
-    "turbo": "catalog:",
     "@changesets/cli": "catalog:",
-    "@platforma-sdk/blocks-deps-updater": "catalog:",
-    "shx": "catalog:"
+    "@milaboratories/ts-builder": "catalog:",
+    "@platforma-sdk/block-tools": "catalog:",
+    "shx": "catalog:",
+    "turbo": "catalog:"
   },
-  "packageManager": "pnpm@9.12.0",
-  "///": {
-    "pnpm": {
-      "overrides": {
-        "@platforma-sdk/ui-vue": "file:/home/snyssfx/prog/mi/platforma/sdk/ui-vue/package.tgz",
-        "@milaboratories/pl-middle-layer": "file:/home/snyssfx/prog/mi/platforma/lib/node/pl-middle-layer/package.tgz",
-        "@milaboratories/pl-model-middle-layer": "file:/home/snyssfx/prog/mi/platforma/lib/model/middle-layer/package.tgz",
-        "@milaboratories/pl-model-common": "file:/home/snyssfx/prog/mi/platforma/lib/model/common/package.tgz",
-        "@platforma-sdk/model": "file:/home/snyssfx/prog/mi/platforma/sdk/model/package.tgz",
-        "@platforma-sdk/test": "file:/home/snyssfx/prog/mi/platforma/sdk/test/package.tgz",
-        "@platforma-sdk/workflow-tengo": "file:/home/snyssfx/prog/mi/platforma/sdk/workflow-tengo/package.tgz",
-        "@platforma-sdk/tengo-builder": "file:/home/snyssfx/prog/mi/platforma/tools/tengo-builder/package.tgz"
-      }
-    }
+  "peerDependencies": {
+    "oxfmt": "*",
+    "oxlint": "*"
   },
-  "//": {
-    "pnpm": {
-      "overrides": {
-        "@platforma-sdk/ui-vue": "file:/Users/dbolotin/milab/core/platforma/sdk/ui-vue/package.tgz",
-        "@milaboratories/pl-middle-layer": "file:/Users/dbolotin/milab/core/platforma/lib/node/pl-middle-layer/package.tgz",
-        "@milaboratories/pl-model-middle-layer": "file:/Users/dbolotin/milab/core/platforma/lib/model/middle-layer/package.tgz",
-        "@milaboratories/pl-model-common": "file:/Users/dbolotin/milab/core/platforma/lib/model/common/package.tgz",
-        "@platforma-sdk/model": "file:/Users/dbolotin/milab/core/platforma/sdk/model/package.tgz",
-        "@platforma-sdk/test": "file:/Users/dbolotin/milab/core/platforma/sdk/test/package.tgz",
-        "@platforma-sdk/workflow-tengo": "file:/Users/dbolotin/milab/core/platforma/sdk/workflow-tengo/package.tgz"
-      }
-    }
-  },
-  "pnpm": {
-    "overrides": {}
-  }
+  "packageManager": "pnpm@9.12.0"
 }
