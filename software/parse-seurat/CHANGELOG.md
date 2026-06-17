@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.parse-seurat
 
+## 1.1.3
+
+### Patch Changes
+
+- 919bf93: Migrate the block onto the structurer (`block-tools structure`): adopt the canonical project skeleton (tsconfig, oxlint/oxfmt, turbo, block index, workflow format/vitest), SDK catalog bump (model/ui-vue 1.65→1.79, workflow-tengo 5→6, tengo-builder 3→4, +ts-builder/ts-configs), legacy tooling cleanup (vite/eslint/tsup/vitest), and pin `vue` to `3.5.24`. No user-facing behavior change.
+
 ## 1.1.2
 
 ### Patch Changes
