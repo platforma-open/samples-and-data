@@ -8,8 +8,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest run --passWithNoTests",
-    "lint": "eslint .",
-    "check": "ts-builder type-check --target block-test"
+    "check": "ts-builder check --target block-test",
+    "fmt": "ts-builder format"
   },
   "dependencies": {
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
@@ -19,7 +19,6 @@
   "devDependencies": {
     "@milaboratories/ts-builder": "catalog:",
     "@milaboratories/ts-configs": "catalog:",
-    "@platforma-sdk/eslint-config": "catalog:",
     "@platforma-sdk/test": "catalog:",
     "vitest": "catalog:"
   },
