@@ -1,6 +1,7 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data.ui",
   "version": "2.9.3",
+  "private": true,
   "type": "module",
   "scripts": {
     "dev": "ts-builder serve --target block-ui",
