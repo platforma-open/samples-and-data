@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.ui
 
+## 2.10.0
+
+### Minor Changes
+
+- 6bf4907: Samplesheet import now supports multiple barcode tags. All barcode columns auto-bind and tags can be added, repointed, or removed manually. Previously only a single BarcodeID column could be imported.
+
 ## 2.9.3
 
 ### Patch Changes
