@@ -2,6 +2,10 @@ import type { ImportResult } from "../dataimport";
 
 export const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
 
+// Fallback tag name when a header yields nothing derivable. Shared by
+// auto-seed and the dialog's manual add so both agree.
+export const FALLBACK_TAG_NAME = "BarcodeID";
+
 export type TagBinding = { tagName: string; columnIdx: number };
 
 // Reverse-direction match (tag includes header) needs a header-length floor.
@@ -12,14 +16,31 @@ export type TagBinding = { tagName: string; columnIdx: number };
 const MIN_REVERSE_HEADER_LEN = 4;
 
 /**
+ * Derive a candidate tag name from a column header by dropping the common
+ * noise words ("barcode", "sequence"/"seq", "id") and keeping the first
+ * remaining alphanumeric token. Returns "" when nothing is left
+ * (e.g. a bare "Barcode ID" header) so callers can fall back to a default.
+ */
+export function deriveTagName(header: string): string {
+  const cleaned = header
+    .replace(/barcodes?/gi, " ")
+    .replace(/sequences?/gi, " ")
+    .replace(/\bseq\b/gi, " ")
+    .replace(/\bid\b/gi, " ");
+  const token = cleaned.match(/[A-Za-z0-9]+/);
+  return token ? token[0] : "";
+}
+
+/**
  * Build one binding per non-File / non-Sample column whose header matches an
  * already-declared barcode tag (case-insensitive substring). Columns that
  * do not match a declared tag flow through the metadata pipeline.
  *
- * On a fresh dataset (no declared tags), as a fallback for the single-
- * Barcode-ID flow used by demultiplexing blocks, the first column whose
- * header contains `barcode` (case-insensitive) is auto-bound as a
- * `BarcodeID` tag.
+ * On a fresh dataset (no declared tags), as a fallback for demultiplexing
+ * blocks, every column whose header contains `barcode` (case-insensitive) is
+ * auto-bound. A lone barcode column keeps the legacy single-`BarcodeID` seed
+ * convention; two or more get a tag name derived from each header so multi-tag
+ * demultiplexing works on first import.
  */
 export function defaultBindingsFor(
   ic: ImportResult,
@@ -68,17 +89,30 @@ export function defaultBindingsFor(
     result.push({ tagName, columnIdx: i });
   }
 
-  // Fallback for the single-Barcode-ID flow: on a fresh dataset (no declared
-  // tags) where the samplesheet has any column whose header contains
-  // `barcode` (case-insensitive), pre-bind the first such column as a
-  // `BarcodeID` tag. Matches the V3 migration's seed convention so
-  // downstream identifiers stay consistent with legacy projects.
+  // Fresh-dataset fallback (no declared tags): pre-bind every column whose
+  // header contains `barcode` (case-insensitive).
   if (result.length === 0 && declaredTags.length === 0) {
+    const barcodeCols: number[] = [];
     for (let i = 0; i < cols.length; i++) {
       if (i === fileIdx || i === sampleIdx) continue;
-      if (cols[i].header.toLowerCase().includes("barcode")) {
-        result.push({ tagName: "BarcodeID", columnIdx: i });
-        break;
+      if (cols[i].header.toLowerCase().includes("barcode")) barcodeCols.push(i);
+    }
+    if (barcodeCols.length === 1) {
+      // Legacy single-Barcode-ID seed convention — preserved verbatim so
+      // downstream identifiers stay consistent with legacy projects.
+      result.push({ tagName: FALLBACK_TAG_NAME, columnIdx: barcodeCols[0] });
+    } else {
+      // Dual/multi-index sheets: derive a distinct tag name per column.
+      for (const i of barcodeCols) {
+        const base = deriveTagName(cols[i].header) || FALLBACK_TAG_NAME;
+        let tagName = base;
+        let n = 2;
+        while (taken.has(tagName)) {
+          tagName = `${base}${n}`;
+          n++;
+        }
+        taken.add(tagName);
+        result.push({ tagName, columnIdx: i });
       }
     }
   }

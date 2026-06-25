@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ImportResult } from "../dataimport";
-import { defaultBindingsFor } from "./samplesheet-bindings";
+import { defaultBindingsFor, deriveTagName } from "./samplesheet-bindings";
 
 function ic(headers: string[]): ImportResult {
   return {
@@ -90,8 +90,45 @@ describe("defaultBindingsFor — barcode-shaped fallback", () => {
     expect(result).toEqual([]);
   });
 
-  it("picks the first matching barcode-shaped column when multiple are present", () => {
+  it("binds all barcode-shaped columns with header-derived tag names when multiple are present", () => {
     const result = defaultBindingsFor(ic(["File", "Sample", "Barcode A", "Barcode B"]), 0, 1, []);
-    expect(result).toEqual([{ tagName: "BarcodeID", columnIdx: 2 }]);
+    expect(result).toEqual([
+      { tagName: "A", columnIdx: 2 },
+      { tagName: "B", columnIdx: 3 },
+    ]);
+  });
+
+  it("binds a dual-index Master/Slave sheet to Master and Slave tags", () => {
+    const result = defaultBindingsFor(
+      ic(["FileID", "Sample ID", "Master barcode sequence", "Slave barcode sequence"]),
+      0,
+      1,
+      [],
+    );
+    expect(result).toEqual([
+      { tagName: "Master", columnIdx: 2 },
+      { tagName: "Slave", columnIdx: 3 },
+    ]);
+  });
+
+  it("de-duplicates derived tag names that collide", () => {
+    const result = defaultBindingsFor(ic(["File", "Sample", "X barcode", "X barcode "]), 0, 1, []);
+    expect(result).toEqual([
+      { tagName: "X", columnIdx: 2 },
+      { tagName: "X2", columnIdx: 3 },
+    ]);
+  });
+});
+
+describe("deriveTagName", () => {
+  it("strips noise words and keeps the leading token", () => {
+    expect(deriveTagName("Master barcode sequence")).toBe("Master");
+    expect(deriveTagName("Slave barcode sequence")).toBe("Slave");
+    expect(deriveTagName("Barcode A")).toBe("A");
+  });
+
+  it("returns empty string when only noise words remain", () => {
+    expect(deriveTagName("Barcode ID")).toBe("");
+    expect(deriveTagName("barcode sequence")).toBe("");
   });
 });
