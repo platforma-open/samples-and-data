@@ -24,6 +24,7 @@ import {
 import {
   defaultBindingsFor,
   deriveTagName,
+  FALLBACK_TAG_NAME,
   TAG_NAME_RX,
   type TagBinding,
 } from "../utils/samplesheet-bindings";
@@ -61,10 +62,16 @@ export type SamplesheetImportData = {
 
 const app = useApp();
 
+// Stable per-row id for Vue keys — index keys bleed input state on mid-list
+// removal; tagName can't be the key (user-edited, may be empty/duplicate).
+type BoundTag = TagBinding & { id: string };
+let bindingIdSeq = 0;
+const withId = (b: TagBinding): BoundTag => ({ ...b, id: `bind-${bindingIdSeq++}` });
+
 const data = reactive({
   fileIdColumnIdx: -1,
   sampleIdColumnIdx: -1,
-  bindings: [] as TagBinding[],
+  bindings: [] as BoundTag[],
 });
 
 watch(
@@ -89,7 +96,7 @@ watch(
       data.fileIdColumnIdx,
       data.sampleIdColumnIdx,
       props.barcodeTags,
-    );
+    ).map(withId);
   },
   { immediate: true },
 );
@@ -106,10 +113,9 @@ watch(
       data.sampleIdColumnIdx,
       tags,
     );
-    data.bindings = seeded.map((b) => ({
-      ...b,
-      columnIdx: previous.get(b.tagName) ?? b.columnIdx,
-    }));
+    data.bindings = seeded.map((b) =>
+      withId({ ...b, columnIdx: previous.get(b.tagName) ?? b.columnIdx }),
+    );
   },
 );
 
@@ -233,7 +239,8 @@ const availableColumnForNewBinding = computed<number>(() => {
   return -1;
 });
 
-function bindingError(idx: number): string | undefined {
+// Column-selection errors — surfaced under the column dropdown.
+function bindingColumnError(idx: number): string | undefined {
   const b = data.bindings[idx];
   if (b.columnIdx === -1) return "Select a barcode column";
   if (b.columnIdx === data.fileIdColumnIdx || b.columnIdx === data.sampleIdColumnIdx) {
@@ -242,6 +249,12 @@ function bindingError(idx: number): string | undefined {
   if (data.bindings.some((other, i) => i !== idx && other.columnIdx === b.columnIdx)) {
     return "Each column can map to only one tag";
   }
+  return undefined;
+}
+
+// Tag-name errors — surfaced under the tag-name field.
+function bindingTagError(idx: number): string | undefined {
+  const b = data.bindings[idx];
   if (!b.tagName) return "Tag name is required";
   if (!TAG_NAME_RX.test(b.tagName)) return "Use letters and digits only";
   if (data.bindings.some((other, i) => i !== idx && other.tagName === b.tagName)) {
@@ -253,7 +266,7 @@ function bindingError(idx: number): string | undefined {
 const importDisabled = computed(() => {
   if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return true;
   for (let i = 0; i < data.bindings.length; i++) {
-    if (bindingError(i)) return true;
+    if (bindingColumnError(i) || bindingTagError(i)) return true;
   }
   return false;
 });
@@ -264,7 +277,7 @@ function addBinding() {
   const header = props.importCandidate.data.columns[columnIdx]?.header ?? "";
   // Seed a candidate tag name from the header, de-duplicated against existing
   // bindings; the operator can rename it before importing.
-  const base = deriveTagName(header) || "Tag";
+  const base = deriveTagName(header) || FALLBACK_TAG_NAME;
   const existing = new Set(data.bindings.map((b) => b.tagName));
   let tagName = base;
   let n = 2;
@@ -272,7 +285,7 @@ function addBinding() {
     tagName = `${base}${n}`;
     n++;
   }
-  data.bindings = [...data.bindings, { tagName, columnIdx }];
+  data.bindings = [...data.bindings, withId({ tagName, columnIdx })];
 }
 
 function removeBinding(idx: number) {
@@ -372,11 +385,12 @@ function runImport() {
       <strong>Add barcode tag</strong> to map columns to tags.
     </PlAlert>
 
-    <PlRow v-for="(binding, idx) in data.bindings" :key="idx">
+    <PlRow v-for="(binding, idx) in data.bindings" :key="binding.id">
       <PlDropdown
         :model-value="binding.columnIdx"
         label="Barcode column"
         :options="bindingColumnOptions"
+        :error="bindingColumnError(idx)"
         @update:model-value="
           (v: number | undefined) => v !== undefined && updateBindingColumn(idx, v)
         "
@@ -385,7 +399,7 @@ function runImport() {
         :model-value="binding.tagName"
         label="Tag name"
         placeholder="e.g. Master"
-        :error="bindingError(idx)"
+        :error="bindingTagError(idx)"
         @update:model-value="(v: string) => updateBindingTag(idx, v)"
       />
       <PlBtnGhost icon="close" @click="removeBinding(idx)" />

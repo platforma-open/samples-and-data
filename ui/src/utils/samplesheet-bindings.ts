@@ -2,6 +2,10 @@ import type { ImportResult } from "../dataimport";
 
 export const TAG_NAME_RX = /^[A-Za-z0-9]+$/;
 
+// Fallback tag name when a header yields nothing derivable. Shared by
+// auto-seed and the dialog's manual add so both agree.
+export const FALLBACK_TAG_NAME = "BarcodeID";
+
 export type TagBinding = { tagName: string; columnIdx: number };
 
 // Reverse-direction match (tag includes header) needs a header-length floor.
@@ -96,11 +100,11 @@ export function defaultBindingsFor(
     if (barcodeCols.length === 1) {
       // Legacy single-Barcode-ID seed convention — preserved verbatim so
       // downstream identifiers stay consistent with legacy projects.
-      result.push({ tagName: "BarcodeID", columnIdx: barcodeCols[0] });
+      result.push({ tagName: FALLBACK_TAG_NAME, columnIdx: barcodeCols[0] });
     } else {
       // Dual/multi-index sheets: derive a distinct tag name per column.
       for (const i of barcodeCols) {
-        const base = deriveTagName(cols[i].header) || "BarcodeID";
+        const base = deriveTagName(cols[i].header) || FALLBACK_TAG_NAME;
         let tagName = base;
         let n = 2;
         while (taken.has(tagName)) {
