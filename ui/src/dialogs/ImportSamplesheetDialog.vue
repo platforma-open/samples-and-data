@@ -21,7 +21,12 @@ import {
   extractMetadataFromRow,
   processMetadataColumns,
 } from "../utils/metadata";
-import { defaultBindingsFor, TAG_NAME_RX, type TagBinding } from "../utils/samplesheet-bindings";
+import {
+  defaultBindingsFor,
+  deriveTagName,
+  TAG_NAME_RX,
+  type TagBinding,
+} from "../utils/samplesheet-bindings";
 
 const props = defineProps<{
   importCandidate: ImportResult;
@@ -209,8 +214,34 @@ const tableIssuesText = computed(() => {
   return undefined;
 });
 
-function bindingTagError(idx: number): string | undefined {
+// Columns selectable as a barcode source — everything except the File ID and
+// Sample ID columns.
+const bindingColumnOptions = computed<ListOption<number>[]>(() =>
+  props.importCandidate.data.columns
+    .map((c, idx) => ({ value: idx, label: c.header }))
+    .filter((o) => o.value !== data.fileIdColumnIdx && o.value !== data.sampleIdColumnIdx),
+);
+
+// First column not already used as File ID / Sample ID / another binding, or
+// -1 when every column is taken (the "Add barcode tag" button disables then).
+const availableColumnForNewBinding = computed<number>(() => {
+  const used = new Set<number>([data.fileIdColumnIdx, data.sampleIdColumnIdx]);
+  for (const b of data.bindings) used.add(b.columnIdx);
+  for (let i = 0; i < props.importCandidate.data.columns.length; i++) {
+    if (!used.has(i)) return i;
+  }
+  return -1;
+});
+
+function bindingError(idx: number): string | undefined {
   const b = data.bindings[idx];
+  if (b.columnIdx === -1) return "Select a barcode column";
+  if (b.columnIdx === data.fileIdColumnIdx || b.columnIdx === data.sampleIdColumnIdx) {
+    return "Column is already used as File ID / Sample ID";
+  }
+  if (data.bindings.some((other, i) => i !== idx && other.columnIdx === b.columnIdx)) {
+    return "Each column can map to only one tag";
+  }
   if (!b.tagName) return "Tag name is required";
   if (!TAG_NAME_RX.test(b.tagName)) return "Use letters and digits only";
   if (data.bindings.some((other, i) => i !== idx && other.tagName === b.tagName)) {
@@ -222,10 +253,27 @@ function bindingTagError(idx: number): string | undefined {
 const importDisabled = computed(() => {
   if (data.fileIdColumnIdx === -1 || data.sampleIdColumnIdx === -1) return true;
   for (let i = 0; i < data.bindings.length; i++) {
-    if (bindingTagError(i)) return true;
+    if (bindingError(i)) return true;
   }
   return false;
 });
+
+function addBinding() {
+  const columnIdx = availableColumnForNewBinding.value;
+  if (columnIdx === -1) return;
+  const header = props.importCandidate.data.columns[columnIdx]?.header ?? "";
+  // Seed a candidate tag name from the header, de-duplicated against existing
+  // bindings; the operator can rename it before importing.
+  const base = deriveTagName(header) || "Tag";
+  const existing = new Set(data.bindings.map((b) => b.tagName));
+  let tagName = base;
+  let n = 2;
+  while (existing.has(tagName)) {
+    tagName = `${base}${n}`;
+    n++;
+  }
+  data.bindings = [...data.bindings, { tagName, columnIdx }];
+}
 
 function removeBinding(idx: number) {
   data.bindings = data.bindings.filter((_, i) => i !== idx);
@@ -233,6 +281,10 @@ function removeBinding(idx: number) {
 
 function updateBindingTag(idx: number, value: string) {
   data.bindings = data.bindings.map((b, i) => (i === idx ? { ...b, tagName: value } : b));
+}
+
+function updateBindingColumn(idx: number, value: number) {
+  data.bindings = data.bindings.map((b, i) => (i === idx ? { ...b, columnIdx: value } : b));
 }
 
 function runImport() {
@@ -316,19 +368,32 @@ function runImport() {
     />
 
     <PlAlert v-if="data.bindings.length === 0" type="info">
-      No barcode columns will be imported — remaining columns will flow to metadata.
+      No barcode columns will be imported — remaining columns will flow to metadata. Use
+      <strong>Add barcode tag</strong> to map columns to tags.
     </PlAlert>
 
     <PlRow v-for="(binding, idx) in data.bindings" :key="idx">
+      <PlDropdown
+        :model-value="binding.columnIdx"
+        label="Barcode column"
+        :options="bindingColumnOptions"
+        @update:model-value="
+          (v: number | undefined) => v !== undefined && updateBindingColumn(idx, v)
+        "
+      />
       <PlTextField
         :model-value="binding.tagName"
-        :label="`Tag for column &quot;${props.importCandidate.data.columns[binding.columnIdx].header}&quot;`"
-        placeholder="e.g. P5"
-        :error="bindingTagError(idx)"
+        label="Tag name"
+        placeholder="e.g. Master"
+        :error="bindingError(idx)"
         @update:model-value="(v: string) => updateBindingTag(idx, v)"
       />
       <PlBtnGhost icon="close" @click="removeBinding(idx)" />
     </PlRow>
+
+    <PlBtnSecondary icon="add" :disabled="availableColumnForNewBinding === -1" @click="addBinding">
+      Add barcode tag
+    </PlBtnSecondary>
 
     <PlLogView :value="tableDataText" label="Import information" />
     <template v-if="tableIssuesText">
