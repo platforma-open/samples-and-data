@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.parse-seurat
 
+## 1.1.4
+
+### Patch Changes
+
+- 9d96dff: Upgrade SDK
+
 ## 1.1.3
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.18.1
+
+### Patch Changes
+
+- 9d96dff: Upgrade SDK
+
 ## 1.18.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data.parse-h5ad
 
+## 1.1.5
+
+### Patch Changes
+
+- 9d96dff: Upgrade SDK
+
 ## 1.1.4
 
 ### Patch Changes
