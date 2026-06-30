@@ -1,10 +1,10 @@
 import type { BlockData } from "@platforma-open/milaboratories.samples-and-data.model";
 import { uniquePlId } from "@platforma-sdk/model";
 import { blockTest } from "@platforma-sdk/test";
-import { blockSpec } from "this-block";
+import { SamplesAndDataBlockPointer } from "this-block";
 
 blockTest("empty inputs", { timeout: 30000 }, async ({ rawPrj: project, helpers, expect }) => {
-  const blockId = await project.addBlock("Block", blockSpec);
+  const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
   await project.runBlock(blockId);
   await helpers.awaitBlockDone(blockId);
   const blockState = project.getBlockState(blockId);
@@ -20,7 +20,7 @@ blockTest("empty inputs", { timeout: 30000 }, async ({ rawPrj: project, helpers,
 });
 
 blockTest("simple input", async ({ rawPrj: project, helpers, expect }) => {
-  const blockId = await project.addBlock("Block", blockSpec);
+  const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
   const sample1Id = uniquePlId();
   const metaColumn1Id = uniquePlId();
   const dataset1Id = uniquePlId();
@@ -79,7 +79,7 @@ blockTest("simple input", async ({ rawPrj: project, helpers, expect }) => {
 });
 
 blockTest("simple multilane input", async ({ rawPrj: project, helpers, expect }) => {
-  const blockId = await project.addBlock("Block", blockSpec);
+  const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
   const sample1Id = uniquePlId();
   const metaColumn1Id = uniquePlId();
   const dataset1Id = uniquePlId();
@@ -143,7 +143,7 @@ blockTest(
   "multisample h5ad input",
   { timeout: 100000 },
   async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
-    const blockId = await project.addBlock("Block", blockSpec);
+    const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
     const sample1Id = uniquePlId();
     const sample2Id = uniquePlId();
     const dataset1Id = uniquePlId();
@@ -215,7 +215,7 @@ blockTest(
   "multisample seurat input",
   { timeout: 100000 },
   async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
-    const blockId = await project.addBlock("Block", blockSpec);
+    const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
     const sample1Id = uniquePlId();
     const sample2Id = uniquePlId();
     const dataset1Id = uniquePlId();
@@ -285,7 +285,7 @@ blockTest(
 );
 
 blockTest("simple h5 input", async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
-  const blockId = await project.addBlock("Block", blockSpec);
+  const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
   const sample1Id = uniquePlId();
   const dataset1Id = uniquePlId();
 
@@ -333,7 +333,7 @@ blockTest("simple h5 input", async ({ rawPrj: project, ml: _ml, helpers, expect 
 blockTest(
   "simple multiplexed fastq input",
   async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
-    const blockId = await project.addBlock("Block", blockSpec);
+    const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
     const sample1Id = uniquePlId();
     const sample2Id = uniquePlId();
     const metaColumn1Id = uniquePlId();
@@ -418,7 +418,7 @@ blockTest(
 blockTest(
   "multiplexed fastq with barcode rules",
   async ({ rawPrj: project, ml: _ml, helpers, expect }) => {
-    const blockId = await project.addBlock("Block", blockSpec);
+    const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
     const sample1Id = uniquePlId();
     const sample2Id = uniquePlId();
     const metaColumn1Id = uniquePlId();
