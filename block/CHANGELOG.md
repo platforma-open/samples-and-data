@@ -1,5 +1,14 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.18.0
+
+### Minor Changes
+
+- eee995c: Adopt the slim from-pack-v2 facade. The published package now carries only the
+  block's type surface plus a dependency-free `from-pack-v2` BlockPointer; the
+  model/ui/workflow packages are kept as private build-time siblings. Migrated onto
+  the published facade SDK toolchain.
+
 ## 1.17.5
 
 ### Patch Changes
