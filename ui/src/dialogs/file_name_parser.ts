@@ -147,8 +147,22 @@ export class FileNamePattern {
     return result;
   }
 
+  /**
+   * Patterns are matched against a path relative to the import root, not a bare
+   * file name, so `/` can appear in the target. Matchers are therefore bounded
+   * to a single path segment — an unbounded `.` would happily eat a separator
+   * and pull a folder name into `{{Sample}}`. `{{**}}` opts back in to crossing
+   * segments, for the "ignore however many folders are above" case.
+   */
+  private static readonly segmentGroup = "([^/]+?)";
+  private static readonly deepGroup = "(.+?)";
+  private static readonly numberGroup = "([0-9]+)";
+
+  // `anydeep` must precede `any` in the alternation, otherwise `{{**}}` matches
+  // `any` and then fails on the second `*`, and the whole element is left as a
+  // literal.
   private static patternElement =
-    /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?:(?<anytag>[a-zA-Z0-9_]+)|n:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
+    /\{\{ *(:?(?<lane>l|lane)|(?<r>r)|(?<rr>rr)|(?<sample>s|sample)|(?<cellRangerFileRole>CellRangerFileRole)|\*?:(?<anytag>[a-zA-Z0-9_]+)|n:(?<anynumbertag>[a-zA-Z0-9_]+)|(?<anydeep>\*\*)|(?<any>\*)|(?<anynumber>n)) *\}\}/dgi;
 
   static parse(fileNamePattern: string, ops?: FileNamePatternParsingOps): FileNamePattern {
     let regexp = "^";
@@ -188,33 +202,37 @@ export class FileNamePattern {
       } else if (match.groups!["lane"]) {
         if (groups.lane !== undefined) throw new Error(`Repeated {{L}} / {{Lane}} matcher`);
         groups.lane = groupCounter++;
-        regexp += "([0-9]+)";
+        regexp += FileNamePattern.numberGroup;
         rawElements.lane = range;
       } else if (match.groups!["sample"]) {
         if (groups.sample !== undefined)
           throw new Error(`Repeated {{S}} / {{Sample}} sample name matcher`);
         groups.sample = groupCounter++;
-        regexp += "(.+?)";
+        regexp += FileNamePattern.segmentGroup;
         rawElements.sample = range;
+      } else if (match.groups!["anydeep"]) {
+        groups.anyMatchers!.push(groupCounter++);
+        regexp += FileNamePattern.deepGroup;
+        rawElements.anyMatchers!.push(range);
       } else if (match.groups!["any"]) {
         groups.anyMatchers!.push(groupCounter++);
-        regexp += "(.+?)";
+        regexp += FileNamePattern.segmentGroup;
         rawElements.anyMatchers!.push(range);
       } else if (match.groups?.["anytag"]) {
         if (groups.tags === undefined) groups.tags = {};
         groups.tags[match.groups["anytag"]] = groupCounter++;
-        regexp += "(.+?)";
+        regexp += FileNamePattern.segmentGroup;
         if (rawElements.tags === undefined) rawElements.tags = {};
         rawElements.tags[match.groups["anytag"]] = range;
       } else if (match.groups?.["anynumbertag"]) {
         if (groups.tags === undefined) groups.tags = {};
         groups.tags[match.groups["anynumbertag"]] = groupCounter++;
-        regexp += "([0-9]+)";
+        regexp += FileNamePattern.numberGroup;
         if (rawElements.tags === undefined) rawElements.tags = {};
         rawElements.tags[match.groups["anynumbertag"]] = range;
       } else if (match.groups!["anynumber"]) {
         groups.anyNumberMatchers!.push(groupCounter++);
-        regexp += "([0-9]+)";
+        regexp += FileNamePattern.numberGroup;
         rawElements.anyNumberMatchers!.push(range);
       } else if (match.groups!["cellRangerFileRole"]) {
         if (groups.cellRangerFileRole !== undefined)
@@ -368,6 +386,34 @@ type WellKnownPattern = {
 };
 
 const wellKnownPattern: WellKnownPattern[] = [
+  // Canonical Illumina / BaseSpace naming:
+  // <SampleName>_S<SampleNumber>_L<Lane>_<Read>_001.fastq.gz. Tried ahead of
+  // the plain `_L…` bodies so the sample number is recognised as such instead
+  // of being swallowed into the sample name.
+  {
+    patternWithoutExtension: "{{Sample}}_S{{n}}_L{{n}}_{{RR}}_{{n}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
+    minimalPercent: 0.49,
+  },
+  {
+    patternWithoutExtension: "{{Sample}}_S{{n}}_L{{n}}_{{RR}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
+    minimalPercent: 0.49,
+  },
+  {
+    patternWithoutExtension: "{{Sample}}_S{{n}}_L{{L}}_{{RR}}_{{n}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
+    minimalPercent: 0.49,
+  },
+  {
+    patternWithoutExtension: "{{Sample}}_S{{n}}_L{{L}}_{{RR}}",
+    defaultReadIndices: ["R1"],
+    extensions: ["fastq", "fastq.gz", "fq", "fq.gz"],
+    minimalPercent: 0.49,
+  },
   {
     patternWithoutExtension: "{{Sample}}_L{{n}}_{{RR}}_{{n}}",
     defaultReadIndices: ["R1"],
@@ -487,11 +533,35 @@ function setEquals<T>(a: Set<T>, b: Set<T>): boolean {
   return a.size === b.size && [...a].every((x) => b.has(x));
 }
 
+/**
+ * How a well-known body is projected onto a path relative to the import root.
+ *
+ * Inputs are relative paths, so a one-folder-per-sample tree arrives here as
+ * `Sample_A/…` rather than a bare file name. `direct` is tried first, and is
+ * the only variant a single-folder import can match — matchers are
+ * segment-bounded, so a body without `/` can never match a nested path. That
+ * keeps flat imports inferring exactly what they inferred before.
+ */
+const pathVariants: ((body: string) => string)[] = [
+  // Everything in one folder.
+  (body) => body,
+  // Sample identity is in the file name; however many folders sit above it are
+  // irrelevant (BaseSpace-style downloads).
+  (body) => `{{**}}/${body}`,
+  // Sample identity is in the folder name and the file name carries some other
+  // prefix before the read index.
+  (body) => `{{Sample}}/${body.replace(/\{\{Sample\}\}/g, "{{*}}")}`,
+  // Sample identity is in the folder name and the file name is nothing but the
+  // read index or the role — `SampleA/R1.fastq.gz`, `SampleA/matrix.mtx.gz`.
+  // The separator that followed {{Sample}} in the body goes with it.
+  (body) => `{{Sample}}/${body.replace(/\{\{Sample\}\}[-_]?/g, "")}`,
+];
+
 export function inferFileNamePattern(
   fileNames: string[],
   ops?: InferFileNamePatternOps,
 ): InferFileNamePatternResult | undefined {
-  outer: for (const wkPattern of wellKnownPattern) {
+  for (const wkPattern of wellKnownPattern) {
     if (ops?.expectedReadIndices?.length === 0 && wkPattern.defaultReadIndices.length !== 0)
       // don't consider fasta pattern if non-zero set of read indices is expected
       continue;
@@ -499,43 +569,57 @@ export function inferFileNamePattern(
     for (const extension of wkPattern.extensions) {
       if (ops?.isGzipped !== undefined && extension.endsWith(".gz") !== ops.isGzipped) continue;
 
-      const patternStr = extension
+      const body = extension
         ? wkPattern.patternWithoutExtension + "." + extension
         : wkPattern.patternWithoutExtension;
-      const pattern = FileNamePattern.parse(patternStr);
 
-      let matchedFiles = 0;
-      const readIndices = pattern.hasReadIndexMatcher ? new Set<string>() : undefined;
-      const samples = new Set<string>();
-      for (const file of fileNames) {
-        const match = pattern.match(file);
-        if (match !== undefined) {
-          let sample = match.sample.value;
-          if (match.lane) sample += "___" + match.lane.value;
-          if (match.readIndex) sample += "___" + match.readIndex.value;
-          if (match.cellRangerFileRole) sample += "___" + match.cellRangerFileRole.value;
-          if (samples.has(sample)) continue outer;
-          samples.add(sample);
-          matchedFiles++;
-          if (readIndices !== undefined) readIndices.add(getWellFormattedReadIndex(match));
+      variants: for (const asPath of pathVariants) {
+        const patternStr = asPath(body);
+
+        let pattern: FileNamePattern;
+        try {
+          pattern = FileNamePattern.parse(patternStr);
+        } catch {
+          // A variant can be malformed for a given body — dropping {{Sample}}
+          // from a body that has no other matcher leaves nothing to capture.
+          continue variants;
         }
+
+        let matchedFiles = 0;
+        const readIndices = pattern.hasReadIndexMatcher ? new Set<string>() : undefined;
+        const samples = new Set<string>();
+        for (const file of fileNames) {
+          const match = pattern.match(file);
+          if (match !== undefined) {
+            let sample = match.sample.value;
+            if (match.lane) sample += "___" + match.lane.value;
+            if (match.readIndex) sample += "___" + match.readIndex.value;
+            if (match.cellRangerFileRole) sample += "___" + match.cellRangerFileRole.value;
+            // Two files landing on one key means this variant cannot describe
+            // the set: reject it and try the next one.
+            if (samples.has(sample)) continue variants;
+            samples.add(sample);
+            matchedFiles++;
+            if (readIndices !== undefined) readIndices.add(getWellFormattedReadIndex(match));
+          }
+        }
+
+        const resultReadIndices =
+          readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
+
+        if (
+          ops?.expectedReadIndices !== undefined &&
+          !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
+        )
+          continue variants;
+
+        if (matchedFiles / fileNames.length > wkPattern.minimalPercent)
+          return {
+            pattern,
+            extension,
+            readIndices: resultReadIndices,
+          };
       }
-
-      const resultReadIndices =
-        readIndices === undefined ? wkPattern.defaultReadIndices : [...readIndices].sort();
-
-      if (
-        ops?.expectedReadIndices !== undefined &&
-        !setEquals(new Set(resultReadIndices), new Set(ops.expectedReadIndices))
-      )
-        continue;
-
-      if (matchedFiles / fileNames.length > wkPattern.minimalPercent)
-        return {
-          pattern,
-          extension,
-          readIndices: resultReadIndices,
-        };
     }
   }
   return undefined;

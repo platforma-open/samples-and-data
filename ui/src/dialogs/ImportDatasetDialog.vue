@@ -19,9 +19,10 @@ import type {
   ReadIndices,
 } from "@platforma-open/milaboratories.samples-and-data.model";
 import type { ImportFileHandle } from "@platforma-sdk/model";
-import { getFileNameFromHandle, getFilePathFromHandle, uniquePlId } from "@platforma-sdk/model";
+import { uniquePlId } from "@platforma-sdk/model";
 import type { ListOption } from "@platforma-sdk/ui-vue";
 import {
+  PlAlert,
   PlBtnGhost,
   PlBtnGroup,
   PlBtnPrimary,
@@ -40,9 +41,10 @@ import { useApp } from "../app";
 import type { ImportMode } from "./datasets";
 import {
   datasetTypes,
-  extractFileName,
+  findDuplicateKeys,
   getOrCreateSample,
   modesOptions,
+  relativeFilePaths,
   useParsedFiles,
   usePatternCompilation,
 } from "./datasets";
@@ -215,6 +217,27 @@ const parsedFiles = useParsedFiles(data, compiledPattern);
 // Whether any of the files matched the pattern
 const hasMatchedFiles = computed(() => parsedFiles.value.filter((f) => f.match).length > 0);
 
+/**
+ * Files that the current pattern collapses onto one identity. The dataset
+ * content builders index by that identity, so importing would keep only the
+ * last file of each group — silently. Report instead, and hold the import.
+ */
+const duplicateKeys = computed(() => findDuplicateKeys(parsedFiles.value));
+
+const duplicateKeysMessage = computed(() => {
+  const groups = duplicateKeys.value;
+  if (groups.length === 0) return undefined;
+  const shown = groups
+    .slice(0, 3)
+    .map((g) => `"${g.sample}" ← ${g.fileNames.join(", ")}`)
+    .join("; ");
+  const rest = groups.length > 3 ? ` (and ${groups.length - 3} more)` : "";
+  return (
+    `${groups.length} sample(s) would be overwritten because several files resolve ` +
+    `to the same one: ${shown}${rest}. Adjust the pattern so each file gets its own sample.`
+  );
+});
+
 const dsTypeOptions = computed(() => {
   if (!data.fileType) {
     return [];
@@ -243,7 +266,9 @@ function updateDatasetType(datasetType: DSType | undefined) {
 
 // Add more files to the data
 function addFiles(files: ImportFileHandle[]) {
-  const fileNames = files.map((h) => extractFileName(getFilePathFromHandle(h)));
+  // Inference has to see the same strings matching will see later — paths
+  // relative to the folder the files came from, not bare file names.
+  const fileNames = relativeFilePaths(files);
   if (data.files.length === 0) {
     const inferredPattern = inferFileNamePattern(fileNames);
     if (inferredPattern) {
@@ -929,6 +954,7 @@ watch(availableColumnsOptions, (options) => {
 const canCreateOrAdd = computed(() => {
   const basicConditions =
     hasMatchedFiles.value &&
+    duplicateKeys.value.length === 0 &&
     (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
     data.datasetType !== undefined &&
     !data.loadingColumns &&
@@ -1002,6 +1028,8 @@ const canCreateOrAdd = computed(() => {
         />
       </PlRow>
     </div>
+
+    <PlAlert v-if="duplicateKeysMessage" type="error">{{ duplicateKeysMessage }}</PlAlert>
 
     <ParsedFilesList :items="parsedFiles" />
 

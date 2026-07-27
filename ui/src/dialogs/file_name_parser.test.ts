@@ -169,9 +169,13 @@ test("infer file name pattern 1", ({ expect }) => {
     "10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2_001.fastq.gz",
   ];
   const result = inferFileNamePattern(fileNames);
-  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_L{{L}}_{{RR}}_{{n}}.fastq.gz");
+  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_S{{n}}_L{{L}}_{{RR}}_{{n}}.fastq.gz");
   expect(result?.extension).to.equal("fastq.gz");
   expect(result?.readIndices).to.toMatchObject(["R1", "R2"]);
+  // The Illumina sample number (_S7) is read as such, not folded into the name.
+  expect(result?.pattern.match(fileNames[2])?.sample.value).to.equal(
+    "10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_1",
+  );
 });
 
 test("infer file name pattern 2", ({ expect }) => {
@@ -198,7 +202,7 @@ test("infer file name pattern 2", ({ expect }) => {
     "10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2.fastq.gz",
   ];
   const result = inferFileNamePattern(fileNames);
-  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_L{{L}}_{{RR}}.fastq.gz");
+  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_S{{n}}_L{{L}}_{{RR}}.fastq.gz");
   expect(result?.extension).to.equal("fastq.gz");
   expect(result?.readIndices).to.toMatchObject(["R1", "R2"]);
 });
@@ -215,7 +219,7 @@ test("infer file name pattern 3", ({ expect }) => {
     "10k_PBMC_5pv2_nextgem_Chromium_Controller_gex_2_S5_L004_R2.fastq.gz",
   ];
   const result = inferFileNamePattern(fileNames);
-  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_L{{n}}_{{RR}}.fastq.gz");
+  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_S{{n}}_L{{n}}_{{RR}}.fastq.gz");
   expect(result?.extension).to.equal("fastq.gz");
   expect(result?.readIndices).to.toMatchObject(["R1", "R2"]);
 });
@@ -461,4 +465,93 @@ test("CellRanger MTX pattern properties", ({ expect }) => {
   expect(pattern.datasetType).to.equal("CellRangerMTX");
   expect(pattern.gzipped).to.equal(true);
   expect(pattern.fileContentType).to.equal("CellRangerMTX");
+});
+
+// ---------------------------------------------------------------------------
+// Path-aware matching. Patterns are matched against a path relative to the
+// import root, so one-folder-per-sample layouts can be described.
+// ---------------------------------------------------------------------------
+
+test("matchers do not cross path separators", ({ expect }) => {
+  const pattern = FileNamePattern.parse("{{Sample}}_{{R}}.fastq.gz");
+  // Would match with an unbounded `.+?`, pulling the folder into the sample.
+  expect(pattern.match("Sample_A/Sample_R1.fastq.gz")).to.equal(undefined);
+  expect(pattern.match("Sample_R1.fastq.gz")?.sample.value).to.equal("Sample");
+});
+
+test("{{**}} crosses path separators", ({ expect }) => {
+  const pattern = FileNamePattern.parse("{{**}}/{{Sample}}_{{R}}.fastq.gz");
+  expect(pattern.match("a/b/c/Sample_R1.fastq.gz")?.sample.value).to.equal("Sample");
+  expect(pattern.match("Sample_R1.fastq.gz")).to.equal(undefined);
+});
+
+test("{{Sample}} can be taken from a folder name", ({ expect }) => {
+  const pattern = FileNamePattern.parse("{{Sample}}/{{R}}.fastq.gz");
+  const match = pattern.match("Sample_A/R1.fastq.gz");
+  expect(match?.sample.value).to.equal("Sample_A");
+  expect(match?.readIndex?.value).to.equal("R1");
+});
+
+test("infer BaseSpace one-folder-per-sample tree", ({ expect }) => {
+  // Relative paths of a real BaseSpace download (Synolo): a folder per sample,
+  // each holding one R1/R2 pair, the sample name repeated in the file name.
+  const fileNames = [
+    "Lib85_Uns_L1-ds.ddabcbdb/Lib85_Uns_S1_L001_R1_001.fastq.gz",
+    "Lib85_Uns_L1-ds.ddabcbdb/Lib85_Uns_S1_L001_R2_001.fastq.gz",
+    "Sel78_R1_01_L1-ds.8350c0fa/Sel78_R1_01_S2_L001_R1_001.fastq.gz",
+    "Sel78_R1_01_L1-ds.8350c0fa/Sel78_R1_01_S2_L001_R2_001.fastq.gz",
+    "Sel78_R1_02_L1-ds.bf24f8fb/Sel78_R1_02_S3_L001_R1_001.fastq.gz",
+    "Sel78_R1_02_L1-ds.bf24f8fb/Sel78_R1_02_S3_L001_R2_001.fastq.gz",
+    "Sel78_R6_02_L1-ds.7acb3f2c/Sel78_R6_02_S9_L001_R1_001.fastq.gz",
+    "Sel78_R6_02_L1-ds.7acb3f2c/Sel78_R6_02_S9_L001_R2_001.fastq.gz",
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal(
+    "{{**}}/{{Sample}}_S{{n}}_L{{n}}_{{RR}}_{{n}}.fastq.gz",
+  );
+  expect(result?.readIndices).to.toMatchObject(["R1", "R2"]);
+  // Neither the enclosing folder nor the Illumina sample number leaks in.
+  const samples = new Set(fileNames.map((f) => result?.pattern.match(f)?.sample.value));
+  expect([...samples].sort()).to.toMatchObject([
+    "Lib85_Uns",
+    "Sel78_R1_01",
+    "Sel78_R1_02",
+    "Sel78_R6_02",
+  ]);
+});
+
+test("infer per-sample folders whose file names carry no sample", ({ expect }) => {
+  const fileNames = [
+    "Sample_A/R1.fastq.gz",
+    "Sample_A/R2.fastq.gz",
+    "Sample_B/R1.fastq.gz",
+    "Sample_B/R2.fastq.gz",
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal("{{Sample}}/{{R}}.fastq.gz");
+  expect(result?.readIndices).to.toMatchObject(["R1", "R2"]);
+  const samples = new Set(fileNames.map((f) => result?.pattern.match(f)?.sample.value));
+  expect([...samples].sort()).to.toMatchObject(["Sample_A", "Sample_B"]);
+});
+
+test("infer CellRanger MTX laid out one folder per sample", ({ expect }) => {
+  const fileNames = [
+    "Sample_A/barcodes.tsv.gz",
+    "Sample_A/features.tsv.gz",
+    "Sample_A/matrix.mtx.gz",
+    "Sample_B/barcodes.tsv.gz",
+    "Sample_B/features.tsv.gz",
+    "Sample_B/matrix.mtx.gz",
+  ];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal("{{Sample}}/{{CellRangerFileRole}}.gz");
+  expect(result?.pattern.datasetType).to.equal("CellRangerMTX");
+  const samples = new Set(fileNames.map((f) => result?.pattern.match(f)?.sample.value));
+  expect([...samples].sort()).to.toMatchObject(["Sample_A", "Sample_B"]);
+});
+
+test("a flat folder still infers a bare file-name pattern", ({ expect }) => {
+  const fileNames = ["A_S1_L001_R1_001.fastq.gz", "A_S1_L001_R2_001.fastq.gz"];
+  const result = inferFileNamePattern(fileNames);
+  expect(result?.pattern.rawPattern).to.equal("{{Sample}}_S{{n}}_L{{n}}_{{RR}}_{{n}}.fastq.gz");
 });
