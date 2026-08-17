@@ -1,8 +1,11 @@
+import { kind } from "@platforma-open/milaboratories.samples-and-data.kind";
 import type { ImportFileHandle, InferHrefType, InferOutputsType, PlId } from "@platforma-sdk/model";
 import { BlockModelV3 } from "@platforma-sdk/model";
 import { blockDataModel } from "./data_model";
-import { isGroupedDataset, type BlockArgs, type BlockPrerunArgs, type DSAny } from "./args";
+import { isGroupedDataset } from "./args";
+import type { BlockArgs, BlockPrerunArgs, DSAny } from "./args";
 import { validateMultiplexingRules } from "./multiplexing-rules-validation";
+import { deriveTemplateParams } from "./template_params";
 
 function validateDatasets(datasets: DSAny[]) {
   const valid = datasets.every((ds) => {
@@ -22,7 +25,7 @@ function sortedStr<S extends string>(items: S[]): S[] {
   return [...items].sort();
 }
 
-export const platforma = BlockModelV3.create(blockDataModel)
+export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind })
 
   .args<BlockArgs>((data) => {
     validateDatasets(data.datasets);
@@ -46,6 +49,8 @@ export const platforma = BlockModelV3.create(blockDataModel)
       metadataUploadHandle: data.metadataUploadHandle,
     };
   })
+
+  .templateParams(deriveTemplateParams)
 
   .output(
     "fileImports",
@@ -125,7 +130,7 @@ export const platforma = BlockModelV3.create(blockDataModel)
   })
 
   .retentiveOutput("metadataFile", (ctx) =>
-    ctx.prerun?.resolveAny({ field: "metadataFile" })?.getFileHandle(),
+    ctx.prerun?.traverse({ field: "metadataFile" })?.getFileHandle(),
   )
 
   .title(() => "Samples & Data")
@@ -160,3 +165,4 @@ export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from "./args";
 export * from "./multiplexing-rules-validation";
+export * from "./template_params";
