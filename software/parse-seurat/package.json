@@ -7,16 +7,16 @@
   ],
   "type": "module",
   "scripts": {
-    "build": "pl-pkg build",
+    "build": "block-tools software build",
     "test": "true",
-    "prepublishOnly": "pl-pkg prepublish",
     "changeset": "changeset",
-    "version-packages": "changeset version"
+    "version-packages": "changeset version",
+    "do-pack": "shx rm -f *.tgz && block-tools software build && pnpm pack && shx mv platforma-open*.tgz package.tgz"
   },
   "devDependencies": {
     "@platforma-open/milaboratories.runenv-python-3": "catalog:",
     "@platforma-open/milaboratories.runenv-r-samples-and-data": "catalog:",
-    "@platforma-sdk/package-builder": "catalog:"
+    "@platforma-sdk/block-tools": "catalog:"
   },
   "block-software": {
     "entrypoints": {

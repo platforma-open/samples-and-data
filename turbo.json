@@ -12,12 +12,22 @@
     "build": {
       "dependsOn": ["^build", "check"],
       "inputs": ["$TURBO_DEFAULT$"],
-      "env": ["PL_PKG_DEV", "PL_DOCKER_REGISTRY_PUSH_TO"],
+      "env": [
+        "PL_DOCKER_REGISTRY_PUSH_TO",
+        "PL_BUILD_CHANNEL",
+        "PL_BUILD_VARIANT",
+        "PL_BUILD_LOCATION",
+        "PL_BUILD_USE_PUBLISHED",
+        "PL_DEV_DOCKER_PUSH_URL",
+        "PL_DEV_DOCKER_PULL_URL",
+        "PL_DEV_BINARY_UPLOAD_URL",
+        "PL_RELEASE_DOCKER_PUSH_URL",
+        "PL_RELEASE_DOCKER_PULL_URL",
+        "PL_RELEASE_BINARY_UPLOAD_URL",
+        "PL_REGISTRY_PLATFORMA_OPEN_UPLOAD_URL"
+      ],
+      "passThroughEnv": ["AWS_*", "PL_AWS_*"],
       "outputs": ["./dist/**", "./block-pack/**", "./pkg-*.tgz"]
-    },
-    "build:dev": {
-      "dependsOn": ["build"],
-      "outputs": ["./dist/**"]
     },
     "do-pack": {
       "dependsOn": ["build"],
