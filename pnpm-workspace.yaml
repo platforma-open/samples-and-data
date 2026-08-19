@@ -23,7 +23,7 @@ catalog:
 
   "@platforma-sdk/test": 1.82.0
   "@milaboratories/helpers": 1.14.5
-  "@milaboratories/pl-model-common": ^1.31.2
+  "@milaboratories/pl-model-common": 1.48.0
 
   "vue": 3.5.24
 
