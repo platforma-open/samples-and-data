@@ -8,7 +8,7 @@
 Migrate to structure v2 and declare a block kind
 
 The SDK upgrade moves the block onto the current canonical layout (block-tools
-2.13.0, model/ui-vue 1.81.1, workflow-tengo 6.8.2, tengo-builder 4.0.22) and
+2.14.0, model/ui-vue 1.82.x, workflow-tengo 6.8.2, tengo-builder 4.0.23) and
 switches the software packages from `pl-pkg` to `block-tools software build`.
 
 The block now declares a kind, whose init-params contract is the study setup a
