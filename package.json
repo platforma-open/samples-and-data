@@ -28,19 +28,5 @@
     "oxfmt": "*",
     "oxlint": "*"
   },
-  "packageManager": "pnpm@9.12.0",
-  "pnpm": {
-    "overrides": {
-      "@milaboratories/uikit": "file:../../core/platforma/lib/ui/uikit/package.tgz",
-      "@platforma-sdk/ui-vue": "file:../../core/platforma/sdk/ui-vue/package.tgz",
-      "@platforma-sdk/model": "file:../../core/platforma/sdk/model/package.tgz",
-      "@milaboratories/helpers": "file:../../core/platforma/lib/util/helpers/package.tgz",
-      "@platforma-sdk/workflow-tengo": "file:../../core/platforma/sdk/workflow-tengo/package.tgz",
-      "@milaboratories/pl-model-common": "file:../../core/platforma/lib/model/common/package.tgz",
-      "@platforma-sdk/block-kind": "file:../../core/platforma/sdk/block-kind/package.tgz",
-      "@platforma-sdk/block-tools": "file:../../core/platforma/tools/block-tools/package.tgz",
-      "@milaboratories/ts-builder": "file:../../core/platforma/tools/ts-builder/package.tgz",
-      "@milaboratories/ts-configs": "file:../../core/platforma/tools/ts-configs/package.tgz"
-    }
-  }
+  "packageManager": "pnpm@9.12.0"
 }

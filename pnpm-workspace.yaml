@@ -9,11 +9,11 @@ packages:
   - workflow
 
 catalog:
-  "@platforma-sdk/block-tools": 2.13.0
-  "@platforma-sdk/block-kind": 1.0.0
-  "@platforma-sdk/model": 1.81.1
-  "@platforma-sdk/ui-vue": 1.81.1
-  "@platforma-sdk/tengo-builder": 4.0.22
+  "@platforma-sdk/block-tools": 2.14.0
+  "@platforma-sdk/block-kind": 1.1.0
+  "@platforma-sdk/model": 1.82.0
+  "@platforma-sdk/ui-vue": 1.82.1
+  "@platforma-sdk/tengo-builder": 4.0.23
   "@platforma-sdk/workflow-tengo": 6.8.2
   "@platforma-sdk/blocks-deps-updater": 2.2.0
   "@platforma-sdk/package-builder": 3.15.0
@@ -21,8 +21,8 @@ catalog:
   "@platforma-open/milaboratories.runenv-python-3": ^1.7.5
   "@platforma-open/milaboratories.runenv-r-samples-and-data": ^1.0.1
 
-  "@platforma-sdk/test": 1.81.3
-  "@milaboratories/helpers": 1.14.1
+  "@platforma-sdk/test": 1.82.0
+  "@milaboratories/helpers": 1.14.5
   "@milaboratories/pl-model-common": ^1.31.2
 
   "vue": 3.5.24
@@ -45,5 +45,5 @@ catalog:
   "@changesets/cli": ^2.29.7
 
   "@types/node": ~20.16.15
-  "@milaboratories/ts-builder": 1.6.2
+  "@milaboratories/ts-builder": 1.7.0
   "@milaboratories/ts-configs": 1.4.0
