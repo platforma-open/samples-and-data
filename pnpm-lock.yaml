@@ -31,8 +31,8 @@ catalogs:
       specifier: 1.1.0
       version: 1.1.0
     '@platforma-sdk/block-tools':
-      specifier: 2.14.0
-      version: 2.14.0
+      specifier: 2.14.2
+      version: 2.14.2
     '@platforma-sdk/model':
       specifier: 1.82.0
       version: 1.82.0
@@ -40,8 +40,8 @@ catalogs:
       specifier: 4.0.23
       version: 4.0.23
     '@platforma-sdk/test':
-      specifier: 1.82.0
-      version: 1.82.0
+      specifier: 1.82.3
+      version: 1.82.3
     '@platforma-sdk/ui-vue':
       specifier: 1.82.1
       version: 1.82.1
@@ -101,7 +101,7 @@ importers:
         version: 1.7.0(@types/node@24.5.2)(rollup@4.37.0)(vue@3.5.25(typescript@5.9.3))(yaml@2.8.1)
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.14.0(@types/node@24.5.2)
+        version: 2.14.2(@types/node@24.5.2)
       shx:
         specifier: 'catalog:'
         version: 0.4.0
@@ -131,7 +131,7 @@ importers:
         version: link:../workflow
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.14.0(@types/node@24.5.2)
+        version: 2.14.2(@types/node@24.5.2)
       '@platforma-sdk/model':
         specifier: 'catalog:'
         version: 1.82.0
@@ -165,7 +165,7 @@ importers:
         version: 1.4.0
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.14.0(@types/node@24.5.2)
+        version: 2.14.2(@types/node@24.5.2)
 
   model:
     dependencies:
@@ -193,7 +193,7 @@ importers:
         version: 1.4.0
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.14.0(@types/node@24.5.2)
+        version: 2.14.2(@types/node@24.5.2)
 
   software/parse-h5ad:
     devDependencies:
@@ -202,7 +202,7 @@ importers:
         version: 1.7.5
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.14.0(@types/node@24.5.2)
+        version: 2.14.2(@types/node@24.5.2)
 
   software/parse-seurat:
     devDependencies:
@@ -214,7 +214,7 @@ importers:
         version: 1.0.1
       '@platforma-sdk/block-tools':
         specifier: 'catalog:'
-        version: 2.14.0(@types/node@24.5.2)
+        version: 2.14.2(@types/node@24.5.2)
 
   test:
     dependencies:
@@ -239,7 +239,7 @@ importers:
         version: 1.4.0
       '@platforma-sdk/test':
         specifier: 'catalog:'
-        version: 1.82.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))
+        version: 1.82.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
       vitest:
         specifier: 'catalog:'
         version: 4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)
@@ -319,7 +319,7 @@ importers:
         version: 4.0.23
       '@platforma-sdk/test':
         specifier: 'catalog:'
-        version: 1.82.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
+        version: 1.82.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
       shx:
         specifier: 'catalog:'
         version: 0.4.0
@@ -1154,8 +1154,8 @@ packages:
   '@milaboratories/pl-http@1.2.4':
     resolution: {integrity: sha512-QKmhx+WEvJCV9dUy/SBdQk/ApaJ5ewBFgm/b+XPlS10SusAdqUUTGvK5+hq8YSuUMXlHb/dk++UtI5YlDuDl2Q==}
 
-  '@milaboratories/pl-middle-layer@1.67.0':
-    resolution: {integrity: sha512-T4+QXmlqG32y27z1fy5tIzBqs6DXij3JBhUYLZVnN7s6PTTDdKlj80V/ebt5Wysp2meoEP+B+sk84adE/FBeJA==}
+  '@milaboratories/pl-middle-layer@1.67.2':
+    resolution: {integrity: sha512-5SLP4UPMlAf8zLRWjZiWDioyFyBXnc0NxZvSUvL39Lc9h6tuk2MQ5ACUmXCSbBkFW1tV6dBGnc+50YdfTQ90gQ==}
     engines: {node: '>=22.19.0'}
 
   '@milaboratories/pl-model-backend@1.4.21':
@@ -1785,8 +1785,8 @@ packages:
   '@platforma-sdk/block-kind@1.1.0':
     resolution: {integrity: sha512-4uh+40o6BGfQcPPhkYGCjng8EXR9qn+6i5Fuc3RJ5QGfPYfcwbxT35G2V7ALUxmsqjLZ5SGL+JcW6Lm2v0cZHA==}
 
-  '@platforma-sdk/block-tools@2.14.0':
-    resolution: {integrity: sha512-sAsSDAHVAqlDn/QO+KuBnaVy/VomiHM4cI4ghylcY0Fq2CroVyz8Cm5YNw0SPINuUYmpzvVQuG9ili9Fn7uOog==}
+  '@platforma-sdk/block-tools@2.14.2':
+    resolution: {integrity: sha512-pYreKAu14sl/KKZZs0g/oldxUSvxPeBNc4QoxYHbdxhUykX78OsyL9/288QS8EcaltO+atblU/Zs7AtKaPvdVA==}
     hasBin: true
 
   '@platforma-sdk/blocks-deps-updater@2.2.0':
@@ -1804,8 +1804,8 @@ packages:
     engines: {node: '>=22'}
     hasBin: true
 
-  '@platforma-sdk/test@1.82.0':
-    resolution: {integrity: sha512-0fSW+Awn8FBfUDjFEAGL0HXqcJGzs5FpF3gUVcIxCY78Veiz9L6jUNncxB3pCO9ezYueVIXDDpPAETg4Hsvy6A==}
+  '@platforma-sdk/test@1.82.3':
+    resolution: {integrity: sha512-l621C70u97yw9MeSte4BV/BYjYYHiYt3IFwJZSLCfkGuDgXRXdYj8e5Leek17jmIe0YdVem/P/6DPtl1V4X74g==}
 
   '@platforma-sdk/ui-vue@1.82.1':
     resolution: {integrity: sha512-HCwLm+yN2cKbRL0caQ21+40mcodVGTmnruruNQAkcCkgHu4AaRmkEVRtel8AdHLpcqJS5ray341E1bqGErguSw==}
@@ -6236,7 +6236,7 @@ snapshots:
     dependencies:
       undici: 7.16.0
 
-  '@milaboratories/pl-middle-layer@1.67.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)':
+  '@milaboratories/pl-middle-layer@1.67.2(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)':
     dependencies:
       '@milaboratories/columns-collection-driver': 0.2.4
       '@milaboratories/computable': 2.9.8
@@ -6255,7 +6255,7 @@ snapshots:
       '@milaboratories/pl-tree': 1.13.7
       '@milaboratories/resolve-helper': 1.1.3
       '@milaboratories/ts-helpers': 1.8.6
-      '@platforma-sdk/block-tools': 2.14.0(@types/node@24.5.2)
+      '@platforma-sdk/block-tools': 2.14.2(@types/node@24.5.2)
       '@platforma-sdk/model': 1.82.0
       '@platforma-sdk/workflow-tengo': 6.8.2
       canonicalize: 2.1.0
@@ -6944,7 +6944,7 @@ snapshots:
 
   '@platforma-sdk/block-kind@1.1.0': {}
 
-  '@platforma-sdk/block-tools@2.14.0(@types/node@24.5.2)':
+  '@platforma-sdk/block-tools@2.14.2(@types/node@24.5.2)':
     dependencies:
       '@aws-sdk/client-ecr-public': 3.859.0
       '@aws-sdk/client-s3': 3.859.0
@@ -7009,43 +7009,15 @@ snapshots:
       commander: 15.0.0
       winston: 3.17.0
 
-  '@platforma-sdk/test@1.82.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))':
+  '@platforma-sdk/test@1.82.3(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))':
     dependencies:
       '@milaboratories/computable': 2.9.8
       '@milaboratories/pl-client': 3.14.7
-      '@milaboratories/pl-middle-layer': 1.67.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)
-      '@milaboratories/pl-tree': 1.13.7
-      '@platforma-sdk/model': 1.82.0
-      '@vitest/coverage-istanbul': 4.1.5(vitest@4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))
-      vitest: 4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5)(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))
-    transitivePeerDependencies:
-      - '@bytecodealliance/preview2-shim'
-      - '@edge-runtime/vm'
-      - '@opentelemetry/api'
-      - '@types/node'
-      - '@vitest/browser-playwright'
-      - '@vitest/browser-preview'
-      - '@vitest/browser-webdriverio'
-      - '@vitest/coverage-v8'
-      - '@vitest/ui'
-      - aws-crt
-      - bare-buffer
-      - encoding
-      - happy-dom
-      - jsdom
-      - msw
-      - supports-color
-      - vite
-
-  '@platforma-sdk/test@1.82.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))':
-    dependencies:
-      '@milaboratories/computable': 2.9.8
-      '@milaboratories/pl-client': 3.14.7
-      '@milaboratories/pl-middle-layer': 1.67.0(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)
+      '@milaboratories/pl-middle-layer': 1.67.2(@bytecodealliance/preview2-shim@0.17.8)(@types/node@24.5.2)
       '@milaboratories/pl-tree': 1.13.7
       '@platforma-sdk/model': 1.82.0
       '@vitest/coverage-istanbul': 4.1.5(vitest@4.1.5)
-      vitest: 4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
+      vitest: 4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5(vitest@4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)))(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
     transitivePeerDependencies:
       - '@bytecodealliance/preview2-shim'
       - '@edge-runtime/vm'
@@ -7794,22 +7766,6 @@ snapshots:
       vite: 8.0.16(@types/node@24.5.2)(yaml@2.8.1)
       vue: 3.5.25(typescript@5.9.3)
 
-  '@vitest/coverage-istanbul@4.1.5(vitest@4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))':
-    dependencies:
-      '@babel/core': 7.29.0
-      '@istanbuljs/schema': 0.1.3
-      '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.31
-      istanbul-lib-coverage: 3.2.2
-      istanbul-lib-report: 3.0.1
-      istanbul-reports: 3.2.0
-      magicast: 0.5.2
-      obug: 2.1.3
-      tinyrainbow: 3.1.0
-      vitest: 4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)
-    transitivePeerDependencies:
-      - supports-color
-
   '@vitest/coverage-istanbul@4.1.5(vitest@4.1.5)':
     dependencies:
       '@babel/core': 7.29.0
@@ -7822,7 +7778,7 @@ snapshots:
       magicast: 0.5.2
       obug: 2.1.3
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5)(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))
+      vitest: 4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5(vitest@4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)))(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
     transitivePeerDependencies:
       - supports-color
 
@@ -7847,14 +7803,6 @@ snapshots:
   '@vitest/mocker@4.0.10(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 4.0.10
-      estree-walker: 3.0.3
-      magic-string: 0.30.21
-    optionalDependencies:
-      vite: 6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)
-
-  '@vitest/mocker@4.1.5(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))':
-    dependencies:
-      '@vitest/spy': 4.1.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
@@ -10076,35 +10024,7 @@ snapshots:
       - tsx
       - yaml
 
-  vitest@4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5)(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)):
-    dependencies:
-      '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(vite@6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))
-      '@vitest/pretty-format': 4.1.5
-      '@vitest/runner': 4.1.5
-      '@vitest/snapshot': 4.1.5
-      '@vitest/spy': 4.1.5
-      '@vitest/utils': 4.1.5
-      es-module-lexer: 2.0.0
-      expect-type: 1.3.0
-      magic-string: 0.30.21
-      obug: 2.1.3
-      pathe: 2.0.3
-      picomatch: 4.0.4
-      std-env: 4.1.0
-      tinybench: 2.9.0
-      tinyexec: 1.0.2
-      tinyglobby: 0.2.17
-      tinyrainbow: 3.1.0
-      vite: 6.2.3(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)
-      why-is-node-running: 2.3.0
-    optionalDependencies:
-      '@types/node': 24.5.2
-      '@vitest/coverage-istanbul': 4.1.5(vitest@4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1))
-    transitivePeerDependencies:
-      - msw
-
-  vitest@4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5)(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1)):
+  vitest@4.1.5(@types/node@24.5.2)(@vitest/coverage-istanbul@4.1.5(vitest@4.0.10(@types/node@24.5.2)(lightningcss@1.32.0)(yaml@2.8.1)))(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1)):
     dependencies:
       '@vitest/expect': 4.1.5
       '@vitest/mocker': 4.1.5(vite@8.0.16(@types/node@24.5.2)(yaml@2.8.1))
