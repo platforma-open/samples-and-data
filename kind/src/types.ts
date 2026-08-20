@@ -226,3 +226,33 @@ export type DSGrouped =
   | DSMultiSampleH5ad
   | DSMultiplexedFastq
   | DSMultiSampleSeurat;
+
+/**
+ * This block's init-params contract — the study setup a creator or a project
+ * template supplies to seed a new instance: which metadata columns the study
+ * collects, how the sample column is named, how its datasets are configured,
+ * and whichever of its files can be resolved from where the block lands.
+ *
+ * A file travels only when it is a storage reference: `index://` names a
+ * `{storageId, path}` any installation carrying that storage can resolve, while
+ * `upload://` carries a local path signed with the installation's own secret.
+ * Samples travel with the files that produced them and not otherwise — samples
+ * are created by importing files, so a sample arriving without its file would
+ * be a row with metadata and no data, for the user to delete.
+ *
+ * Which of the two a given dataset gets is the exporting block's call, not this
+ * contract's: both a fully populated dataset and a bare shell are ordinary
+ * states of the block, so both are valid params.
+ *
+ * Every field is optional because a block may be created without a template, so
+ * `init` keeps a default for each.
+ */
+export type BlockParams = Partial<{
+  datasets: DSAny[];
+  metadata: MTColumn[];
+  sampleIds: PlId[];
+  sampleLabelColumnLabel: string;
+  sampleLabels: Record<PlId, string>;
+  h5adFilesToPreprocess: ImportFileHandle[];
+  seuratFilesToPreprocess: ImportFileHandle[];
+}>;
