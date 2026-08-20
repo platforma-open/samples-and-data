@@ -1,6 +1,7 @@
 import { assertParamsObject } from "@platforma-sdk/block-kind";
 import { isImportFileHandleIndex, isImportFileHandleUpload } from "@milaboratories/pl-model-common";
 import { isBoolean, isPlainObject, isString } from "es-toolkit";
+import { isArray } from "es-toolkit/compat";
 import type {
   BlockParams,
   DSAny,
@@ -49,7 +50,7 @@ function check<T>(is: Guard<T>, must: string): Check<T> {
 }
 
 function arrayOf<T>(item: Guard<T>): Guard<T[]> {
-  return (v): v is T[] => Array.isArray(v) && v.every((e) => item(e));
+  return (v): v is T[] => isArray(v) && v.every((e) => item(e));
 }
 
 function recordOf<T>(item: Guard<T>): Guard<Record<string, T>> {
