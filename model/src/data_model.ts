@@ -1,3 +1,4 @@
+import { kind } from "@platforma-open/milaboratories.samples-and-data.kind";
 import { DataModelBuilder } from "@platforma-sdk/model";
 import type {
   BarcodeRule,
@@ -73,21 +74,29 @@ function upgradeMultiplexedDatasets(prev: BlockDataV20260427): BlockDataV2026042
   return { ...prev, datasets };
 }
 
-export const blockDataModel = new DataModelBuilder()
+export const blockDataModel = new DataModelBuilder({ kind })
   .from<BlockDataV20260427>("V20260427")
   .upgradeLegacy<LegacyBlockArgs, LegacyBlockUiState>(({ args, uiState }) => ({
     ...args,
     suggestedImport: uiState?.suggestedImport ?? false,
   }))
   .migrate<BlockDataV20260428>("V20260428", upgradeMultiplexedDatasets)
-  .init(() => ({
-    datasets: [],
-    metadata: [],
-    sampleIds: [],
-    sampleLabelColumnLabel: "Sample",
-    sampleLabels: {},
-    h5adFilesToPreprocess: [],
-    seuratFilesToPreprocess: [],
+  // `params` carries the study setup a project template supplies, plus whatever
+  // of its data came with files a new installation can resolve — see the kind's
+  // contract. Optional, because a block may be created without a template, so
+  // every field keeps a default.
+  //
+  // `metadataUploadHandle` is absent from the contract on purpose: it is not a
+  // link to the metadata table but scaffolding for one import dialog, cleared as
+  // soon as the parsed values land in `metadata`.
+  .init(({ params }) => ({
+    datasets: params?.datasets ?? [],
+    metadata: params?.metadata ?? [],
+    sampleIds: params?.sampleIds ?? [],
+    sampleLabelColumnLabel: params?.sampleLabelColumnLabel ?? "Sample",
+    sampleLabels: params?.sampleLabels ?? {},
+    h5adFilesToPreprocess: params?.h5adFilesToPreprocess ?? [],
+    seuratFilesToPreprocess: params?.seuratFilesToPreprocess ?? [],
     metadataUploadHandle: undefined,
     suggestedImport: false,
   }));

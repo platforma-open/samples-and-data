@@ -22,6 +22,7 @@
     "check": "ts-builder check --target block-model"
   },
   "dependencies": {
+    "@platforma-open/milaboratories.samples-and-data.kind": "workspace:*",
     "@platforma-sdk/model": "catalog:",
     "zod": "catalog:"
   },
