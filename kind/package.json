@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "@milaboratories/pl-model-common": "catalog:",
-    "@platforma-sdk/block-kind": "catalog:"
+    "@platforma-sdk/block-kind": "catalog:",
+    "es-toolkit": "catalog:"
   },
   "devDependencies": {
     "@milaboratories/ts-builder": "catalog:",
