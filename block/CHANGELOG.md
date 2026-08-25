@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.20.0
+
+### Minor Changes
+
+- 8c727c9: Export the study setup without its data: template params now always strip datasets and metadata columns down to their configuration, dropping everything keyed by sample or by group (files, sample ids and labels), instead of carrying a fully populated state when every file happened to be a storage reference.
+
 ## 1.19.0
 
 ### Minor Changes
