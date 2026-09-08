@@ -8,6 +8,16 @@ import { validateMultiplexingRules } from "./multiplexing-rules-validation";
 import { deriveTemplateParams } from "./template_params";
 
 function validateDatasets(datasets: DSAny[]) {
+  // A dataset with no data is a legal editor state (it is what a project
+  // template seeds), but running it would export empty columns, so it blocks
+  // Run until files are added. A block with no datasets at all still runs.
+  const empty = datasets.filter((ds) => Object.keys(ds.content.data).length === 0);
+  if (empty.length > 0) {
+    throw new Error(
+      `No data in dataset${empty.length > 1 ? "s" : ""}: ${empty.map((ds) => `"${ds.label}"`).join(", ")}`,
+    );
+  }
+
   const valid = datasets.every((ds) => {
     if (!isGroupedDataset(ds)) return true;
     return (
