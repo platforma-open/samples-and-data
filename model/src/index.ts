@@ -2,30 +2,10 @@ import { kind } from "@platforma-open/milaboratories.samples-and-data.kind";
 import type { ImportFileHandle, InferHrefType, InferOutputsType, PlId } from "@platforma-sdk/model";
 import { BlockModelV3 } from "@platforma-sdk/model";
 import { blockDataModel } from "./data_model";
-import { isGroupedDataset } from "./args";
-import type { BlockArgs, BlockPrerunArgs, DSAny } from "./args";
+import type { BlockArgs, BlockPrerunArgs } from "./args";
 import { validateMultiplexingRules } from "./multiplexing-rules-validation";
+import { validateDatasets } from "./validate_datasets";
 import { deriveTemplateParams } from "./template_params";
-
-function validateDatasets(datasets: DSAny[]) {
-  // A dataset with no data is a legal editor state (it is what a project
-  // template seeds), but running it would export empty columns, so it blocks
-  // Run until files are added. A block with no datasets at all still runs.
-  const empty = datasets.filter((ds) => Object.keys(ds.content.data).length === 0);
-  if (empty.length > 0) {
-    throw new Error(
-      `No data in dataset${empty.length > 1 ? "s" : ""}: ${empty.map((ds) => `"${ds.label}"`).join(", ")}`,
-    );
-  }
-
-  const valid = datasets.every((ds) => {
-    if (!isGroupedDataset(ds)) return true;
-    return (
-      Object.keys(ds.content.sampleGroups ?? {}).length === Object.keys(ds.content.data).length
-    );
-  });
-  if (!valid) throw new Error("Not all grouped datasets have sample groups configured");
-}
 
 function sortedById<T extends { id: string }>(items: T[]) {
   return [...items].sort((a, b) => a.id.localeCompare(b.id));
