@@ -1,5 +1,12 @@
 # @platforma-open/milaboratories.samples-and-data.test
 
+## 2.3.13
+
+### Patch Changes
+
+- Updated dependencies [fec930a]
+  - @platforma-open/milaboratories.samples-and-data.model@2.11.0
+
 ## 2.3.12
 
 ### Patch Changes
