@@ -54,9 +54,15 @@ export type FileNameGroups<T> = {
 
 function getMatch(rMatch: RegExpMatchArray, idx: number): Match {
   // Every pattern this module builds carries the `d` flag, and an index reaches
-  // here only for a group the caller has checked took part in the match, so both
-  // the indices array and this group's entry in it are present.
-  const [from, to] = rMatch.indices![idx]!;
+  // here only for a group the caller has found in the match, so both the indices
+  // array and this group's entry in it are expected to be there.
+  const indices = rMatch.indices;
+  if (indices === undefined)
+    throw new Error("File name pattern matched without capture group positions");
+  const bounds = indices[idx];
+  if (bounds === undefined)
+    throw new Error(`Capture group ${idx} took no part in the match of "${rMatch[0]}"`);
+  const [from, to] = bounds;
   return {
     value: rMatch[idx],
     from,
@@ -171,8 +177,11 @@ export class FileNamePattern {
       regexp += escapeRegExp(insert);
     }
     for (const match of fileNamePattern.matchAll(FileNamePattern.patternElement)) {
-      // Entry 0 is the whole match, so it is always present.
-      const [from, to] = match.indices![0]!;
+      // Entry 0 holds the whole match, which is expected wherever the `d` flag is set.
+      const bounds = match.indices?.[0];
+      if (bounds === undefined)
+        throw new Error("Pattern element matched without its position in the pattern");
+      const [from, to] = bounds;
       const range = { from, to };
       appendInsert(fileNamePattern.substring(lastIndex, from));
       lastIndex = to;
