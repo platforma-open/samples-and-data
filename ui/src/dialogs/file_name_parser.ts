@@ -53,7 +53,10 @@ export type FileNameGroups<T> = {
 };
 
 function getMatch(rMatch: RegExpMatchArray, idx: number): Match {
-  const [from, to] = rMatch.indices![idx];
+  // Every pattern this module builds carries the `d` flag, and an index reaches
+  // here only for a group the caller has checked took part in the match, so both
+  // the indices array and this group's entry in it are present.
+  const [from, to] = rMatch.indices![idx]!;
   return {
     value: rMatch[idx],
     from,
@@ -168,7 +171,8 @@ export class FileNamePattern {
       regexp += escapeRegExp(insert);
     }
     for (const match of fileNamePattern.matchAll(FileNamePattern.patternElement)) {
-      const [from, to] = match.indices![0];
+      // Entry 0 is the whole match, so it is always present.
+      const [from, to] = match.indices![0]!;
       const range = { from, to };
       appendInsert(fileNamePattern.substring(lastIndex, from));
       lastIndex = to;
