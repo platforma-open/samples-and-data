@@ -7,7 +7,7 @@ import { uniquePlId } from "@platforma-sdk/model";
 import type { ImportResult } from "../dataimport";
 
 export function columnNamesMatch(existingColumn: string, importColumn: string): boolean {
-  return existingColumn.toLocaleLowerCase().trim() === importColumn.toLocaleLowerCase().trim();
+  return labelKey(existingColumn) === labelKey(importColumn);
 }
 
 /**
@@ -105,6 +105,11 @@ export type ResolveMetadataColumnsResult = {
  * the dialog was open) becomes a new column instead. Two file columns pointed
  * at the same existing column are honoured in order, so the later one wins on
  * every sample it carries a value for.
+ *
+ * A created column never takes a label another column already carries: a global
+ * metadata column is exported under its label, so two columns sharing one would
+ * be exported as one and lose each other's values. The clash is settled by
+ * numbering the newcomer, and `newColumns` carries the label it actually got.
  */
 export function resolveMetadataColumns(
   options: ResolveMetadataColumnsOptions,
@@ -113,6 +118,7 @@ export function resolveMetadataColumns(
 
   const modelColumns: (MTColumn | undefined)[] = [];
   const newColumns: MTColumn[] = [];
+  const takenLabels = new Set(existingMetadata.map((mc) => labelKey(mc.label)));
   for (let cIdx = 0; cIdx < importCandidate.data.columns.length; cIdx++) {
     const target = skipColumnIndices.includes(cIdx) ? TARGET_IGNORE : (mapping[cIdx] ?? TARGET_NEW);
     if (target.type === "ignore") {
@@ -127,10 +133,12 @@ export function resolveMetadataColumns(
       }
     }
     const column = importCandidate.data.columns[cIdx];
+    const label = freeLabel(column.header.trim(), takenLabels);
+    takenLabels.add(labelKey(label));
     const mColumn: MTColumn = {
       id: uniquePlId(),
       valueType: column.type,
-      label: column.header,
+      label,
       global: true,
       data: {},
     };
@@ -204,4 +212,27 @@ export function extractMetadataFromRow(
     }
   }
   return metadata;
+}
+
+// Internals
+
+/**
+ * Two labels name the same metadata column when they differ only in case or in
+ * surrounding spaces, so both the matching and the clash check compare labels
+ * through this key rather than literally.
+ */
+function labelKey(label: string): string {
+  return label.toLocaleLowerCase().trim();
+}
+
+/**
+ * `label` itself when free, otherwise the first of "label (2)", "label (3)"
+ * that no column has taken.
+ */
+function freeLabel(label: string, taken: ReadonlySet<string>): string {
+  if (!taken.has(labelKey(label))) return label;
+  for (let n = 2; ; n++) {
+    const candidate = `${label} (${n})`;
+    if (!taken.has(labelKey(candidate))) return candidate;
+  }
 }

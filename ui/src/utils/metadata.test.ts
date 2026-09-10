@@ -145,6 +145,38 @@ describe("resolveMetadataColumns", () => {
     expect(modelColumns[2]).toBe(existing[0]);
   });
 
+  test("a new column never takes the name of a column already in the project", () => {
+    const numeric = [column("a", "Age", "Long")];
+    const withText = candidate([
+      { header: "sample", type: "String" },
+      // "N/A" among the numbers makes the file column a String, so it cannot
+      // fill the project's Long column and has to be added instead.
+      { header: "age", type: "String" },
+    ]);
+    const { newColumns } = resolveMetadataColumns({
+      importCandidate: withText,
+      existingMetadata: numeric,
+      skipColumnIndices: [0],
+      mapping: defaultColumnMapping(numeric, withText, [0]),
+    });
+    expect(newColumns.map((c) => c.label)).toStrictEqual(["age (2)"]);
+  });
+
+  test("two file columns whose names differ only in case or spacing do not collide", () => {
+    const twice = candidate([
+      { header: "Batch", type: "String" },
+      { header: " batch ", type: "String" },
+      { header: "BATCH", type: "String" },
+    ]);
+    const { newColumns } = resolveMetadataColumns({
+      importCandidate: twice,
+      existingMetadata: [],
+      skipColumnIndices: [],
+      mapping: {},
+    });
+    expect(newColumns.map((c) => c.label)).toStrictEqual(["Batch", "batch (2)", "BATCH (3)"]);
+  });
+
   test("replace: with no existing columns every file column becomes a new one", () => {
     const { newColumns } = resolveMetadataColumns({
       importCandidate: ic,

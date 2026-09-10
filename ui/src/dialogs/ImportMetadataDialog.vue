@@ -152,22 +152,9 @@ function setTarget(idx: number, value: string | undefined) {
   data.mapping[idx] = valueToTarget(value);
 }
 
-/** Labels of the columns this import would create, for the "same name twice" check. */
-const newColumnLabels = computed(() => {
-  const labels = new Set<string>();
-  for (const c of mappableColumns.value)
-    if ((data.mapping[c.idx] ?? TARGET_NEW).type === "new")
-      labels.add(c.header.toLocaleLowerCase().trim());
-  return labels;
-});
-
 /** Existing columns nothing in the file fills; they keep whatever they hold now. */
 const unfilled = computed(() =>
-  data.mode === "replace"
-    ? []
-    : unfilledExistingColumns(existingMetadata.value, data.mapping).filter(
-        (mc) => !newColumnLabels.value.has(mc.label.toLocaleLowerCase().trim()),
-      ),
+  data.mode === "replace" ? [] : unfilledExistingColumns(existingMetadata.value, data.mapping),
 );
 
 /** Existing columns two or more file columns were pointed at. */
@@ -181,14 +168,6 @@ const doubleFilled = computed(() => {
   return existingMetadata.value.filter((mc) => (counts.get(mc.id) ?? 0) > 1);
 });
 
-/** New columns that carry the name of a column already in the project. */
-const shadowedColumns = computed(() => {
-  if (data.mode === "replace") return [];
-  return existingMetadata.value.filter((mc) =>
-    newColumnLabels.value.has(mc.label.toLocaleLowerCase().trim()),
-  );
-});
-
 const resolved = computed(() =>
   resolveMetadataColumns({
     importCandidate: props.importCandidate,
@@ -197,6 +176,20 @@ const resolved = computed(() =>
     mapping: data.mode === "replace" ? {} : data.mapping,
   }),
 );
+
+/**
+ * Columns added under a name other than their header, because the name was
+ * already taken by a project column or by an earlier column of the file.
+ */
+const renamedColumns = computed(() => {
+  const renamed: { header: string; label: string }[] = [];
+  for (const c of mappableColumns.value) {
+    const model = resolved.value.modelColumns[c.idx];
+    if (!model || !resolved.value.newColumns.includes(model)) continue;
+    if (model.label !== c.header) renamed.push({ header: c.header, label: model.label });
+  }
+  return renamed;
+});
 
 const tableDataText = computed(() => {
   const ic = props.importCandidate;
@@ -302,10 +295,11 @@ function runImport() {
         Two or more file columns write into the same project column:
         {{ doubleFilled.map((c) => c.label).join(", ") }}. The rightmost one wins.
       </PlAlert>
-      <PlAlert v-if="shadowedColumns.length > 0" type="warn" icon>
-        A new column is added under a name the project already uses:
-        {{ shadowedColumns.map((c) => c.label).join(", ") }}. Two columns with one name are exported
-        as one, so fill the existing column instead of adding a second.
+      <PlAlert v-if="renamedColumns.length > 0" type="warn" icon>
+        A name already in use cannot be taken twice, since two columns sharing a name are exported
+        as one. Added under a new name:
+        {{ renamedColumns.map((c) => `"${c.header}" as "${c.label}"`).join(", ") }}. Point the
+        column at the existing one instead if it is meant to fill it.
       </PlAlert>
       <PlAlert v-if="unfilled.length > 0" type="info" icon>
         {{ unfilled.length }} project columns take nothing from this file:
