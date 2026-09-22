@@ -31,10 +31,10 @@
     "@milaboratories/ts-builder": "catalog:",
     "@milaboratories/ts-configs": "catalog:",
     "@platforma-sdk/block-tools": "catalog:",
+    "@types/node": "*",
     "vitest": "catalog:"
   },
   "peerDependencies": {
-    "@types/node": "*",
     "typescript": "*"
   }
 }
