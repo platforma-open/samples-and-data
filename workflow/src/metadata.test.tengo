@@ -1,0 +1,82 @@
+test := import("@platforma-sdk/workflow-tengo:test")
+
+metadata := import(":metadata")
+
+SAMPLE_AXIS := {
+	type: "String",
+	name: "pl7.app/sampleId",
+	annotations: { "pl7.app/label": "Sample" },
+	domain: { "pl7.app/blockId": "block-1" }
+}
+
+column := func(valueType, data) {
+	return {
+		id: "col-1",
+		label: "Column 1",
+		global: false,
+		valueType: valueType,
+		data: data
+	}
+}
+
+Test_string_values_are_unique_and_sorted := func() {
+	values := metadata.discreteValues({ s1: "vaccinated", s2: "control", s3: "vaccinated", s4: "Control" })
+
+	test.isEqual(["Control", "control", "vaccinated"], values)
+}
+
+Test_long_values_sort_in_numeric_order := func() {
+	values := metadata.discreteValues({ s1: 10, s2: 7, s3: 2, s4: 10 })
+
+	test.isEqual(["2", "7", "10"], values)
+}
+
+Test_double_values_keep_the_json_spelling := func() {
+	values := metadata.discreteValues({ s1: 2.5, s2: 2.0, s3: 0.25, s4: 1, s5: 1.0 })
+
+	test.isEqual(["0.25", "1", "2", "2.5"], values)
+}
+
+Test_mixed_values_sort_as_strings := func() {
+	values := metadata.discreteValues({ s1: 10, s2: "b", s3: 7 })
+
+	test.isEqual(["10", "7", "b"], values)
+}
+
+Test_an_absent_value_is_skipped := func() {
+	values := metadata.discreteValues({ s1: "a", s2: undefined })
+
+	test.isEqual(["a"], values)
+}
+
+Test_a_column_with_values_declares_both_annotations := func() {
+	spec := metadata.metadataColumnSpec(column("String", { s1: "b", s2: "a" }), SAMPLE_AXIS)
+
+	test.isEqual("pl7.app/metadata", spec.name)
+	test.isEqual("String", spec.valueType)
+	test.isEqual("Column 1", spec.annotations["pl7.app/label"])
+	test.isEqual("true", spec.annotations["pl7.app/isDiscreteFilter"])
+	test.isEqual("[\"a\",\"b\"]", spec.annotations["pl7.app/discreteValues"])
+	test.isEqual("col-1", spec.domain["pl7.app/columnId"])
+	test.isEqual(SAMPLE_AXIS, spec.axesSpec[0])
+}
+
+Test_a_column_without_values_declares_no_filter := func() {
+	spec := metadata.metadataColumnSpec(column("Long", {}), SAMPLE_AXIS)
+
+	test.isEqual("Column 1", spec.annotations["pl7.app/label"])
+	test.isTrue(is_undefined(spec.annotations["pl7.app/isDiscreteFilter"]), "no filter flag")
+	test.isTrue(is_undefined(spec.annotations["pl7.app/discreteValues"]), "no values")
+}
+
+Test_a_global_column_takes_its_label_as_id := func() {
+	spec := metadata.metadataColumnSpec({
+		id: "col-1",
+		label: "Donor",
+		global: true,
+		valueType: "String",
+		data: { s1: "d1" }
+	}, SAMPLE_AXIS)
+
+	test.isEqual("Donor", spec.domain["pl7.app/columnId"])
+}

@@ -1,5 +1,6 @@
-
 ll := import("@platforma-sdk/workflow-tengo:ll")
+maps := import("@platforma-sdk/workflow-tengo:maps")
+slices := import("@platforma-sdk/workflow-tengo:slices")
 json := import("json")
 util := import(":util")
 
@@ -9,30 +10,75 @@ normalizeString := func(str) {
 }
 
 /**
- * Adds metadata columns to the exports
- * 
- * @param args - arguments
- * @param blockId - block id
+ * The distinct values of a metadata column, as strings. Numbers sort in numeric order,
+ * other values sort in string order.
+ *
+ * @param data - map[sampleId]value
+ * @return values - []string, empty when the column holds no value
+ */
+discreteValues := func(data) {
+	byKey := {}
+	numeric := true
+	for _, value in data {
+		if is_undefined(value) {
+			continue
+		}
+		if !is_int(value) && !is_float(value) {
+			numeric = false
+		}
+		byKey[string(value)] = value
+	}
+	if !numeric {
+		return maps.getKeys(byKey)
+	}
+	values := []
+	for _, value in byKey {
+		values = append(values, value)
+	}
+	slices.quickSortInPlace(values)
+	return slices.map(values, func(value) { return string(value) })
+}
+
+/**
+ * The spec of one metadata column.
+ *
+ * @param column - metadata column from args
  * @param sampleIdAxisSpec - sample id axis spec
- * @param groupIdAxisSpec - sample group id axis spec
+ * @return spec - PColumn spec
+ */
+metadataColumnSpec := func(column, sampleIdAxisSpec) {
+	annotations := {
+		"pl7.app/label": column.label
+	}
+	values := discreteValues(column.data)
+	if len(values) > 0 {
+		annotations["pl7.app/isDiscreteFilter"] = "true"
+		annotations["pl7.app/discreteValues"] = string(json.encode(values))
+	}
+	return {
+		kind: "PColumn",
+		name: "pl7.app/metadata",
+		valueType: column.valueType,
+		annotations: annotations,
+		domain: {
+			"pl7.app/columnId": column.global ? normalizeString(column.label) : column.id
+		},
+		axesSpec: [sampleIdAxisSpec]
+	}
+}
+
+/**
+ * Adds metadata columns to the exports
+ *
+ * @param args - arguments
+ * @param sampleIdAxisSpec - sample id axis spec
  * @return columns - metadata columns (id -> {spec, data})
  */
 createMetadata := func(args, blockId, sampleIdAxisSpec) {
-    columns := {}
+	columns := {}
 	for _, column in args.metadata {
 		columns["metadata." + column.id] = {
-			spec: {
-				kind: "PColumn",
-				name: "pl7.app/metadata",
-				valueType: column.valueType,
-				annotations: {
-					"pl7.app/label": column.label
-				},
-				domain: {
-					"pl7.app/columnId": column.global ? normalizeString(column.label) : column.id
-				},
-				axesSpec: [sampleIdAxisSpec]
-			},
+			spec: metadataColumnSpec(column, sampleIdAxisSpec),
 			data: util.createJsonPColumnData(column.data)
 		}
 	}
@@ -55,9 +101,11 @@ createMetadata := func(args, blockId, sampleIdAxisSpec) {
 		data: util.createJsonPColumnData(args.sampleLabels)
 	}
 
-    return columns
+	return columns
 }
 
-export {
-    createMetadata: createMetadata
-}
+export ll.toStrict({
+	discreteValues: discreteValues,
+	metadataColumnSpec: metadataColumnSpec,
+	createMetadata: createMetadata
+})
