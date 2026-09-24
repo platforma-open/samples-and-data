@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.23.0
+
+### Minor Changes
+
+- 34c4c26: Annotate every metadata column with `pl7.app/isDiscreteFilter` and `pl7.app/discreteValues`. Downstream blocks can offer the column as a discrete filter or a grouping property without a read of its data.
+
 ## 1.22.0
 
 ### Minor Changes
