@@ -24,8 +24,11 @@ function extractFileContentType(pattern: string): FileContentType {
   else if (pt.endsWith("h5ad")) return "H5AD";
   else if (pt.endsWith("h5")) return "H5";
   else if (["rds", "RDS"].some((rds) => pt.endsWith(rds))) return "Seurat";
-  else if (["ab1", "AB1"].some((ab1) => pt.endsWith(ab1))) return "Ab1";
-  else if (
+  else if (["ab1", "AB1"].some((ab1) => pt.endsWith(ab1))) {
+    // Readers of the dataset column expect a raw trace, so there is no ab1.gz to publish.
+    if (pt !== pattern) throw new Error("Compressed AB1 files are not supported");
+    return "Ab1";
+  } else if (
     pt.endsWith("matrix.mtx") ||
     pt.endsWith("features.tsv") ||
     pt.endsWith("genes.tsv") ||
