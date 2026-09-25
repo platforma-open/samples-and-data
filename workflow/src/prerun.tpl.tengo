@@ -1,8 +1,6 @@
 wf := import("@platforma-sdk/workflow-tengo:workflow")
 file := import("@platforma-sdk/workflow-tengo:file")
 maps := import("@platforma-sdk/workflow-tengo:maps")
-smart := import("@platforma-sdk/workflow-tengo:smart")
-ll := import("@platforma-sdk/workflow-tengo:ll")
 
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 multiSampleH5AD := import(":ds-multisample-h5ad")

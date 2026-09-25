@@ -10,7 +10,8 @@ export type FileContentType =
   | "CellRangerMTX"
   | "H5AD"
   | "H5"
-  | "Seurat";
+  | "Seurat"
+  | "Ab1";
 
 function extractFileContentType(pattern: string): FileContentType {
   if (pattern.includes("CellRangerFileRole")) return "CellRangerMTX";
@@ -23,7 +24,11 @@ function extractFileContentType(pattern: string): FileContentType {
   else if (pt.endsWith("h5ad")) return "H5AD";
   else if (pt.endsWith("h5")) return "H5";
   else if (["rds", "RDS"].some((rds) => pt.endsWith(rds))) return "Seurat";
-  else if (
+  else if (["ab1", "AB1"].some((ab1) => pt.endsWith(ab1))) {
+    // Readers of the dataset column expect a raw trace, so there is no ab1.gz to publish.
+    if (pt !== pattern) throw new Error("Compressed AB1 files are not supported");
+    return "Ab1";
+  } else if (
     pt.endsWith("matrix.mtx") ||
     pt.endsWith("features.tsv") ||
     pt.endsWith("genes.tsv") ||
@@ -122,6 +127,8 @@ export class FileNamePattern {
         return "H5";
       case "Seurat":
         return "Seurat";
+      case "Ab1":
+        return this.hasTagMatchers ? "TaggedAb1" : undefined;
       case "CellRangerMTX":
         return "CellRangerMTX";
       default:
@@ -483,6 +490,20 @@ const wellKnownPattern: WellKnownPattern[] = [
     extensions: ["rds", "RDS"],
     minimalPercent: 0.9,
   },
+  // One Sanger reaction is one template plus one primer, so a sample read with several
+  // primers yields one file per primer. The primer name is the usual separator.
+  {
+    patternWithoutExtension: "{{Sample}}_{{:Primer}}",
+    defaultReadIndices: [],
+    extensions: ["ab1", "AB1"],
+    minimalPercent: 0.9,
+  },
+  {
+    patternWithoutExtension: "{{Sample}}-{{:Primer}}",
+    defaultReadIndices: [],
+    extensions: ["ab1", "AB1"],
+    minimalPercent: 0.9,
+  },
 ];
 
 export type InferFileNamePatternOps = {
@@ -527,6 +548,9 @@ export function inferFileNamePattern(
           if (match.lane) sample += "___" + match.lane.value;
           if (match.readIndex) sample += "___" + match.readIndex.value;
           if (match.cellRangerFileRole) sample += "___" + match.cellRangerFileRole.value;
+          // Tags separate files of one sample just as lane and read index do. Without them a
+          // tagged candidate looks like a duplicate on its second file and is always rejected.
+          for (const tag of pattern.tags) sample += "___" + (match.tags?.[tag]?.value ?? "");
           if (samples.has(sample)) continue outer;
           samples.add(sample);
           matchedFiles++;

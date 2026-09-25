@@ -137,6 +137,17 @@ export interface DSContentTaggedXsv extends WithPerSampleData<TaggedXsvDatasetRe
   tags: string[];
 }
 
+export interface TaggedAb1DatasetRecord {
+  tags: Record<string, string>;
+  file: ImportFileHandle;
+}
+
+/** Sanger chromatograms. Tags carry whatever distinguishes traces of one sample, e.g. the sequencing primer. */
+export interface DSContentTaggedAb1 extends WithPerSampleData<TaggedAb1DatasetRecord[]> {
+  type: "TaggedAb1";
+  tags: string[];
+}
+
 export type CellRangerMtxRole = "matrix.mtx" | "features.tsv" | "barcodes.tsv";
 export type CellRangerMtxFileGroup = Partial<Record<CellRangerMtxRole, ImportFileHandle>>;
 
@@ -218,6 +229,7 @@ export type DSContent =
   | DSContentFasta
   | DSContentXsv
   | DSContentTaggedXsv
+  | DSContentTaggedAb1
   | DSContentBulkCountMatrix
   | DSContentCellRangerMtx
   | DSContentMultiplexedFastq
@@ -240,6 +252,7 @@ export type DSMultilaneFastq = Dataset<DSContentMultilaneFastq>;
 export type DSTaggedFastq = Dataset<DSContentTaggedFastq>;
 export type DSXsv = Dataset<DSContentXsv>;
 export type DSTaggedXsv = Dataset<DSContentTaggedXsv>;
+export type DSTaggedAb1 = Dataset<DSContentTaggedAb1>;
 export type DSCellRangerMtx = Dataset<DSContentCellRangerMtx>;
 export type DSBulkCountMatrix = Dataset<DSContentBulkCountMatrix>;
 export type DSMultiplexedFastq = Dataset<DSContentMultiplexedFastq>;
