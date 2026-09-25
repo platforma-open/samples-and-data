@@ -11,6 +11,7 @@ import type {
   DSContentSeurat,
   DSContentMultiSampleH5ad,
   DSContentMultiSampleSeurat,
+  DSContentTaggedAb1,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
   DSContentXsv,
@@ -426,6 +427,28 @@ function addTaggedXsvDatasetContent(contentData: DSContentTaggedXsv["data"]) {
   }
 }
 
+/** Tagged AB1 */
+function addTaggedAb1DatasetContent(contentData: DSContentTaggedAb1["data"]) {
+  const pattern = compiledPattern.value;
+  if (!pattern) throw new Error("No pattern");
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    const tags = _.mapValues(f.match.tags!, (v) => v.value);
+
+    let sampleRecords = contentData[sampleId];
+    if (!sampleRecords) {
+      sampleRecords = [];
+      contentData[sampleId] = sampleRecords;
+    }
+
+    if (!sampleRecords.some((r) => _.isEqual(r.tags, tags)))
+      sampleRecords.push({ tags, file: f.handle });
+  }
+}
+
 /** CellRanger MTX */
 function addCellRangerMtxDatasetContent(contentData: DSContentCellRangerMtx["data"]) {
   for (const f of parsedFiles.value) {
@@ -578,6 +601,9 @@ async function addToExistingDataset() {
     case "TaggedXsv":
       addTaggedXsvDatasetContent(dataset.content.data);
       break;
+    case "TaggedAb1":
+      addTaggedAb1DatasetContent(dataset.content.data);
+      break;
     case "CellRangerMTX":
       addCellRangerMtxDatasetContent(dataset.content.data);
       break;
@@ -635,6 +661,21 @@ async function createNewDataset() {
         content: {
           type: "TaggedXsv",
           xsvType: xsvType(),
+          gzipped: data.gzipped,
+          tags: pattern.tags,
+          data: contentData,
+        },
+      });
+      break;
+    }
+    case "TaggedAb1": {
+      const contentData: DSContentTaggedAb1["data"] = {};
+      addTaggedAb1DatasetContent(contentData);
+      app.model.data.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: "TaggedAb1",
           gzipped: data.gzipped,
           tags: pattern.tags,
           data: contentData,
