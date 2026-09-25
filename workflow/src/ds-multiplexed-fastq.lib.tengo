@@ -2,7 +2,6 @@
 ll := import("@platforma-sdk/workflow-tengo:ll")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
 json := import("json")
-smart := import("@platforma-sdk/workflow-tengo:smart")
 util := import(":util")
 
 createGroupAxis := func(groupIdAxis, _) {

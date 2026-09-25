@@ -6,7 +6,6 @@ file := import("@platforma-sdk/workflow-tengo:file")
 pSpec := import("@platforma-sdk/workflow-tengo:pframes.spec")
 pframes := import("@platforma-sdk/workflow-tengo:pframes")
 metadata := import(":metadata")
-smart := import("@platforma-sdk/workflow-tengo:smart")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 util := import(":util")
 
@@ -18,6 +17,7 @@ dsMultilaneFastq := import(":ds-multilane-fastq")
 dsTaggedFastq := import(":ds-tagged-fastq")
 dsXsv := import(":ds-xsv")
 dsTaggedXsv := import(":ds-tagged-xsv")
+dsTaggedAb1 := import(":ds-tagged-ab1")
 dsCellRangerMtx := import(":ds-cellranger-mtx")
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 dsMultiplexedFastq := import(":ds-multiplexed-fastq")
@@ -34,6 +34,7 @@ dsProcessors := {
 	"TaggedFastq": dsTaggedFastq,
 	"Xsv": dsXsv,
 	"TaggedXsv": dsTaggedXsv,
+	"TaggedAb1": dsTaggedAb1,
 	"H5AD": dsH5ad,
 	"H5": dsH5,
 	"Seurat": dsSeurat,

@@ -1,7 +1,6 @@
 
 ll := import("@platforma-sdk/workflow-tengo:ll")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
-maps := import("@platforma-sdk/workflow-tengo:maps")
 
 util := import(":util")
 
