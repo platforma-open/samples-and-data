@@ -157,6 +157,12 @@ test("ab1 pattern resolves to the TaggedAb1 dataset type", ({ expect }) => {
   expect(pattern.datasetType).toBe("TaggedAb1");
 });
 
+test("compressed ab1 pattern is rejected", ({ expect }) => {
+  expect(() => FileNamePattern.parse("{{Sample}}_{{:Primer}}.ab1.gz")).toThrow(
+    "Compressed AB1 files are not supported",
+  );
+});
+
 test("ab1 pattern without tags has no dataset type", ({ expect }) => {
   const pattern = FileNamePattern.parse("{{Sample}}.ab1");
   expect(pattern.fileContentType).toBe("Ab1");

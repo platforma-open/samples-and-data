@@ -187,6 +187,17 @@ watch(isOneOfDialogsOpened, (v) => {
 // Pattern compilation and file name matching
 const { patternError, compiledPattern } = usePatternCompilation(data);
 
+/** Records are stored under the target dataset's tag names; the workflow reads them by those names. */
+const tagMismatchError = computed(() => {
+  if (data.mode !== "add-to-existing") return undefined;
+  const ds = app.model.data.datasets.find((ds) => ds.id === data.targetAddDataset);
+  const pattern = compiledPattern.value;
+  if (!ds || !pattern || !("tags" in ds.content)) return undefined;
+  const expected = [...ds.content.tags].sort();
+  if (_.isEqual(pattern.tags, expected)) return undefined;
+  return `Pattern tags must match the dataset tags: ${expected.join(", ")}`;
+});
+
 function updateDataFromPattern(v: FileNamePattern | undefined) {
   if (v && !addingToFixedDataset.value) {
     data.datasetType = v.datasetType;
@@ -970,6 +981,7 @@ watch(availableColumnsOptions, (options) => {
 const canCreateOrAdd = computed(() => {
   const basicConditions =
     hasMatchedFiles.value &&
+    tagMismatchError.value === undefined &&
     (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
     data.datasetType !== undefined &&
     !data.loadingColumns &&
@@ -1025,7 +1037,7 @@ const canCreateOrAdd = computed(() => {
       <PlCheckbox v-model="data.gzipped" disabled> Gzipped </PlCheckbox>
     </PlRow>
 
-    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError" />
+    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError ?? tagMismatchError" />
 
     <div v-if="data.datasetType === 'MultiSampleH5AD' || data.datasetType === 'MultiSampleSeurat'">
       <div v-if="data.loadingColumns">Parsing files to extract column information...</div>
