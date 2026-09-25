@@ -5,14 +5,12 @@ pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
 util := import(":util")
 
 createDataset := func(blockId, sampleIdAxis, dataset, importFile) {
-    
-    extension :=  dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
-    
-    spec := util.datasetColumnSpecBase(blockId, dataset, extension)
-    
+
+    spec := util.datasetColumnSpecBase(blockId, dataset, "ab1")
+
     axesSpec := [sampleIdAxis]
 
-     for tag in dataset.content.tags {
+    for tag in dataset.content.tags {
         axesSpec = append(axesSpec, {
             type: "String",
             name: "pl7.app/sequencing/tag",
@@ -28,7 +26,7 @@ createDataset := func(blockId, sampleIdAxis, dataset, importFile) {
     spec.axesSpec = axesSpec
 
     data := pColumn.resourceMapBuilder(len(axesSpec))
-    
+
     for sampleId, records in dataset.content.data {
         for record in records {
             key := [sampleId]

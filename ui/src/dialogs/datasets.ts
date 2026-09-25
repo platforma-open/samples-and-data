@@ -49,6 +49,11 @@ export const datasetTypes: Record<
     fileType: "Xsv",
     hasTags: true,
   },
+  TaggedAb1: {
+    label: "Tagged Sanger AB1",
+    fileType: "Ab1",
+    hasTags: true,
+  },
   CellRangerMTX: {
     label: "CellRanger MTX",
     fileType: "CellRangerMTX",

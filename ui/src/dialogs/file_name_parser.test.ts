@@ -85,11 +85,88 @@ test.for([
     target: "FebControl10_sampled_R2.fastq.gz",
     match: undefined,
   },
+  {
+    pattern: "{{Sample}}_{{:Primer}}.ab1",
+    target: "A1_Fwd.ab1",
+    match: {
+      sample: { value: "A1" },
+      tags: { Primer: { value: "Fwd" } },
+    },
+  },
+  {
+    pattern: "{{Sample}}_{{:Primer}}.ab1",
+    target: "H12_Rev.ab1",
+    match: {
+      sample: { value: "H12" },
+      tags: { Primer: { value: "Rev" } },
+    },
+  },
+  {
+    pattern: "{{Sample}}_{{:Primer}}.ab1",
+    target: "A1_Fwd.fastq.gz",
+    match: undefined,
+  },
 ])("matching test for $pattern and $target", ({ pattern, target, match }, { expect }) => {
   const fileNamePattern = FileNamePattern.parse(pattern);
   const actualMatch = fileNamePattern.match(target);
   if (match === undefined) expect(actualMatch).toBeUndefined();
   else expect(actualMatch).to.toMatchObject(match);
+});
+
+test("infer ab1 pattern from a two-primer 96-well plate", ({ expect }) => {
+  const wells = [];
+  for (const row of ["A", "B", "C", "D", "E", "F", "G", "H"])
+    for (let col = 1; col <= 12; col++) wells.push(`${row}${col}`);
+
+  const fileNames = [...wells.map((w) => `${w}_Fwd.ab1`), ...wells.map((w) => `${w}_Rev.ab1`)];
+  expect(fileNames.length).toBe(192);
+
+  const inferred = inferFileNamePattern(fileNames);
+  expect(inferred).toBeDefined();
+  expect(inferred!.pattern.rawPattern).toBe("{{Sample}}_{{:Primer}}.ab1");
+  expect(inferred!.pattern.datasetType).toBe("TaggedAb1");
+  expect(inferred!.pattern.tags).toEqual(["Primer"]);
+
+  // 96 wells, not 192 — the primer must land in the tag, not in the sample name.
+  const samples = new Set(fileNames.map((f) => inferred!.pattern.match(f)!.sample.value));
+  expect(samples.size).toBe(96);
+});
+
+test("infer ab1 pattern with a dash separator", ({ expect }) => {
+  const inferred = inferFileNamePattern(["A1-M13F.ab1", "A1-M13R.ab1", "B2-M13F.ab1"]);
+  expect(inferred?.pattern.rawPattern).toBe("{{Sample}}-{{:Primer}}.ab1");
+  expect(inferred?.pattern.datasetType).toBe("TaggedAb1");
+});
+
+test("adding tags to the dedup key leaves fastq inference alone", ({ expect }) => {
+  const inferred = inferFileNamePattern([
+    "SampleA_L001_R1_001.fastq.gz",
+    "SampleA_L001_R2_001.fastq.gz",
+    "SampleB_L001_R1_001.fastq.gz",
+    "SampleB_L001_R2_001.fastq.gz",
+  ]);
+  expect(inferred?.pattern.rawPattern).toBe("{{Sample}}_L{{n}}_{{RR}}_{{n}}.fastq.gz");
+  expect(inferred?.readIndices).toEqual(["R1", "R2"]);
+});
+
+test("ab1 pattern resolves to the TaggedAb1 dataset type", ({ expect }) => {
+  const pattern = FileNamePattern.parse("{{Sample}}_{{:Primer}}.ab1");
+  expect(pattern.fileContentType).toBe("Ab1");
+  expect(pattern.hasTagMatchers).toBe(true);
+  expect(pattern.tags).toEqual(["Primer"]);
+  expect(pattern.datasetType).toBe("TaggedAb1");
+});
+
+test("compressed ab1 pattern is rejected", ({ expect }) => {
+  expect(() => FileNamePattern.parse("{{Sample}}_{{:Primer}}.ab1.gz")).toThrow(
+    "Compressed AB1 files are not supported",
+  );
+});
+
+test("ab1 pattern without tags has no dataset type", ({ expect }) => {
+  const pattern = FileNamePattern.parse("{{Sample}}.ab1");
+  expect(pattern.fileContentType).toBe("Ab1");
+  expect(pattern.datasetType).toBeUndefined();
 });
 
 test("wrapped string builder - pattern", ({ expect }) => {

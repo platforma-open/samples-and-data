@@ -11,6 +11,7 @@ import type {
   DSContentSeurat,
   DSContentMultiSampleH5ad,
   DSContentMultiSampleSeurat,
+  DSContentTaggedAb1,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
   DSContentXsv,
@@ -185,6 +186,17 @@ watch(isOneOfDialogsOpened, (v) => {
 
 // Pattern compilation and file name matching
 const { patternError, compiledPattern } = usePatternCompilation(data);
+
+/** Records are stored under the target dataset's tag names; the workflow reads them by those names. */
+const tagMismatchError = computed(() => {
+  if (data.mode !== "add-to-existing") return undefined;
+  const ds = app.model.data.datasets.find((ds) => ds.id === data.targetAddDataset);
+  const pattern = compiledPattern.value;
+  if (!ds || !pattern || !("tags" in ds.content)) return undefined;
+  const expected = [...ds.content.tags].sort();
+  if (_.isEqual(pattern.tags, expected)) return undefined;
+  return `Pattern tags must match the dataset tags: ${expected.join(", ")}`;
+});
 
 function updateDataFromPattern(v: FileNamePattern | undefined) {
   if (v && !addingToFixedDataset.value) {
@@ -426,6 +438,28 @@ function addTaggedXsvDatasetContent(contentData: DSContentTaggedXsv["data"]) {
   }
 }
 
+/** Tagged AB1 */
+function addTaggedAb1DatasetContent(contentData: DSContentTaggedAb1["data"]) {
+  const pattern = compiledPattern.value;
+  if (!pattern) throw new Error("No pattern");
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const sample = f.match.sample.value;
+    const sampleId = getOrCreateSample(app, sample);
+    const tags = _.mapValues(f.match.tags!, (v) => v.value);
+
+    let sampleRecords = contentData[sampleId];
+    if (!sampleRecords) {
+      sampleRecords = [];
+      contentData[sampleId] = sampleRecords;
+    }
+
+    if (!sampleRecords.some((r) => _.isEqual(r.tags, tags)))
+      sampleRecords.push({ tags, file: f.handle });
+  }
+}
+
 /** CellRanger MTX */
 function addCellRangerMtxDatasetContent(contentData: DSContentCellRangerMtx["data"]) {
   for (const f of parsedFiles.value) {
@@ -578,6 +612,9 @@ async function addToExistingDataset() {
     case "TaggedXsv":
       addTaggedXsvDatasetContent(dataset.content.data);
       break;
+    case "TaggedAb1":
+      addTaggedAb1DatasetContent(dataset.content.data);
+      break;
     case "CellRangerMTX":
       addCellRangerMtxDatasetContent(dataset.content.data);
       break;
@@ -635,6 +672,21 @@ async function createNewDataset() {
         content: {
           type: "TaggedXsv",
           xsvType: xsvType(),
+          gzipped: data.gzipped,
+          tags: pattern.tags,
+          data: contentData,
+        },
+      });
+      break;
+    }
+    case "TaggedAb1": {
+      const contentData: DSContentTaggedAb1["data"] = {};
+      addTaggedAb1DatasetContent(contentData);
+      app.model.data.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: "TaggedAb1",
           gzipped: data.gzipped,
           tags: pattern.tags,
           data: contentData,
@@ -929,6 +981,7 @@ watch(availableColumnsOptions, (options) => {
 const canCreateOrAdd = computed(() => {
   const basicConditions =
     hasMatchedFiles.value &&
+    tagMismatchError.value === undefined &&
     (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
     data.datasetType !== undefined &&
     !data.loadingColumns &&
@@ -984,7 +1037,7 @@ const canCreateOrAdd = computed(() => {
       <PlCheckbox v-model="data.gzipped" disabled> Gzipped </PlCheckbox>
     </PlRow>
 
-    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError" />
+    <PlTextField v-model="data.pattern" label="Pattern" :error="patternError ?? tagMismatchError" />
 
     <div v-if="data.datasetType === 'MultiSampleH5AD' || data.datasetType === 'MultiSampleSeurat'">
       <div v-if="data.loadingColumns">Parsing files to extract column information...</div>

@@ -89,6 +89,7 @@ const DATASET_TYPES = {
   Fasta: true,
   Xsv: true,
   TaggedXsv: true,
+  TaggedAb1: true,
   BulkCountMatrix: true,
   CellRangerMTX: true,
   MultiplexedFastq: true,
