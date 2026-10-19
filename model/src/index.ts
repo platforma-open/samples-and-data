@@ -1,6 +1,6 @@
 import { kind } from "@platforma-open/milaboratories.samples-and-data.kind";
 import type { ImportFileHandle, InferHrefType, InferOutputsType, PlId } from "@platforma-sdk/model";
-import { BlockModelV3 } from "@platforma-sdk/model";
+import { BlockModelV3, blockDependencies } from "@platforma-sdk/model";
 import { blockDataModel } from "./data_model";
 import type { BlockArgs, BlockPrerunArgs } from "./args";
 import { validateMultiplexingRules } from "./multiplexing-rules-validation";
@@ -122,6 +122,8 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
   .retentiveOutput("metadataFile", (ctx) =>
     ctx.prerun?.traverse({ field: "metadataFile" })?.getFileHandle(),
   )
+
+  .plugin(blockDependencies)
 
   .title(() => "Samples & Data")
 
