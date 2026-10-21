@@ -372,7 +372,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
 <template>
   <PlBlockPage title="Samples & Data">
-    <PlBlockDependencies :handle="app.plugins.dependencies.handle" />
+    <PlBlockDependencies />
     <template #append>
       <PlBtnGhost icon="dna-import" @click.stop="() => (app.showImportDataset = true)">
         Import Dataset
