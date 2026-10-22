@@ -202,7 +202,8 @@ const tableDataText = computed(() => {
   result += `Matched samples: ${algo.value.matches} (out of ${app.model.data.sampleIds.length})\n`;
   result += `Unmatched rows: ${ic.data.rows.length - algo.value.matches}\n`;
   result += `File columns: ${mappableColumns.value.length}`;
-  if (data.mode === "replace" && hasExistingColumns.value)
+  if (!hasExistingColumns.value) result += ` (all ${newCount} added)`;
+  else if (data.mode === "replace")
     result += ` (all ${newCount} added, replacing ${existingMetadata.value.length} existing)`;
   else result += ` (${newCount} added, ${filledCount} filling existing, ${ignoredCount} skipped)`;
   return result;
@@ -281,7 +282,8 @@ function runImport() {
       :options="modeOptions"
     />
 
-    <template v-if="data.mode === 'keep'">
+    <!-- With no metadata in the project there is nothing to fill: every file column is added. -->
+    <template v-if="hasExistingColumns && data.mode === 'keep'">
       <PlDropdown
         v-for="column in mappableColumns"
         :key="column.idx"
