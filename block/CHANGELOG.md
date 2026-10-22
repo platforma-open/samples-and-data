@@ -1,5 +1,11 @@
 # @platforma-open/milaboratories.samples-and-data
 
+## 1.24.1
+
+### Patch Changes
+
+- 4eb5952: Importing metadata into a project that has no metadata columns yet no longer asks what to do with each column of the file: every column is added.
+
 ## 1.24.0
 
 ### Minor Changes
