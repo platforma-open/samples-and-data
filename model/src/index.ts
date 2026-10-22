@@ -3,8 +3,7 @@ import type { ImportFileHandle, InferHrefType, InferOutputsType, PlId } from "@p
 import { BlockModelV3 } from "@platforma-sdk/model";
 import { blockDataModel } from "./data_model";
 import type { BlockArgs, BlockPrerunArgs } from "./args";
-import { validateMultiplexingRules } from "./multiplexing-rules-validation";
-import { validateDatasets } from "./validate_datasets";
+import { blockArgsIssues } from "./args_issues";
 import { deriveTemplateParams } from "./template_params";
 
 function sortedById<T extends { id: string }>(items: T[]) {
@@ -18,11 +17,6 @@ function sortedStr<S extends string>(items: S[]): S[] {
 export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind })
 
   .args<BlockArgs>((data) => {
-    validateDatasets(data.datasets);
-    const ruleIssues = validateMultiplexingRules(data.datasets, data.sampleLabels);
-    if (ruleIssues.length > 0) {
-      throw new Error(ruleIssues.map((i) => `${i.datasetLabel}: ${i.message}`).join(" | "));
-    }
     return {
       datasets: sortedById(data.datasets),
       metadata: sortedById(data.metadata),
@@ -30,6 +24,8 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
       sampleLabels: data.sampleLabels,
     };
   })
+
+  .argsIssues(({ data }) => blockArgsIssues(data))
 
   .prerunArgs((data): BlockPrerunArgs => {
     return {
