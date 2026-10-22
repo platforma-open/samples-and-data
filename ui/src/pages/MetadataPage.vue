@@ -25,6 +25,7 @@ import {
   PlAgColumnHeader,
   type PlAgHeaderComponentParams,
   PlAgOverlayNoRows,
+  PlBlockDependencies,
   PlBlockPage,
   PlBtnGhost,
   PlBtnPrimary,
@@ -371,6 +372,7 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
 <template>
   <PlBlockPage title="Samples & Data">
+    <PlBlockDependencies />
     <template #append>
       <PlBtnGhost icon="dna-import" @click.stop="() => (app.showImportDataset = true)">
         Import Dataset

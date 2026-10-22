@@ -34,29 +34,31 @@ function bulkCountMatrix(label: string, withData: boolean): DSBulkCountMatrix {
   };
 }
 
+function error(message: string) {
+  return [{ severity: "error", message }];
+}
+
 test("a block with no datasets runs", () => {
-  expect(() => validateDatasets([])).not.toThrow();
+  expect(validateDatasets([])).toEqual([]);
 });
 
 test("datasets with data pass", () => {
-  expect(() =>
-    validateDatasets([fastq("Reads", true), bulkCountMatrix("Counts", true)]),
-  ).not.toThrow();
+  expect(validateDatasets([fastq("Reads", true), bulkCountMatrix("Counts", true)])).toEqual([]);
 });
 
 test("a single empty dataset is rejected by label", () => {
-  expect(() => validateDatasets([fastq("Reads", false)])).toThrow('No data in dataset: "Reads"');
+  expect(validateDatasets([fastq("Reads", false)])).toEqual(error('No data in dataset: "Reads"'));
 });
 
 test("an empty grouped dataset is rejected as empty, not as misconfigured", () => {
-  expect(() => validateDatasets([bulkCountMatrix("Counts", false)])).toThrow(
-    'No data in dataset: "Counts"',
+  expect(validateDatasets([bulkCountMatrix("Counts", false)])).toEqual(
+    error('No data in dataset: "Counts"'),
   );
 });
 
 test("multiple empty datasets are all named", () => {
-  expect(() => validateDatasets([fastq("Reads", false), bulkCountMatrix("Counts", false)])).toThrow(
-    'No data in datasets: "Reads", "Counts"',
+  expect(validateDatasets([fastq("Reads", false), bulkCountMatrix("Counts", false)])).toEqual(
+    error('No data in datasets: "Reads", "Counts"'),
   );
 });
 
@@ -66,13 +68,13 @@ test("mixed datasets name only the empty ones", () => {
     fastq("More reads", false),
     bulkCountMatrix("Counts", true),
   ];
-  expect(() => validateDatasets(datasets)).toThrow('No data in dataset: "More reads"');
+  expect(validateDatasets(datasets)).toEqual(error('No data in dataset: "More reads"'));
 });
 
 test("a grouped dataset with data but no groups is still rejected", () => {
   const ds = bulkCountMatrix("Counts", true);
   ds.content.sampleGroups = undefined;
-  expect(() => validateDatasets([ds])).toThrow(
-    "Not all grouped datasets have sample groups configured",
+  expect(validateDatasets([ds])).toEqual(
+    error("Not all grouped datasets have sample groups configured"),
   );
 });
