@@ -241,28 +241,26 @@ const columnDefs = computed<ColDef<RuleRow>[]>(() => {
       }),
       valueFormatter: (p) => sampleIdToLabel.value[p.value as string] ?? (p.value as string),
     },
-    ...tags.value.map(
-      (tag): ColDef<RuleRow> => ({
-        colId: `${tagColIdPrefix}${tag}`,
-        headerName: tag,
-        editable: true,
-        minWidth: 120,
-        flex: 1,
-        headerComponent: PlAgColumnHeader,
-        headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
-        valueGetter: (p) => p.data?.barcodes?.[tag] ?? "",
-        valueSetter: (p) => {
-          // Updating the model in onCellValueChanged below; valueSetter must
-          // mutate p.data to make the grid re-render the cell synchronously.
-          if (!p.data) return false;
-          p.data.barcodes = { ...p.data.barcodes, [tag]: String(p.newValue ?? "") };
-          return true;
-        },
-        cellClassRules: {
-          [styles.emptyCell]: (p) => (p.data?.barcodes?.[tag] ?? "") === "",
-        },
-      }),
-    ),
+    ...tags.value.map((tag): ColDef<RuleRow> => ({
+      colId: `${tagColIdPrefix}${tag}`,
+      headerName: tag,
+      editable: true,
+      minWidth: 120,
+      flex: 1,
+      headerComponent: PlAgColumnHeader,
+      headerComponentParams: { type: "Text" } satisfies PlAgHeaderComponentParams,
+      valueGetter: (p) => p.data?.barcodes?.[tag] ?? "",
+      valueSetter: (p) => {
+        // Updating the model in onCellValueChanged below; valueSetter must
+        // mutate p.data to make the grid re-render the cell synchronously.
+        if (!p.data) return false;
+        p.data.barcodes = { ...p.data.barcodes, [tag]: String(p.newValue ?? "") };
+        return true;
+      },
+      cellClassRules: {
+        [styles.emptyCell]: (p) => (p.data?.barcodes?.[tag] ?? "") === "",
+      },
+    })),
     {
       colId: "add",
       headerName: "+",
