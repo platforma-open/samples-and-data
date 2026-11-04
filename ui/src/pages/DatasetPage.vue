@@ -44,29 +44,6 @@ async function deleteTheDataset() {
   const index = app.model.data.datasets.findIndex((ds) => ds.id === datasetId);
   if (index === -1) throw new Error("Dataset not found");
 
-  // Collect file handles from the dataset to remove them from h5adFilesToPreprocess or seuratFilesToPreprocess
-  const datasetContent = dataset.content;
-  // Extract all file handles from the dataset
-  const filesToRemove = Object.values(datasetContent.data).filter((fh) => fh !== null);
-
-  if (datasetContent.type === "H5AD" || datasetContent.type === "MultiSampleH5AD") {
-    // Remove these files from h5adFilesToPreprocess
-    if (filesToRemove.length > 0) {
-      app.model.data.h5adFilesToPreprocess = app.model.data.h5adFilesToPreprocess.filter(
-        (fileHandle) => !filesToRemove.includes(fileHandle),
-      );
-    }
-  }
-
-  if (datasetContent.type === "Seurat" || datasetContent.type === "MultiSampleSeurat") {
-    // Remove these files from seuratFilesToPreprocess
-    if (filesToRemove.length > 0) {
-      app.model.data.seuratFilesToPreprocess = app.model.data.seuratFilesToPreprocess.filter(
-        (fileHandle) => !filesToRemove.includes(fileHandle),
-      );
-    }
-  }
-
   app.model.data.datasets.splice(index, 1);
   await app.allSettled();
   await app.navigateTo("/");
