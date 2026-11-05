@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {
+  PlBlockDependencies,
   PlBlockPage,
   PlBtnGhost,
   PlBtnPrimary,
@@ -100,6 +101,7 @@ const datasetTypeLabel = datasetTypeLabels[dataset.content.type];
         Add Files
       </PlBtnGhost>
     </template>
+    <PlBlockDependencies />
     <template v-if="dataset.content.type === 'Fastq'">
       <FastqDatasetPage />
     </template>
