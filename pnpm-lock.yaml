@@ -7631,12 +7631,6 @@ snapshots:
       vite: 8.3.5(@types/node@24.19.2)(yaml@2.9.1)
       vue: 3.5.44(typescript@7.0.2)
 
-  '@vitejs/plugin-vue@6.0.10(vite@8.3.5(@types/node@24.5.2)(yaml@2.9.1))(vue@3.5.44(typescript@5.6.3))':
-    dependencies:
-      '@rolldown/pluginutils': 1.0.1
-      vite: 8.3.5(@types/node@24.5.2)(yaml@2.9.1)
-      vue: 3.5.44(typescript@5.6.3)
-
   '@vitest/coverage-istanbul@4.1.12(supports-color@8.1.1)(vitest@4.1.12)':
     dependencies:
       '@babel/core': 7.29.0(supports-color@8.1.1)
@@ -9674,27 +9668,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  unplugin-dts@1.1.2(@microsoft/api-extractor@7.52.8(@types/node@24.5.2))(@vue/language-core@3.3.10)(rolldown@1.1.3)(rollup@4.37.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.5(@types/node@24.5.2)(yaml@2.9.1)):
-    dependencies:
-      '@rollup/pluginutils': 5.4.0(rollup@4.37.0)
-      '@volar/typescript': 2.4.28(typescript@7.0.2)
-      compare-versions: 6.1.1
-      debug: 4.4.3(supports-color@8.1.1)
-      glob-to-regexp: 0.4.1
-      kolorist: 1.8.0
-      local-pkg: 1.2.1
-      magic-string: 0.30.21
-      typescript: 7.0.2
-      unplugin: 2.3.11
-    optionalDependencies:
-      '@microsoft/api-extractor': 7.52.8(@types/node@24.5.2)
-      '@vue/language-core': 3.3.10
-      rolldown: 1.1.3
-      rollup: 4.37.0
-      vite: 8.3.5(@types/node@24.5.2)(yaml@2.9.1)
-    transitivePeerDependencies:
-      - supports-color
-
   unplugin@2.3.11:
     dependencies:
       '@jridgewell/remapping': 2.3.5
@@ -9773,22 +9746,6 @@ snapshots:
       - typescript
       - webpack
 
-  vite-plugin-dts@5.1.2(@microsoft/api-extractor@7.52.8(@types/node@24.5.2))(@vue/language-core@3.3.10)(rolldown@1.1.3)(rollup@4.37.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.5(@types/node@24.5.2)(yaml@2.9.1)):
-    dependencies:
-      unplugin-dts: 1.1.2(@microsoft/api-extractor@7.52.8(@types/node@24.5.2))(@vue/language-core@3.3.10)(rolldown@1.1.3)(rollup@4.37.0)(supports-color@8.1.1)(typescript@7.0.2)(vite@8.3.5(@types/node@24.5.2)(yaml@2.9.1))
-    optionalDependencies:
-      '@microsoft/api-extractor': 7.52.8(@types/node@24.5.2)
-      rollup: 4.37.0
-      vite: 8.3.5(@types/node@24.5.2)(yaml@2.9.1)
-    transitivePeerDependencies:
-      - '@rspack/core'
-      - '@vue/language-core'
-      - esbuild
-      - rolldown
-      - supports-color
-      - typescript
-      - webpack
-
   vite-plugin-dynamic-import@1.6.0:
     dependencies:
       acorn: 8.17.0
@@ -9800,23 +9757,12 @@ snapshots:
     dependencies:
       vite: 8.3.5(@types/node@24.19.2)(yaml@2.9.1)
 
-  vite-plugin-externalize-deps@0.10.0(vite@8.3.5(@types/node@24.5.2)(yaml@2.9.1)):
-    dependencies:
-      vite: 8.3.5(@types/node@24.5.2)(yaml@2.9.1)
-
   vite-plugin-lib-inject-css@2.2.2(vite@8.3.5(@types/node@24.19.2)(yaml@2.9.1)):
     dependencies:
       '@ast-grep/napi': 0.36.3
       magic-string: 0.30.21
       picocolors: 1.1.1
       vite: 8.3.5(@types/node@24.19.2)(yaml@2.9.1)
-
-  vite-plugin-lib-inject-css@2.2.2(vite@8.3.5(@types/node@24.5.2)(yaml@2.9.1)):
-    dependencies:
-      '@ast-grep/napi': 0.36.3
-      magic-string: 0.30.21
-      picocolors: 1.1.1
-      vite: 8.3.5(@types/node@24.5.2)(yaml@2.9.1)
 
   vite@6.2.3(@types/node@24.19.2)(lightningcss@1.33.0)(yaml@2.9.1):
     dependencies:
