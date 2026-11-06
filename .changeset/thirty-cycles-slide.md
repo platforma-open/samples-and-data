@@ -2,6 +2,7 @@
 "@platforma-open/milaboratories.samples-and-data.workflow": minor
 "@platforma-open/milaboratories.samples-and-data.ui": minor
 "@platforma-open/milaboratories.samples-and-data": minor
+"@platforma-open/milaboratories.samples-and-data.parse-seurat": patch
 ---
 
 Export one `pl7.app/label` column for the groups of every grouped dataset (`sampleGroupLabels`) instead of one column per dataset (`dataset.<id>.sampleGroupLabels`). Every grouped dataset shares the `pl7.app/sampleGroupId` axis, and label lookups such as `findLabels` take the first matching column, so blocks downstream of a project with two or more grouped datasets showed "Unlabelled" or raw group IDs for the groups of all but one dataset. The merged column has no `pl7.app/dataset` domain and sits on the plain group axis.
@@ -11,3 +12,8 @@ Fix the import dialog for multisample H5AD and Seurat files:
 - A file that cannot be read gets an error naming it, and a file with no metadata columns gets a warning. Create stays disabled in both cases.
 - Seurat files added with "+ Add More Files" are now parsed. Before, only the columns of the first files were listed.
 - The list of files to parse is cleared when the dialog closes, instead of growing with every import.
+- Editing the pattern no longer resets the selected type, such as Multisample H5AD, to the type the pattern implies. The type changes only when the pattern implies a different one, for example after changing the file extension or adding a lane placeholder.
+
+Name the jobs that parse multisample H5AD and Seurat files `parse-h5ad` and `parse-seurat`. The name appears in error messages and, on Kubernetes, in the job name.
+
+Fix Multisample Seurat RDS import on Docker and Kubernetes backends. The Seurat parsing job failed with "permission denied" because its image ran `main.R` directly, and the file is not executable. The image now runs it with `Rscript`.

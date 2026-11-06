@@ -173,7 +173,8 @@ const data = reactive<ImportDatasetDialogData>({
   datasetDialogOpened: false,
   importing: false,
   sampleColumnName:
-    targetDs.value?.content.type === "MultiSampleH5AD"
+    targetDs.value?.content.type === "MultiSampleH5AD" ||
+    targetDs.value?.content.type === "MultiSampleSeurat"
       ? (targetDs.value.content.sampleColumnName ?? "")
       : "",
 });
@@ -200,9 +201,20 @@ const tagMismatchError = computed(() => {
   return `Pattern tags must match the dataset tags: ${expected.join(", ")}`;
 });
 
+/** Dataset type the last valid pattern implied */
+let patternDatasetType: DSType | undefined;
+
 function updateDataFromPattern(v: FileNamePattern | undefined) {
   if (v && !addingToFixedDataset.value) {
-    data.datasetType = v.datasetType;
+    // Keep the selected type while it fits the pattern and the type the pattern implies is unchanged
+    const selected = data.datasetType && datasetTypes[data.datasetType];
+    const keepType =
+      selected !== undefined &&
+      selected.fileType === v.fileContentType &&
+      selected.hasTags === v.hasTagMatchers &&
+      v.datasetType === patternDatasetType;
+    if (!keepType) data.datasetType = v.datasetType;
+    patternDatasetType = v.datasetType;
     data.fileType = v.fileContentType;
     data.hasTags = v.hasTagMatchers;
     data.gzipped = v.gzipped;
@@ -644,6 +656,10 @@ async function addToExistingDataset() {
       break;
     case "MultiSampleSeurat":
       addMultiSampleSeuratDatasetContent(dataset.content.groupLabels, dataset.content.data);
+      // Update sample column name if it was changed
+      if (data.sampleColumnName) {
+        dataset.content.sampleColumnName = data.sampleColumnName;
+      }
       break;
     case "BulkCountMatrix":
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -938,11 +954,14 @@ const isMultiSampleType = computed(
   () => data.datasetType === "MultiSampleH5AD" || data.datasetType === "MultiSampleSeurat",
 );
 
-/** Column names per selected file, keyed by file handle; a file is absent until its list has loaded */
+/** Files that match the pattern; only these are imported */
+const matchedFiles = computed(() => parsedFiles.value.filter((f) => f.match));
+
+/** Column names per matched file, keyed by file handle; a file is absent until its list has loaded */
 const columnsByFile = computed(() => {
   const columns = app.model.outputs.availableColumns ?? {};
   const result: Record<string, string[]> = {};
-  for (const { handle } of parsedFiles.value) {
+  for (const { handle } of matchedFiles.value) {
     const columnsCsv = columns[handle];
     // ReactiveFileContent never loads a 0-byte file, so its content is taken as empty
     const content =
@@ -964,32 +983,25 @@ const unreadableFileNames = computed(() =>
   parsedFiles.value.filter((f) => columnsError.value?.includes(f.handle)).map((f) => f.fileName),
 );
 
-/** Waiting until every selected file has its column list */
-const loadingColumns = computed(
-  () =>
-    isMultiSampleType.value &&
-    columnsError.value === undefined &&
-    parsedFiles.value.some((f) => !(f.handle in columnsByFile.value)),
+/** Waiting until every matched file has its column list */
+const loadingColumns = computed(() =>
+  matchedFiles.value.some((f) => !(f.handle in columnsByFile.value)),
 );
 
-/** Selected files whose column list is empty */
+/** Matched files whose column list is empty */
 const filesWithoutColumns = computed(() =>
-  parsedFiles.value
+  matchedFiles.value
     .filter((f) => columnsByFile.value[f.handle]?.length === 0)
     .map((f) => f.fileName),
 );
 
-const availableColumnsOptions = computed<ListOption<string>[]>(() => {
-  // Get all unique column names from files in current dataset only
-  const columnSet = new Set<string>();
-  for (const f of parsedFiles.value) {
-    for (const col of columnsByFile.value[f.handle] ?? []) {
-      columnSet.add(col);
-    }
-  }
-
-  return Array.from(columnSet).map((col) => ({ value: col, label: col }));
-});
+// Get all unique column names from the matched files only
+const availableColumnsOptions = computed<ListOption<string>[]>(() =>
+  [...new Set(Object.values(columnsByFile.value).flat())].map((col) => ({
+    value: col,
+    label: col,
+  })),
+);
 
 // Watch for when columns become available to pick a sample column
 watch(availableColumnsOptions, (options) => {
@@ -1012,9 +1024,9 @@ const canCreateOrAdd = computed(() => {
     tagMismatchError.value === undefined &&
     (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
     data.datasetType !== undefined &&
-    // A multisample dataset needs a non-empty column list for every file
+    // A multisample dataset needs a non-empty column list for every matched file
     (!isMultiSampleType.value ||
-      parsedFiles.value.every((f) => (columnsByFile.value[f.handle]?.length ?? 0) > 0)) &&
+      matchedFiles.value.every((f) => (columnsByFile.value[f.handle]?.length ?? 0) > 0)) &&
     // This prevents selecting fasta as type while having read index matcher in pattern
     (data.readIndices.length !== 0 ||
       (compiledPattern.value?.hasReadIndexMatcher === false &&
@@ -1069,14 +1081,14 @@ const canCreateOrAdd = computed(() => {
 
     <PlTextField v-model="data.pattern" label="Pattern" :error="patternError ?? tagMismatchError" />
 
-    <div v-if="isMultiSampleType">
-      <div v-if="loadingColumns">Parsing files to extract column information...</div>
-      <PlAlert v-else-if="columnsError" type="error">
+    <template v-if="isMultiSampleType">
+      <PlAlert v-if="columnsError" type="error">
         Could not read
         {{ unreadableFileNames.length > 0 ? unreadableFileNames.join(", ") : "the files" }}. Please
         check that each file is a valid
         {{ data.datasetType === "MultiSampleH5AD" ? "H5AD" : "Seurat RDS" }} file.
       </PlAlert>
+      <div v-else-if="loadingColumns">Parsing files to extract column information...</div>
       <template v-else>
         <PlAlert v-if="filesWithoutColumns.length > 0" type="warn">
           No columns found in
@@ -1097,7 +1109,7 @@ const canCreateOrAdd = computed(() => {
           />
         </PlRow>
       </template>
-    </div>
+    </template>
 
     <ParsedFilesList :items="parsedFiles" />
 

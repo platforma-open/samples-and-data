@@ -13,6 +13,7 @@ tpl.body(func(inputs) {
     }
 
     parseH5ad := exec.builder().
+        name("parse-h5ad").
         software(assets.importSoftware("@platforma-open/milaboratories.samples-and-data.parse-h5ad:main")).
         arg("parse-file").
         addFile("input.h5ad", h5adFile).
