@@ -4,13 +4,13 @@ import type {
   DSContentCellRangerMtx,
   DSContentFasta,
   DSContentFastq,
+  DSContentH5,
+  DSContentH5ad,
   DSContentMultilaneFastq,
   DSContentMultiplexedFastq,
-  DSContentH5ad,
-  DSContentH5,
-  DSContentSeurat,
   DSContentMultiSampleH5ad,
   DSContentMultiSampleSeurat,
+  DSContentSeurat,
   DSContentTaggedAb1,
   DSContentTaggedFastq,
   DSContentTaggedXsv,
@@ -23,6 +23,7 @@ import type { ImportFileHandle } from "@platforma-sdk/model";
 import { getFileNameFromHandle, getFilePathFromHandle, uniquePlId } from "@platforma-sdk/model";
 import type { ListOption } from "@platforma-sdk/ui-vue";
 import {
+  PlAlert,
   PlBtnGhost,
   PlBtnGroup,
   PlBtnPrimary,
@@ -47,7 +48,6 @@ import {
   useParsedFiles,
   usePatternCompilation,
 } from "./datasets";
-import { parseCsvMapFromHandles } from "../util";
 import type { FileContentType, FileNamePattern } from "./file_name_parser";
 import {
   collectReadIndices,
@@ -114,7 +114,6 @@ type ImportDatasetDialogData = {
    * Sample column name for MultiSampleH5AD datasets
    */
   sampleColumnName: string;
-  loadingColumns: boolean;
 };
 
 const emit = defineEmits<{ onClose: [navigated: boolean] }>();
@@ -151,6 +150,10 @@ const reactiveFileContent = ReactiveFileContent.useGlobal();
 const navigated = ref(false);
 
 function doClose() {
+  // The files to preprocess only feed this dialog's column list
+  if (app.model.data.h5adFilesToPreprocess.length > 0) app.model.data.h5adFilesToPreprocess = [];
+  if (app.model.data.seuratFilesToPreprocess.length > 0)
+    app.model.data.seuratFilesToPreprocess = [];
   app.showImportDataset = false;
   emit("onClose", navigated.value);
 }
@@ -170,10 +173,10 @@ const data = reactive<ImportDatasetDialogData>({
   datasetDialogOpened: false,
   importing: false,
   sampleColumnName:
-    targetDs.value?.content.type === "MultiSampleH5AD"
+    targetDs.value?.content.type === "MultiSampleH5AD" ||
+    targetDs.value?.content.type === "MultiSampleSeurat"
       ? (targetDs.value.content.sampleColumnName ?? "")
       : "",
-  loadingColumns: false,
 });
 
 const isOneOfDialogsOpened = computed(() => data.fileDialogOpened || data.datasetDialogOpened);
@@ -198,9 +201,20 @@ const tagMismatchError = computed(() => {
   return `Pattern tags must match the dataset tags: ${expected.join(", ")}`;
 });
 
+/** Dataset type the last valid pattern implied */
+let patternDatasetType: DSType | undefined;
+
 function updateDataFromPattern(v: FileNamePattern | undefined) {
   if (v && !addingToFixedDataset.value) {
-    data.datasetType = v.datasetType;
+    // Keep the selected type while it fits the pattern and the type the pattern implies is unchanged
+    const selected = data.datasetType && datasetTypes[data.datasetType];
+    const keepType =
+      selected !== undefined &&
+      selected.fileType === v.fileContentType &&
+      selected.hasTags === v.hasTagMatchers &&
+      v.datasetType === patternDatasetType;
+    if (!keepType) data.datasetType = v.datasetType;
+    patternDatasetType = v.datasetType;
     data.fileType = v.fileContentType;
     data.hasTags = v.hasTagMatchers;
     data.gzipped = v.gzipped;
@@ -273,6 +287,12 @@ function addFiles(files: ImportFileHandle[]) {
     for (const file of files) {
       if (!app.model.data.h5adFilesToPreprocess.includes(file)) {
         app.model.data.h5adFilesToPreprocess.push(file);
+      }
+    }
+  } else if (datasetType === "MultiSampleSeurat") {
+    for (const file of files) {
+      if (!app.model.data.seuratFilesToPreprocess.includes(file)) {
+        app.model.data.seuratFilesToPreprocess.push(file);
       }
     }
   }
@@ -636,6 +656,10 @@ async function addToExistingDataset() {
       break;
     case "MultiSampleSeurat":
       addMultiSampleSeuratDatasetContent(dataset.content.groupLabels, dataset.content.data);
+      // Update sample column name if it was changed
+      if (data.sampleColumnName) {
+        dataset.content.sampleColumnName = data.sampleColumnName;
+      }
       break;
     case "BulkCountMatrix":
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
@@ -926,46 +950,62 @@ async function createNewDataset() {
   navigated.value = true;
 }
 
-const availableColumnsOptions = computed<ListOption<string>[]>(() => {
-  const columns = app.model.outputs.availableColumns;
-  if (!columns) return [];
-
-  // Get file handles from current dataset
-  const currentFileHandles = new Set(parsedFiles.value.map((f) => f.handle));
-
-  // Parse all CSV files
-  const parsedColumns = parseCsvMapFromHandles(reactiveFileContent, columns);
-  if (!parsedColumns) return [];
-
-  // Get all unique column names from files in current dataset only
-  const columnSet = new Set<string>();
-  for (const [fileHandle, columnNames] of Object.entries(parsedColumns)) {
-    // Only include columns from files in the current dataset
-    if (currentFileHandles.has(fileHandle as ImportFileHandle)) {
-      for (const col of columnNames) {
-        columnSet.add(col);
-      }
-    }
-  }
-
-  return Array.from(columnSet).map((col) => ({ value: col, label: col }));
-});
-
-// Watch for when files are selected for MultiSampleH5AD or MultiSampleSeurat datasets to start parsing
-watch(
-  () => [data.files.length, data.datasetType] as const,
-  ([filesCount, dsType]) => {
-    if ((dsType === "MultiSampleH5AD" || dsType === "MultiSampleSeurat") && filesCount > 0) {
-      data.loadingColumns = true;
-    }
-  },
+const isMultiSampleType = computed(
+  () => data.datasetType === "MultiSampleH5AD" || data.datasetType === "MultiSampleSeurat",
 );
 
-// Watch for when columns become available to stop parsing indicator
+/** Files that match the pattern; only these are imported */
+const matchedFiles = computed(() => parsedFiles.value.filter((f) => f.match));
+
+/** Column names per matched file, keyed by file handle; a file is absent until its list has loaded */
+const columnsByFile = computed(() => {
+  const columns = app.model.outputs.availableColumns ?? {};
+  const result: Record<string, string[]> = {};
+  for (const { handle } of matchedFiles.value) {
+    const columnsCsv = columns[handle];
+    // ReactiveFileContent never loads a 0-byte file, so its content is taken as empty
+    const content =
+      columnsCsv?.size === 0 ? "" : reactiveFileContent.getContentString(columnsCsv?.handle)?.value;
+    if (content !== undefined)
+      result[handle] = content
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
+  }
+  return result;
+});
+
+/** Error of the prerun that lists the columns, e.g. a file that is not a valid H5AD */
+const columnsError = computed(() => app.model.outputErrors.availableColumns?.message);
+
+/** Names of the selected files the error is about; the error text holds their upload handles */
+const unreadableFileNames = computed(() =>
+  parsedFiles.value.filter((f) => columnsError.value?.includes(f.handle)).map((f) => f.fileName),
+);
+
+/** Waiting until every matched file has its column list */
+const loadingColumns = computed(() =>
+  matchedFiles.value.some((f) => !(f.handle in columnsByFile.value)),
+);
+
+/** Matched files whose column list is empty */
+const filesWithoutColumns = computed(() =>
+  matchedFiles.value
+    .filter((f) => columnsByFile.value[f.handle]?.length === 0)
+    .map((f) => f.fileName),
+);
+
+// Get all unique column names from the matched files only
+const availableColumnsOptions = computed<ListOption<string>[]>(() =>
+  [...new Set(Object.values(columnsByFile.value).flat())].map((col) => ({
+    value: col,
+    label: col,
+  })),
+);
+
+// Watch for when columns become available to pick a sample column
 watch(availableColumnsOptions, (options) => {
   if (options.length > 0) {
-    data.loadingColumns = false;
-
     // Auto-select a default sample column name only if not already set
     // (e.g., from existing dataset or previous selection)
     if (!data.sampleColumnName) {
@@ -984,7 +1024,9 @@ const canCreateOrAdd = computed(() => {
     tagMismatchError.value === undefined &&
     (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
     data.datasetType !== undefined &&
-    !data.loadingColumns &&
+    // A multisample dataset needs a non-empty column list for every matched file
+    (!isMultiSampleType.value ||
+      matchedFiles.value.every((f) => (columnsByFile.value[f.handle]?.length ?? 0) > 0)) &&
     // This prevents selecting fasta as type while having read index matcher in pattern
     (data.readIndices.length !== 0 ||
       (compiledPattern.value?.hasReadIndexMatcher === false &&
@@ -1039,22 +1081,35 @@ const canCreateOrAdd = computed(() => {
 
     <PlTextField v-model="data.pattern" label="Pattern" :error="patternError ?? tagMismatchError" />
 
-    <div v-if="data.datasetType === 'MultiSampleH5AD' || data.datasetType === 'MultiSampleSeurat'">
-      <div v-if="data.loadingColumns">Parsing files to extract column information...</div>
-      <PlRow v-else-if="availableColumnsOptions.length > 0" alignCenter>
-        <PlDropdown
-          v-model="data.sampleColumnName"
-          :label="
-            data.datasetType === 'MultiSampleH5AD'
-              ? 'Sample Column Name in anndata.obs'
-              : 'Sample Column Name in Seurat metadata'
-          "
-          :options="availableColumnsOptions"
-          :error="undefined"
-          class="flex-grow-1"
-        />
-      </PlRow>
-    </div>
+    <template v-if="isMultiSampleType">
+      <PlAlert v-if="columnsError" type="error">
+        Could not read
+        {{ unreadableFileNames.length > 0 ? unreadableFileNames.join(", ") : "the files" }}. Please
+        check that each file is a valid
+        {{ data.datasetType === "MultiSampleH5AD" ? "H5AD" : "Seurat RDS" }} file.
+      </PlAlert>
+      <div v-else-if="loadingColumns">Parsing files to extract column information...</div>
+      <template v-else>
+        <PlAlert v-if="filesWithoutColumns.length > 0" type="warn">
+          No columns found in
+          {{ data.datasetType === "MultiSampleH5AD" ? "anndata.obs" : "the Seurat metadata" }} of
+          {{ filesWithoutColumns.join(", ") }}.
+        </PlAlert>
+        <PlRow v-if="availableColumnsOptions.length > 0" alignCenter>
+          <PlDropdown
+            v-model="data.sampleColumnName"
+            :label="
+              data.datasetType === 'MultiSampleH5AD'
+                ? 'Sample Column Name in anndata.obs'
+                : 'Sample Column Name in Seurat metadata'
+            "
+            :options="availableColumnsOptions"
+            :error="undefined"
+            class="flex-grow-1"
+          />
+        </PlRow>
+      </template>
+    </template>
 
     <ParsedFilesList :items="parsedFiles" />
 
