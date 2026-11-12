@@ -11,6 +11,36 @@ export function columnNamesMatch(existingColumn: string, importColumn: string): 
 }
 
 /**
+ * Why `label` cannot name a metadata column, or `undefined` when it can.
+ * `otherColumns` excludes the column being renamed, so a column may keep its
+ * own label or change only its case. A global metadata column is exported
+ * under its label, so a label another column carries would export the two as
+ * one and lose each other's values.
+ */
+export function metadataLabelIssue(
+  label: string,
+  otherColumns: readonly MTColumn[],
+): string | undefined {
+  if (label.trim() === "") return "Column name is required";
+  if (otherColumns.some((mc) => labelKey(mc.label) === labelKey(label))) {
+    return `A column named "${label.trim()}" already exists`;
+  }
+  return undefined;
+}
+
+/**
+ * The label offered for a new metadata column: "Metadata Column N", counting
+ * from one past the number of columns and skipping labels already taken.
+ */
+export function defaultMetadataLabel(metadata: readonly MTColumn[]): string {
+  const taken = new Set(metadata.map((mc) => labelKey(mc.label)));
+  for (let n = metadata.length + 1; ; n++) {
+    const label = `Metadata Column ${n}`;
+    if (!taken.has(labelKey(label))) return label;
+  }
+}
+
+/**
  * Whether values of an import column of type `source` can be written into an
  * existing metadata column of type `target`. Strings take anything (numbers
  * are stringified on write), doubles take integers, integers take only integers.

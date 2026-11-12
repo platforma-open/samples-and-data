@@ -3,7 +3,9 @@ import { describe, expect, test } from "vitest";
 import type { ImportResult } from "../dataimport";
 import {
   defaultColumnMapping,
+  defaultMetadataLabel,
   isColumnTypeCompatible,
+  metadataLabelIssue,
   type MetadataColumnMapping,
   populateMetadataFromRow,
   processMetadataColumns,
@@ -41,6 +43,39 @@ describe("isColumnTypeCompatible", () => {
     expect(isColumnTypeCompatible("Double", "String")).toBe(false);
     expect(isColumnTypeCompatible("Long", "Long")).toBe(true);
     expect(isColumnTypeCompatible("Long", "Double")).toBe(false);
+  });
+});
+
+describe("metadataLabelIssue", () => {
+  const others = [column("a", "Tissue"), column("b", "Age", "Long")];
+
+  test("a label no other column carries is accepted", () => {
+    expect(metadataLabelIssue("Batch", others)).toBeUndefined();
+  });
+
+  test("an empty or blank label is rejected", () => {
+    expect(metadataLabelIssue("", others)).toBe("Column name is required");
+    expect(metadataLabelIssue("   ", others)).toBe("Column name is required");
+  });
+
+  test("a label differing from a taken one only in case or spaces is rejected", () => {
+    expect(metadataLabelIssue(" tissue ", others)).toBe('A column named "tissue" already exists');
+  });
+
+  test("a column renamed to its own label in another case is accepted once it is excluded", () => {
+    expect(metadataLabelIssue("TISSUE", [column("b", "Age", "Long")])).toBeUndefined();
+  });
+});
+
+describe("defaultMetadataLabel", () => {
+  test("counts from one past the number of columns", () => {
+    expect(defaultMetadataLabel([])).toBe("Metadata Column 1");
+    expect(defaultMetadataLabel([column("a", "Tissue")])).toBe("Metadata Column 2");
+  });
+
+  test("skips a label a column already carries", () => {
+    const metadata = [column("a", "Tissue"), column("b", "metadata column 3")];
+    expect(defaultMetadataLabel(metadata)).toBe("Metadata Column 4");
   });
 });
 
