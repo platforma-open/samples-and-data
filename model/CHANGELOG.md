@@ -1,5 +1,7 @@
 # @platforma-open/milaboratories.samples-and-data.model
 
+## 2.14.0
+
 ## 2.12.0
 
 ### Minor Changes
