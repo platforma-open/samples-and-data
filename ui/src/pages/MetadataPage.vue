@@ -34,7 +34,7 @@ import {
   PlProgressCell,
   PlTextField,
 } from "@platforma-sdk/ui-vue";
-import { computed, reactive, shallowRef, useCssModule } from "vue";
+import { computed, shallowRef, useCssModule } from "vue";
 import { useApp } from "../app";
 import DatasetCell from "../components/DatasetCell.vue";
 import ImportErrorDialog from "../components/ImportErrorDialog.vue";
@@ -43,6 +43,7 @@ import { useMetadataImport } from "../composables/useMetadataImport";
 import ImportDatasetDialog from "../dialogs/ImportDatasetDialog.vue";
 import ImportMetadataModal from "../dialogs/ImportMetadataDialog.vue";
 import SyncDatasetDialog from "../dialogs/SyncDatasetDialog.vue";
+import { defaultMetadataLabel, metadataLabelIssue } from "../utils/metadata";
 
 const styles = useCssModule();
 
@@ -64,13 +65,19 @@ const {
   clearErrorMessage,
 } = useMetadataImport();
 
-const data = reactive<{
-  showAddColumnDialog: boolean;
-  newColumnName: string;
-  newColumnType?: MTValueType;
-}>({
-  showAddColumnDialog: false,
-  newColumnName: "",
+type ColumnDialog = { kind: "add"; valueType: MTValueType } | { kind: "rename"; columnId: string };
+
+const columnDialog = shallowRef<ColumnDialog>();
+const columnName = shallowRef("");
+
+const columnNameIssue = computed(() => {
+  const dialog = columnDialog.value;
+  if (dialog === undefined) return undefined;
+  const otherColumns =
+    dialog.kind === "rename"
+      ? app.model.data.metadata.filter((mc) => mc.id !== dialog.columnId)
+      : app.model.data.metadata;
+  return metadataLabelIssue(columnName.value, otherColumns);
 });
 
 ModuleRegistry.registerModules([ClientSideRowModelModule, MenuModule]);
@@ -80,16 +87,29 @@ const onGridReady = (params: GridReadyEvent) => {
   gridApi.value = params.api;
 };
 
-function showAddColumnDialog(type: MTValueType) {
-  data.showAddColumnDialog = true;
-  data.newColumnName = `Metadata Column ${Object.values(app.model.data.metadata).length + 1}`;
-  data.newColumnType = type;
+function openAddColumnDialog(valueType: MTValueType) {
+  columnDialog.value = { kind: "add", valueType };
+  columnName.value = defaultMetadataLabel(app.model.data.metadata);
 }
 
-function closeAddColumnDialog() {
-  data.showAddColumnDialog = false;
-  data.newColumnName = "";
-  data.newColumnType = undefined;
+function openRenameColumnDialog(columnId: string) {
+  const column = notEmpty(app.model.data.metadata.find((mc) => mc.id === columnId));
+  columnDialog.value = { kind: "rename", columnId };
+  columnName.value = column.label;
+}
+
+function closeColumnDialog() {
+  columnDialog.value = undefined;
+  columnName.value = "";
+}
+
+async function submitColumnDialog() {
+  const dialog = columnDialog.value;
+  if (dialog === undefined || columnNameIssue.value !== undefined) return;
+  const name = columnName.value.trim();
+  closeColumnDialog();
+  if (dialog.kind === "add") await addColumn(dialog.valueType, name);
+  else await renameColumn(dialog.columnId, name);
 }
 
 async function addColumn(valueType: MTValueType, name: string) {
@@ -103,6 +123,12 @@ async function addColumn(valueType: MTValueType, name: string) {
     data: {},
   });
 
+  await app.allSettled();
+}
+
+async function renameColumn(columnId: string, name: string) {
+  const column = notEmpty(app.model.data.metadata.find((mc) => mc.id === columnId));
+  column.label = name;
   await app.allSettled();
 }
 
@@ -324,22 +350,27 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
       return [
         {
           name: "Add String Column",
-          action: (_) => showAddColumnDialog("String"),
+          action: (_) => openAddColumnDialog("String"),
         },
         {
           name: "Add Integer Column",
-          action: (_) => showAddColumnDialog("Long"),
+          action: (_) => openAddColumnDialog("Long"),
         },
         {
           name: "Add Numerical Column",
-          action: (_) => showAddColumnDialog("Double"),
+          action: (_) => openAddColumnDialog("Double"),
         },
       ];
     } else if (columnId.startsWith("meta.")) {
       const metaColumnId = columnId.slice(5);
+      const headerName = params?.column?.getColDef().headerName;
       return [
         {
-          name: `Delete ${params?.column?.getColDef().headerName}`,
+          name: `Rename ${headerName}`,
+          action: (_) => openRenameColumnDialog(metaColumnId),
+        },
+        {
+          name: `Delete ${headerName}`,
           action: (_) => deleteMetaColumn(metaColumnId),
         },
       ];
@@ -433,30 +464,27 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
   />
 
   <PlDialogModal
-    :model-value="data.showAddColumnDialog"
+    :model-value="columnDialog !== undefined"
     closable
-    @update:model-value="closeAddColumnDialog"
+    @update:model-value="closeColumnDialog"
   >
-    <template #title>Add Column</template>
+    <template #title>
+      {{ columnDialog?.kind === "rename" ? "Rename Column" : "Add Column" }}
+    </template>
 
     <PlTextField
-      v-model="data.newColumnName"
+      v-model="columnName"
       label="Specify Column Name"
       placeholder="Column Name"
+      :error="columnNameIssue"
     />
 
     <template #actions>
-      <PlBtnPrimary
-        :disabled="data.newColumnName.length === 0 || !data.newColumnType"
-        @click="
-          addColumn(data.newColumnType!, data.newColumnName);
-          closeAddColumnDialog();
-        "
-      >
-        Create
+      <PlBtnPrimary :disabled="columnNameIssue !== undefined" @click="submitColumnDialog">
+        {{ columnDialog?.kind === "rename" ? "Rename" : "Create" }}
       </PlBtnPrimary>
 
-      <PlBtnGhost @click.stop="closeAddColumnDialog"> Cancel </PlBtnGhost>
+      <PlBtnGhost @click.stop="closeColumnDialog"> Cancel </PlBtnGhost>
     </template>
   </PlDialogModal>
 
