@@ -89,6 +89,8 @@ wf.body(func(args) {
 		}
 	}
 
+	groupLabels := {}
+
 	for dataset in args.datasets {
 		proc := dsProcessors[dataset.content.type]
 		if is_undefined(proc) {
@@ -118,23 +120,8 @@ wf.body(func(args) {
 				}
 			}
 
-			// group labels column
-			ds["dataset." + dataset.id + ".sampleGroupLabels"] = {
-				spec: {
-					kind: "PColumn",
-					name: "pl7.app/label",
-					valueType: "String",
-					domain: {
-						"pl7.app/block": blockId,
-						"pl7.app/dataset": dataset.id
-					},
-					annotations: {
-						"pl7.app/label": "Sample Group",
-						"pl7.app/isLabel": "true"
-					},
-					axesSpec: [datasetGroupIdAxis]
-				},
-				data: util.createJsonPColumnData(dataset.content.groupLabels)
+			for groupId, label in dataset.content.groupLabels {
+				groupLabels[groupId] = label
 			}
 
 		} else {
@@ -143,6 +130,23 @@ wf.body(func(args) {
 		for k, v in ds {
 			exports.add(k, trace.inject(v.spec), v.data)
 		}
+	}
+
+	// group labels column: one column for the groups of all grouped datasets
+	if len(groupLabels) > 0 {
+		exports.add("sampleGroupLabels", {
+			kind: "PColumn",
+			name: "pl7.app/label",
+			valueType: "String",
+			domain: {
+				"pl7.app/block": blockId
+			},
+			annotations: {
+				"pl7.app/label": "Sample Group",
+				"pl7.app/isLabel": "true"
+			},
+			axesSpec: [groupIdAxis]
+		}, util.createJsonPColumnData(groupLabels))
 	}
 
 	return {

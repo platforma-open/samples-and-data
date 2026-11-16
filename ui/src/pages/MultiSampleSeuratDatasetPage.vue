@@ -106,26 +106,9 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
         params.data?.groupId ? dataset.value.content.data[params.data.groupId] : undefined,
       valueSetter: (params) => {
         const group = params.data.groupId;
-        const oldValue = dataset.value.content.data[group];
-        const newValue = params.newValue ?? null;
 
         // Update the dataset data
-        dataset.value.content.data[group] = newValue;
-
-        // Update seuratFilesToPreprocess
-        if (oldValue && oldValue !== newValue) {
-          // Remove old file from seuratFilesToPreprocess
-          const index = app.model.data.seuratFilesToPreprocess.indexOf(oldValue);
-          if (index !== -1) {
-            app.model.data.seuratFilesToPreprocess.splice(index, 1);
-          }
-        }
-        if (newValue && newValue !== oldValue) {
-          // Add new file to seuratFilesToPreprocess if not already present
-          if (!app.model.data.seuratFilesToPreprocess.includes(newValue)) {
-            app.model.data.seuratFilesToPreprocess.push(newValue);
-          }
-        }
+        dataset.value.content.data[group] = params.newValue ?? null;
 
         return true;
       },

@@ -24,7 +24,7 @@ jobs:
     with:
       app-name: 'Block: Samples And Data'
       app-name-slug: 'block-samples-and-data'
-      node-version: '22.x'
+      node-version: '24.22.1'
       gha-runner-label: hz-ubuntu-dind
       build-script-name: 'build:dev-local'
       build-before-publish-script-name: 'build:release'

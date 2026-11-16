@@ -2,7 +2,14 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.2/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [],
+  "fixed": [
+    [
+      "@platforma-open/milaboratories.samples-and-data",
+      "@platforma-open/milaboratories.samples-and-data.model",
+      "@platforma-open/milaboratories.samples-and-data.ui",
+      "@platforma-open/milaboratories.samples-and-data.workflow"
+    ]
+  ],
   "linked": [],
   "access": "restricted",
   "baseBranch": "main",
