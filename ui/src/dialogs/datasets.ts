@@ -44,6 +44,11 @@ export const datasetTypes: Record<
     fileType: "Xsv",
     hasTags: false,
   },
+  MultiSampleXsv: {
+    label: "Multisample CSV/TSV",
+    fileType: "Xsv",
+    hasTags: false,
+  },
   TaggedXsv: {
     label: "Tagged per sample CSV/TSV",
     fileType: "Xsv",
@@ -86,11 +91,6 @@ export const datasetTypes: Record<
   },
   BulkCountMatrix: {
     label: "Bulk count matrix",
-    fileType: "Xsv",
-    hasTags: false,
-  },
-  MultiSampleXsv: {
-    label: "Multisample CSV/TSV",
     fileType: "Xsv",
     hasTags: false,
   },
