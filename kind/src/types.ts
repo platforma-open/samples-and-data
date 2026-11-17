@@ -220,6 +220,13 @@ export interface DSContentMultiSampleSeurat extends WithSampleGroupsData<ImportF
   sampleColumnName?: string;
 }
 
+/** A long CSV/TSV table: one row per sample × record, samples told apart by one column. */
+export interface DSContentMultiSampleXsv extends WithSampleGroupsData<ImportFileHandle | null> {
+  type: "MultiSampleXsv";
+  xsvType: "csv" | "tsv";
+  sampleColumnName: string;
+}
+
 /// --------------- End of Datasets --------------- ///
 
 export type DSContent =
@@ -237,7 +244,8 @@ export type DSContent =
   | DSContentH5
   | DSContentSeurat
   | DSContentMultiSampleH5ad
-  | DSContentMultiSampleSeurat;
+  | DSContentMultiSampleSeurat
+  | DSContentMultiSampleXsv;
 
 export interface Dataset<ContentType> {
   id: PlId;
@@ -261,6 +269,7 @@ export type DSH5 = Dataset<DSContentH5>;
 export type DSSeurat = Dataset<DSContentSeurat>;
 export type DSMultiSampleH5ad = Dataset<DSContentMultiSampleH5ad>;
 export type DSMultiSampleSeurat = Dataset<DSContentMultiSampleSeurat>;
+export type DSMultiSampleXsv = Dataset<DSContentMultiSampleXsv>;
 
 export type DSType = DSAny["content"]["type"];
 
@@ -268,4 +277,5 @@ export type DSGrouped =
   | DSBulkCountMatrix
   | DSMultiSampleH5ad
   | DSMultiplexedFastq
-  | DSMultiSampleSeurat;
+  | DSMultiSampleSeurat
+  | DSMultiSampleXsv;

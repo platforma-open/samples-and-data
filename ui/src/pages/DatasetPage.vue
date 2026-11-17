@@ -27,6 +27,7 @@ import H5DatasetPage from "./H5DatasetPage.vue";
 import SeuratDatasetPage from "./SeuratDatasetPage.vue";
 import MultiSampleH5adDatasetPage from "./MultiSampleH5adDatasetPage.vue";
 import MultiSampleSeuratDatasetPage from "./MultiSampleSeuratDatasetPage.vue";
+import MultiSampleXsvDatasetPage from "./MultiSampleXsvDatasetPage.vue";
 import CellRangerMtxDatasetPage from "./CellRangerMtxDatasetPage.vue";
 
 const app = useApp();
@@ -123,6 +124,9 @@ const datasetTypeLabel = datasetTypeLabels[dataset.content.type];
     </template>
     <template v-else-if="dataset.content.type === 'BulkCountMatrix'">
       <BulkCountMatrixDatasetPage />
+    </template>
+    <template v-else-if="dataset.content.type === 'MultiSampleXsv'">
+      <MultiSampleXsvDatasetPage />
     </template>
   </PlBlockPage>
 

@@ -1,0 +1,41 @@
+test := import("@platforma-sdk/workflow-tengo:test")
+
+xsvParse := import(":xsv-parse")
+
+Test_header_columns_keep_file_order := func() {
+	test.isEqual(["sample", "sequence", "count"], xsvParse.headerColumns("sample\tsequence\tcount\n"))
+}
+
+Test_header_reads_only_the_first_line := func() {
+	test.isEqual(["a", "b"], xsvParse.headerColumns("a\tb\r\nx\ty\n"))
+}
+
+Test_header_quoted_fields_are_unquoted := func() {
+	test.isEqual(["a\tb", "say \"hi\"", "c"], xsvParse.headerColumns("\"a\tb\"\t\"say \"\"hi\"\"\"\tc\n"))
+}
+
+Test_header_keeps_non_ascii_names := func() {
+	test.isEqual(["muestra", "señal", "\"x\""], xsvParse.headerColumns("muestra\tseñal\t\"\"\"x\"\"\"\n"))
+}
+
+Test_header_keeps_empty_names := func() {
+	test.isEqual(["a", "", "c"], xsvParse.headerColumns("a\t\"\"\tc\n"))
+}
+
+Test_header_of_an_empty_file_is_empty := func() {
+	test.isEqual([], xsvParse.headerColumns(""))
+}
+
+Test_values_are_sorted_as_text := func() {
+	values := xsvParse.sortedValues("{\"value\":\"S3\"}\n{\"value\":\"1\"}\n{\"value\":\"01\"}\n")
+
+	test.isEqual(["01", "1", "S3"], values)
+}
+
+Test_values_skip_blank_lines := func() {
+	test.isEqual(["S1"], xsvParse.sortedValues("\n{\"value\":\"S1\"}\n\n"))
+}
+
+Test_values_keep_newlines_inside_a_value := func() {
+	test.isEqual(["a\nb"], xsvParse.sortedValues("{\"value\":\"a\\nb\"}\n"))
+}

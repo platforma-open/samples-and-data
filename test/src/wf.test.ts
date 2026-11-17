@@ -15,6 +15,7 @@ blockTest("empty inputs", { timeout: 30000 }, async ({ rawPrj: project, helpers,
     prerunFileImports: { ok: true, stable: true, value: {} },
     sampleGroups: { ok: true, stable: true, value: {} },
     availableColumns: { ok: true, stable: true, value: {} },
+    availableXsvColumns: { ok: true, stable: true, value: {} },
     metadataFile: { ok: true, stable: true, value: undefined },
   });
 });
@@ -64,6 +65,7 @@ blockTest("simple input", async ({ rawPrj: project, helpers, expect }) => {
       ],
       h5adFilesToPreprocess: [],
       seuratFilesToPreprocess: [],
+      xsvFilesToPreprocess: [],
       suggestedImport: false,
     } satisfies BlockData,
   });
@@ -125,6 +127,7 @@ blockTest("simple multilane input", async ({ rawPrj: project, helpers, expect })
       ],
       h5adFilesToPreprocess: [],
       seuratFilesToPreprocess: [],
+      xsvFilesToPreprocess: [],
       suggestedImport: false,
     } satisfies BlockData,
   });
@@ -186,6 +189,7 @@ blockTest(
         ],
         h5adFilesToPreprocess: [h5adHandle],
         seuratFilesToPreprocess: [],
+        xsvFilesToPreprocess: [],
         suggestedImport: false,
       } satisfies BlockData,
     });
@@ -208,6 +212,85 @@ blockTest(
       expect(sampleGroupsValue[dataset1Id]).toBeDefined();
       expect(sampleGroupsValue[dataset1Id][group1Id]).toBeDefined();
     }
+  },
+);
+
+blockTest(
+  "multisample csv/tsv input",
+  { timeout: 100000 },
+  async ({ rawPrj: project, helpers, expect }) => {
+    const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
+    const datasetId = uniquePlId();
+    const group1Id = uniquePlId();
+    const group2Id = uniquePlId();
+    const s1 = uniquePlId();
+    const s2 = uniquePlId();
+    const s3 = uniquePlId();
+    const s01 = uniquePlId();
+    const sOne = uniquePlId();
+
+    // pool1: S1, S2, S3 and a row with an empty sample value; pool2: S3, "01" and "1"
+    const pool1Handle = await helpers.getLocalFileHandle("./assets/multisample-pool1.tsv");
+    const pool2Handle = await helpers.getLocalFileHandle("./assets/multisample-pool2.tsv");
+    const csvGzHandle = await helpers.getLocalFileHandle("./assets/multisample-header.csv.gz");
+
+    await project.mutateBlockStorage(blockId, {
+      operation: "update-block-data",
+      value: {
+        metadata: [],
+        sampleIds: [s1, s2, s3, s01, sOne],
+        sampleLabelColumnLabel: "Sample Name",
+        sampleLabels: { [s1]: "S1", [s2]: "S2", [s3]: "S3", [s01]: "01", [sOne]: "1" },
+        datasets: [
+          {
+            id: datasetId,
+            label: "Multisample table",
+            content: {
+              type: "MultiSampleXsv",
+              xsvType: "tsv",
+              sampleColumnName: "sample",
+              gzipped: false,
+              data: { [group1Id]: pool1Handle, [group2Id]: pool2Handle },
+              sampleGroups: {
+                [group1Id]: { [s1]: "S1", [s2]: "S2", [s3]: "S3" },
+                [group2Id]: { [s3]: "S3", [s01]: "01", [sOne]: "1" },
+              },
+              groupLabels: { [group1Id]: "pool1", [group2Id]: "pool2" },
+            },
+          },
+        ],
+        h5adFilesToPreprocess: [],
+        seuratFilesToPreprocess: [],
+        xsvFilesToPreprocess: [
+          { file: pool1Handle, xsvType: "tsv", gzipped: false },
+          { file: csvGzHandle, xsvType: "csv", gzipped: true },
+        ],
+        suggestedImport: false,
+      } satisfies BlockData,
+    });
+    await project.runBlock(blockId);
+    await helpers.awaitBlockDone(blockId);
+    const stableState = await project.getBlockState(blockId).awaitStableValue();
+
+    // Distinct values per file, read as text and sorted; the empty value is skipped
+    expect(stableState.outputs?.sampleGroups).toMatchObject({
+      ok: true,
+      value: {
+        [datasetId]: {
+          [group1Id]: ["S1", "S2", "S3"],
+          [group2Id]: ["01", "1", "S3"],
+        },
+      },
+    });
+
+    // Header columns in file order, gzip-compressed CSV included
+    expect(stableState.outputs?.availableXsvColumns).toMatchObject({
+      ok: true,
+      value: {
+        [pool1Handle]: ["sample", "sequence", "count"],
+        [csvGzHandle]: ["sample", "sequence", "count"],
+      },
+    });
   },
 );
 
@@ -259,6 +342,7 @@ blockTest(
         ],
         h5adFilesToPreprocess: [],
         seuratFilesToPreprocess: [seuratHandle],
+        xsvFilesToPreprocess: [],
         suggestedImport: false,
       } satisfies BlockData,
     });
@@ -316,6 +400,7 @@ blockTest("simple h5 input", async ({ rawPrj: project, ml: _ml, helpers, expect 
       ],
       h5adFilesToPreprocess: [],
       seuratFilesToPreprocess: [],
+      xsvFilesToPreprocess: [],
       suggestedImport: false,
     } satisfies BlockData,
   });
@@ -394,6 +479,7 @@ blockTest(
         ],
         h5adFilesToPreprocess: [],
         seuratFilesToPreprocess: [],
+        xsvFilesToPreprocess: [],
         suggestedImport: false,
       } satisfies BlockData,
     });
@@ -492,6 +578,7 @@ blockTest(
         ],
         h5adFilesToPreprocess: [],
         seuratFilesToPreprocess: [],
+        xsvFilesToPreprocess: [],
         suggestedImport: false,
       } satisfies BlockData,
     });

@@ -42,10 +42,12 @@ const multiplexedFastqDatasets = computed(
     datasets.value.filter((ds) => ds.content.type === "MultiplexedFastq") as DSMultiplexedFastq[],
 );
 
-// Datasets that support auto-extraction (BulkCountMatrix, MultiSampleH5AD, MultiSampleSeurat)
+// Datasets that support auto-extraction (BulkCountMatrix, MultiSampleH5AD, MultiSampleSeurat, MultiSampleXsv)
 const autoExtractDatasets = computed(() =>
   datasets.value.filter((ds) =>
-    ["BulkCountMatrix", "MultiSampleH5AD", "MultiSampleSeurat"].includes(ds.content.type),
+    ["BulkCountMatrix", "MultiSampleH5AD", "MultiSampleSeurat", "MultiSampleXsv"].includes(
+      ds.content.type,
+    ),
   ),
 );
 
@@ -192,8 +194,8 @@ const parsedSampleGroups = computed(() => {
     const dataset = app.model.data.datasets.find((ds) => ds.id === datasetId);
     if (!dataset) continue;
 
-    // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
-    if (dataset.content.type === "BulkCountMatrix") {
+    // BulkCountMatrix and MultiSampleXsv: data is already deserialized as Record<PlId, PlId[]>
+    if (dataset.content.type === "BulkCountMatrix" || dataset.content.type === "MultiSampleXsv") {
       result[datasetId as PlId] = groups as Record<PlId, PlId[]>;
     } else if (
       dataset.content.type === "MultiSampleH5AD" ||
@@ -274,6 +276,9 @@ function syncGroupsToDataset(dataset: GroupedDataset): void {
   app.allSettled();
 }
 
+/** Error of the prerun that extracts samples, e.g. a sample column missing from a file */
+const sampleGroupsError = computed(() => app.model.outputErrors.sampleGroups?.message);
+
 const loadingDatasets = computed(() =>
   autoExtractDatasets.value.filter((ds) => !sampleGroupsAreCalculated(ds)),
 );
@@ -282,12 +287,14 @@ const datasetsToUpdate = computed(() =>
   autoExtractDatasets.value.filter((ds) => !sampleGroupsAreSynced(ds)),
 );
 
-const nSamples = computed(() =>
-  datasetsToUpdate.value
-    .flatMap((ds) =>
-      Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).map((s) => s?.length ?? 0),
-    )
-    .reduce((a, b) => a + b, 0),
+// Distinct sample names: a name found in several file groups becomes one sample (getOrCreateSample)
+const nSamples = computed(
+  () =>
+    new Set(
+      datasetsToUpdate.value.flatMap((ds) =>
+        Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).flatMap((s) => s ?? []),
+      ),
+    ).size,
 );
 
 async function updateSamples() {
@@ -307,8 +314,11 @@ async function updateSamples() {
     </div>
   </PlAlert>
 
-  <!-- Auto-extract datasets: show progress or import button -->
-  <div v-if="loadingDatasets.length > 0" class="progress-container">
+  <!-- Auto-extract datasets: show the extraction error, progress or import button -->
+  <PlAlert v-if="sampleGroupsError && autoExtractDatasets.length > 0" type="error">
+    Could not extract samples: {{ sampleGroupsError }}
+  </PlAlert>
+  <div v-else-if="loadingDatasets.length > 0" class="progress-container">
     <PlProgressCell stage="running" step="Extracting samples..." />
   </div>
   <PlAlert v-else-if="datasetsToUpdate.length > 0" type="success">

@@ -22,6 +22,7 @@ function blockData(datasets: DSAny[]): BlockData {
     sampleLabels: { [sample]: "S1" },
     h5adFilesToPreprocess: [],
     seuratFilesToPreprocess: [],
+    xsvFilesToPreprocess: [],
     metadataUploadHandle: undefined,
     suggestedImport: false,
   };

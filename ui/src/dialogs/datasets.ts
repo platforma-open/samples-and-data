@@ -89,6 +89,11 @@ export const datasetTypes: Record<
     fileType: "Xsv",
     hasTags: false,
   },
+  MultiSampleXsv: {
+    label: "Multisample CSV/TSV",
+    fileType: "Xsv",
+    hasTags: false,
+  },
 };
 export const datasetTypeOptions = Object.entries(datasetTypes).map(([value, { label }]) => ({
   value,

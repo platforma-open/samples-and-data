@@ -5,11 +5,13 @@ maps := import("@platforma-sdk/workflow-tengo:maps")
 dsBulkCountMatrix := import(":ds-bulk-count-matrix")
 multiSampleH5AD := import(":ds-multisample-h5ad")
 multiSampleSeurat := import(":ds-multisample-seurat")
+multiSampleXsv := import(":ds-multisample-xsv")
 
 parsers := {
     BulkCountMatrix: dsBulkCountMatrix,
 	MultiSampleH5AD: multiSampleH5AD,
-	MultiSampleSeurat: multiSampleSeurat
+	MultiSampleSeurat: multiSampleSeurat,
+	MultiSampleXsv: multiSampleXsv
 }
 
 readColumns := func(args, importFile) {
@@ -25,6 +27,15 @@ readColumns := func(args, importFile) {
         if !is_undefined(parser) {
             columns[string(fImport)] = file.exportFile(parser.getColumns(fImport, importFile))
         }
+	}
+	return columns
+}
+
+// Header columns of each queued CSV/TSV file, as JSON lists keyed by the file handle
+readXsvColumns := func(args, importFile) {
+	columns := {}
+	for item in args.xsvFilesToPreprocess {
+		columns[string(item.file)] = multiSampleXsv.getColumns(item.file, item.xsvType, item.gzipped, importFile)
 	}
 	return columns
 }
@@ -49,9 +60,9 @@ wf.body(func(args) {
         if !is_undefined(parser) {
             samplesMap := parser.getSamples(dataset, importFile)
 
-            // BulkCountMatrix returns JSON objects
+            // BulkCountMatrix and MultiSampleXsv return JSON objects
             // MultiSampleH5AD and MultiSampleSeurat return CSV files
-            if dataset.content.type == "BulkCountMatrix" {
+            if dataset.content.type == "BulkCountMatrix" || dataset.content.type == "MultiSampleXsv" {
                 // JSON objects: return directly without file.exportFile
                 sampleGroups[dataset.id] = samplesMap
             } else if dataset.content.type == "MultiSampleH5AD" || dataset.content.type == "MultiSampleSeurat" {
@@ -65,6 +76,7 @@ wf.body(func(args) {
         }
     }
     columns := readColumns(args, importFile)
+    xsvColumns := readXsvColumns(args, importFile)
 
     metadataFile := undefined
     if !is_undefined(args.metadataUploadHandle) {
@@ -76,7 +88,8 @@ wf.body(func(args) {
 			return im.handle
 		}),
         sampleGroups: sampleGroups,
-		availableColumns: columns
+		availableColumns: columns,
+		xsvColumns: xsvColumns
     }
 
     if !is_undefined(metadataFile) {

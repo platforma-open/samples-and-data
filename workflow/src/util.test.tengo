@@ -1,0 +1,80 @@
+test := import("@platforma-sdk/workflow-tengo:test")
+json := import("json")
+
+util := import(":util")
+
+SAMPLE_AXIS := {
+	type: "String",
+	name: "pl7.app/sampleId",
+	annotations: { "pl7.app/label": "Sample" },
+	domain: { "pl7.app/blockId": "block-1" }
+}
+
+GROUP_AXIS := {
+	type: "String",
+	name: "pl7.app/sampleGroupId",
+	annotations: { "pl7.app/label": "Sample Group", "pl7.app/sampleColumnName": "sample" },
+	domain: { "pl7.app/blockId": "block-1" }
+}
+
+// Two files; sample s3 sits in both
+DATASET := {
+	id: "ds-1",
+	label: "Table",
+	content: {
+		type: "MultiSampleXsv",
+		xsvType: "tsv",
+		sampleColumnName: "sample",
+		gzipped: false,
+		data: { g2: "file-2", g1: "file-1" },
+		sampleGroups: {
+			g1: { s1: "S1", s2: "S2", s3: "S3" },
+			g2: { s3: "S3", s4: "S4" }
+		},
+		groupLabels: { g1: "File 1", g2: "File 2" }
+	}
+}
+
+cellKey := func(groupId, sampleId) {
+	return string(json.encode([groupId, sampleId]))
+}
+
+Test_cells_map_each_group_and_sample_to_the_value_in_the_file := func() {
+	cells := util.sampleGroupsCells(DATASET)
+
+	test.isEqual(5, len(cells))
+	test.isEqual("S1", cells[cellKey("g1", "s1")])
+	test.isEqual("S3", cells[cellKey("g1", "s3")])
+	test.isEqual("S3", cells[cellKey("g2", "s3")])
+	test.isEqual("S4", cells[cellKey("g2", "s4")])
+}
+
+Test_cells_are_empty_before_samples_are_imported := func() {
+	dataset := copy(DATASET)
+	dataset.content.sampleGroups = undefined
+
+	test.isEqual({}, util.sampleGroupsCells(dataset))
+}
+
+Test_spec_name_axes_and_domain := func() {
+	spec := util.sampleGroupsColumnSpec("block-1", DATASET, SAMPLE_AXIS, GROUP_AXIS)
+
+	test.isEqual("pl7.app/sequencing/data/sampleGroups", spec.name)
+	test.isEqual("String", spec.valueType)
+	test.isEqual([GROUP_AXIS, SAMPLE_AXIS], spec.axesSpec)
+	test.isEqual({ "pl7.app/block": "block-1", "pl7.app/dataset": "ds-1" }, spec.domain)
+}
+
+Test_spec_axis_keys_are_sorted_and_unique := func() {
+	spec := util.sampleGroupsColumnSpec("block-1", DATASET, SAMPLE_AXIS, GROUP_AXIS)
+
+	test.isEqual("[\"g1\",\"g2\"]", spec.annotations["pl7.app/axisKeys/0"])
+	test.isEqual("[\"s1\",\"s2\",\"s3\",\"s4\"]", spec.annotations["pl7.app/axisKeys/1"])
+}
+
+Test_spec_is_not_a_linker := func() {
+	spec := util.sampleGroupsColumnSpec("block-1", DATASET, SAMPLE_AXIS, GROUP_AXIS)
+
+	test.isEqual(undefined, spec.annotations["pl7.app/isLinkerColumn"])
+	test.isEqual(undefined, spec.annotations["pl7.app/isLinkedColumn"])
+}

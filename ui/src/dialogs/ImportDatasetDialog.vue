@@ -10,6 +10,7 @@ import type {
   DSContentMultiplexedFastq,
   DSContentMultiSampleH5ad,
   DSContentMultiSampleSeurat,
+  DSContentMultiSampleXsv,
   DSContentSeurat,
   DSContentTaggedAb1,
   DSContentTaggedFastq,
@@ -111,7 +112,7 @@ type ImportDatasetDialogData = {
    */
   newDatasetLabel: string;
   /**
-   * Sample column name for MultiSampleH5AD datasets
+   * Sample column name for multisample datasets (H5AD, Seurat, CSV/TSV)
    */
   sampleColumnName: string;
 };
@@ -154,6 +155,7 @@ function doClose() {
   if (app.model.data.h5adFilesToPreprocess.length > 0) app.model.data.h5adFilesToPreprocess = [];
   if (app.model.data.seuratFilesToPreprocess.length > 0)
     app.model.data.seuratFilesToPreprocess = [];
+  if (app.model.data.xsvFilesToPreprocess.length > 0) app.model.data.xsvFilesToPreprocess = [];
   app.showImportDataset = false;
   emit("onClose", navigated.value);
 }
@@ -174,7 +176,8 @@ const data = reactive<ImportDatasetDialogData>({
   importing: false,
   sampleColumnName:
     targetDs.value?.content.type === "MultiSampleH5AD" ||
-    targetDs.value?.content.type === "MultiSampleSeurat"
+    targetDs.value?.content.type === "MultiSampleSeurat" ||
+    targetDs.value?.content.type === "MultiSampleXsv"
       ? (targetDs.value.content.sampleColumnName ?? "")
       : "",
 });
@@ -254,8 +257,32 @@ const dsTypeOptions = computed(() => {
   return result;
 });
 
+/** The separator a CSV/TSV file name implies; undefined for any other file */
+function xsvTypeOfFile(fileName: string): "csv" | "tsv" | undefined {
+  if (fileName.endsWith(".csv") || fileName.endsWith(".csv.gz")) return "csv";
+  if (fileName.endsWith(".tsv") || fileName.endsWith(".tsv.gz")) return "tsv";
+  return undefined;
+}
+
+/** Queues CSV/TSV files so the prerun reads their header (Multisample CSV/TSV) */
+function queueXsvFiles(files: ImportFileHandle[]) {
+  for (const file of files) {
+    if (app.model.data.xsvFilesToPreprocess.some((item) => item.file === file)) continue;
+    const fileName = extractFileName(getFilePathFromHandle(file));
+    const xsvType = xsvTypeOfFile(fileName);
+    if (xsvType)
+      app.model.data.xsvFilesToPreprocess.push({
+        file,
+        xsvType,
+        gzipped: fileName.endsWith(".gz"),
+      });
+  }
+}
+
 function updateDatasetType(datasetType: DSType | undefined) {
-  if (datasetType === "MultiSampleH5AD") {
+  if (datasetType === "MultiSampleXsv") {
+    queueXsvFiles(parsedFiles.value.map((f) => f.handle));
+  } else if (datasetType === "MultiSampleH5AD") {
     // Add already-loaded files to h5adFilesToPreprocess
     for (const file of parsedFiles.value.map((f) => f.handle)) {
       if (!app.model.data.h5adFilesToPreprocess.includes(file)) {
@@ -295,6 +322,8 @@ function addFiles(files: ImportFileHandle[]) {
         app.model.data.seuratFilesToPreprocess.push(file);
       }
     }
+  } else if (datasetType === "MultiSampleXsv") {
+    queueXsvFiles(files);
   }
 
   data.datasetDialogOpened = true;
@@ -575,6 +604,22 @@ function addBulkCountMatrixDatasetContent(
   }
 }
 
+/** Multi-Sample CSV/TSV */
+function addMultiSampleXsvDatasetContent(
+  groupLabels: Record<PlId, string>,
+  contentData: DSContentMultiSampleXsv["data"],
+) {
+  if (compiledPattern.value?.hasLaneMatcher || compiledPattern.value?.hasReadIndexMatcher)
+    throw new Error("Dataset has read or lane matcher, trying to add multisample XSV dataset");
+
+  for (const f of parsedFiles.value) {
+    if (!f.match) continue;
+    const group = f.match.sample.value;
+    const groupId = getOrCreateGroup(groupLabels, group);
+    contentData[groupId] = f.handle;
+  }
+}
+
 /** Multiplexed FASTQ */
 function addMultiplexedFastqDatasetContent(
   groupLabels: Record<PlId, string>,
@@ -664,6 +709,10 @@ async function addToExistingDataset() {
     case "BulkCountMatrix":
       addBulkCountMatrixDatasetContent(dataset.content.groupLabels, dataset.content.data);
       break;
+    case "MultiSampleXsv":
+      // The dataset keeps its sample column; the new files were checked to have it
+      addMultiSampleXsvDatasetContent(dataset.content.groupLabels, dataset.content.data);
+      break;
     default:
       throw new Error("Unknown dataset type");
   }
@@ -673,10 +722,9 @@ async function addToExistingDataset() {
 }
 
 const xsvType = (): "csv" | "tsv" => {
-  const fileNames = parsedFiles.value.map((f) => f.fileName);
-  if (fileNames.every((f) => f.endsWith(".csv") || f.endsWith(".csv.gz"))) return "csv";
-  if (fileNames.every((f) => f.endsWith(".tsv") || f.endsWith(".tsv.gz"))) return "tsv";
-  throw new Error("Files are not all csv or tsv");
+  const type = matchedXsvType.value;
+  if (type === undefined) throw new Error("Files are not all csv or tsv");
+  return type;
 };
 
 async function createNewDataset() {
@@ -915,6 +963,26 @@ async function createNewDataset() {
       });
       break;
     }
+    case "MultiSampleXsv": {
+      const groupLabels: Record<PlId, string> = {};
+      const contentData: DSContentMultiSampleXsv["data"] = {};
+      addMultiSampleXsvDatasetContent(groupLabels, contentData);
+
+      app.model.data.datasets.push({
+        label: data.newDatasetLabel,
+        id: newDatasetId,
+        content: {
+          type: "MultiSampleXsv",
+          gzipped: data.gzipped,
+          xsvType: xsvType(),
+          sampleGroups: undefined,
+          data: contentData,
+          groupLabels: groupLabels,
+          sampleColumnName: data.sampleColumnName,
+        },
+      });
+      break;
+    }
     case "MultiplexedFastq": {
       const groupLabels: Record<PlId, string> = {};
       const contentData: DSContentMultiplexedFastq["data"] = {};
@@ -951,16 +1019,81 @@ async function createNewDataset() {
 }
 
 const isMultiSampleType = computed(
-  () => data.datasetType === "MultiSampleH5AD" || data.datasetType === "MultiSampleSeurat",
+  () =>
+    data.datasetType === "MultiSampleH5AD" ||
+    data.datasetType === "MultiSampleSeurat" ||
+    data.datasetType === "MultiSampleXsv",
 );
+
+/** Multisample CSV/TSV: columns come as JSON lists from the header read, not as files */
+const isMultiSampleXsv = computed(() => data.datasetType === "MultiSampleXsv");
+
+/** How the column picker names the file kind and where its columns come from */
+const multiSampleTexts = computed(() => {
+  if (data.datasetType === "MultiSampleH5AD")
+    return { file: "H5AD", source: "anndata.obs", picker: "Sample Column Name in anndata.obs" };
+  if (data.datasetType === "MultiSampleXsv")
+    return { file: "CSV or TSV", source: "the header", picker: "Sample Column" };
+  return {
+    file: "Seurat RDS",
+    source: "the Seurat metadata",
+    picker: "Sample Column Name in Seurat metadata",
+  };
+});
 
 /** Files that match the pattern; only these are imported */
 const matchedFiles = computed(() => parsedFiles.value.filter((f) => f.match));
 
+/** The separator the matched files share; undefined when they mix csv and tsv */
+const matchedXsvType = computed(() => {
+  const types = new Set(matchedFiles.value.map((f) => xsvTypeOfFile(f.fileName)));
+  return types.size === 1 ? [...types][0] : undefined;
+});
+
+/** Why the matched CSV/TSV files can't be imported: mixed separators, or a separator or compression unlike the target dataset's */
+const xsvFilesError = computed(() => {
+  if (!data.datasetType || datasetTypes[data.datasetType].fileType !== "Xsv") return undefined;
+  if (matchedFiles.value.length === 0) return undefined;
+  const type = matchedXsvType.value;
+  if (type === undefined) return "Files must be all CSV or all TSV.";
+  if (data.mode !== "add-to-existing") return undefined;
+  const ds = app.model.data.datasets.find((ds) => ds.id === data.targetAddDataset);
+  if (!ds || !("xsvType" in ds.content)) return undefined;
+  if (ds.content.xsvType !== type)
+    return `The dataset holds ${ds.content.xsvType.toUpperCase()} files; these files are ${type.toUpperCase()}.`;
+  const gzipped = ds.content.gzipped;
+  if (matchedFiles.value.some((f) => f.fileName.endsWith(".gz") !== gzipped))
+    return `The dataset holds ${gzipped ? "gzipped (.gz)" : "uncompressed"} files; all added files must be too.`;
+  return undefined;
+});
+
+/** Sample column of the Multisample CSV/TSV dataset files are added to; it stays fixed */
+const targetXsvSampleColumn = computed(() => {
+  if (data.mode !== "add-to-existing") return undefined;
+  const content = app.model.data.datasets.find((ds) => ds.id === data.targetAddDataset)?.content;
+  return content?.type === "MultiSampleXsv" ? content.sampleColumnName : undefined;
+});
+
+watch(
+  targetXsvSampleColumn,
+  (column) => {
+    if (column !== undefined) data.sampleColumnName = column;
+  },
+  { immediate: true },
+);
+
 /** Column names per matched file, keyed by file handle; a file is absent until its list has loaded */
 const columnsByFile = computed(() => {
-  const columns = app.model.outputs.availableColumns ?? {};
   const result: Record<string, string[]> = {};
+  if (isMultiSampleXsv.value) {
+    const xsvColumns = app.model.outputs.availableXsvColumns ?? {};
+    for (const { handle } of matchedFiles.value) {
+      const names = xsvColumns[handle];
+      if (names !== undefined) result[handle] = names;
+    }
+    return result;
+  }
+  const columns = app.model.outputs.availableColumns ?? {};
   for (const { handle } of matchedFiles.value) {
     const columnsCsv = columns[handle];
     // ReactiveFileContent never loads a 0-byte file, so its content is taken as empty
@@ -976,7 +1109,11 @@ const columnsByFile = computed(() => {
 });
 
 /** Error of the prerun that lists the columns, e.g. a file that is not a valid H5AD */
-const columnsError = computed(() => app.model.outputErrors.availableColumns?.message);
+const columnsError = computed(() =>
+  isMultiSampleXsv.value
+    ? app.model.outputErrors.availableXsvColumns?.message
+    : app.model.outputErrors.availableColumns?.message,
+);
 
 /** Names of the selected files the error is about; the error text holds their upload handles */
 const unreadableFileNames = computed(() =>
@@ -995,13 +1132,25 @@ const filesWithoutColumns = computed(() =>
     .map((f) => f.fileName),
 );
 
-// Get all unique column names from the matched files only
-const availableColumnsOptions = computed<ListOption<string>[]>(() =>
-  [...new Set(Object.values(columnsByFile.value).flat())].map((col) => ({
-    value: col,
-    label: col,
-  })),
-);
+// Column names of the matched files: for Multisample CSV/TSV only those every file has, otherwise all
+const availableColumnsOptions = computed<ListOption<string>[]>(() => {
+  const lists = Object.values(columnsByFile.value);
+  const names = isMultiSampleXsv.value
+    ? (lists[0] ?? []).filter((col) => lists.every((list) => list.includes(col)))
+    : [...new Set(lists.flat())];
+  return names.map((col) => ({ value: col, label: col }));
+});
+
+/** Matched files that lack the chosen sample column (Multisample CSV/TSV) */
+const filesWithoutSampleColumn = computed(() => {
+  if (!isMultiSampleXsv.value || !data.sampleColumnName) return [];
+  return matchedFiles.value
+    .filter((f) => {
+      const columns = columnsByFile.value[f.handle];
+      return columns !== undefined && !columns.includes(data.sampleColumnName);
+    })
+    .map((f) => f.fileName);
+});
 
 // Watch for when columns become available to pick a sample column
 watch(availableColumnsOptions, (options) => {
@@ -1024,6 +1173,8 @@ const canCreateOrAdd = computed(() => {
     tagMismatchError.value === undefined &&
     (data.mode === "create-new-dataset" || data.targetAddDataset !== undefined) &&
     data.datasetType !== undefined &&
+    xsvFilesError.value === undefined &&
+    filesWithoutSampleColumn.value.length === 0 &&
     // A multisample dataset needs a non-empty column list for every matched file
     (!isMultiSampleType.value ||
       matchedFiles.value.every((f) => (columnsByFile.value[f.handle]?.length ?? 0) > 0)) &&
@@ -1032,8 +1183,8 @@ const canCreateOrAdd = computed(() => {
       (compiledPattern.value?.hasReadIndexMatcher === false &&
         compiledPattern.value?.hasLaneMatcher === false));
 
-  // For MultiSampleH5AD datasets, also require sampleColumnName
-  if (data.datasetType === "MultiSampleH5AD") {
+  // For MultiSampleH5AD and MultiSampleXsv datasets, also require sampleColumnName
+  if (data.datasetType === "MultiSampleH5AD" || data.datasetType === "MultiSampleXsv") {
     return basicConditions && data.sampleColumnName !== "";
   }
 
@@ -1081,29 +1232,28 @@ const canCreateOrAdd = computed(() => {
 
     <PlTextField v-model="data.pattern" label="Pattern" :error="patternError ?? tagMismatchError" />
 
+    <PlAlert v-if="xsvFilesError" type="error">{{ xsvFilesError }}</PlAlert>
+
     <template v-if="isMultiSampleType">
       <PlAlert v-if="columnsError" type="error">
         Could not read
         {{ unreadableFileNames.length > 0 ? unreadableFileNames.join(", ") : "the files" }}. Please
-        check that each file is a valid
-        {{ data.datasetType === "MultiSampleH5AD" ? "H5AD" : "Seurat RDS" }} file.
+        check that each file is a valid {{ multiSampleTexts.file }} file.
       </PlAlert>
       <div v-else-if="loadingColumns">Parsing files to extract column information...</div>
       <template v-else>
         <PlAlert v-if="filesWithoutColumns.length > 0" type="warn">
-          No columns found in
-          {{ data.datasetType === "MultiSampleH5AD" ? "anndata.obs" : "the Seurat metadata" }} of
-          {{ filesWithoutColumns.join(", ") }}.
+          No columns found in {{ multiSampleTexts.source }} of {{ filesWithoutColumns.join(", ") }}.
+        </PlAlert>
+        <PlAlert v-if="filesWithoutSampleColumn.length > 0" type="error">
+          No column "{{ data.sampleColumnName }}" in {{ filesWithoutSampleColumn.join(", ") }}.
         </PlAlert>
         <PlRow v-if="availableColumnsOptions.length > 0" alignCenter>
           <PlDropdown
             v-model="data.sampleColumnName"
-            :label="
-              data.datasetType === 'MultiSampleH5AD'
-                ? 'Sample Column Name in anndata.obs'
-                : 'Sample Column Name in Seurat metadata'
-            "
+            :label="multiSampleTexts.picker"
             :options="availableColumnsOptions"
+            :disabled="targetXsvSampleColumn !== undefined"
             :error="undefined"
             class="flex-grow-1"
           />
