@@ -189,9 +189,14 @@ sampleGroupsColumnSpec := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     }
 }
 
-// The group-to-sample mapping column, spec and data (`{ keyLength, data }`, the
-// PColumnData/Json payload). Returns `undefined` when no group has samples —
-// caller emits nothing.
+// Data of the group-to-sample mapping column: the PColumnData/Json payload
+// `{ keyLength, data }`, canonically encoded
+sampleGroupsData := func(cells) {
+    return canonical.encode({ keyLength: 2, data: cells })
+}
+
+// The group-to-sample mapping column, spec and data. Returns `undefined` when no
+// group has samples — caller emits nothing.
 sampleGroupsColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
     cells := sampleGroupsCells(dataset)
     if len(cells) == 0 {
@@ -200,7 +205,7 @@ sampleGroupsColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
 
     return {
         spec: sampleGroupsColumnSpec(blockId, dataset, sampleIdAxis, groupIdAxis),
-        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, canonical.encode({ keyLength: 2, data: cells }))
+        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, sampleGroupsData(cells))
     }
 }
 
@@ -239,6 +244,7 @@ export {
     multiplexingRulesColumn: multiplexingRulesColumn,
     sampleGroupsCells: sampleGroupsCells,
     sampleGroupsColumnSpec: sampleGroupsColumnSpec,
+    sampleGroupsData: sampleGroupsData,
     sampleGroupsColumn: sampleGroupsColumn,
     getSampleColumnName: getSampleColumnName,
     createFileDataset: createFileDataset

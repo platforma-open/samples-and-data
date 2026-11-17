@@ -56,6 +56,19 @@ Test_cells_are_empty_before_samples_are_imported := func() {
 	test.isEqual({}, util.sampleGroupsCells(dataset))
 }
 
+Test_data_is_the_json_column_payload_in_canonical_order := func() {
+	expected := `{"data":{"[\"g1\",\"s1\"]":"S1","[\"g1\",\"s2\"]":"S2","[\"g1\",\"s3\"]":"S3","[\"g2\",\"s3\"]":"S3","[\"g2\",\"s4\"]":"S4"},"keyLength":2}`
+
+	test.isEqual(expected, util.sampleGroupsData(util.sampleGroupsCells(DATASET)))
+}
+
+Test_no_column_before_samples_are_imported := func() {
+	dataset := copy(DATASET)
+	dataset.content.sampleGroups = undefined
+
+	test.isEqual(undefined, util.sampleGroupsColumn("block-1", dataset, SAMPLE_AXIS, GROUP_AXIS))
+}
+
 Test_spec_name_axes_and_domain := func() {
 	spec := util.sampleGroupsColumnSpec("block-1", DATASET, SAMPLE_AXIS, GROUP_AXIS)
 

@@ -1,4 +1,5 @@
-import type { BlockData } from "@platforma-open/milaboratories.samples-and-data.model";
+import type { BlockData, PlId } from "@platforma-open/milaboratories.samples-and-data.model";
+import type { ImportFileHandle } from "@platforma-sdk/model";
 import { uniquePlId } from "@platforma-sdk/model";
 import { blockTest } from "@platforma-sdk/test";
 import { SamplesAndDataBlockPointer } from "this-block";
@@ -229,7 +230,7 @@ blockTest(
     const s01 = uniquePlId();
     const sOne = uniquePlId();
 
-    // pool1: S1, S2, S3 and a row with an empty sample value; pool2: S3, "01" and "1"
+    // pool1: S1, S2, S3 and rows with an empty and a whitespace-only sample value; pool2: S3, "01" and "1"
     const pool1Handle = await helpers.getLocalFileHandle("./assets/multisample-pool1.tsv");
     const pool2Handle = await helpers.getLocalFileHandle("./assets/multisample-pool2.tsv");
     const csvGzHandle = await helpers.getLocalFileHandle("./assets/multisample-header.csv.gz");
@@ -272,7 +273,7 @@ blockTest(
     await helpers.awaitBlockDone(blockId);
     const stableState = await project.getBlockState(blockId).awaitStableValue();
 
-    // Distinct values per file, read as text and sorted; the empty value is skipped
+    // Distinct values per file, read as text and sorted; empty and whitespace-only values are skipped
     expect(stableState.outputs?.sampleGroups).toMatchObject({
       ok: true,
       value: {
@@ -291,6 +292,66 @@ blockTest(
         [csvGzHandle]: ["sample", "sequence", "count"],
       },
     });
+  },
+);
+
+// The prerun refuses a sample column it can't use; the error reaches the `sampleGroups` output
+blockTest.for([
+  {
+    name: "more than 3000 sample values",
+    files: ["./assets/multisample-3001-samples.tsv"],
+    error: "more than 3000 distinct values",
+  },
+  {
+    name: "sample column missing from a file",
+    files: ["./assets/multisample-pool2.tsv", "./assets/multisample-no-sample-column.tsv"],
+    error: "ColumnNotFoundError",
+  },
+])(
+  "multisample csv/tsv: $name",
+  { timeout: 100000 },
+  async ({ files, error }, { rawPrj: project, helpers, expect }) => {
+    const blockId = await project.addBlock("Block", SamplesAndDataBlockPointer);
+    const data: Record<PlId, ImportFileHandle> = {};
+    const groupLabels: Record<PlId, string> = {};
+    for (const file of files) {
+      const groupId = uniquePlId();
+      data[groupId] = await helpers.getLocalFileHandle(file);
+      groupLabels[groupId] = file;
+    }
+
+    await project.mutateBlockStorage(blockId, {
+      operation: "update-block-data",
+      value: {
+        metadata: [],
+        sampleIds: [],
+        sampleLabelColumnLabel: "Sample Name",
+        sampleLabels: {},
+        datasets: [
+          {
+            id: uniquePlId(),
+            label: "Multisample table",
+            content: {
+              type: "MultiSampleXsv",
+              xsvType: "tsv",
+              sampleColumnName: "sample",
+              gzipped: false,
+              data,
+              sampleGroups: undefined,
+              groupLabels,
+            },
+          },
+        ],
+        h5adFilesToPreprocess: [],
+        seuratFilesToPreprocess: [],
+        xsvFilesToPreprocess: [],
+        suggestedImport: false,
+      } satisfies BlockData,
+    });
+    const stableState = await project.getBlockState(blockId).awaitStableValue();
+
+    expect(stableState.outputs?.sampleGroups?.ok).toBe(false);
+    expect(JSON.stringify(stableState.outputs?.sampleGroups)).toContain(error);
   },
 );
 
