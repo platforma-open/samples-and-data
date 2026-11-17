@@ -112,7 +112,15 @@ const columnDefs = computed((): ColDef<DatasetRow>[] => {
         params.data?.groupId ? dataset.value.content.data[params.data.groupId] : undefined,
       valueSetter: (params) => {
         const group = params.data.groupId;
-        dataset.value.content.data[group] = params.newValue ?? null;
+        const content = dataset.value.content;
+        const file = params.newValue ?? null;
+        if (content.data[group] === file) return false;
+        content.data[group] = file;
+        // The new file's samples are unknown until "Import samples": drop the old mapping so Run waits for it
+        if (content.sampleGroups?.[group] !== undefined) {
+          const { [group]: _replaced, ...kept } = content.sampleGroups;
+          content.sampleGroups = kept;
+        }
         return true;
       },
     },
