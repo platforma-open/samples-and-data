@@ -68,13 +68,15 @@ const pickerTarget = computed(() => {
   return displayName(node);
 });
 
-const sidebarOpen = computed(() => pickerTarget.value !== undefined || selection.value !== null);
-
 const rawMarked = shallowRef<Set<string>>(new Set());
 const rawPickingParent = shallowRef(false);
 const marked = computed(() => rawMarked.value.intersection(placed.value));
 const markedIds = computed(() => Array.from(marked.value));
-const pickingParent = computed(() => rawPickingParent.value && markedIds.value.length >= 2);
+const multiSelected = computed(() => markedIds.value.length >= 2);
+const sidebarOpen = computed(
+  () => multiSelected.value || pickerTarget.value !== undefined || selection.value !== null,
+);
+const pickingParent = computed(() => rawPickingParent.value && multiSelected.value);
 const canMakeSplit = computed(() => makeSplit(design.value, markedIds.value) !== undefined);
 const commonPart = computed(() => {
   const parts = new Set(
@@ -244,32 +246,38 @@ function addSamples(chosen: Sample[], part: Part) {
         />
       </template>
     </DesignGraph>
-    <div v-if="markedIds.length >= 2" :class="styles.bar">
-      <template v-if="pickingParent">
-        <span>Click the new parent</span>
-        <PlBtnGhost size="small" @click="rawPickingParent = false">Cancel</PlBtnGhost>
-      </template>
-      <template v-else>
-        <span :class="styles.count">{{ markedIds.length }} selected</span>
-        <span :class="styles.label">Connection</span>
+    <aside v-if="sidebarOpen" :class="styles.sidebar">
+      <section v-if="multiSelected" :class="styles.multi">
+        <PlBtnGhost
+          :class="styles.closeButton"
+          icon="close"
+          size="small"
+          title="Close"
+          @click="clearMarked"
+        />
+        <header :class="styles.header">
+          <span :class="styles.count">{{ markedIds.length }} selected</span>
+          <PlBtnGhost icon="add" size="small" @click="addSteps">Add step to each</PlBtnGhost>
+          <PlBtnGhost size="small" @click="mergeMarked">Merge</PlBtnGhost>
+          <PlBtnGhost size="small" :disabled="!canMakeSplit" @click="makeMarkedSplit">
+            Make one split
+          </PlBtnGhost>
+          <PlBtnGhost v-if="pickingParent" size="small" @click="rawPickingParent = false">
+            Cancel
+          </PlBtnGhost>
+          <PlBtnGhost v-else size="small" @click="rawPickingParent = true">Move under…</PlBtnGhost>
+        </header>
+        <p v-if="pickingParent" :class="styles.note">Click the new parent.</p>
         <PlBtnGroup
-          compact
+          v-else
+          label="Connection"
           :options="partOptions"
           :model-value="commonPart"
           @update:model-value="setMarkedPart"
         />
-        <PlBtnGhost icon="add" size="small" @click="addSteps">Add step to each</PlBtnGhost>
-        <PlBtnGhost size="small" @click="mergeMarked">Merge</PlBtnGhost>
-        <PlBtnGhost size="small" :disabled="!canMakeSplit" @click="makeMarkedSplit">
-          Make one split
-        </PlBtnGhost>
-        <PlBtnGhost size="small" @click="rawPickingParent = true">Move under…</PlBtnGhost>
-        <PlBtnGhost icon="close" size="small" title="Clear selection" @click="clearMarked" />
-      </template>
-    </div>
-    <aside v-if="sidebarOpen" :class="styles.sidebar">
+      </section>
       <SamplePicker
-        v-if="picker !== undefined && pickerTarget !== undefined"
+        v-else-if="picker !== undefined && pickerTarget !== undefined"
         :key="`${picker.nodeId}:${picker.side}`"
         :samples="samples"
         :placed="placed"
@@ -303,26 +311,33 @@ function addSamples(chosen: Sample[], part: Part) {
   background: radial-gradient(var(--border-color-div-grey) 1px, transparent 1px) 0 0 / 16px 16px;
 }
 
-.bar {
-  position: absolute;
-  inset-block-end: 16px;
-  inset-inline-start: 50%;
+.multi {
+  position: relative;
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.closeButton {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  border: 1px solid var(--border-color-div-grey);
-  border-radius: 6px;
-  background: var(--bg-elevated-01);
-  translate: -50% 0;
-  white-space: nowrap;
+  gap: 8px 16px;
+  padding-inline-end: 32px;
 }
 
 .count {
   font-weight: 600;
 }
 
-.label {
+.note {
+  margin: 0;
   color: var(--txt-03);
 }
 

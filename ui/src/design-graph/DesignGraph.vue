@@ -352,14 +352,26 @@ const SHADOW_PORT_OFFSET = 11;
 
 function selectedBounds() {
   const selection = props.selection;
-  if (selection?.kind === "node") {
+  if (selection === null) {
+    const markedBoxes = Array.from(props.marked, (id) => boxes.value.get(id)).filter(
+      (box) => box !== undefined,
+    );
+    if (markedBoxes.length === 0) {
+      return undefined;
+    }
+    return {
+      left: Math.min(...markedBoxes.map((box) => box.x)),
+      right: Math.max(...markedBoxes.map((box) => box.x + box.w)),
+    };
+  }
+  if (selection.kind === "node") {
     const box = boxes.value.get(selection.id);
     if (box === undefined) {
       return undefined;
     }
     return { left: box.x, right: box.x + box.w };
   }
-  const path = placed.value.edges.find((item) => item.id === selection?.id);
+  const path = placed.value.edges.find((item) => item.id === selection.id);
   if (path === undefined) {
     return undefined;
   }
@@ -382,7 +394,10 @@ function revealSelection() {
   view.value = { ...view.value, x: x - shift };
 }
 
-watch([() => props.selection, () => props.coveredRight], () => nextTick(revealSelection));
+watch(
+  [() => props.selection, () => props.coveredRight, () => Array.from(props.marked).join("\n")],
+  () => nextTick(revealSelection),
+);
 
 onBeforeUnmount(endWire);
 
