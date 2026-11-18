@@ -7,12 +7,12 @@ import { toGraph } from "./toGraph";
 import type { Design } from "./types";
 
 describe("withJunctions", () => {
-  test("adds a hidden junction for a separation with several partitions", () => {
+  test("adds a shadow junction for a separation with several partitions", () => {
     const graph = withJunctions(toGraph(fixture("fork-and-merge")));
     const junction = junctionId("R1", "sort-2");
     expect(graph.nodes.find((node) => node.id === junction)).toMatchObject({
       kind: "junction",
-      hidden: true,
+      sequenced: false,
     });
     expect(graph.edges.filter((edge) => edge.to === junction).map((edge) => edge.from)).toEqual([
       "R1",

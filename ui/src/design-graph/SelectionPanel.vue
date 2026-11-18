@@ -3,18 +3,21 @@ import { PlBtnGhost, PlBtnGroup, PlCheckbox, PlTextField } from "@milaboratories
 import { computed, shallowRef, useCssModule, watch } from "vue";
 import {
   addPartition,
+  addStep,
   findMaterial,
+  insertStep,
   joinSplit,
   leaveSplit,
   renameMaterial,
   setMeta,
+  setName,
   setPart,
-  setSequenced,
   setStep,
   siblingsOf,
   splitLine,
 } from "./edit";
 import { junctionId, junctionOf } from "./junctions";
+import { displayName } from "./layout";
 import { parentsOf } from "./toGraph";
 import type { Design, Graph, Material, Part, Selection, Step } from "./types";
 
@@ -38,6 +41,13 @@ const stepOptions: { label: string; value: Step | "one-off" }[] = [
 ];
 
 const kindOf = (id: string) => props.graph.nodes.find((item) => item.id === id)?.kind;
+const labelOf = (id: string) => {
+  const graphNode = props.graph.nodes.find((item) => item.id === id);
+  if (graphNode === undefined) {
+    return "";
+  }
+  return displayName(graphNode);
+};
 
 const edge = computed(() => {
   if (props.selection.kind !== "edge") {
@@ -68,11 +78,53 @@ const siblings = computed(() =>
 );
 
 const material = computed(() => {
-  if (node.value?.kind !== "material") {
+  if (node.value?.kind !== "material" || !node.value.sequenced) {
     return undefined;
   }
   return findMaterial(props.design, node.value.id);
 });
+
+const shadowMaterial = computed(() => {
+  if (node.value?.kind !== "material" || node.value.sequenced) {
+    return undefined;
+  }
+  return findMaterial(props.design, node.value.id);
+});
+const shadowKind = computed(() => {
+  if (shadowMaterial.value?.from === undefined) {
+    return "Starting material";
+  }
+  return "Step";
+});
+const shadowNameDraft = shallowRef("");
+watch(shadowMaterial, (current) => (shadowNameDraft.value = current?.name ?? ""), {
+  immediate: true,
+});
+
+function commitShadowName() {
+  const name = shadowNameDraft.value.trim();
+  if (shadowMaterial.value === undefined || name === (shadowMaterial.value.name ?? "")) {
+    return;
+  }
+  const id = shadowMaterial.value.id;
+  emit("change", name === "" ? setName(props.design, id) : setName(props.design, id, name));
+}
+
+function onAddStep(parentId: string) {
+  const added = addStep(props.design, parentId);
+  emit("change", added.design, { kind: "node", id: added.id });
+}
+
+function onInsertStep() {
+  if (child.value === undefined) {
+    return;
+  }
+  const inserted = insertStep(props.design, child.value.id);
+  if (inserted === undefined) {
+    return;
+  }
+  emit("change", inserted.design, { kind: "node", id: inserted.id });
+}
 
 const junction = computed(() => junctionOf(props.graph, node.value?.id));
 
@@ -223,7 +275,10 @@ function addLabel() {
     <template v-if="child !== undefined && childFrom !== undefined">
       <header :class="styles.header">
         <span :class="styles.kind">Edge</span>
-        <span :class="styles.title"> {{ parentsOf(childFrom).join(" + ") }} → {{ child.id }} </span>
+        <span :class="styles.title">
+          {{ parentsOf(childFrom).map(labelOf).join(" + ") }} → {{ labelOf(child.id) }}
+        </span>
+        <PlBtnGhost icon="add" size="small" @click="onInsertStep">Insert step</PlBtnGhost>
         <PlBtnGhost v-if="canAddPartition" icon="add" size="small" @click="onSplitLine">
           Add partition
         </PlBtnGhost>
@@ -250,7 +305,7 @@ function addLabel() {
           "
         />
         <div v-if="childFrom.part === 'slice' && siblings.length > 0" :class="styles.group">
-          <div :class="styles.groupLabel">Same separation as</div>
+          <div :class="styles.groupLabel">Same split as</div>
           <div :class="styles.checks">
             <PlCheckbox
               v-for="sibling in siblings"
@@ -265,7 +320,7 @@ function addLabel() {
                   )
               "
             >
-              {{ sibling.id }}
+              {{ labelOf(sibling.id) }}
             </PlCheckbox>
           </div>
         </div>
@@ -275,10 +330,12 @@ function addLabel() {
     <template v-else-if="pooledInto !== undefined">
       <header :class="styles.header">
         <span :class="styles.kind">Edge</span>
-        <span :class="styles.title">{{ edge?.from }} → {{ pooledInto }}</span>
+        <span :class="styles.title"
+          >{{ labelOf(edge?.from ?? "") }} → {{ labelOf(pooledInto) }}</span
+        >
         <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
-      <p :class="styles.note">Pooled with the other parents of {{ pooledInto }}.</p>
+      <p :class="styles.note">Merged with the other parents of {{ labelOf(pooledInto) }}.</p>
     </template>
 
     <template v-else-if="material !== undefined">
@@ -291,18 +348,10 @@ function addLabel() {
             @keydown.enter="commitName"
           />
         </div>
-        <PlCheckbox
-          :model-value="material.sequenced"
-          @update:model-value="
-            (sequenced: boolean) =>
-              changeMaterial((design, id) => setSequenced(design, id, sequenced))
-          "
-        >
-          Sequenced
-        </PlCheckbox>
         <PlBtnGhost :class="styles.close" icon="add" size="small" @click="addLabel">
           Add label
         </PlBtnGhost>
+        <PlBtnGhost icon="add" size="small" @click="onAddStep(material.id)">Add step</PlBtnGhost>
         <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
       <div :class="styles.labels" @focusout="onLabelsFocusOut">
@@ -328,11 +377,34 @@ function addLabel() {
       </div>
     </template>
 
+    <template v-else-if="shadowMaterial !== undefined">
+      <header :class="styles.header">
+        <span :class="styles.kind">{{ shadowKind }}</span>
+        <div :class="styles.field" @focusout="commitShadowName">
+          <PlTextField
+            v-model="shadowNameDraft"
+            label="Name"
+            placeholder="Optional"
+            @keydown.enter="commitShadowName"
+          />
+        </div>
+        <PlBtnGhost
+          :class="styles.close"
+          icon="add"
+          size="small"
+          @click="onAddStep(shadowMaterial.id)"
+        >
+          Add step
+        </PlBtnGhost>
+        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
+      </header>
+    </template>
+
     <template v-else-if="junction !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">Separation</span>
+        <span :class="styles.kind">Split</span>
         <span :class="styles.title">
-          {{ junction.parentId }} → {{ junction.partitions.join(", ") }}
+          {{ labelOf(junction.parentId) }} → {{ junction.partitions.map(labelOf).join(", ") }}
         </span>
         <PlBtnGhost icon="add" size="small" @click="onAddPartition">Add partition</PlBtnGhost>
         <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
@@ -341,8 +413,10 @@ function addLabel() {
 
     <template v-else-if="pool !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">Pool</span>
-        <span :class="styles.title">{{ pool.parents.join(" + ") }} → {{ pool.child }}</span>
+        <span :class="styles.kind">Merge</span>
+        <span :class="styles.title">
+          {{ pool.parents.map(labelOf).join(" + ") }} → {{ labelOf(pool.child ?? "") }}
+        </span>
         <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
       <p :class="styles.note">Added where a material has several parents.</p>

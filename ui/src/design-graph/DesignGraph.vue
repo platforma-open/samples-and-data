@@ -2,7 +2,7 @@
 import { PlBtnGhost } from "@milaboratories/uikit";
 import { computed, onMounted, shallowRef, useCssModule, useTemplateRef } from "vue";
 import type { PlacedEdge } from "./layout";
-import { layout, nodeLabel } from "./layout";
+import { displayName, layout, nodeLabel } from "./layout";
 import type { Graph, GraphEdge, Selection } from "./types";
 
 const props = defineProps<{ graph: Graph; selection: Selection }>();
@@ -164,27 +164,30 @@ onMounted(fit);
         :key="node.id"
         :class="[
           styles.node,
-          styles[node.kind],
-          node.hidden && styles.hidden,
-          node.kind === 'material' && !node.sequenced && styles.unsequenced,
+          !node.sequenced && styles.shadow,
           isSelected('node', node.id) && styles.selected,
         ]"
         :style="nodeStyles.get(node.id)"
         @pointerdown.stop
         @click="emit('select', { kind: 'node', id: node.id })"
       >
-        <template v-if="node.kind === 'material'">
+        <template v-if="node.sequenced">
           <div :class="styles.name">{{ node.id }}</div>
           <div :class="styles.label">{{ nodeLabel(node) }}</div>
         </template>
-        <template v-else-if="node.kind === 'pool'">pool</template>
+        <span
+          v-else-if="node.kind === 'material'"
+          :class="[styles.shadowName, node.name === undefined && styles.placeholder]"
+          :title="displayName(node)"
+        >
+          {{ displayName(node) }}
+        </span>
       </div>
     </div>
     <div :class="styles.top" @pointerdown.stop>
       <div :class="styles.box"><slot name="toolbar" /></div>
       <div :class="[styles.box, styles.legend]">
-        <span><i :class="[styles.swatch, styles.unsequenced]" />not sequenced</span>
-        <span><i :class="[styles.swatch, styles.pool]" />pool</span>
+        <span><i :class="styles.swatch" />shadow node</span>
         <span v-for="part in legendLines" :key="part" :class="styles[part]">
           <svg width="24" height="6"><path :class="styles.line" d="M1,3 L24,3" /></svg>
           {{ part }}
@@ -275,38 +278,39 @@ onMounted(fit);
     border-color: var(--border-color-hover);
   }
 
-  &.unsequenced {
-    background: var(--bg-elevated-02);
-  }
-
-  &.pool {
-    display: grid;
-    place-items: center;
+  &.shadow {
     padding: 0;
     border-style: dashed;
-    border-radius: 12px;
-    font-size: 11px;
-    color: var(--txt-03);
-  }
-
-  &.junction {
-    padding: 0;
+    border-color: var(--ic-02);
     border-radius: 50%;
+    color: var(--txt-03);
+
+    &:hover:not(.selected) {
+      border-color: var(--border-color-default);
+      color: var(--txt-01);
+    }
   }
 
   &.selected {
     border-color: var(--border-color-focus);
     box-shadow: 0 0 0 3px var(--border-color-focus-shadow);
   }
+}
 
-  &.hidden {
-    opacity: 0;
-    transition: opacity 0.15s;
+.shadowName {
+  position: absolute;
+  inset-block-end: calc(100% + 2px);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  max-inline-size: 64px;
+  overflow: hidden;
+  font-family: var(--font-family-monospace);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
-    &:hover,
-    &.selected {
-      opacity: 1;
-    }
+  &.placeholder {
+    color: var(--txt-mask);
   }
 }
 
@@ -365,19 +369,10 @@ onMounted(fit);
 }
 
 .swatch {
-  inline-size: 20px;
+  inline-size: 12px;
   block-size: 12px;
-  border: 1px solid var(--border-color-default);
-  border-radius: 3px;
-
-  &.unsequenced {
-    background: var(--bg-elevated-02);
-  }
-
-  &.pool {
-    border-style: dashed;
-    border-radius: 6px;
-  }
+  border: 1px dashed var(--ic-02);
+  border-radius: 50%;
 }
 
 .percent {

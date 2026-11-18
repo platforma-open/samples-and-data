@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { addMaterial } from "./edit";
+import { addPartition, addStart, insertStep } from "./edit";
 import { designFixtures, fixture } from "./fixtures";
 import { withJunctions } from "./junctions";
 import type { Layout } from "./layout";
@@ -36,10 +36,10 @@ describe("layout", () => {
   });
 
   test("never overlaps two nodes", () => {
-    const withAdded = addMaterial(
-      addMaterial(fixture("fork-and-merge"), "dep").design,
-      "LIB",
-    ).design;
+    const withAdded = insertStep(
+      addPartition(addStart(fixture("fork-and-merge")).design, "R1", "sort-2").design,
+      "R3",
+    )!.design;
     const designs = [...designFixtures.map((item) => item.design), withAdded];
     for (const design of designs) {
       const { nodes } = layout(withJunctions(toGraph(design)));

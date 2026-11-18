@@ -23,15 +23,23 @@ export type LayoutOptions = {
 const NAME_CHAR_WIDTH = 7.9;
 const LABEL_CHAR_WIDTH = 6.2;
 
+/** The name shown for a node: the sample id, a shadow's name, or a placeholder. */
+export function displayName(node: GraphNode) {
+  if (node.sequenced) {
+    return node.id;
+  }
+  if (node.kind !== "material") {
+    return node.kind === "pool" ? "Merge" : "Split";
+  }
+  return node.name ?? `Shadow ${node.id.replace(/^shadow-/, "")}`;
+}
+
 /** The label line shown under a material name. */
 export const nodeLabel = (node: GraphNode) => Object.values(node.meta).join(" · ");
 
 /** Estimates a node card size from its text, so the layout needs no DOM. */
 export function estimateNodeSize(node: GraphNode) {
-  if (node.kind === "pool") {
-    return { w: 44, h: 24 };
-  }
-  if (node.kind === "junction") {
+  if (!node.sequenced) {
     return { w: 14, h: 14 };
   }
   const text = Math.max(
@@ -55,6 +63,7 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
   const parents = Map.groupBy(graph.edges, (edge) => edge.to);
   const children = Map.groupBy(graph.edges, (edge) => edge.from);
   const isJunction = (id: string) => byId.get(id)!.kind === "junction";
+  const isShadow = (id: string) => !byId.get(id)!.sequenced;
 
   const rank = stepRanks(graph, byId, parents);
   const columns = Array.from(new Set(rank.values())).sort((left, right) => left - right);
@@ -87,12 +96,16 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
   const nodes = graph.nodes.map((node) => {
     const { w: width, h: height } = size.get(node.id)!;
     const index = column.get(node.id)!;
-    const left = {
-      material: () => columnLeft[index],
-      pool: () => columnLeft[index] + (columnWidth[index] - width) / 2,
-      junction: () => gapCenter(index) - width / 2,
-    }[node.kind]();
-    return { id: node.id, x: left, y: centerY(node.id) - height / 2, w: width, h: height };
+    const left = () => {
+      if (node.kind === "junction") {
+        return gapCenter(index) - width / 2;
+      }
+      if (!node.sequenced) {
+        return columnLeft[index] + (columnWidth[index] - width) / 2;
+      }
+      return columnLeft[index];
+    };
+    return { id: node.id, x: left(), y: centerY(node.id) - height / 2, w: width, h: height };
   });
   const box = new Map(nodes.map((node) => [node.id, node]));
 
@@ -111,8 +124,8 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
     const to = box.get(edge.to)!;
     return {
       id: edge.id,
-      from: { x: from.x + (isJunction(edge.from) ? from.w / 2 : from.w), y: centerY(edge.from) },
-      to: { x: to.x + (isJunction(edge.to) ? to.w / 2 : 0), y: centerY(edge.to) },
+      from: { x: from.x + (isShadow(edge.from) ? from.w / 2 : from.w), y: centerY(edge.from) },
+      to: { x: to.x + (isShadow(edge.to) ? to.w / 2 : 0), y: centerY(edge.to) },
       bend: bendRange(edge.from, edge.to),
     };
   });

@@ -1,10 +1,13 @@
 import { describe, expect, test } from "vitest";
 import {
-  addMaterial,
   addPartition,
+  addStart,
+  addStep,
+  insertStep,
   joinSplit,
   leaveSplit,
   renameMaterial,
+  setName,
   setPart,
   setStep,
   siblingsOf,
@@ -51,11 +54,36 @@ describe("edit", () => {
     expect(renamed.materials.some((item) => item.id === "depleted")).toBe(true);
   });
 
-  test("addMaterial adds an unsequenced slice child with a fresh split", () => {
-    const { design, id } = addMaterial(forkAndMerge, "R1");
-    const added = design.materials.find((item) => item.id === id)!;
-    expect(added.sequenced).toBe(false);
-    expect(added.from).toEqual({ of: "R1", part: "slice", split: "split-1" });
+  test("addStart adds a shadow root with a generated id", () => {
+    const { design, id } = addStart(forkAndMerge);
+    expect(design.materials.find((item) => item.id === id)).toEqual({
+      id: "shadow-1",
+      sequenced: false,
+      meta: {},
+    });
+  });
+
+  test("insertStep puts a shadow step between a material and its parents", () => {
+    const { design, id } = insertStep(forkAndMerge, "R3")!;
+    expect(from(design, id)).toEqual({
+      of: ["dep", "str"],
+      part: "slice",
+      split: "pan-3",
+      step: "round",
+    });
+    expect(from(design, "R3")).toEqual({ of: id, part: "whole" });
+    expect(insertStep(forkAndMerge, "LIB")).toBeUndefined();
+  });
+
+  test("addStep adds a shadow made from all of its parent", () => {
+    const { design, id } = addStep(forkAndMerge, "R3");
+    expect(from(design, id)).toEqual({ of: "R3", part: "whole" });
+  });
+
+  test("setName sets and clears a shadow's name", () => {
+    const named = setName(forkAndMerge, "LIB", "library");
+    expect(named.materials[0].name).toBe("library");
+    expect(setName(named, "LIB").materials[0]).not.toHaveProperty("name");
   });
 
   test("addPartition adds a sibling in the same separation", () => {

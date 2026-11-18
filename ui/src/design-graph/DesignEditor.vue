@@ -3,8 +3,8 @@ import { PlBtnGhost } from "@milaboratories/uikit";
 import { computed, shallowRef, useCssModule } from "vue";
 import DesignGraph from "./DesignGraph.vue";
 import SelectionPanel from "./SelectionPanel.vue";
-import { addMaterial, addPartition } from "./edit";
-import { junctionOf, withJunctions } from "./junctions";
+import { addStart } from "./edit";
+import { withJunctions } from "./junctions";
 import { toGraph } from "./toGraph";
 import type { Design, Selection } from "./types";
 
@@ -35,21 +35,6 @@ const selection = computed((): Selection => {
   }
   return current;
 });
-const selectedNode = computed(() =>
-  graph.value.nodes.find(
-    (node) => selection.value?.kind === "node" && node.id === selection.value.id,
-  ),
-);
-const selectedJunction = computed(() => junctionOf(graph.value, selectedNode.value?.id));
-const addTitle = computed(() => {
-  if (selectedJunction.value !== undefined) {
-    return "Add a partition";
-  }
-  if (selectedNode.value?.kind === "material") {
-    return `Add a material made from ${selectedNode.value.id}`;
-  }
-  return "Add a starting material";
-});
 
 function apply(next: Design, nextSelection?: Selection) {
   history.value = [...history.value, design.value];
@@ -62,19 +47,8 @@ function undo() {
   history.value = history.value.slice(0, -1);
 }
 
-function addition() {
-  const junction = selectedJunction.value;
-  if (junction !== undefined) {
-    return addPartition(design.value, junction.parentId, junction.split);
-  }
-  if (selectedNode.value?.kind === "material") {
-    return addMaterial(design.value, selectedNode.value.id);
-  }
-  return addMaterial(design.value);
-}
-
-function add() {
-  const added = addition();
+function start() {
+  const added = addStart(design.value);
   apply(added.design, { kind: "node", id: added.id });
 }
 </script>
@@ -83,7 +57,9 @@ function add() {
   <div :class="styles.canvas">
     <DesignGraph :graph="graph" :selection="selection" @select="(next) => (rawSelection = next)">
       <template #toolbar>
-        <PlBtnGhost icon="add" size="small" :title="addTitle" @click="add">Material</PlBtnGhost>
+        <PlBtnGhost icon="add" size="small" title="Add a starting material" @click="start">
+          Start
+        </PlBtnGhost>
         <PlBtnGhost
           icon="arrow-left-curved"
           size="small"

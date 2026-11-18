@@ -28,7 +28,7 @@ function materialToGraph(material: Material, ids: Set<string>): Graph {
     kind: "material",
     sequenced: material.sequenced,
     meta: material.meta,
-    hidden: false,
+    ...(material.name !== undefined && { name: material.name }),
   };
   if (material.from === undefined) {
     return { nodes: [node], edges: [] };
@@ -75,7 +75,7 @@ function materialToGraph(material: Material, ids: Set<string>): Graph {
     inserted: true,
   }));
   return {
-    nodes: [node, { id: pool, kind: "pool", sequenced: false, meta: {}, hidden: false }],
+    nodes: [node, { id: pool, kind: "pool", sequenced: false, meta: {} }],
     edges: [
       ...pooled,
       { id: edgeId(pool, material.id), from: pool, to: material.id, ...authored, inserted: true },

@@ -11,7 +11,6 @@ describe("toGraph", () => {
       kind: "pool",
       sequenced: false,
       meta: {},
-      hidden: false,
     });
     expect(graph.edges.filter((edge) => edge.to === "R3::pool")).toEqual([
       {
@@ -54,6 +53,7 @@ describe("toGraph", () => {
       const outgoing = Map.groupBy(graph.edges, (edge) => edge.from);
       for (const node of graph.nodes) {
         const into = incoming.get(node.id) ?? [];
+        if (!node.sequenced) expect(node.meta).toEqual({});
         if (node.kind === "material") expect(into.length).toBeLessThanOrEqual(1);
         if (node.kind === "pool") {
           expect(into.length).toBeGreaterThanOrEqual(2);

@@ -12,11 +12,12 @@ export type MaterialFrom = {
   step?: Step;
 };
 
-/** One authored material, as in a `study.yaml` entry. */
+/** One authored material, as in a `study.yaml` entry. An unsequenced one is a shadow node: no labels, an optional name. */
 export type Material = {
   id: string;
   sequenced: boolean;
   meta: Record<string, string | number>;
+  name?: string;
   from?: MaterialFrom;
 };
 
@@ -25,13 +26,13 @@ export type Design = {
   materials: Material[];
 };
 
-/** A graph node: a material, an inserted pool, or a hidden junction of a separation. */
+/** A graph node: a material, an inserted pool, or the junction of a separation. Unsequenced nodes are shadow nodes. */
 export type GraphNode = {
   id: string;
   kind: "material" | "pool" | "junction";
   sequenced: boolean;
   meta: Record<string, string | number>;
-  hidden: boolean;
+  name?: string;
 };
 
 /** A graph edge from a parent to a child. */

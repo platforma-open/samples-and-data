@@ -11,7 +11,7 @@ function groupKey(edge: GraphEdge, kinds: Map<string, GraphNode["kind"]>) {
   return junctionId(edge.from, edge.split);
 }
 
-/** Adds a hidden junction node for each separation with two or more partitions. */
+/** Adds a junction (a split shadow node) for each separation with two or more partitions. */
 export function withJunctions(graph: Graph): Graph {
   const kinds = new Map(graph.nodes.map((node) => [node.id, node.kind]));
   const groups = Map.groupBy(
@@ -43,7 +43,7 @@ export function withJunctions(graph: Graph): Graph {
 
   const nodes = junctions
     .keys()
-    .map((id) => ({ id, kind: "junction" as const, sequenced: false, meta: {}, hidden: true }))
+    .map((id) => ({ id, kind: "junction" as const, sequenced: false, meta: {} }))
     .toArray();
   return { nodes: [...graph.nodes, ...nodes], edges };
 }

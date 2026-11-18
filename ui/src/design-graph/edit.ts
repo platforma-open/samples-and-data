@@ -25,12 +25,19 @@ const singleParent = (material: Material | undefined) => {
 export const findMaterial = (design: Design, id: string) =>
   design.materials.find((material) => material.id === id);
 
-const freeId = (design: Design) => {
+const shadowId = (design: Design) => {
   const ids = new Set(design.materials.map((material) => material.id));
   const free = (index: number): string =>
-    ids.has(`material-${index}`) ? free(index + 1) : `material-${index}`;
+    ids.has(`shadow-${index}`) ? free(index + 1) : `shadow-${index}`;
   return free(1);
 };
+
+const shadow = (id: string, from?: MaterialFrom): Material => ({
+  id,
+  sequenced: false,
+  meta: {},
+  ...(from !== undefined && { from }),
+});
 
 /** The materials made from the same single parent as `id`, `id` excluded. */
 export function siblingsOf(design: Design, id: string): Material[] {
@@ -112,22 +119,40 @@ export function setMeta(design: Design, id: string, meta: Material["meta"]): Des
   return update(design, id, (material) => ({ ...material, meta }));
 }
 
-/** Marks a material as sequenced or not. */
-export function setSequenced(design: Design, id: string, sequenced: boolean): Design {
-  return update(design, id, (material) => ({ ...material, sequenced }));
+/** Sets or clears the name of a shadow material. */
+export function setName(design: Design, id: string, name?: string): Design {
+  return update(design, id, ({ name: _name, ...material }) => ({
+    ...material,
+    ...(name !== undefined && { name }),
+  }));
 }
 
-/** Adds a material made from `parentId` in a separation of its own (a root without a parent). */
-export function addMaterial(design: Design, parentId?: string): { design: Design; id: string } {
-  const id = freeId(design);
-  const material: Material = {
-    id,
-    sequenced: false,
-    meta: {},
-    ...(parentId !== undefined && { from: { of: parentId, part: "slice" as const } }),
+/** Adds a starting material: a shadow node with no parent. */
+export function addStart(design: Design): { design: Design; id: string } {
+  const id = shadowId(design);
+  return { design: { materials: [...design.materials, shadow(id)] }, id };
+}
+
+/** Adds a shadow step made from all of `parentId`. */
+export function addStep(design: Design, parentId: string): { design: Design; id: string } {
+  const id = shadowId(design);
+  const step = shadow(id, { of: parentId, part: "whole" });
+  return { design: { materials: [...design.materials, step] }, id };
+}
+
+/** Inserts a shadow step between `id` and its parents; the step takes over how `id` was made. */
+export function insertStep(design: Design, id: string): { design: Design; id: string } | undefined {
+  const from = findMaterial(design, id)?.from;
+  if (from === undefined) {
+    return undefined;
+  }
+  const stepId = shadowId(design);
+  const moved = updateFrom(design, id, () => ({ of: stepId, part: "whole" }));
+  const index = design.materials.findIndex((material) => material.id === id);
+  return {
+    design: { materials: moved.materials.toSpliced(index, 0, shadow(stepId, from)) },
+    id: stepId,
   };
-  const added: Design = { materials: [...design.materials, material] };
-  return { design: parentId === undefined ? added : leaveSplit(added, id), id };
 }
 
 /** Adds a partition to the separation `split` of `parentId`, with the separation's step type. */
@@ -136,16 +161,16 @@ export function addPartition(
   parentId: string,
   split: string,
 ): { design: Design; id: string } {
-  const id = freeId(design);
+  const id = shadowId(design);
   const step = design.materials.find(
     (material) => singleParent(material) === parentId && material.from?.split === split,
   )?.from?.step;
-  const material: Material = {
-    id,
-    sequenced: false,
-    meta: {},
-    from: { of: parentId, part: "slice", split, ...(step !== undefined && { step }) },
-  };
+  const material = shadow(id, {
+    of: parentId,
+    part: "slice",
+    split,
+    ...(step !== undefined && { step }),
+  });
   return { design: { materials: [...design.materials, material] }, id };
 }
 

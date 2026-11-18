@@ -14,6 +14,7 @@ const unsequenced = (id: string, from?: Material["from"]): Material => ({
   id,
   sequenced: false,
   meta: {},
+  name: id,
   ...(from !== undefined && { from }),
 });
 
