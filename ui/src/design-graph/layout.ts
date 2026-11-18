@@ -3,11 +3,14 @@ import type { Graph, GraphNode } from "./types";
 /** A placed node: top-left corner and size, in graph pixels. */
 export type NodeBox = { id: string; x: number; y: number; w: number; h: number };
 
-/** A routed edge: a right-angle polyline between two nodes. */
-export type EdgePath = { id: string; points: [number, number][] };
+/** A point in graph pixels. */
+export type Point = { x: number; y: number };
+
+/** A placed edge: its two ends and the x range of the column gap where it may change rows. */
+export type PlacedEdge = { id: string; from: Point; to: Point; bend: [number, number] };
 
 /** The result of `layout`. */
-export type Layout = { nodes: NodeBox[]; edges: EdgePath[]; width: number; height: number };
+export type Layout = { nodes: NodeBox[]; edges: PlacedEdge[]; width: number; height: number };
 
 /** Sizes and spacing the layout works with. */
 export type LayoutOptions = {
@@ -77,20 +80,9 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
     ],
     [],
   );
-  const gapCenter = (leftColumn: number) =>
-    columnLeft[leftColumn] + columnWidth[leftColumn] + options.columnGap / 2;
+  const gapLeft = (leftColumn: number) => columnLeft[leftColumn] + columnWidth[leftColumn];
+  const gapCenter = (leftColumn: number) => gapLeft(leftColumn) + options.columnGap / 2;
   const centerY = (id: string) => options.top + (slot.get(id)! - minSlot + 0.5) * options.rowHeight;
-
-  const junctionsByParent = Map.groupBy(
-    graph.nodes.filter((node) => node.kind === "junction"),
-    (node) => parents.get(node.id)![0].from,
-  );
-  const junctionOffset = (id: string, width: number) => {
-    const siblings = junctionsByParent.get(parents.get(id)![0].from)!;
-    const room = options.columnGap / 2 - width / 2 - 2;
-    const spacing = Math.min(8, room / siblings.length);
-    return (siblings.findIndex((node) => node.id === id) + 1) * spacing;
-  };
 
   const nodes = graph.nodes.map((node) => {
     const { w: width, h: height } = size.get(node.id)!;
@@ -98,49 +90,30 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
     const left = {
       material: () => columnLeft[index],
       pool: () => columnLeft[index] + (columnWidth[index] - width) / 2,
-      junction: () => gapCenter(index) + junctionOffset(node.id, width) - width / 2,
+      junction: () => gapCenter(index) - width / 2,
     }[node.kind]();
     return { id: node.id, x: left, y: centerY(node.id) - height / 2, w: width, h: height };
   });
   const box = new Map(nodes.map((node) => [node.id, node]));
 
+  const bendRange = (fromId: string, toId: string): [number, number] => {
+    if (isJunction(toId)) {
+      return [gapLeft(column.get(fromId)!), gapCenter(column.get(toId)!)];
+    }
+    if (isJunction(fromId)) {
+      return [gapCenter(column.get(fromId)!), columnLeft[column.get(fromId)! + 1]];
+    }
+    const gap = byId.get(toId)!.kind === "pool" ? column.get(toId)! - 1 : column.get(fromId)!;
+    return [gapLeft(gap), columnLeft[gap + 1]];
+  };
   const edges = graph.edges.map((edge) => {
     const from = box.get(edge.from)!;
     const to = box.get(edge.to)!;
-    const fromY = from.y + from.h / 2;
-    const toY = to.y + to.h / 2;
-    if (isJunction(edge.to)) {
-      const junctionX = to.x + to.w / 2;
-      return {
-        id: edge.id,
-        points: [
-          [from.x + from.w, fromY],
-          [junctionX, fromY],
-          [junctionX, toY],
-        ] satisfies [number, number][],
-      };
-    }
-    if (isJunction(edge.from)) {
-      const junctionX = from.x + from.w / 2;
-      return {
-        id: edge.id,
-        points: [
-          [junctionX, fromY],
-          [junctionX, toY],
-          [to.x, toY],
-        ] satisfies [number, number][],
-      };
-    }
-    const intoPool = byId.get(edge.to)!.kind === "pool";
-    const busX = gapCenter(intoPool ? column.get(edge.to)! - 1 : column.get(edge.from)!);
     return {
       id: edge.id,
-      points: [
-        [from.x + from.w, fromY],
-        [busX, fromY],
-        [busX, toY],
-        [to.x, toY],
-      ] satisfies [number, number][],
+      from: { x: from.x + (isJunction(edge.from) ? from.w / 2 : from.w), y: centerY(edge.from) },
+      to: { x: to.x + (isJunction(edge.to) ? to.w / 2 : 0), y: centerY(edge.to) },
+      bend: bendRange(edge.from, edge.to),
     };
   });
 

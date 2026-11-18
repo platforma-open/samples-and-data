@@ -56,18 +56,37 @@ describe("layout", () => {
     }
   });
 
-  test("routes edges with right angles from the parent's right side to the child's left side", () => {
+  test("routes edges from the middle of the parent's right side to the middle of the child's left side", () => {
     const graph = toGraph(fixture("two-arms-one-sort"));
     const result = layout(graph);
     for (const [index, edge] of result.edges.entries()) {
-      const [from, ...rest] = edge.points;
-      const segments = rest.map((point, step) => [step === 0 ? from : rest[step - 1], point]);
-      for (const [start, end] of segments) {
-        expect(start[0] === end[0] || start[1] === end[1]).toBe(true);
-      }
       const { from: parent, to: child } = graph.edges[index];
-      expect(from[0]).toBe(at(result, parent).x + at(result, parent).w);
-      expect(edge.points.at(-1)![0]).toBe(at(result, child).x);
+      expect(edge.from).toEqual({
+        x: at(result, parent).x + at(result, parent).w,
+        y: centerY(result, parent),
+      });
+      expect(edge.to).toEqual({ x: at(result, child).x, y: centerY(result, child) });
+    }
+  });
+
+  test("changes rows only inside a column gap that no card overlaps", () => {
+    for (const { design } of designFixtures) {
+      const graph = withJunctions(toGraph(design));
+      const result = layout(graph);
+      const cards = result.nodes.filter(
+        (node) => graph.nodes.find((item) => item.id === node.id)!.kind !== "junction",
+      );
+      for (const { id, from, to, bend } of result.edges) {
+        const [start, end] = bend;
+        expect(from.x, id).toBeLessThanOrEqual(start);
+        expect(start, id).toBeLessThanOrEqual(end);
+        expect(end, id).toBeLessThanOrEqual(to.x);
+        const crossed = cards.filter((card) => card.x < end && card.x + card.w > start);
+        expect(
+          crossed.map((card) => card.id),
+          id,
+        ).toEqual([]);
+      }
     }
   });
 });

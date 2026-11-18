@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { PlBtnGhost } from "@milaboratories/uikit";
 import { computed, onMounted, shallowRef, useCssModule, useTemplateRef } from "vue";
+import type { PlacedEdge } from "./layout";
 import { layout, nodeLabel } from "./layout";
 import type { Graph, GraphEdge, Selection } from "./types";
 
@@ -18,15 +19,11 @@ const nodeStyles = computed(
       ]),
     ),
 );
-const edgePaths = computed(
-  () =>
-    new Map(
-      placed.value.edges.map((path) => [
-        path.id,
-        path.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x},${y}`).join(" "),
-      ]),
-    ),
-);
+const curve = ({ from, to, bend: [start, end] }: PlacedEdge) => {
+  const middle = (start + end) / 2;
+  return `M${from.x},${from.y} H${start} C${middle},${from.y} ${middle},${to.y} ${end},${to.y} H${to.x}`;
+};
+const edgePaths = computed(() => new Map(placed.value.edges.map((path) => [path.id, curve(path)])));
 const kinds = computed(() => new Map(props.graph.nodes.map((node) => [node.id, node.kind])));
 
 const isSelected = (kind: "node" | "edge", id: string) =>
