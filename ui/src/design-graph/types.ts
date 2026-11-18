@@ -21,6 +21,9 @@ export type Material = {
   from?: MaterialFrom;
 };
 
+/** A row of the block's sample table: a sample id and its metadata. */
+export type Sample = Pick<Material, "id" | "meta">;
+
 /** The authored design: the editor's state. */
 export type Design = {
   materials: Material[];

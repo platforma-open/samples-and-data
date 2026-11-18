@@ -272,6 +272,13 @@ function addLabel() {
 
 <template>
   <section :class="styles.panel">
+    <PlBtnGhost
+      :class="styles.closeButton"
+      icon="close"
+      size="small"
+      title="Close"
+      @click="emit('close')"
+    />
     <template v-if="child !== undefined && childFrom !== undefined">
       <header :class="styles.header">
         <span :class="styles.kind">Edge</span>
@@ -282,11 +289,10 @@ function addLabel() {
         <PlBtnGhost v-if="canAddPartition" icon="add" size="small" @click="onSplitLine">
           Add partition
         </PlBtnGhost>
-        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
       <div :class="styles.row">
         <PlBtnGroup
-          label="Part"
+          label="Connection"
           :options="partOptions"
           :model-value="childFrom.part"
           @update:model-value="
@@ -333,7 +339,6 @@ function addLabel() {
         <span :class="styles.title"
           >{{ labelOf(edge?.from ?? "") }} → {{ labelOf(pooledInto) }}</span
         >
-        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
       <p :class="styles.note">Merged with the other parents of {{ labelOf(pooledInto) }}.</p>
     </template>
@@ -348,11 +353,10 @@ function addLabel() {
             @keydown.enter="commitName"
           />
         </div>
-        <PlBtnGhost :class="styles.close" icon="add" size="small" @click="addLabel">
+        <PlBtnGhost :class="styles.pushRight" icon="add" size="small" @click="addLabel">
           Add label
         </PlBtnGhost>
         <PlBtnGhost icon="add" size="small" @click="onAddStep(material.id)">Add step</PlBtnGhost>
-        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
       <div :class="styles.labels" @focusout="onLabelsFocusOut">
         <div v-for="([key, value], index) in labelsDraft" :key="index" :class="styles.label">
@@ -389,14 +393,13 @@ function addLabel() {
           />
         </div>
         <PlBtnGhost
-          :class="styles.close"
+          :class="styles.pushRight"
           icon="add"
           size="small"
           @click="onAddStep(shadowMaterial.id)"
         >
           Add step
         </PlBtnGhost>
-        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
     </template>
 
@@ -407,7 +410,6 @@ function addLabel() {
           {{ labelOf(junction.parentId) }} → {{ junction.partitions.map(labelOf).join(", ") }}
         </span>
         <PlBtnGhost icon="add" size="small" @click="onAddPartition">Add partition</PlBtnGhost>
-        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
     </template>
 
@@ -417,7 +419,6 @@ function addLabel() {
         <span :class="styles.title">
           {{ pool.parents.map(labelOf).join(" + ") }} → {{ labelOf(pool.child ?? "") }}
         </span>
-        <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
       </header>
       <p :class="styles.note">Added where a material has several parents.</p>
     </template>
@@ -426,19 +427,24 @@ function addLabel() {
 
 <style module>
 .panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 12px 16px 16px;
-  border: 1px solid var(--border-color-div-grey);
-  border-radius: 6px;
-  background: var(--bg-elevated-01);
 }
 
 .header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 8px 16px;
+  padding-inline-end: 32px;
+}
+
+.closeButton {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
 }
 
 .kind {
@@ -451,7 +457,7 @@ function addLabel() {
   font-weight: 600;
 }
 
-.close {
+.pushRight {
   margin-inline-start: auto;
 }
 
@@ -479,20 +485,18 @@ function addLabel() {
 }
 
 .field {
-  flex: 1;
-  max-inline-size: 280px;
+  flex-basis: 100%;
 }
 
 .labels {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 8px;
 }
 
 .label {
   display: grid;
-  grid-template-columns: 160px 200px auto;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
 }

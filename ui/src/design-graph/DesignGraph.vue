@@ -1,12 +1,32 @@
 <script lang="ts" setup>
 import { PlBtnGhost } from "@milaboratories/uikit";
-import { computed, onMounted, shallowRef, useCssModule, useTemplateRef } from "vue";
-import type { PlacedEdge } from "./layout";
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  shallowRef,
+  useCssModule,
+  useTemplateRef,
+  watch,
+} from "vue";
+import type { DragSource, DropTarget, PortSide } from "./connect";
+import { logicalEdge } from "./connect";
+import type { PlacedEdge, Point } from "./layout";
 import { displayName, layout, nodeLabel } from "./layout";
 import type { Graph, GraphEdge, Selection } from "./types";
 
-const props = defineProps<{ graph: Graph; selection: Selection }>();
-const emit = defineEmits<{ select: [selection: Selection] }>();
+const props = defineProps<{
+  graph: Graph;
+  selection: Selection;
+  canDrop: (source: DragSource, target: DropTarget) => boolean;
+  coveredRight: number;
+}>();
+const emit = defineEmits<{
+  select: [selection: Selection];
+  port: [nodeId: string, side: PortSide];
+  drop: [source: DragSource, target: DropTarget];
+}>();
 const styles = useCssModule();
 
 const placed = computed(() => layout(props.graph));
@@ -129,6 +149,179 @@ function onPointerUp() {
   drag = undefined;
 }
 
+type Wire = {
+  source: DragSource;
+  start: Point;
+  end: Point;
+  target: DropTarget | undefined;
+  allowed: boolean;
+  moved: boolean;
+  pointer: Point;
+};
+const wire = shallowRef<Wire>();
+const boxes = computed(() => new Map(placed.value.nodes.map((box) => [box.id, box])));
+
+const selectedEnds = computed(() => {
+  const selection = props.selection;
+  if (selection?.kind !== "edge" || logicalEdge(props.graph, selection.id) === undefined) {
+    return undefined;
+  }
+  const path = placed.value.edges.find((item) => item.id === selection.id);
+  if (path === undefined) {
+    return undefined;
+  }
+  return { edgeId: selection.id, parent: path.from, child: path.to };
+});
+
+const toGraphPoint = (clientX: number, clientY: number) => {
+  const rect = viewport.value!.getBoundingClientRect();
+  return {
+    x: (clientX - rect.left - view.value.x) / view.value.scale,
+    y: (clientY - rect.top - view.value.y) / view.value.scale,
+  };
+};
+
+function hitTest(clientX: number, clientY: number): DropTarget | undefined {
+  const element = document.elementFromPoint(clientX, clientY);
+  if (element === null || !viewport.value!.contains(element) || element.closest("[data-chrome]")) {
+    return undefined;
+  }
+  const nodeId = element.closest<HTMLElement>("[data-node-id]")?.dataset.nodeId;
+  if (nodeId !== undefined) {
+    return { kind: "node", id: nodeId };
+  }
+  const edgeId = element.closest<SVGElement>("[data-edge-id]")?.dataset.edgeId;
+  if (edgeId !== undefined) {
+    return { kind: "edge", id: edgeId };
+  }
+  return { kind: "empty" };
+}
+
+function startWire(source: DragSource, start: Point, event: PointerEvent) {
+  if (event.button !== 0) {
+    return;
+  }
+  window.addEventListener("pointermove", onWireMove);
+  window.addEventListener("pointerup", onWireUp);
+  window.addEventListener("pointercancel", endWire);
+  wire.value = {
+    source,
+    start,
+    end: start,
+    target: undefined,
+    allowed: false,
+    moved: false,
+    pointer: { x: event.clientX, y: event.clientY },
+  };
+}
+
+function startPort(nodeId: string, side: PortSide, event: PointerEvent) {
+  const box = boxes.value.get(nodeId)!;
+  const portOffset = props.graph.nodes.find((node) => node.id === nodeId)?.sequenced
+    ? 0
+    : SHADOW_PORT_OFFSET;
+  const start = {
+    x: side === "out" ? box.x + box.w + portOffset : box.x - portOffset,
+    y: box.y + box.h / 2,
+  };
+  startWire({ kind: "port", nodeId, side }, start, event);
+}
+
+function onWireMove(event: PointerEvent) {
+  const current = wire.value;
+  if (current === undefined) {
+    return;
+  }
+  const moved =
+    current.moved ||
+    Math.hypot(event.clientX - current.pointer.x, event.clientY - current.pointer.y) > 3;
+  const target = hitTest(event.clientX, event.clientY);
+  const allowed = target !== undefined && props.canDrop(current.source, target);
+  wire.value = {
+    ...current,
+    moved,
+    target,
+    allowed,
+    end: toGraphPoint(event.clientX, event.clientY),
+  };
+}
+
+function endWire() {
+  window.removeEventListener("pointermove", onWireMove);
+  window.removeEventListener("pointerup", onWireUp);
+  window.removeEventListener("pointercancel", endWire);
+  const current = wire.value;
+  wire.value = undefined;
+  return current;
+}
+
+function onWireUp() {
+  const current = endWire();
+  if (current === undefined) {
+    return;
+  }
+  if (!current.moved && current.source.kind === "port") {
+    emit("port", current.source.nodeId, current.source.side);
+    return;
+  }
+  if (current.moved && current.allowed && current.target !== undefined) {
+    emit("drop", current.source, current.target);
+  }
+}
+
+const REVEAL_MARGIN = 24;
+const SHADOW_PORT_OFFSET = 11;
+
+function selectedBounds() {
+  const selection = props.selection;
+  if (selection?.kind === "node") {
+    const box = boxes.value.get(selection.id);
+    if (box === undefined) {
+      return undefined;
+    }
+    return { left: box.x, right: box.x + box.w };
+  }
+  const path = placed.value.edges.find((item) => item.id === selection?.id);
+  if (path === undefined) {
+    return undefined;
+  }
+  return { left: path.from.x, right: path.to.x };
+}
+
+function revealSelection() {
+  const bounds = selectedBounds();
+  if (bounds === undefined || viewport.value === null) {
+    return;
+  }
+  const { x, scale } = view.value;
+  const visibleRight = viewport.value.clientWidth - props.coveredRight - REVEAL_MARGIN;
+  const overflow = bounds.right * scale + x - visibleRight;
+  const room = bounds.left * scale + x - REVEAL_MARGIN;
+  const shift = Math.min(overflow, room);
+  if (shift <= 0) {
+    return;
+  }
+  view.value = { ...view.value, x: x - shift };
+}
+
+watch([() => props.selection, () => props.coveredRight], () => nextTick(revealSelection));
+
+onBeforeUnmount(endWire);
+
+const isTarget = (kind: "node" | "edge", id: string) =>
+  wire.value !== undefined &&
+  wire.value.moved &&
+  wire.value.target?.kind === kind &&
+  wire.value.target.id === id;
+
+const wirePath = computed(() => {
+  const current = wire.value;
+  if (current === undefined) {
+    return "";
+  }
+  return `M${current.start.x},${current.start.y} L${current.end.x},${current.end.y}`;
+});
+
 onMounted(fit);
 </script>
 
@@ -150,7 +343,13 @@ onMounted(fit);
         <g
           v-for="edge in props.graph.edges"
           :key="edge.id"
-          :class="[styles.edge, styles[edge.part], isSelected('edge', edge.id) && styles.selected]"
+          :data-edge-id="edge.id"
+          :class="[
+            styles.edge,
+            styles[edge.part],
+            isSelected('edge', edge.id) && styles.selected,
+            isTarget('edge', edge.id) && (wire?.allowed ? styles.target : styles.refused),
+          ]"
           @pointerdown.stop
           @click="selectEdge(edge)"
         >
@@ -158,19 +357,40 @@ onMounted(fit);
           <path :class="styles.hit" :d="edgePaths.get(edge.id)" />
           <path :class="styles.line" :d="edgePaths.get(edge.id)" />
         </g>
+        <path
+          v-if="wire?.moved"
+          :class="[styles.wire, !wire.allowed && styles.refused]"
+          :d="wirePath"
+        />
       </svg>
       <div
         v-for="node in props.graph.nodes"
         :key="node.id"
+        :data-node-id="node.id"
         :class="[
           styles.node,
           !node.sequenced && styles.shadow,
           isSelected('node', node.id) && styles.selected,
+          isTarget('node', node.id) && (wire?.allowed ? styles.target : styles.refused),
         ]"
         :style="nodeStyles.get(node.id)"
         @pointerdown.stop
         @click="emit('select', { kind: 'node', id: node.id })"
       >
+        <template v-if="node.kind === 'material'">
+          <span
+            :class="[styles.port, styles.portIn]"
+            title="Add parents"
+            @pointerdown.stop="(event: PointerEvent) => startPort(node.id, 'in', event)"
+            @click.stop
+          />
+          <span
+            :class="[styles.port, styles.portOut]"
+            title="Add children"
+            @pointerdown.stop="(event: PointerEvent) => startPort(node.id, 'out', event)"
+            @click.stop
+          />
+        </template>
         <template v-if="node.sequenced">
           <div :class="styles.name">{{ node.id }}</div>
           <div :class="styles.label">{{ nodeLabel(node) }}</div>
@@ -183,8 +403,25 @@ onMounted(fit);
           {{ displayName(node) }}
         </span>
       </div>
+      <template v-if="selectedEnds !== undefined">
+        <span
+          v-for="end in ['parent', 'child'] as const"
+          :key="end"
+          :class="styles.handle"
+          :style="{ left: `${selectedEnds[end].x}px`, top: `${selectedEnds[end].y}px` }"
+          :title="end === 'parent' ? 'Drag to another parent' : 'Drag to another child'"
+          @pointerdown.stop="
+            (event: PointerEvent) =>
+              startWire(
+                { kind: 'end', edgeId: selectedEnds!.edgeId, end },
+                selectedEnds![end],
+                event,
+              )
+          "
+        />
+      </template>
     </div>
-    <div :class="styles.top" @pointerdown.stop>
+    <div :class="styles.top" data-chrome @pointerdown.stop>
       <div :class="styles.box"><slot name="toolbar" /></div>
       <div :class="[styles.box, styles.legend]">
         <span><i :class="styles.swatch" />shadow node</span>
@@ -194,7 +431,7 @@ onMounted(fit);
         </span>
       </div>
     </div>
-    <div :class="[styles.box, styles.zoom]" @pointerdown.stop>
+    <div :class="[styles.box, styles.zoom]" data-chrome @pointerdown.stop>
       <PlBtnGhost icon="zoom-out" size="small" title="Zoom out" @click="zoomCentered(1 / 1.25)" />
       <span :class="styles.percent">{{ percent }}</span>
       <PlBtnGhost icon="zoom-in" size="small" title="Zoom in" @click="zoomCentered(1.25)" />
@@ -261,9 +498,69 @@ onMounted(fit);
   stroke: var(--txt-01);
 }
 
-.edge.selected .line {
+.edge.selected .line,
+.edge.target .line {
   stroke: var(--border-color-focus);
   stroke-width: 2.5;
+}
+
+.edge.refused .line {
+  stroke: var(--border-color-error);
+}
+
+.wire {
+  stroke: var(--border-color-focus);
+  stroke-dasharray: 4 3;
+  stroke-width: 1.5;
+  pointer-events: none;
+
+  &.refused {
+    stroke: var(--border-color-error);
+  }
+}
+
+.port {
+  position: absolute;
+  inset-block-start: 50%;
+  inline-size: 10px;
+  block-size: 10px;
+  border: 1px dashed var(--ic-02);
+  border-radius: 50%;
+  background: var(--bg-elevated-01);
+  opacity: 0;
+  translate: 0 -50%;
+  cursor: crosshair;
+
+  &:hover {
+    border-color: var(--border-color-focus);
+  }
+}
+
+.portIn {
+  inset-inline-start: -6px;
+}
+
+.portOut {
+  inset-inline-end: -6px;
+}
+
+.shadow .portIn {
+  inset-inline-start: -16px;
+}
+
+.shadow .portOut {
+  inset-inline-end: -16px;
+}
+
+.handle {
+  position: absolute;
+  inline-size: 10px;
+  block-size: 10px;
+  border: 1px solid var(--border-color-focus);
+  border-radius: 50%;
+  background: var(--bg-elevated-01);
+  translate: -50% -50%;
+  cursor: grab;
 }
 
 .node {
@@ -291,9 +588,19 @@ onMounted(fit);
     }
   }
 
-  &.selected {
+  &.selected,
+  &.target {
     border-color: var(--border-color-focus);
     box-shadow: 0 0 0 3px var(--border-color-focus-shadow);
+  }
+
+  &.refused {
+    border-color: var(--border-color-error);
+  }
+
+  &:hover .port,
+  &.selected .port {
+    opacity: 1;
   }
 }
 

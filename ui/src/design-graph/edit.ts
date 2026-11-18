@@ -1,5 +1,5 @@
 import { parentsOf } from "./toGraph";
-import type { Design, Material, MaterialFrom, Part, Step } from "./types";
+import type { Design, Material, MaterialFrom, Part, Sample, Step } from "./types";
 
 const update = (design: Design, id: string, change: (material: Material) => Material): Design => ({
   materials: design.materials.map((material) => (material.id === id ? change(material) : material)),
@@ -25,12 +25,14 @@ const singleParent = (material: Material | undefined) => {
 export const findMaterial = (design: Design, id: string) =>
   design.materials.find((material) => material.id === id);
 
-const shadowId = (design: Design) => {
-  const ids = new Set(design.materials.map((material) => material.id));
+const freeName = (prefix: string, used: Set<string | undefined>) => {
   const free = (index: number): string =>
-    ids.has(`shadow-${index}`) ? free(index + 1) : `shadow-${index}`;
+    used.has(`${prefix}-${index}`) ? free(index + 1) : `${prefix}-${index}`;
   return free(1);
 };
+
+const shadowId = (design: Design) =>
+  freeName("shadow", new Set(design.materials.map((material) => material.id)));
 
 const shadow = (id: string, from?: MaterialFrom): Material => ({
   id,
@@ -52,10 +54,7 @@ export function siblingsOf(design: Design, id: string): Material[] {
 
 /** A split name that no child of the parent of `id` uses yet. */
 export function freshSplit(design: Design, id: string): string {
-  const used = new Set(siblingsOf(design, id).map((material) => material.from?.split));
-  const free = (index: number): string =>
-    used.has(`split-${index}`) ? free(index + 1) : `split-${index}`;
-  return free(1);
+  return freeName("split", new Set(siblingsOf(design, id).map((material) => material.from?.split)));
 }
 
 /** Sets what part of the parent the material holds. A slice gets its own split. */
@@ -190,4 +189,189 @@ export function splitLine(
       : freshSplit(design, id);
   const sliced = updateFrom(design, id, (from) => ({ ...from, part: "slice", split }));
   return { ...addPartition(sliced, parentId, split), parentId, split };
+}
+
+/** A split name that no child of `parentId` uses yet. */
+export function freeSplitOf(design: Design, parentId: string): string {
+  return freeName(
+    "split",
+    new Set(
+      design.materials
+        .filter((material) => singleParent(material) === parentId)
+        .map((material) => material.from?.split),
+    ),
+  );
+}
+
+/** Whether `targetId` is `id` or one of its descendants. */
+export function reaches(design: Design, id: string, targetId: string): boolean {
+  const children = (parentId: string) =>
+    design.materials
+      .filter(
+        (material) => material.from !== undefined && parentsOf(material.from).includes(parentId),
+      )
+      .map((material) => material.id);
+  const visit = (current: string, seen: Set<string>): boolean =>
+    current === targetId ||
+    children(current).some(
+      (child) => !seen.has(child) && visit(child, seen.union(new Set([child]))),
+    );
+  return visit(id, new Set([id]));
+}
+
+const sliceFrom = (parentId: string | string[], part: Part, split: string): MaterialFrom => ({
+  of: parentId,
+  part,
+  ...(part === "slice" && { split }),
+});
+
+/** Makes `parentId` a parent of `childId`: its first parent, or one more parent of a merge. */
+export function connect(
+  design: Design,
+  parentId: string,
+  childId: string,
+  part: Part,
+): Design | undefined {
+  const child = findMaterial(design, childId);
+  if (child === undefined || reaches(design, childId, parentId)) {
+    return undefined;
+  }
+  if (child.from === undefined) {
+    const from = sliceFrom(parentId, part, freeSplitOf(design, parentId));
+    return update(design, childId, (material) => ({ ...material, from }));
+  }
+  const parents = parentsOf(child.from);
+  if (parents.includes(parentId)) {
+    return undefined;
+  }
+  return updateFrom(design, childId, (from) => ({ ...from, of: [...parents, parentId] }));
+}
+
+/** Removes `parentId` from the parents of `childId`; with no parent left it becomes a starting material. */
+export function disconnect(design: Design, parentId: string, childId: string): Design {
+  const from = findMaterial(design, childId)?.from;
+  if (from === undefined) {
+    return design;
+  }
+  const rest = parentsOf(from).filter((parent) => parent !== parentId);
+  if (rest.length === 0) {
+    return update(design, childId, ({ from: _from, ...material }) => material);
+  }
+  const single = rest.length === 1;
+  return updateFrom(design, childId, (current) => ({
+    ...current,
+    of: single ? rest[0] : rest,
+    ...(single && current.part === "slice" && { split: freeSplitOf(design, rest[0]) }),
+  }));
+}
+
+/** Moves `childId` from `oldParentId` to `newParentId`. */
+export function reparent(
+  design: Design,
+  childId: string,
+  oldParentId: string,
+  newParentId: string,
+): Design | undefined {
+  const from = findMaterial(design, childId)?.from;
+  if (from === undefined || reaches(design, childId, newParentId)) {
+    return undefined;
+  }
+  const parents = parentsOf(from);
+  if (parents.includes(newParentId)) {
+    return undefined;
+  }
+  const of = parents.map((parent) => (parent === oldParentId ? newParentId : parent));
+  const single = of.length === 1;
+  return updateFrom(design, childId, (current) => ({
+    ...current,
+    of: single ? of[0] : of,
+    ...(single && current.part === "slice" && { split: freeSplitOf(design, newParentId) }),
+  }));
+}
+
+/** Makes `childId` a partition of the separation `siblingId` came out of under `parentId`, creating it if needed. */
+export function joinSeparation(
+  design: Design,
+  childId: string,
+  parentId: string,
+  siblingId: string,
+): Design | undefined {
+  const sibling = findMaterial(design, siblingId);
+  if (
+    sibling?.from === undefined ||
+    childId === siblingId ||
+    singleParent(sibling) !== parentId ||
+    reaches(design, childId, parentId)
+  ) {
+    return undefined;
+  }
+  const split =
+    sibling.from.part === "slice" && sibling.from.split !== undefined
+      ? sibling.from.split
+      : freeSplitOf(design, parentId);
+  const step = sibling.from.step;
+  const sliced = updateFrom(design, siblingId, (from) => ({ ...from, part: "slice", split }));
+  return update(sliced, childId, (material) => ({
+    ...material,
+    from: { of: parentId, part: "slice", split, ...(step !== undefined && { step }) },
+  }));
+}
+
+const sampleMaterial = (sample: Sample, from?: MaterialFrom): Material => ({
+  id: sample.id,
+  sequenced: true,
+  meta: sample.meta,
+  ...(from !== undefined && { from }),
+});
+
+const unplaced = (design: Design, samples: Sample[]) =>
+  samples.filter((sample) => findMaterial(design, sample.id) === undefined);
+
+/** Adds samples as children of `parentId`; slices added together form one separation. */
+export function addChildSamples(
+  design: Design,
+  parentId: string,
+  samples: Sample[],
+  part: Part,
+): Design | undefined {
+  const added = unplaced(design, samples);
+  if (added.length === 0) {
+    return undefined;
+  }
+  const from = sliceFrom(parentId, part, freeSplitOf(design, parentId));
+  return {
+    materials: [...design.materials, ...added.map((sample) => sampleMaterial(sample, from))],
+  };
+}
+
+/** Adds samples as parents of `childId`; several parents make a merge. */
+export function addParentSamples(
+  design: Design,
+  childId: string,
+  samples: Sample[],
+  part: Part,
+): Design | undefined {
+  const child = findMaterial(design, childId);
+  const added = unplaced(design, samples);
+  if (child === undefined || added.length === 0) {
+    return undefined;
+  }
+  const parents = [
+    ...(child.from === undefined ? [] : parentsOf(child.from)),
+    ...added.map((sample) => sample.id),
+  ];
+  const of = parents.length === 1 ? parents[0] : parents;
+  const from =
+    child.from === undefined
+      ? sliceFrom(of, part, freeSplitOf(design, parents[0]))
+      : { ...child.from, of };
+  const index = design.materials.indexOf(child);
+  const withChild = update(design, childId, (material) => ({ ...material, from }));
+  return {
+    materials: withChild.materials.toSpliced(
+      index,
+      0,
+      ...added.map((sample) => sampleMaterial(sample)),
+    ),
+  };
 }

@@ -1,4 +1,4 @@
-import type { Design, Material } from "./types";
+import type { Design, Material, Sample } from "./types";
 
 /** A named example design. */
 export type DesignFixture = { id: string; name: string; design: Design };
@@ -119,6 +119,25 @@ export const designFixtures: DesignFixture[] = [
   { id: "skipped-rounds", name: "Skipped rounds", design: skippedRounds },
   { id: "two-arms-one-sort", name: "Two arms, one sort", design: twoArmsOneSort },
   { id: "scan-then-combine", name: "Scan, then combine", design: scanThenCombine },
+];
+
+const extraSamples: Sample[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((index) => ({
+  id: `S${String(index).padStart(2, "0")}`,
+  meta: {
+    round: Math.ceil(index / 4),
+    target: index % 2 === 0 ? "T2" : "T1",
+    bin: index % 4 < 2 ? "lo" : "hi",
+  },
+}));
+
+/** A mock of the block's sample table: the design's sequenced materials plus some unplaced samples. */
+export const mockSamples = (design: Design): Sample[] => [
+  ...design.materials
+    .filter((material) => material.sequenced)
+    .map((material) => ({ id: material.id, meta: material.meta })),
+  ...extraSamples.filter(
+    (sample) => !design.materials.some((material) => material.id === sample.id),
+  ),
 ];
 
 /** The design of the fixture with the given id. */
