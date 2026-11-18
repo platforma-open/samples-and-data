@@ -9,6 +9,7 @@ import {
 } from "@milaboratories/uikit";
 import { computed, shallowRef, useCssModule, watch } from "vue";
 import type { PortSide } from "./connect";
+import { partOptions } from "./layout";
 import type { Part, Sample } from "./types";
 
 const props = defineProps<{
@@ -21,12 +22,6 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ add: [samples: Sample[], part: Part]; close: [] }>();
 const styles = useCssModule();
-
-const partOptions: { label: string; value: Part }[] = [
-  { label: "Whole", value: "whole" },
-  { label: "Slice", value: "slice" },
-  { label: "Remade", value: "remade" },
-];
 
 const part = shallowRef(props.part);
 const column = shallowRef("");

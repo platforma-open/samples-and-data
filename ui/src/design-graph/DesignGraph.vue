@@ -21,9 +21,12 @@ const props = defineProps<{
   selection: Selection;
   canDrop: (source: DragSource, target: DropTarget) => boolean;
   coveredRight: number;
+  marked: Set<string>;
 }>();
 const emit = defineEmits<{
   select: [selection: Selection];
+  toggle: [nodeId: string];
+  box: [nodeIds: string[]];
   port: [nodeId: string, side: PortSide];
   drop: [source: DragSource, target: DropTarget];
 }>();
@@ -120,11 +123,75 @@ function onWheel(event: WheelEvent) {
 
 let drag: { pointerX: number; pointerY: number; x: number; y: number; moved: boolean } | undefined;
 
+const selectionBox = shallowRef<{ start: Point; end: Point }>();
+const boxRect = computed(() => {
+  const current = selectionBox.value;
+  if (current === undefined) {
+    return undefined;
+  }
+  return {
+    left: Math.min(current.start.x, current.end.x),
+    top: Math.min(current.start.y, current.end.y),
+    right: Math.max(current.start.x, current.end.x),
+    bottom: Math.max(current.start.y, current.end.y),
+  };
+});
+const boxStyle = computed(() => {
+  const rect = boxRect.value;
+  if (rect === undefined) {
+    return undefined;
+  }
+  return {
+    left: `${rect.left}px`,
+    top: `${rect.top}px`,
+    width: `${rect.right - rect.left}px`,
+    height: `${rect.bottom - rect.top}px`,
+  };
+});
+
+function finishBox() {
+  const rect = boxRect.value;
+  selectionBox.value = undefined;
+  if (rect === undefined) {
+    return;
+  }
+  const inside = placed.value.nodes.filter(
+    (node) =>
+      kinds.value.get(node.id) === "material" &&
+      node.x < rect.right &&
+      node.x + node.w > rect.left &&
+      node.y < rect.bottom &&
+      node.y + node.h > rect.top,
+  );
+  emit(
+    "box",
+    inside.map((node) => node.id),
+  );
+}
+
+function cancelPointer() {
+  selectionBox.value = undefined;
+  drag = undefined;
+}
+
+function onNodeClick(nodeId: string, event: MouseEvent) {
+  if (event.metaKey || event.ctrlKey || event.shiftKey) {
+    emit("toggle", nodeId);
+    return;
+  }
+  emit("select", { kind: "node", id: nodeId });
+}
+
 function onPointerDown(event: PointerEvent) {
   if (event.button !== 0) {
     return;
   }
   viewport.value!.setPointerCapture(event.pointerId);
+  if (event.shiftKey) {
+    const point = toGraphPoint(event.clientX, event.clientY);
+    selectionBox.value = { start: point, end: point };
+    return;
+  }
   drag = {
     pointerX: event.clientX,
     pointerY: event.clientY,
@@ -135,6 +202,13 @@ function onPointerDown(event: PointerEvent) {
 }
 
 function onPointerMove(event: PointerEvent) {
+  if (selectionBox.value !== undefined) {
+    selectionBox.value = {
+      ...selectionBox.value,
+      end: toGraphPoint(event.clientX, event.clientY),
+    };
+    return;
+  }
   if (drag === undefined) {
     return;
   }
@@ -145,6 +219,10 @@ function onPointerMove(event: PointerEvent) {
 }
 
 function onPointerUp() {
+  if (selectionBox.value !== undefined) {
+    finishBox();
+    return;
+  }
   if (drag !== undefined && !drag.moved) emit("select", null);
   drag = undefined;
 }
@@ -328,12 +406,12 @@ onMounted(fit);
 <template>
   <div
     ref="viewport"
-    :class="styles.viewport"
+    :class="[styles.viewport, selectionBox !== undefined && styles.boxing]"
     @wheel.prevent="onWheel"
     @pointerdown="onPointerDown"
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
-    @pointercancel="onPointerUp"
+    @pointercancel="cancelPointer"
   >
     <div
       :class="styles.stage"
@@ -370,12 +448,12 @@ onMounted(fit);
         :class="[
           styles.node,
           !node.sequenced && styles.shadow,
-          isSelected('node', node.id) && styles.selected,
+          (isSelected('node', node.id) || props.marked.has(node.id)) && styles.selected,
           isTarget('node', node.id) && (wire?.allowed ? styles.target : styles.refused),
         ]"
         :style="nodeStyles.get(node.id)"
         @pointerdown.stop
-        @click="emit('select', { kind: 'node', id: node.id })"
+        @click="(event: MouseEvent) => onNodeClick(node.id, event)"
       >
         <template v-if="node.kind === 'material'">
           <span
@@ -403,6 +481,7 @@ onMounted(fit);
           {{ displayName(node) }}
         </span>
       </div>
+      <div v-if="boxStyle !== undefined" :class="styles.selectionBox" :style="boxStyle" />
       <template v-if="selectedEnds !== undefined">
         <span
           v-for="end in ['parent', 'child'] as const"
@@ -451,6 +530,10 @@ onMounted(fit);
 
   &:active {
     cursor: grabbing;
+  }
+
+  &.boxing {
+    cursor: crosshair;
   }
 }
 
@@ -550,6 +633,13 @@ onMounted(fit);
 
 .shadow .portOut {
   inset-inline-end: -16px;
+}
+
+.selectionBox {
+  position: absolute;
+  border: 1px dashed var(--border-color-focus);
+  background: var(--border-color-focus-shadow);
+  pointer-events: none;
 }
 
 .handle {

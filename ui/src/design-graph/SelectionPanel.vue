@@ -17,7 +17,7 @@ import {
   splitLine,
 } from "./edit";
 import { junctionId, junctionOf } from "./junctions";
-import { displayName } from "./layout";
+import { displayName, partOptions } from "./layout";
 import { parentsOf } from "./toGraph";
 import type { Design, Graph, Material, Part, Selection, Step } from "./types";
 
@@ -29,11 +29,6 @@ const props = defineProps<{
 const emit = defineEmits<{ change: [design: Design, selection?: Selection]; close: [] }>();
 const styles = useCssModule();
 
-const partOptions: { label: string; value: Part }[] = [
-  { label: "Whole", value: "whole" },
-  { label: "Slice", value: "slice" },
-  { label: "Remade", value: "remade" },
-];
 const stepOptions: { label: string; value: Step | "one-off" }[] = [
   { label: "One-off", value: "one-off" },
   { label: "Round", value: "round" },

@@ -3,12 +3,17 @@ import {
   addPartition,
   addStart,
   addStep,
+  addStepsTo,
   insertStep,
   joinSplit,
   leaveSplit,
+  makeSplit,
+  mergeInto,
+  moveUnder,
   renameMaterial,
   setName,
   setPart,
+  setPartOf,
   setStep,
   siblingsOf,
   splitLine,
@@ -78,6 +83,50 @@ describe("edit", () => {
   test("addStep adds a shadow made from all of its parent", () => {
     const { design, id } = addStep(forkAndMerge, "R3");
     expect(from(design, id)).toEqual({ of: "R3", part: "whole" });
+  });
+
+  test("mergeInto adds one shadow made from all the parents", () => {
+    const { design, id } = mergeInto(forkAndMerge, ["R1", "R3"], "whole")!;
+    expect(from(design, id)).toEqual({ of: ["R1", "R3"], part: "whole" });
+    expect(mergeInto(forkAndMerge, ["R1"], "whole")).toBeUndefined();
+  });
+
+  test("makeSplit joins siblings into one split and refuses materials of different parents", () => {
+    const apart = leaveSplit(forkAndMerge, "str");
+    const joined = makeSplit(apart, ["dep", "str"])!;
+    expect(from(joined, "str")?.split).toBe(from(joined, "dep")?.split);
+    expect(makeSplit(forkAndMerge, ["dep", "R1"])).toBeUndefined();
+    expect(makeSplit(forkAndMerge, ["dep", "str"])).toBeUndefined();
+    const whole = setPart(forkAndMerge, "str", "whole");
+    for (const order of [
+      ["dep", "str"],
+      ["str", "dep"],
+    ]) {
+      const result = makeSplit(whole, order)!;
+      expect([from(result, "dep")?.split, from(result, "str")?.split]).toEqual([
+        "sort-2",
+        "sort-2",
+      ]);
+    }
+  });
+
+  test("moveUnder keeps partitions of one split together and refuses cycles", () => {
+    const moved = moveUnder(forkAndMerge, ["dep", "str"], "LIB")!;
+    expect(from(moved, "dep")).toMatchObject({ of: "LIB", part: "slice", step: "round" });
+    expect(from(moved, "str")?.split).toBe(from(moved, "dep")?.split);
+    expect(from(moved, "dep")?.split).not.toBe(from(moved, "R1")?.split);
+    expect(moveUnder(forkAndMerge, ["R1"], "R3")).toBeUndefined();
+    expect(moveUnder(forkAndMerge, ["R3"], "R1::split::sort-2")).toBeUndefined();
+  });
+
+  test("setPartOf and addStepsTo act on each material", () => {
+    const wholes = setPartOf(forkAndMerge, ["dep", "str"], "whole");
+    expect([from(wholes, "dep")?.part, from(wholes, "str")?.part]).toEqual(["whole", "whole"]);
+    const stepped = addStepsTo(forkAndMerge, ["dep", "str"]);
+    expect(stepped.materials.slice(-2).map((item) => item.from)).toEqual([
+      { of: "dep", part: "whole" },
+      { of: "str", part: "whole" },
+    ]);
   });
 
   test("setName sets and clears a shadow's name", () => {

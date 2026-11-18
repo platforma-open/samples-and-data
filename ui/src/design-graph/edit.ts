@@ -375,3 +375,78 @@ export function addParentSamples(
     ),
   };
 }
+
+/** Adds a shadow step under each of `parentIds`. */
+export function addStepsTo(design: Design, parentIds: string[]): Design {
+  return parentIds.reduce((current, parentId) => addStep(current, parentId).design, design);
+}
+
+/** Sets the connection type of how each of `ids` was made. */
+export function setPartOf(design: Design, ids: string[], part: Part): Design {
+  return ids.reduce((current, id) => setPart(current, id, part), design);
+}
+
+/** Adds one shadow material made from all of `parentIds`: a merge. */
+export function mergeInto(
+  design: Design,
+  parentIds: string[],
+  part: Part,
+): { design: Design; id: string } | undefined {
+  if (parentIds.length < 2) {
+    return undefined;
+  }
+  const id = shadowId(design);
+  const merged = shadow(id, sliceFrom(parentIds, part, freeSplitOf(design, parentIds[0])));
+  return { design: { materials: [...design.materials, merged] }, id };
+}
+
+/** Makes materials made from one parent the partitions of one split: the split of the first selected slice, or a new one. */
+export function makeSplit(design: Design, ids: string[]): Design | undefined {
+  const froms = ids.map((id) => findMaterial(design, id)?.from);
+  const parents = new Set(ids.map((id) => singleParent(findMaterial(design, id))));
+  const [parent] = parents;
+  const splits = new Set(
+    froms.map((from, index) =>
+      JSON.stringify(from?.part === "slice" ? [from.split] : [null, ids[index]]),
+    ),
+  );
+  if (ids.length < 2 || parents.size !== 1 || parent === undefined || splits.size === 1) {
+    return undefined;
+  }
+  const split = froms.find((from) => from?.part === "slice")?.split ?? freeSplitOf(design, parent);
+  return ids.reduce(
+    (current, id) => updateFrom(current, id, (from) => ({ ...from, part: "slice", split })),
+    design,
+  );
+}
+
+/** Moves materials under one new parent; each keeps how it was made, and partitions of one split stay together. */
+export function moveUnder(design: Design, ids: string[], parentId: string): Design | undefined {
+  if (
+    ids.length === 0 ||
+    findMaterial(design, parentId) === undefined ||
+    ids.some((id) => reaches(design, id, parentId))
+  ) {
+    return undefined;
+  }
+  return ids.reduce(
+    (state, id) => {
+      const material = findMaterial(state.design, id);
+      const from = material?.from;
+      const part = from?.part ?? "whole";
+      const group = JSON.stringify([singleParent(material) ?? id, from?.split ?? id]);
+      const split = state.splits.get(group) ?? freeSplitOf(state.design, parentId);
+      const next: MaterialFrom = {
+        of: parentId,
+        part,
+        ...(part === "slice" && { split }),
+        ...(from?.step !== undefined && { step: from.step }),
+      };
+      return {
+        design: update(state.design, id, (material) => ({ ...material, from: next })),
+        splits: part === "slice" ? new Map([...state.splits, [group, split]]) : state.splits,
+      };
+    },
+    { design, splits: new Map<string, string>() },
+  ).design;
+}

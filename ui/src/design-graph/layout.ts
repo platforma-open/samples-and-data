@@ -1,4 +1,4 @@
-import type { Graph, GraphNode } from "./types";
+import type { Graph, GraphNode, Part } from "./types";
 
 /** A placed node: top-left corner and size, in graph pixels. */
 export type NodeBox = { id: string; x: number; y: number; w: number; h: number };
@@ -22,6 +22,13 @@ export type LayoutOptions = {
 
 const NAME_CHAR_WIDTH = 7.9;
 const LABEL_CHAR_WIDTH = 6.2;
+
+/** The connection types as the controls show them. */
+export const partOptions: { label: string; value: Part }[] = [
+  { label: "Whole", value: "whole" },
+  { label: "Slice", value: "slice" },
+  { label: "Remade", value: "remade" },
+];
 
 /** The name shown for a node: the sample id, a shadow's name, or a placeholder. */
 export function displayName(node: GraphNode) {
