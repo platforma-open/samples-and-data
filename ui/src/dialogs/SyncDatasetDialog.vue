@@ -14,7 +14,7 @@ import { useApp } from "../app";
 import ImportErrorDialog from "../components/ImportErrorDialog.vue";
 import { useTableImport } from "../composables/useTableImport";
 import { parseCsvNestedMapFromHandles, setEquals } from "../util";
-import { getOrCreateSample } from "./datasets";
+import { assignMultiSampleXsvSamples, getOrCreateSample, multiSampleXsvLabels } from "./datasets";
 import type { SamplesheetImportData } from "./ImportSamplesheetDialog.vue";
 import ImportSamplesheetDialog from "./ImportSamplesheetDialog.vue";
 
@@ -253,21 +253,46 @@ function sampleGroupsAreSynced(dataset: GroupedDataset): boolean {
   return true;
 }
 
+/** Values found in each file of a dataset, or undefined while a file is still being read */
+function valuesPerGroup(dataset: GroupedDataset): Record<PlId, string[]> | undefined {
+  const calculatedGroups = parsedSampleGroups.value?.[dataset.id];
+  if (!calculatedGroups) return undefined;
+  const result: Record<PlId, string[]> = {};
+  for (const groupId of Object.keys(dataset.content.data) as PlId[]) {
+    const values = calculatedGroups[groupId];
+    if (!values) return undefined;
+    result[groupId] = values;
+  }
+  return result;
+}
+
 function syncGroupsToDataset(dataset: GroupedDataset): void {
   const datasetId = dataset.id;
 
   const calculatedGroups = parsedSampleGroups.value?.[datasetId];
   if (calculatedGroups) {
     // update data
-    const groupToSample = {} as Record<PlId, Record<PlId, string>>;
-    for (const [groupId, sampleNames] of Object.entries(calculatedGroups)) {
-      if (!sampleNames) return;
-      const mapping = {} as Record<PlId, string>;
-      for (const sampleName of sampleNames) {
-        const sampleId = getOrCreateSample(app, sampleName);
-        mapping[sampleId] = sampleName;
+    let groupToSample = {} as Record<PlId, Record<PlId, string>>;
+    if (dataset.content.type === "MultiSampleXsv") {
+      // A value found in several files becomes one sample per file
+      const values = valuesPerGroup(dataset);
+      if (!values) return;
+      groupToSample = assignMultiSampleXsvSamples(
+        values,
+        dataset.content.groupLabels,
+        dataset.content.sampleGroups,
+        (label) => getOrCreateSample(app, label),
+      );
+    } else {
+      for (const [groupId, sampleNames] of Object.entries(calculatedGroups)) {
+        if (!sampleNames) return;
+        const mapping = {} as Record<PlId, string>;
+        for (const sampleName of sampleNames) {
+          const sampleId = getOrCreateSample(app, sampleName);
+          mapping[sampleId] = sampleName;
+        }
+        groupToSample[groupId as PlId] = mapping;
       }
-      groupToSample[groupId as PlId] = mapping;
     }
     if (!_.isEqual(dataset.content.sampleGroups, groupToSample)) {
       dataset.content.sampleGroups = groupToSample;
@@ -287,14 +312,22 @@ const datasetsToUpdate = computed(() =>
   autoExtractDatasets.value.filter((ds) => !sampleGroupsAreSynced(ds)),
 );
 
-// Distinct sample names: a name found in several file groups becomes one sample (getOrCreateSample)
+/** Labels of the samples "Import samples" gives a dataset */
+function sampleLabels(ds: GroupedDataset): string[] {
+  if (ds.content.type === "MultiSampleXsv") {
+    const values = valuesPerGroup(ds);
+    if (!values) return [];
+    return Object.values(multiSampleXsvLabels(values, ds.content.groupLabels)).flatMap((labels) =>
+      Object.values(labels),
+    );
+  }
+  return Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).flatMap((s) => s ?? []);
+}
+
+// Distinct labels: a name found in several file groups is one sample, except within a
+// Multisample CSV/TSV dataset, where it is one sample per file
 const nSamples = computed(
-  () =>
-    new Set(
-      datasetsToUpdate.value.flatMap((ds) =>
-        Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).flatMap((s) => s ?? []),
-      ),
-    ).size,
+  () => new Set(datasetsToUpdate.value.flatMap((ds) => sampleLabels(ds))).size,
 );
 
 async function updateSamples() {
