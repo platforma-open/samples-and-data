@@ -12,6 +12,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@milaboratories/uikit": "catalog:",
     "@platforma-open/milaboratories.samples-and-data.model": "workspace:*",
     "@platforma-sdk/ui-vue": "catalog:",
     "vue": "catalog:"

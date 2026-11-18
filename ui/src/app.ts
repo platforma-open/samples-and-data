@@ -2,6 +2,7 @@ import { platforma } from "@platforma-open/milaboratories.samples-and-data.model
 import { defineAppV3 } from "@platforma-sdk/ui-vue";
 import { computed, ref } from "vue";
 import DatasetPage from "./pages/DatasetPage.vue";
+import DesignGraphPage from "./pages/DesignGraphPage.vue";
 import MetadataPage from "./pages/MetadataPage.vue";
 import NewDatasetPage from "./pages/NewDatasetPage.vue";
 
@@ -75,6 +76,7 @@ export const sdkPlugin = defineAppV3(platforma, (app) => {
     routes: {
       "/": () => MetadataPage,
       "/dataset": () => DatasetPage,
+      "/design": () => DesignGraphPage,
       "/new-dataset": () => NewDatasetPage,
     },
   };

@@ -1,0 +1,73 @@
+import { describe, expect, test } from "vitest";
+import { addMaterial } from "./edit";
+import { designFixtures, fixture } from "./fixtures";
+import { withJunctions } from "./junctions";
+import type { Layout } from "./layout";
+import { layout } from "./layout";
+import { toGraph } from "./toGraph";
+
+const at = (result: Layout, id: string) => result.nodes.find((node) => node.id === id)!;
+const centerY = (result: Layout, id: string) => at(result, id).y + at(result, id).h / 2;
+
+describe("layout", () => {
+  test("places a round material in its round column, after a skip", () => {
+    const result = layout(toGraph(fixture("skipped-rounds")));
+    const columnX = (id: string) => at(result, id).x;
+    expect(columnX("Q_R3")).toBe(columnX("P_R3"));
+    expect(columnX("S_R2")).toBe(columnX("P_R2"));
+    expect(columnX("P_R5")).toBeGreaterThan(columnX("P_R3"));
+    expect(centerY(result, "Q_R1")).toBe(centerY(result, "Q_R3"));
+  });
+
+  test("puts a pool in its own column between its parents and its child", () => {
+    const result = layout(toGraph(fixture("fork-and-merge")));
+    const pool = at(result, "R3::pool");
+    expect(pool.x).toBeGreaterThan(at(result, "dep").x + at(result, "dep").w);
+    expect(at(result, "R3").x).toBeGreaterThan(pool.x + pool.w);
+    expect(centerY(result, "R3::pool")).toBe((centerY(result, "dep") + centerY(result, "str")) / 2);
+    expect(centerY(result, "R3")).toBe(centerY(result, "R3::pool"));
+  });
+
+  test("advances one column per edge without round labels", () => {
+    const result = layout(toGraph(fixture("scan-then-combine")));
+    const xs = ["SCAN", "S1_IN", "S1_OUT", "COMBO", "t1_lo"].map((id) => at(result, id).x);
+    expect(xs).toEqual(xs.toSorted((left, right) => left - right));
+    expect(new Set(xs).size).toBe(xs.length);
+  });
+
+  test("never overlaps two nodes", () => {
+    const withAdded = addMaterial(
+      addMaterial(fixture("fork-and-merge"), "dep").design,
+      "LIB",
+    ).design;
+    const designs = [...designFixtures.map((item) => item.design), withAdded];
+    for (const design of designs) {
+      const { nodes } = layout(withJunctions(toGraph(design)));
+      for (const [index, first] of nodes.entries()) {
+        for (const second of nodes.slice(index + 1)) {
+          const apart =
+            first.x + first.w <= second.x ||
+            second.x + second.w <= first.x ||
+            first.y + first.h <= second.y ||
+            second.y + second.h <= first.y;
+          expect(apart, `${first.id} overlaps ${second.id}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  test("routes edges with right angles from the parent's right side to the child's left side", () => {
+    const graph = toGraph(fixture("two-arms-one-sort"));
+    const result = layout(graph);
+    for (const [index, edge] of result.edges.entries()) {
+      const [from, ...rest] = edge.points;
+      const segments = rest.map((point, step) => [step === 0 ? from : rest[step - 1], point]);
+      for (const [start, end] of segments) {
+        expect(start[0] === end[0] || start[1] === end[1]).toBe(true);
+      }
+      const { from: parent, to: child } = graph.edges[index];
+      expect(from[0]).toBe(at(result, parent).x + at(result, parent).w);
+      expect(edge.points.at(-1)![0]).toBe(at(result, child).x);
+    }
+  });
+});

@@ -131,6 +131,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
   .sections((ctx) => {
     return [
       { type: "link" as const, href: "/" as const, label: "Metadata" },
+      { type: "link" as const, href: "/design" as const, label: "Design" },
       ...ctx.data.datasets.map((ds) => ({
         type: "link" as const,
         href: `/dataset?id=${ds.id}` as const,
