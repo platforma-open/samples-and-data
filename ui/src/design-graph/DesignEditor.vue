@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { PlBtnGhost, PlBtnGroup, PlSlideModal } from "@milaboratories/uikit";
+import { PlBtnGhost, PlBtnGroup, PlBtnPrimary, PlSlideModal } from "@milaboratories/uikit";
 import { computed, nextTick, shallowRef, useCssModule, useTemplateRef, watch } from "vue";
 import DesignGraph from "./DesignGraph.vue";
 import SamplePicker from "./SamplePicker.vue";
@@ -12,9 +12,12 @@ import {
   addParentSamples,
   addStart,
   addStartSamples,
+  canJoin,
   deleteMaterial,
   disconnect,
   findMaterial,
+  insertParent,
+  joinGroups,
   makeSplit,
   mergeInto,
   moveUnder,
@@ -106,14 +109,18 @@ const pickerView = computed((): PickerView | undefined => {
 });
 
 const rawMarked = shallowRef<Set<string>>(new Set());
-const rawPickingParent = shallowRef(false);
+const rawPickMode = shallowRef<"move" | "connect">();
 const marked = computed(() => rawMarked.value.intersection(placed.value));
 const markedIds = computed(() => Array.from(marked.value));
 const multiSelected = computed(() => markedIds.value.length >= 2);
 const sidebarOpen = computed(
   () => multiSelected.value || pickerView.value !== undefined || selection.value !== null,
 );
-const pickingParent = computed(() => rawPickingParent.value && multiSelected.value);
+const pickingParent = computed(() => rawPickMode.value === "move" && multiSelected.value);
+const connectTargets = shallowRef<Set<string>>(new Set());
+const connecting = computed(() => rawPickMode.value === "connect" && multiSelected.value);
+const shownTargets = computed(() => (connecting.value ? connectTargets.value : new Set<string>()));
+const picking = computed(() => pickingParent.value || connecting.value);
 const labelOf = (id: string) => labelIn(graph.value, id);
 const childOf = (id: string) => graph.value.edges.find((edge) => edge.from === id)?.to ?? "";
 const kindOf = (id: string) => nodeIn(graph.value, id)?.kind;
@@ -190,14 +197,47 @@ const commonPart = computed(() => {
 
 function clearMarked() {
   rawMarked.value = new Set();
-  rawPickingParent.value = false;
+  setPickMode();
 }
 
+function setPickMode(mode?: "move" | "connect") {
+  rawPickMode.value = mode;
+  connectTargets.value = new Set();
+}
+
+const canTarget = (id: string) => canJoin(props.design, markedIds.value, [id]);
+
+function pickTargets(ids: string[]) {
+  const allowed = new Set(ids.filter(canTarget));
+  const current = connectTargets.value;
+  connectTargets.value = allowed.isSubsetOf(current)
+    ? current.difference(allowed)
+    : current.union(allowed);
+}
+
+function applyNew(result?: { design: Design; id: string }) {
+  if (result === undefined) {
+    return;
+  }
+  clearMarked();
+  apply(result.design, { kind: "node", id: result.id });
+}
+
+const join = (parents: string[], children: string[]) =>
+  applyNew(joinGroups(props.design, parents, children, lastPart.value));
+const connectMarked = () => join(markedIds.value, Array.from(connectTargets.value));
+const insertMarkedStep = () => applyNew(insertParent(props.design, markedIds.value));
+const canInsertStep = computed(() => insertParent(props.design, markedIds.value) !== undefined);
+
 function mark(candidates: Set<string>) {
+  if (connecting.value) {
+    pickTargets(Array.from(candidates));
+    return;
+  }
   const ids = candidates.intersection(placed.value);
   if (ids.size >= 2) {
     rawMarked.value = ids;
-    rawPickingParent.value = false;
+    setPickMode();
     rawSelection.value = null;
     picker.value = undefined;
     return;
@@ -208,6 +248,10 @@ function mark(candidates: Set<string>) {
 }
 
 function toggle(nodeId: string) {
+  if (connecting.value) {
+    pickTargets([nodeId]);
+    return;
+  }
   const current = selection.value;
   const base =
     marked.value.size === 0 && current?.kind === "node" && placed.value.has(current.id)
@@ -224,14 +268,7 @@ function setMarkedPart(part: Part) {
   if (JSON.stringify(next) !== JSON.stringify(props.design)) apply(next);
 }
 
-function mergeMarked() {
-  const merged = mergeInto(props.design, markedIds.value);
-  if (merged === undefined) {
-    return;
-  }
-  clearMarked();
-  apply(merged.design, { kind: "node", id: merged.id });
-}
+const mergeMarked = () => applyNew(mergeInto(props.design, markedIds.value));
 
 function makeMarkedSplit() {
   const next = makeSplit(props.design, markedIds.value);
@@ -243,7 +280,7 @@ function moveMarkedUnder(parentId: string) {
   if (next === undefined) {
     return;
   }
-  rawPickingParent.value = false;
+  setPickMode();
   apply(next);
 }
 
@@ -334,14 +371,14 @@ function onKeydown(event: KeyboardEvent) {
       return;
     }
     event.stopPropagation();
-    if (pickingParent.value) {
-      rawPickingParent.value = false;
+    if (picking.value) {
+      setPickMode();
       return;
     }
     dismiss();
     return;
   }
-  if (event.key === "Delete" || event.key === "Backspace") {
+  if ((event.key === "Delete" || event.key === "Backspace") && !picking.value) {
     event.preventDefault();
     deleteSelected();
   }
@@ -350,6 +387,10 @@ function onKeydown(event: KeyboardEvent) {
 function select(next: Selection) {
   if (pickingParent.value) {
     if (next?.kind === "node") moveMarkedUnder(next.id);
+    return;
+  }
+  if (connecting.value) {
+    if (next?.kind === "node") pickTargets([next.id]);
     return;
   }
   clearMarked();
@@ -374,10 +415,37 @@ function openPicker(next: Picker) {
 const openPortPicker = (nodeId: string, side: PortSide) =>
   openPicker({ mode: side === "out" ? "children" : "parents", nodeId });
 
-const canDrop = (source: DragSource, target: DropTarget) =>
-  planDrop(props.design, graph.value, source, target, lastPart.value) !== undefined;
+function groupEnds(source: DragSource, target: DropTarget) {
+  if (
+    source.kind !== "port" ||
+    target.kind !== "node" ||
+    !multiSelected.value ||
+    !marked.value.has(source.nodeId) ||
+    marked.value.has(target.id) ||
+    !placed.value.has(target.id)
+  ) {
+    return undefined;
+  }
+  if (source.side === "out") {
+    return { parents: markedIds.value, children: [target.id] };
+  }
+  return { parents: [target.id], children: markedIds.value };
+}
+
+function canDrop(source: DragSource, target: DropTarget) {
+  const group = groupEnds(source, target);
+  if (group !== undefined) {
+    return joinGroups(props.design, group.parents, group.children, lastPart.value) !== undefined;
+  }
+  return planDrop(props.design, graph.value, source, target, lastPart.value) !== undefined;
+}
 
 function drop(source: DragSource, target: DropTarget) {
+  const group = groupEnds(source, target);
+  if (group !== undefined) {
+    join(group.parents, group.children);
+    return;
+  }
   const result = planDrop(props.design, graph.value, source, target, lastPart.value);
   if (result === undefined) {
     return;
@@ -451,6 +519,7 @@ function addSamples(chosen: Sample[], part: Part) {
       :can-drop="canDrop"
       :covered-right="sidebarOpen ? sidebarBox.covered : 0"
       :marked="marked"
+      :targets="shownTargets"
       @select="select"
       @toggle="toggle"
       @box="(nodeIds) => mark(new Set(nodeIds))"
@@ -489,19 +558,44 @@ function addSamples(chosen: Sample[], part: Part) {
         <section v-if="multiSelected" :class="styles.multi">
           <header :class="styles.header">
             <PlBtnGhost icon="add" size="small" @click="addMarkedChildren">Add children</PlBtnGhost>
+            <PlBtnGhost
+              icon="add"
+              size="small"
+              :disabled="!canInsertStep"
+              @click="insertMarkedStep"
+            >
+              Insert step
+            </PlBtnGhost>
+            <PlBtnGhost size="small" :disabled="picking" @click="setPickMode('connect')">
+              Connect to…
+            </PlBtnGhost>
             <PlBtnGhost size="small" @click="mergeMarked">Merge</PlBtnGhost>
             <PlBtnGhost size="small" :disabled="!canMakeSplit" @click="makeMarkedSplit">
               Make one split
             </PlBtnGhost>
-            <PlBtnGhost v-if="pickingParent" size="small" @click="rawPickingParent = false">
-              Cancel
+            <PlBtnGhost size="small" :disabled="picking" @click="setPickMode('move')">
+              Move under…
             </PlBtnGhost>
-            <PlBtnGhost v-else size="small" @click="rawPickingParent = true"
-              >Move under…</PlBtnGhost
-            >
             <PlBtnGhost icon="delete-bin" size="small" @click="deleteSelected">Delete</PlBtnGhost>
           </header>
-          <p v-if="pickingParent" :class="styles.note">Click the new parent.</p>
+          <div v-if="picking" :class="styles.header">
+            <span :class="styles.note">
+              {{
+                pickingParent
+                  ? "Click the new parent."
+                  : `Click the children. ${connectTargets.size} picked.`
+              }}
+            </span>
+            <PlBtnPrimary
+              v-if="connecting"
+              size="small"
+              :disabled="connectTargets.size === 0"
+              @click="connectMarked"
+            >
+              Connect
+            </PlBtnPrimary>
+            <PlBtnGhost size="small" @click="setPickMode()">Cancel</PlBtnGhost>
+          </div>
           <PlBtnGroup
             v-else
             label="Connection"

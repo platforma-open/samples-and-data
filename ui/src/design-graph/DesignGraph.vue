@@ -22,6 +22,7 @@ const props = defineProps<{
   canDrop: (source: DragSource, target: DropTarget) => boolean;
   coveredRight: number;
   marked: Set<string>;
+  targets?: Set<string>;
 }>();
 const emit = defineEmits<{
   select: [selection: Selection];
@@ -466,6 +467,7 @@ onMounted(fit);
           node.issue !== undefined && styles.issue,
           (isSelected('node', node.id) || props.marked.has(node.id)) && styles.selected,
           isTarget('node', node.id) && (wire?.allowed ? styles.target : styles.refused),
+          props.targets?.has(node.id) && styles.picked,
         ]"
         :style="nodeStyles.get(node.id)"
         @pointerdown.stop
@@ -698,6 +700,11 @@ onMounted(fit);
   &.target {
     border-color: var(--border-color-focus);
     box-shadow: 0 0 0 3px var(--border-color-focus-shadow);
+  }
+
+  &.picked {
+    border-style: dashed;
+    border-color: var(--border-color-focus);
   }
 
   &.refused,

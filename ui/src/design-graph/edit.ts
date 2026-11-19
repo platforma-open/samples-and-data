@@ -519,6 +519,84 @@ export function makeSplit(design: Design, ids: string[]): Design | undefined {
   );
 }
 
+/** Whether one shadow node can join all `parentIds` to all `childIds` without a cycle. */
+export function canJoin(design: Design, parentIds: string[], childIds: string[]): boolean {
+  return (
+    parentIds.length > 0 &&
+    childIds.length > 0 &&
+    [...parentIds, ...childIds].every((id) => findMaterial(design, id) !== undefined) &&
+    !childIds.some((child) => parentIds.some((parent) => reaches(design, child, parent)))
+  );
+}
+
+/** Joins all `parentIds` to each of `childIds`: through one new shadow node, or directly for one parent. Children with one parent form one separation. */
+export function joinGroups(
+  design: Design,
+  parentIds: string[],
+  childIds: string[],
+  part: Part,
+): { design: Design; id: string } | undefined {
+  if (!canJoin(design, parentIds, childIds)) {
+    return undefined;
+  }
+  const single = parentIds.length === 1;
+  const id = single ? parentIds[0] : shadowId(design);
+  const start = single
+    ? design
+    : { materials: [...design.materials, shadow(id, { of: parentIds, part: "whole" })] };
+  const split = freeSplitOf(start, id);
+  const joined = childIds.reduce((current, childId) => {
+    const from = findMaterial(current, childId)?.from;
+    if (from === undefined) {
+      return update(current, childId, (material) => ({
+        ...material,
+        from: sliceFrom(id, part, split),
+      }));
+    }
+    if (parentsOf(from).includes(id)) {
+      return current;
+    }
+    const of = [...parentsOf(from).filter((parent) => !parentIds.includes(parent)), id];
+    return updateFrom(current, childId, (old) => ({
+      ...old,
+      of: of.length === 1 ? of[0] : of,
+      ...(of.length === 1 && old.part === "slice" && { split }),
+    }));
+  }, start);
+  if (joined === design) {
+    return undefined;
+  }
+  return { design: joined, id };
+}
+
+/** Adds one shadow node as the parent of all `ids`; it takes over their old parents, so it sits between. */
+export function insertParent(
+  design: Design,
+  ids: string[],
+): { design: Design; id: string } | undefined {
+  if (ids.length < 2 || ids.some((id) => findMaterial(design, id) === undefined)) {
+    return undefined;
+  }
+  const oldParents = Array.from(
+    new Set(
+      ids.flatMap((id) => {
+        const from = findMaterial(design, id)?.from;
+        return from === undefined ? [] : parentsOf(from);
+      }),
+    ),
+  );
+  const id = shadowId(design);
+  const parent =
+    oldParents.length === 0
+      ? shadow(id)
+      : shadow(id, { of: oldParents.length === 1 ? oldParents[0] : oldParents, part: "whole" });
+  const moved = moveUnder({ materials: [...design.materials, parent] }, ids, id);
+  if (moved === undefined) {
+    return undefined;
+  }
+  return { design: moved, id };
+}
+
 /** Moves materials under one new parent; each keeps how it was made, and partitions of one split stay together. */
 export function moveUnder(design: Design, ids: string[], parentId: string): Design | undefined {
   if (

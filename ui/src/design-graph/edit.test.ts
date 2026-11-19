@@ -7,7 +7,9 @@ import {
   addStep,
   connect,
   deleteMaterial,
+  insertParent,
   insertStep,
+  joinGroups,
   joinSplit,
   leaveSplit,
   makeSplit,
@@ -124,6 +126,45 @@ describe("edit", () => {
     expect(from(moved, "dep")?.split).not.toBe(from(moved, "R1")?.split);
     expect(moveUnder(forkAndMerge, ["R1"], "R3")).toBeUndefined();
     expect(moveUnder(forkAndMerge, ["R3"], "R1::split::sort-2")).toBeUndefined();
+  });
+
+  test("insertParent adds one shadow parent that takes over the old parents", () => {
+    const { design, id } = insertParent(forkAndMerge, ["dep", "str"])!;
+    expect(from(design, id)).toEqual({ of: "R1", part: "whole" });
+    expect(from(design, "dep")).toMatchObject({ of: id, part: "slice", step: "round" });
+    expect(from(design, "str")?.split).toBe(from(design, "dep")?.split);
+    expect(insertParent(forkAndMerge, ["LIB", "R1"])).toBeUndefined();
+    const withRoot = addStart(forkAndMerge);
+    const both = insertParent(withRoot.design, ["LIB", withRoot.id])!;
+    expect(from(both.design, both.id)).toBeUndefined();
+    expect(from(both.design, "LIB")).toEqual({ of: both.id, part: "whole" });
+  });
+
+  test("joinGroups joins all parents to all children through one shadow node", () => {
+    const first = addStart(forkAndMerge);
+    const second = addStart(first.design);
+    const roots = [first.id, second.id];
+    const { design, id } = joinGroups(second.design, ["dep", "str"], roots, "slice")!;
+    expect(from(design, id)).toEqual({ of: ["dep", "str"], part: "whole" });
+    expect(roots.map((root) => from(design, root))).toEqual([
+      { of: id, part: "slice", split: "split-1" },
+      { of: id, part: "slice", split: "split-1" },
+    ]);
+    const direct = joinGroups(forkAndMerge, ["LIB"], ["R3"], "whole")!;
+    expect(direct.id).toBe("LIB");
+    expect(from(direct.design, "R3")?.of).toEqual(["dep", "str", "LIB"]);
+    const replaced = joinGroups(forkAndMerge, ["R1", "LIB"], ["dep"], "whole")!;
+    expect(from(replaced.design, "dep")).toMatchObject({ of: replaced.id, part: "slice" });
+    expect(joinGroups(forkAndMerge, ["R3"], ["R1"], "whole")).toBeUndefined();
+  });
+
+  test("joinGroups keeps existing links and puts the moved slices in one split", () => {
+    expect(joinGroups(forkAndMerge, ["R1"], ["dep", "str"], "slice")).toBeUndefined();
+    const { design, id } = joinGroups(forkAndMerge, ["R1", "LIB"], ["dep", "str"], "slice")!;
+    expect([from(design, "dep"), from(design, "str")]).toEqual([
+      { of: id, part: "slice", split: "split-1", step: "round" },
+      { of: id, part: "slice", split: "split-1", step: "round" },
+    ]);
   });
 
   test("setPartOf sets the connection type of each material", () => {
