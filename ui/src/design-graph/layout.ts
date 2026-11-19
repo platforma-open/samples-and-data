@@ -38,7 +38,19 @@ export function displayName(node: GraphNode) {
   if (node.kind !== "material") {
     return node.kind === "pool" ? "Merge" : "Split";
   }
-  return node.name ?? `Shadow ${node.id.replace(/^shadow-/, "")}`;
+  return node.name ?? `Unsequenced ${node.id.replace(/^shadow-/, "")}`;
+}
+
+/** The node with the given id. */
+export const nodeIn = (graph: Graph, id: string) => graph.nodes.find((item) => item.id === id);
+
+/** The display name of the node with the given id, or an empty string. */
+export function labelIn(graph: Graph, id: string) {
+  const node = nodeIn(graph, id);
+  if (node === undefined) {
+    return "";
+  }
+  return displayName(node);
 }
 
 /** The line shown under a material name: its label values, or why it has none. */

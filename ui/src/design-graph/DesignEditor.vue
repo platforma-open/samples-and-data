@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import { PlBtnGhost, PlBtnGroup } from "@milaboratories/uikit";
-import { computed, nextTick, shallowRef, useCssModule, useTemplateRef } from "vue";
+import { PlBtnGhost, PlBtnGroup, PlSlideModal } from "@milaboratories/uikit";
+import { computed, nextTick, shallowRef, useCssModule, useTemplateRef, watch } from "vue";
 import DesignGraph from "./DesignGraph.vue";
 import SamplePicker from "./SamplePicker.vue";
 import SelectionPanel from "./SelectionPanel.vue";
@@ -22,9 +22,9 @@ import {
   replaceWithSample,
   setPartOf,
 } from "./edit";
-import { withJunctions } from "./junctions";
-import { displayName, partOptions } from "./layout";
-import { toGraph } from "./toGraph";
+import { junctionOf, withJunctions } from "./junctions";
+import { displayName, labelIn, nodeIn, partOptions } from "./layout";
+import { parentsOf, toGraph } from "./toGraph";
 import type { Design, Part, Sample, Selection } from "./types";
 
 const props = defineProps<{ design: Design; samples: Sample[] }>();
@@ -39,8 +39,8 @@ type Picker =
   | { mode: "merged-children"; parentIds: string[] };
 const picker = shallowRef<Picker>();
 const lastPart = shallowRef<Part>("slice");
-const SIDEBAR_WIDTH = 360;
-const SIDEBAR_COVER = SIDEBAR_WIDTH + 8;
+const SIDEBAR_WIDTH = 368;
+const CANVAS_TOOLBAR_HEIGHT = 56;
 
 const graph = computed(() => withJunctions(toGraph(props.design)));
 const placed = computed(() => new Set(props.design.materials.map((item) => item.id)));
@@ -66,7 +66,6 @@ const selection = computed((): Selection => {
 type PickerView = {
   key: string;
   title: string;
-  target?: string;
   mode: "add" | "replace";
   showConnection: boolean;
 };
@@ -84,8 +83,7 @@ const pickerView = computed((): PickerView | undefined => {
     }
     return {
       key: "merged-children",
-      title: "Add children to a merge of",
-      target: parents.map(displayName).join(", "),
+      title: `Add children to a merge of ${parents.map(displayName).join(", ")}`,
       mode: "add",
       showConnection: true,
     };
@@ -94,13 +92,13 @@ const pickerView = computed((): PickerView | undefined => {
   if (current === undefined || node === undefined) {
     return undefined;
   }
-  const base = { key: `${current.mode}:${current.nodeId}`, target: displayName(node) };
+  const key = `${current.mode}:${current.nodeId}`;
   if (current.mode === "replace") {
-    return { ...base, title: "Replace", mode: "replace", showConnection: false };
+    return { key, title: `Replace ${displayName(node)}`, mode: "replace", showConnection: false };
   }
   return {
-    ...base,
-    title: current.mode === "children" ? "Add children to" : "Add parents to",
+    key,
+    title: `${current.mode === "children" ? "Add children to" : "Add parents to"} ${displayName(node)}`,
     mode: "add",
     showConnection:
       current.mode === "children" || findMaterial(props.design, current.nodeId)?.from === undefined,
@@ -116,6 +114,66 @@ const sidebarOpen = computed(
   () => multiSelected.value || pickerView.value !== undefined || selection.value !== null,
 );
 const pickingParent = computed(() => rawPickingParent.value && multiSelected.value);
+const labelOf = (id: string) => labelIn(graph.value, id);
+const childOf = (id: string) => graph.value.edges.find((edge) => edge.from === id)?.to ?? "";
+const kindOf = (id: string) => nodeIn(graph.value, id)?.kind;
+const isTextEntry = (target: HTMLElement) =>
+  target.isContentEditable ||
+  target.matches("textarea, input:not([type='radio'], [type='checkbox'])");
+
+function selectionTitle(current: NonNullable<Selection>) {
+  if (current.kind === "edge") {
+    const edge = graph.value.edges.find((item) => item.id === current.id);
+    if (edge !== undefined && kindOf(current.to) === "pool") {
+      return `${labelOf(edge.from)} → ${labelOf(childOf(current.to))}`;
+    }
+    const from = findMaterial(props.design, current.to)?.from;
+    if (from === undefined) {
+      return labelOf(current.to);
+    }
+    return `${parentsOf(from).map(labelOf).join(" + ")} → ${labelOf(current.to)}`;
+  }
+  const kind = kindOf(current.id);
+  if (kind === "junction") {
+    return `Split of ${labelOf(junctionOf(graph.value, current.id)?.parentId ?? "")}`;
+  }
+  if (kind === "pool") {
+    return `Merge into ${labelOf(childOf(current.id))}`;
+  }
+  const material = findMaterial(props.design, current.id);
+  if (material !== undefined && !material.sequenced) {
+    return material.from === undefined ? "Starting material" : "Step";
+  }
+  return labelOf(current.id);
+}
+
+const sidebarTitle = computed(() => {
+  if (multiSelected.value) {
+    return `${markedIds.value.length} selected`;
+  }
+  if (pickerView.value !== undefined) {
+    return pickerView.value.title;
+  }
+  if (selection.value === null) {
+    return "";
+  }
+  return selectionTitle(selection.value);
+});
+
+function dismiss() {
+  clearMarked();
+  closeSidebar();
+}
+
+function guardEscape(event: KeyboardEvent) {
+  const target = event.target;
+  if (
+    target instanceof HTMLElement &&
+    (isTextEntry(target) || target.closest(".pl-dropdown, .pl-dropdown-multi") !== null)
+  ) {
+    event.stopPropagation();
+  }
+}
 const canMakeSplit = computed(() => makeSplit(props.design, markedIds.value) !== undefined);
 const commonPart = computed(() => {
   const parts = new Set(
@@ -238,15 +296,27 @@ function deleteSelected() {
 }
 
 const canvas = useTemplateRef("canvas");
-const sidebar = useTemplateRef("sidebar");
 
 function refocus() {
   void nextTick(() => {
-    if (document.activeElement === null || document.activeElement === document.body) {
+    const active = document.activeElement;
+    if (active === null || active === document.body || !sidebarOpen.value) {
       canvas.value?.focus({ preventScroll: true });
     }
   });
 }
+
+const sidebarBox = shallowRef({ top: 0, covered: SIDEBAR_WIDTH });
+watch(sidebarOpen, (open) => {
+  const rect = canvas.value?.getBoundingClientRect();
+  if (!open || rect === undefined) {
+    return;
+  }
+  sidebarBox.value = {
+    top: rect.top + CANVAS_TOOLBAR_HEIGHT,
+    covered: SIDEBAR_WIDTH - (window.innerWidth - rect.right),
+  };
+});
 
 function onKeydown(event: KeyboardEvent) {
   const target = event.target;
@@ -260,21 +330,18 @@ function onKeydown(event: KeyboardEvent) {
     return;
   }
   if (event.key === "Escape") {
-    if (
-      target.isContentEditable ||
-      target.matches("textarea, input:not([type='radio'], [type='checkbox'])")
-    ) {
+    if (isTextEntry(target)) {
       return;
     }
+    event.stopPropagation();
     if (pickingParent.value) {
       rawPickingParent.value = false;
       return;
     }
-    clearMarked();
-    closeSidebar();
+    dismiss();
     return;
   }
-  if ((event.key === "Delete" || event.key === "Backspace") && !sidebar.value?.contains(target)) {
+  if (event.key === "Delete" || event.key === "Backspace") {
     event.preventDefault();
     deleteSelected();
   }
@@ -382,7 +449,7 @@ function addSamples(chosen: Sample[], part: Part) {
       :graph="graph"
       :selection="selection"
       :can-drop="canDrop"
-      :covered-right="sidebarOpen ? SIDEBAR_COVER : 0"
+      :covered-right="sidebarOpen ? sidebarBox.covered : 0"
       :marked="marked"
       @select="select"
       @toggle="toggle"
@@ -408,61 +475,71 @@ function addSamples(chosen: Sample[], part: Part) {
         />
       </template>
     </DesignGraph>
-    <aside v-if="sidebarOpen" ref="sidebar" :class="styles.sidebar">
-      <section v-if="multiSelected" :class="styles.multi">
-        <div :class="styles.corner">
-          <PlBtnGhost icon="delete-bin" size="small" title="Delete" @click="deleteSelected" />
-          <PlBtnGhost icon="close" size="small" title="Close" @click="clearMarked" />
-        </div>
-        <header :class="styles.header">
-          <span :class="styles.count">{{ markedIds.length }} selected</span>
-          <PlBtnGhost icon="add" size="small" @click="addMarkedChildren">Add children</PlBtnGhost>
-          <PlBtnGhost size="small" @click="mergeMarked">Merge</PlBtnGhost>
-          <PlBtnGhost size="small" :disabled="!canMakeSplit" @click="makeMarkedSplit">
-            Make one split
+    <PlSlideModal
+      :class="styles.sidebar"
+      :style="{ top: `${sidebarBox.top}px` }"
+      :model-value="sidebarOpen"
+      :width="`${SIDEBAR_WIDTH}px`"
+      :close-on-outside-click="false"
+      @update:model-value="dismiss"
+      @click="refocus"
+    >
+      <template #title>{{ sidebarTitle }}</template>
+      <div :class="styles.sheet" @keydown.esc="guardEscape" @keyup.esc="guardEscape">
+        <section v-if="multiSelected" :class="styles.multi">
+          <header :class="styles.header">
+            <PlBtnGhost icon="add" size="small" @click="addMarkedChildren">Add children</PlBtnGhost>
+            <PlBtnGhost size="small" @click="mergeMarked">Merge</PlBtnGhost>
+            <PlBtnGhost size="small" :disabled="!canMakeSplit" @click="makeMarkedSplit">
+              Make one split
+            </PlBtnGhost>
+            <PlBtnGhost v-if="pickingParent" size="small" @click="rawPickingParent = false">
+              Cancel
+            </PlBtnGhost>
+            <PlBtnGhost v-else size="small" @click="rawPickingParent = true"
+              >Move under…</PlBtnGhost
+            >
+            <PlBtnGhost icon="delete-bin" size="small" @click="deleteSelected">Delete</PlBtnGhost>
+          </header>
+          <p v-if="pickingParent" :class="styles.note">Click the new parent.</p>
+          <PlBtnGroup
+            v-else
+            label="Connection"
+            :options="partOptions"
+            :model-value="commonPart"
+            @update:model-value="setMarkedPart"
+          />
+        </section>
+        <SamplePicker
+          v-else-if="pickerView !== undefined"
+          :key="pickerView.key"
+          :samples="props.samples"
+          :placed="placed"
+          :mode="pickerView.mode"
+          :part="lastPart"
+          :show-connection="pickerView.showConnection"
+          @add="addSamples"
+        >
+          <PlBtnGhost
+            v-if="picker?.mode === 'start'"
+            icon="add"
+            size="small"
+            @click="addShadowStart"
+          >
+            Unsequenced start
           </PlBtnGhost>
-          <PlBtnGhost v-if="pickingParent" size="small" @click="rawPickingParent = false">
-            Cancel
-          </PlBtnGhost>
-          <PlBtnGhost v-else size="small" @click="rawPickingParent = true">Move under…</PlBtnGhost>
-        </header>
-        <p v-if="pickingParent" :class="styles.note">Click the new parent.</p>
-        <PlBtnGroup
-          v-else
-          label="Connection"
-          :options="partOptions"
-          :model-value="commonPart"
-          @update:model-value="setMarkedPart"
+        </SamplePicker>
+        <SelectionPanel
+          v-else-if="selection !== null"
+          :design="props.design"
+          :graph="graph"
+          :selection="selection"
+          @change="apply"
+          @delete="deleteSelected"
+          @replace="(nodeId) => openPicker({ mode: 'replace', nodeId })"
         />
-      </section>
-      <SamplePicker
-        v-else-if="pickerView !== undefined"
-        :key="pickerView.key"
-        :samples="props.samples"
-        :placed="placed"
-        :title="pickerView.title"
-        :target="pickerView.target"
-        :mode="pickerView.mode"
-        :part="lastPart"
-        :show-connection="pickerView.showConnection"
-        @add="addSamples"
-        @close="closeSidebar"
-      >
-        <PlBtnGhost v-if="picker?.mode === 'start'" icon="add" size="small" @click="addShadowStart">
-          Add shadow node
-        </PlBtnGhost>
-      </SamplePicker>
-      <SelectionPanel
-        v-else-if="selection !== null"
-        :design="props.design"
-        :graph="graph"
-        :selection="selection"
-        @change="apply"
-        @delete="deleteSelected"
-        @replace="(nodeId) => openPicker({ mode: 'replace', nodeId })"
-        @close="rawSelection = null"
-      />
-    </aside>
+      </div>
+    </PlSlideModal>
   </div>
 </template>
 
@@ -478,18 +555,21 @@ function addSamples(chosen: Sample[], part: Part) {
   background: radial-gradient(var(--border-color-div-grey) 1px, transparent 1px) 0 0 / 16px 16px;
 }
 
+.sidebar :global(.pl-slide-modal__title) {
+  padding-inline-end: 64px;
+}
+
+.sheet {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-block-size: 0;
+}
+
 .multi {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.corner {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
-  display: flex;
 }
 
 .header {
@@ -497,27 +577,10 @@ function addSamples(chosen: Sample[], part: Part) {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  padding-inline-end: 64px;
-}
-
-.count {
-  font-weight: 600;
 }
 
 .note {
   margin: 0;
   color: var(--txt-03);
-}
-
-.sidebar {
-  position: absolute;
-  inset-block: 56px 8px;
-  inset-inline-end: 8px;
-  inline-size: calc(v-bind(SIDEBAR_WIDTH) * 1px);
-  padding: 12px 16px 16px;
-  overflow: auto;
-  border: 1px solid var(--border-color-div-grey);
-  border-radius: 6px;
-  background: var(--bg-elevated-01);
 }
 </style>

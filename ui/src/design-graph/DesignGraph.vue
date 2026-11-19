@@ -519,7 +519,7 @@ onMounted(fit);
     <div :class="styles.top" data-chrome @pointerdown.stop>
       <div :class="styles.box"><slot name="toolbar" /></div>
       <div :class="[styles.box, styles.legend]">
-        <span><i :class="styles.swatch" />shadow node</span>
+        <span><i :class="styles.swatch" />unsequenced</span>
         <span v-for="part in legendLines" :key="part" :class="styles[part]">
           <svg width="24" height="6"><path :class="styles.line" d="M1,3 L24,3" /></svg>
           {{ part }}

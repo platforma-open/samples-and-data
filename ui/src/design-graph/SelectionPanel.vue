@@ -16,8 +16,7 @@ import {
   splitLine,
 } from "./edit";
 import { junctionOf } from "./junctions";
-import { displayName, partOptions } from "./layout";
-import { parentsOf } from "./toGraph";
+import { displayName, labelIn, nodeIn, partOptions } from "./layout";
 import type { Design, Graph, Material, Part, Selection, Step } from "./types";
 
 const props = defineProps<{
@@ -29,7 +28,6 @@ const emit = defineEmits<{
   change: [design: Design, selection?: Selection];
   delete: [];
   replace: [nodeId: string];
-  close: [];
 }>();
 const styles = useCssModule();
 
@@ -39,14 +37,8 @@ const stepOptions: { label: string; value: Step | "one-off" }[] = [
   { label: "Timecourse", value: "timecourse" },
 ];
 
-const kindOf = (id: string) => props.graph.nodes.find((item) => item.id === id)?.kind;
-const labelOf = (id: string) => {
-  const graphNode = props.graph.nodes.find((item) => item.id === id);
-  if (graphNode === undefined) {
-    return "";
-  }
-  return displayName(graphNode);
-};
+const kindOf = (id: string) => nodeIn(props.graph, id)?.kind;
+const labelOf = (id: string) => labelIn(props.graph, id);
 
 const edge = computed(() => {
   if (props.selection.kind !== "edge") {
@@ -92,12 +84,6 @@ const shadowMaterial = computed(() => {
     return undefined;
   }
   return findMaterial(props.design, node.value.id);
-});
-const shadowKind = computed(() => {
-  if (shadowMaterial.value?.from === undefined) {
-    return "Starting material";
-  }
-  return "Step";
 });
 const shadowNameDraft = shallowRef("");
 watch(shadowMaterial, (current) => (shadowNameDraft.value = current?.name ?? ""), {
@@ -181,25 +167,14 @@ function onAddPartition() {
 
 <template>
   <section :class="styles.panel">
-    <div :class="styles.corner">
-      <PlBtnGhost
-        v-if="node !== undefined || canDisconnect"
-        icon="delete-bin"
-        size="small"
-        title="Delete"
-        @click="emit('delete')"
-      />
-      <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
-    </div>
     <template v-if="child !== undefined && childFrom !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">Edge</span>
-        <span :class="styles.title">
-          {{ parentsOf(childFrom).map(labelOf).join(" + ") }} → {{ labelOf(child.id) }}
-        </span>
         <PlBtnGhost icon="add" size="small" @click="onInsertStep">Insert step</PlBtnGhost>
         <PlBtnGhost v-if="canAddPartition" icon="add" size="small" @click="onSplitLine">
           Add partition
+        </PlBtnGhost>
+        <PlBtnGhost v-if="canDisconnect" icon="delete-bin" size="small" @click="emit('delete')">
+          Delete
         </PlBtnGhost>
       </header>
       <div :class="styles.row">
@@ -247,22 +222,23 @@ function onAddPartition() {
 
     <template v-else-if="pooledInto !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">Edge</span>
-        <span :class="styles.title"
-          >{{ labelOf(edge?.from ?? "") }} → {{ labelOf(pooledInto) }}</span
+        <span :class="styles.note"
+          >Merged with the other parents of {{ labelOf(pooledInto) }}.</span
         >
+        <PlBtnGhost v-if="canDisconnect" icon="delete-bin" size="small" @click="emit('delete')">
+          Delete
+        </PlBtnGhost>
       </header>
-      <p :class="styles.note">Merged with the other parents of {{ labelOf(pooledInto) }}.</p>
     </template>
 
     <template v-else-if="material !== undefined">
       <header :class="styles.header">
         <span :class="styles.kind">Sample</span>
-        <span :class="[styles.title, styles.field]">{{ labelOf(material.id) }}</span>
         <PlBtnGhost icon="add" size="small" @click="onAddStep(material.id)">Add step</PlBtnGhost>
         <PlBtnGhost size="small" @click="emit('replace', material.id)">
           Replace with sample
         </PlBtnGhost>
+        <PlBtnGhost icon="delete-bin" size="small" @click="emit('delete')">Delete</PlBtnGhost>
       </header>
       <p v-if="material.issue !== undefined" :class="styles.issue">{{ material.issue }}</p>
       <dl v-else :class="styles.labels">
@@ -275,12 +251,11 @@ function onAddPartition() {
 
     <template v-else-if="shadowMaterial !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">{{ shadowKind }}</span>
         <div :class="styles.field" @focusout="commitShadowName">
           <PlTextField
             v-model="shadowNameDraft"
             label="Name"
-            placeholder="Optional"
+            :placeholder="node === undefined ? '' : displayName(node)"
             @keydown.enter="commitShadowName"
           />
         </div>
@@ -290,34 +265,29 @@ function onAddPartition() {
         <PlBtnGhost size="small" @click="emit('replace', shadowMaterial.id)">
           Replace with sample
         </PlBtnGhost>
+        <PlBtnGhost icon="delete-bin" size="small" @click="emit('delete')">Delete</PlBtnGhost>
       </header>
     </template>
 
     <template v-else-if="junction !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">Split</span>
-        <span :class="styles.title">
-          {{ labelOf(junction.parentId) }} → {{ junction.partitions.map(labelOf).join(", ") }}
-        </span>
+        <span :class="styles.note">{{ junction.partitions.map(labelOf).join(", ") }}</span>
         <PlBtnGhost icon="add" size="small" @click="onAddPartition">Add partition</PlBtnGhost>
+        <PlBtnGhost icon="delete-bin" size="small" @click="emit('delete')">Delete</PlBtnGhost>
       </header>
     </template>
 
     <template v-else-if="pool !== undefined">
       <header :class="styles.header">
-        <span :class="styles.kind">Merge</span>
-        <span :class="styles.title">
-          {{ pool.parents.map(labelOf).join(" + ") }} → {{ labelOf(pool.child ?? "") }}
-        </span>
+        <span :class="styles.note">{{ pool.parents.map(labelOf).join(" + ") }}</span>
+        <PlBtnGhost icon="delete-bin" size="small" @click="emit('delete')">Delete</PlBtnGhost>
       </header>
-      <p :class="styles.note">Added where a sample has several parents.</p>
     </template>
   </section>
 </template>
 
 <style module>
 .panel {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -328,23 +298,10 @@ function onAddPartition() {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  padding-inline-end: 64px;
-}
-
-.corner {
-  position: absolute;
-  inset-block-start: 0;
-  inset-inline-end: 0;
-  display: flex;
 }
 
 .kind {
   color: var(--txt-03);
-}
-
-.title {
-  flex: 1;
-  font-weight: 600;
 }
 
 .row {
