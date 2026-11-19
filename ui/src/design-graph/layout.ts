@@ -142,14 +142,6 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
   return { nodes, edges, width, height };
 }
 
-function roundOf(node: GraphNode): number | undefined {
-  const round = Number(node.meta.round);
-  if (node.kind !== "material" || node.meta.round === undefined || !Number.isFinite(round)) {
-    return undefined;
-  }
-  return round;
-}
-
 function stepRanks(
   graph: Graph,
   byId: Map<string, GraphNode>,
@@ -174,7 +166,7 @@ function stepRanks(
     const steps = (parents.get(id) ?? []).map(
       (edge) => rankOf(edge.from) + stepLength(node, byId.get(edge.from)!),
     );
-    const value = Math.max(0, ...steps, roundOf(node) ?? 0);
+    const value = Math.max(0, ...steps);
     rank.set(id, value);
     return value;
   };
@@ -207,9 +199,10 @@ function treeSlots(
     return value;
   };
 
-  for (const node of graph.nodes) {
-    if (!parents.has(node.id)) place(node.id);
-  }
+  const roots = graph.nodes.filter((node) => !parents.has(node.id)).map((node) => node.id);
+  const trees = roots.filter((id) => children.has(id));
+  const loose = roots.filter((id) => !children.has(id));
+  for (const id of [...trees, ...loose]) place(id);
   return slot;
 }
 

@@ -10,13 +10,34 @@ const at = (result: Layout, id: string) => result.nodes.find((node) => node.id =
 const centerY = (result: Layout, id: string) => at(result, id).y + at(result, id).h / 2;
 
 describe("layout", () => {
-  test("places a round material in its round column, after a skip", () => {
+  test("takes columns from the graph only, not from round labels", () => {
     const result = layout(toGraph(fixture("skipped-rounds")));
     const columnX = (id: string) => at(result, id).x;
-    expect(columnX("Q_R3")).toBe(columnX("P_R3"));
-    expect(columnX("S_R2")).toBe(columnX("P_R2"));
-    expect(columnX("P_R5")).toBeGreaterThan(columnX("P_R3"));
+    expect(columnX("Q_R3")).toBe(columnX("P_R2"));
+    expect(columnX("S_R2")).toBe(columnX("P_R1"));
     expect(centerY(result, "Q_R1")).toBe(centerY(result, "Q_R3"));
+  });
+
+  test("stacks a canvas of unconnected samples in one column, in design order", () => {
+    const loose = [3, 1, 2].map((round) => ({ id: `S${round}`, sequenced: true, meta: { round } }));
+    const result = layout(toGraph({ materials: loose }));
+    const ys = loose.map((item) => centerY(result, item.id));
+    expect(loose.map((item) => at(result, item.id).x)).toEqual([0, 0, 0]);
+    expect(ys).toEqual(ys.toSorted((left, right) => left - right));
+  });
+
+  test("stacks unconnected nodes in the first column after the connected trees", () => {
+    const loose = ["S10", "S02", "S07"].map((id) => ({ id, sequenced: true, meta: { round: 3 } }));
+    const tree = fixture("fork-and-merge").materials;
+    const result = layout(
+      toGraph({ materials: [...loose.slice(0, 1), ...tree, ...loose.slice(1)] }),
+    );
+    const ys = loose.map((item) => centerY(result, item.id));
+    expect(loose.map((item) => at(result, item.id).x)).toEqual([0, 0, 0]);
+    expect(ys).toEqual(ys.toSorted((left, right) => left - right));
+    expect(new Set(ys).size).toBe(3);
+    const treeBottom = Math.max(...tree.map((item) => centerY(result, item.id)));
+    expect(Math.min(...ys)).toBeGreaterThan(treeBottom);
   });
 
   test("puts a pool in its own column between its parents and its child", () => {
@@ -28,7 +49,7 @@ describe("layout", () => {
     expect(centerY(result, "R3")).toBe(centerY(result, "R3::pool"));
   });
 
-  test("advances one column per edge without round labels", () => {
+  test("advances one column per edge", () => {
     const result = layout(toGraph(fixture("scan-then-combine")));
     const xs = ["SCAN", "S1_IN", "S1_OUT", "COMBO", "t1_lo"].map((id) => at(result, id).x);
     expect(xs).toEqual(xs.toSorted((left, right) => left - right));
