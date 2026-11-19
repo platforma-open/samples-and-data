@@ -1,6 +1,6 @@
 import type { PlId } from "@platforma-open/milaboratories.samples-and-data.model";
 import { describe, expect, test } from "vitest";
-import { editorDesign, removedSample, storedDesign, tableSamples } from "./design_table";
+import { editorDesign, removedSample, storedMaterials, tableSamples } from "./design_table";
 
 const first = "aaaaaaaaaaaaaaaaaaaaaaaa" as PlId;
 const second = "bbbbbbbbbbbbbbbbbbbbbbbb" as PlId;
@@ -18,17 +18,15 @@ const table = {
     },
   ],
 };
-const stored = {
-  materials: [
-    { id: "shadow-1", sequenced: false, name: "Library" },
-    {
-      id: first,
-      sequenced: true,
-      from: { of: "shadow-1", part: "slice" as const, split: "split-1" },
-    },
-    { id: "gone", sequenced: true, from: { of: first, part: "whole" as const } },
-  ],
-};
+const stored = [
+  { id: "shadow-1", sequenced: false, name: "Library" },
+  {
+    id: first,
+    sequenced: true,
+    from: { of: "shadow-1", part: "slice" as const, split: "split-1" },
+  },
+  { id: "gone", sequenced: true, from: { of: first, part: "whole" as const } },
+];
 
 describe("design table", () => {
   test("tableSamples makes column names unique and skips empty values", () => {
@@ -63,14 +61,14 @@ describe("design table", () => {
     const design = editorDesign(stored, tableSamples(table));
     expect(design.materials).toEqual([
       { id: "shadow-1", sequenced: false, name: "Library", meta: {} },
-      { ...stored.materials[1], name: "Sample 1", meta: { Round: 1, Arm: "A" } },
-      { ...stored.materials[2], ...removedSample, meta: {} },
+      { ...stored[1], name: "Sample 1", meta: { Round: 1, Arm: "A" } },
+      { ...stored[2], ...removedSample, meta: {} },
     ]);
-    expect(editorDesign(undefined, [])).toEqual({ materials: [] });
+    expect(editorDesign([], [])).toEqual({ materials: [] });
   });
 
-  test("storedDesign drops what comes from the table and round-trips", () => {
+  test("storedMaterials drops what comes from the table and round-trips", () => {
     const design = editorDesign(stored, tableSamples(table));
-    expect(storedDesign(design)).toEqual(stored);
+    expect(storedMaterials(design)).toEqual(stored);
   });
 });

@@ -5,6 +5,7 @@ import DatasetPage from "./pages/DatasetPage.vue";
 import DesignGraphPage from "./pages/DesignGraphPage.vue";
 import MetadataPage from "./pages/MetadataPage.vue";
 import NewDatasetPage from "./pages/NewDatasetPage.vue";
+import NewDesignPage from "./pages/NewDesignPage.vue";
 
 export const sdkPlugin = defineAppV3(platforma, (app) => {
   const showImportDataset = ref(false);
@@ -78,6 +79,7 @@ export const sdkPlugin = defineAppV3(platforma, (app) => {
       "/dataset": () => DatasetPage,
       "/design": () => DesignGraphPage,
       "/new-dataset": () => NewDatasetPage,
+      "/new-design": () => NewDesignPage,
     },
   };
 });

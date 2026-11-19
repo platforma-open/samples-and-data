@@ -71,18 +71,31 @@ export type DesignMaterial = {
   from?: DesignMaterialFrom;
 };
 
-/** The experiment design drawn on the Design page. */
+/** One experiment design, drawn on its own page. An empty label shows a placeholder name. */
 export type ExperimentDesign = {
+  id: PlId;
+  label: string;
   materials: DesignMaterial[];
 };
 
+/** The placeholder name of the design at `index` in the list. */
+export const designPlaceholder = (index: number) => `Design ${index + 1}`;
+
+/** The name a design shows: its label, or its placeholder name. */
+export function designLabel(design: Pick<ExperimentDesign, "label">, index: number) {
+  if (design.label.trim() === "") {
+    return designPlaceholder(index);
+  }
+  return design.label;
+}
+
 /**
  * V20260428 only differs from V20260427 in `DSContentMultiplexedFastq`, which
- * gains `barcodeTags` and `barcodeRules`, and in the optional `design`, which
- * is UI data only and never reaches the args.
+ * gains `barcodeTags` and `barcodeRules`, and in the optional `designs`, which
+ * are UI data only and never reach the args.
  */
 export type BlockDataV20260428 = BlockDataV20260427 & {
-  design?: ExperimentDesign;
+  designs?: ExperimentDesign[];
 };
 
 /** The current version of the block data. */

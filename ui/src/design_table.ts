@@ -1,7 +1,7 @@
 import { deepClone } from "@milaboratories/helpers";
 import type {
   BlockData,
-  ExperimentDesign,
+  DesignMaterial,
   MTColumn,
 } from "@platforma-open/milaboratories.samples-and-data.model";
 import type { Design, Sample } from "./design-graph/types";
@@ -42,11 +42,11 @@ export function tableSamples(
   }));
 }
 
-/** The stored design with each sample's label and metadata taken live from the table. */
-export function editorDesign(stored: ExperimentDesign | undefined, samples: Sample[]): Design {
+/** The stored materials of a design with each sample's label and metadata taken live from the table. */
+export function editorDesign(stored: DesignMaterial[], samples: Sample[]): Design {
   const byId = new Map(samples.map((sample) => [sample.id, sample]));
   return {
-    materials: deepClone(stored?.materials ?? []).map((material) => {
+    materials: deepClone(stored).map((material) => {
       const sample = byId.get(material.id);
       if (!material.sequenced) {
         return { ...material, meta: {} };
@@ -59,12 +59,10 @@ export function editorDesign(stored: ExperimentDesign | undefined, samples: Samp
   };
 }
 
-/** The design as stored in the block data: sample labels and metadata stay in the table. */
-export function storedDesign(design: Design): ExperimentDesign {
-  return {
-    materials: design.materials.map(({ meta: _meta, issue: _issue, name, ...material }) => ({
-      ...material,
-      ...(!material.sequenced && name !== undefined && { name }),
-    })),
-  };
+/** The materials as stored in the block data: sample labels and metadata stay in the table. */
+export function storedMaterials(design: Design): DesignMaterial[] {
+  return design.materials.map(({ meta: _meta, issue: _issue, name, ...material }) => ({
+    ...material,
+    ...(!material.sequenced && name !== undefined && { name }),
+  }));
 }
