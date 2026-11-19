@@ -463,6 +463,7 @@ onMounted(fit);
         :class="[
           styles.node,
           !node.sequenced && styles.shadow,
+          node.issue !== undefined && styles.issue,
           (isSelected('node', node.id) || props.marked.has(node.id)) && styles.selected,
           isTarget('node', node.id) && (wire?.allowed ? styles.target : styles.refused),
         ]"
@@ -485,8 +486,8 @@ onMounted(fit);
           />
         </template>
         <template v-if="node.sequenced">
-          <div :class="styles.name">{{ node.id }}</div>
-          <div :class="styles.label">{{ nodeLabel(node) }}</div>
+          <div :class="styles.name">{{ displayName(node) }}</div>
+          <div :class="styles.label" :title="nodeLabel(node)">{{ nodeLabel(node) }}</div>
         </template>
         <span
           v-else-if="node.kind === 'material'"
@@ -699,8 +700,13 @@ onMounted(fit);
     box-shadow: 0 0 0 3px var(--border-color-focus-shadow);
   }
 
-  &.refused {
+  &.refused,
+  &.issue:not(.selected) {
     border-color: var(--border-color-error);
+  }
+
+  &.issue .label {
+    color: var(--txt-error);
   }
 
   &:hover .port,
@@ -716,7 +722,6 @@ onMounted(fit);
   translate: -50% 0;
   max-inline-size: 64px;
   overflow: hidden;
-  font-family: var(--font-family-monospace);
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -734,7 +739,6 @@ onMounted(fit);
 }
 
 .name {
-  font-family: var(--font-family-monospace);
   font-size: 13px;
   font-weight: 600;
 }

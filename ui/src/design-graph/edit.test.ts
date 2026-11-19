@@ -133,8 +133,8 @@ describe("edit", () => {
 
   test("addMergedChildren adds one step made from all the parents, with the samples as one split", () => {
     const samples = [
-      { id: "S01", meta: {} },
-      { id: "S02", meta: {} },
+      { id: "S01", name: "S01", meta: {} },
+      { id: "S02", name: "S02", meta: {} },
     ];
     const { design, id } = addMergedChildren(forkAndMerge, ["dep", "str"], samples, "slice")!;
     expect(from(design, id)).toEqual({ of: ["dep", "str"], part: "whole" });
@@ -143,7 +143,12 @@ describe("edit", () => {
     const wholes = addMergedChildren(forkAndMerge, ["dep", "str"], samples, "whole")!;
     expect(from(wholes.design, "S01")).toEqual({ of: wholes.id, part: "whole" });
     expect(
-      addMergedChildren(forkAndMerge, ["dep", "str"], [{ id: "LIB", meta: {} }], "whole"),
+      addMergedChildren(
+        forkAndMerge,
+        ["dep", "str"],
+        [{ id: "LIB", name: "LIB", meta: {} }],
+        "whole",
+      ),
     ).toBeUndefined();
     expect(addMergedChildren(forkAndMerge, ["dep"], samples, "whole")).toBeUndefined();
     expect(addMergedChildren(forkAndMerge, ["dep", "gone"], samples, "whole")).toBeUndefined();
@@ -211,7 +216,7 @@ describe("edit", () => {
   });
 
   test("replaceWithSample keeps the connections and refuses a placed sample", () => {
-    const sample = { id: "S01", meta: { round: 2 } };
+    const sample = { id: "S01", name: "Sample 1", meta: { round: 2 } };
     const replaced = replaceWithSample(forkAndMerge, "dep", sample)!;
     expect(replaced.materials.find((item) => item.id === "S01")).toMatchObject({
       sequenced: true,
@@ -219,18 +224,25 @@ describe("edit", () => {
       from: from(forkAndMerge, "dep"),
     });
     expect(from(replaced, "R3")?.of).toEqual(["S01", "str"]);
-    expect(replaceWithSample(forkAndMerge, "dep", { id: "str", meta: {} })).toBeUndefined();
+    expect(
+      replaceWithSample(forkAndMerge, "dep", { id: "str", name: "str", meta: {} }),
+    ).toBeUndefined();
     const fromShadow = replaceWithSample(forkAndMerge, "LIB", sample)!;
-    expect(fromShadow.materials[0]).toEqual({ id: "S01", sequenced: true, meta: { round: 2 } });
+    expect(fromShadow.materials[0]).toEqual({
+      id: "S01",
+      sequenced: true,
+      meta: { round: 2 },
+      name: "Sample 1",
+    });
     expect(from(fromShadow, "R1")?.of).toBe("S01");
   });
 
   test("addStartSamples adds unplaced samples as roots", () => {
     const added = addStartSamples(forkAndMerge, [
-      { id: "S01", meta: {} },
-      { id: "LIB", meta: {} },
+      { id: "S01", name: "S01", meta: {} },
+      { id: "LIB", name: "LIB", meta: {} },
     ])!;
-    expect(added.materials.at(-1)).toEqual({ id: "S01", sequenced: true, meta: {} });
+    expect(added.materials.at(-1)).toEqual({ id: "S01", sequenced: true, meta: {}, name: "S01" });
     expect(added.materials).toHaveLength(forkAndMerge.materials.length + 1);
   });
 

@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { DragSource, DropTarget } from "./connect";
 import { logicalEdge, planDrop } from "./connect";
 import { addChildSamples, addParentSamples, disconnect, reaches } from "./edit";
-import { fixture, mockSamples } from "./fixtures";
+import { fixture } from "./fixtures";
 import { junctionId, withJunctions } from "./junctions";
 import { toGraph } from "./toGraph";
 import type { Design } from "./types";
@@ -153,7 +153,7 @@ describe("logicalEdge", () => {
 });
 
 describe("sample edits", () => {
-  const samples = mockSamples(forkAndMerge).filter((sample) => sample.id.startsWith("S0"));
+  const samples = ["S01", "S02", "S03"].map((id) => ({ id, name: id, meta: {} }));
 
   test("slice children added together form one separation", () => {
     const result = addChildSamples(forkAndMerge, "R3", samples.slice(0, 2), "slice")!;
@@ -177,7 +177,9 @@ describe("sample edits", () => {
   });
 
   test("samples already in the design are not added again", () => {
-    expect(addChildSamples(forkAndMerge, "R3", [{ id: "R1", meta: {} }], "slice")).toBeUndefined();
+    expect(
+      addChildSamples(forkAndMerge, "R3", [{ id: "R1", name: "R1", meta: {} }], "slice"),
+    ).toBeUndefined();
   });
 
   test("reaches follows children", () => {

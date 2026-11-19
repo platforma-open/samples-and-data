@@ -1,23 +1,41 @@
 <script lang="ts" setup>
-import { PlBlockPage, PlBtnGroup } from "@platforma-sdk/ui-vue";
-import { computed, shallowRef, useCssModule } from "vue";
+import { PlAlert, PlBlockPage, PlBtnSecondary } from "@platforma-sdk/ui-vue";
+import { computed, useCssModule } from "vue";
+import { useApp } from "../app";
 import DesignEditor from "../design-graph/DesignEditor.vue";
-import { designFixtures } from "../design-graph/fixtures";
+import { withJunctions } from "../design-graph/junctions";
+import { toGraph } from "../design-graph/toGraph";
+import type { Design } from "../design-graph/types";
+import { editorDesign, storedDesign, tableSamples } from "../design_table";
 
+const app = useApp();
 const styles = useCssModule();
-const fixtureId = shallowRef(designFixtures[0].id);
-const fixture = computed(() => designFixtures.find((item) => item.id === fixtureId.value)!);
-const options = designFixtures.map((item) => ({ label: item.name, value: item.id }));
+const samples = computed(() => tableSamples(app.model.data));
+const drawable = computed(() => {
+  try {
+    const design = editorDesign(app.model.data.design, samples.value);
+    withJunctions(toGraph(design));
+    return { design };
+  } catch {
+    return undefined;
+  }
+});
+
+const save = (next: Design) =>
+  void app.updateData((data) => ({ ...data, design: storedDesign(next) }));
+
+const clear = () => void app.updateData(({ design: _design, ...data }) => data);
 </script>
 
 <template>
   <PlBlockPage>
     <template #title>Design</template>
-    <template #append>
-      <PlBtnGroup v-model="fixtureId" :options="options" compact />
-    </template>
-    <div :class="styles.body">
-      <DesignEditor :key="fixture.id" :initial="fixture.design" />
+    <PlAlert v-if="drawable === undefined" type="error">
+      The saved design cannot be drawn.
+      <PlBtnSecondary size="small" @click="clear">Clear design</PlBtnSecondary>
+    </PlAlert>
+    <div v-else :class="styles.body">
+      <DesignEditor :design="drawable.design" :samples="samples" @change="save" />
     </div>
   </PlBlockPage>
 </template>

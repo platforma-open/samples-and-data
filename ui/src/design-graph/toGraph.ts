@@ -29,6 +29,7 @@ function materialToGraph(material: Material, ids: Set<string>): Graph {
     sequenced: material.sequenced,
     meta: material.meta,
     ...(material.name !== undefined && { name: material.name }),
+    ...(material.issue !== undefined && { issue: material.issue }),
   };
   if (material.from === undefined) {
     return { nodes: [node], edges: [] };

@@ -12,17 +12,18 @@ export type MaterialFrom = {
   step?: Step;
 };
 
-/** One authored material, as in a `study.yaml` entry. An unsequenced one is a shadow node: no labels, an optional name. */
+/** One authored material, as in a `study.yaml` entry. An unsequenced one is a shadow node: no labels, an optional name. A sequenced one shows its sample's label and labels; `issue` says why it cannot. */
 export type Material = {
   id: string;
   sequenced: boolean;
   meta: Record<string, string | number>;
   name?: string;
   from?: MaterialFrom;
+  issue?: string;
 };
 
-/** A row of the block's sample table: a sample id and its metadata. */
-export type Sample = Pick<Material, "id" | "meta">;
+/** A row of the block's sample table: a sample id, its label and its metadata. */
+export type Sample = Pick<Material, "id" | "meta"> & { name: string };
 
 /** The authored design: the editor's state. */
 export type Design = {
@@ -36,6 +37,7 @@ export type GraphNode = {
   sequenced: boolean;
   meta: Record<string, string | number>;
   name?: string;
+  issue?: string;
 };
 
 /** A graph edge from a parent to a child. */

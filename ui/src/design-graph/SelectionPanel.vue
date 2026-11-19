@@ -8,8 +8,6 @@ import {
   insertStep,
   joinSplit,
   leaveSplit,
-  renameMaterial,
-  setMeta,
   setName,
   setPart,
   setStep,
@@ -155,8 +153,6 @@ function changeOf(target: Material | undefined, next: (design: Design, id: strin
 }
 
 const changeChild = (next: (design: Design, id: string) => Design) => changeOf(child.value, next);
-const changeMaterial = (next: (design: Design, id: string) => Design) =>
-  changeOf(material.value, next);
 
 function onSplitLine() {
   if (child.value === undefined) {
@@ -175,98 +171,6 @@ function onAddPartition() {
   }
   const added = addPartition(props.design, junction.value.parentId, junction.value.split);
   emit("change", added.design, { kind: "node", id: added.id });
-}
-
-const nameDraft = shallowRef("");
-const labelsDraft = shallowRef<[string, string][]>([]);
-watch(
-  material,
-  (current) => {
-    nameDraft.value = current?.id ?? "";
-    labelsDraft.value = Object.entries(current?.meta ?? {}).map(([key, value]) => [
-      key,
-      String(value),
-    ]);
-  },
-  { immediate: true },
-);
-
-const nameError = computed(() => {
-  const name = nameDraft.value.trim();
-  if (name === "") {
-    return "Enter a name.";
-  }
-  if (name !== material.value?.id && findMaterial(props.design, name) !== undefined) {
-    return "This name is taken.";
-  }
-  if (name.includes("::") || name.includes("->")) {
-    return "Names cannot contain “::” or “->”.";
-  }
-  return undefined;
-});
-
-function commitName() {
-  const name = nameDraft.value.trim();
-  if (material.value === undefined || nameError.value !== undefined || name === material.value.id) {
-    return;
-  }
-  emit("change", renameMaterial(props.design, material.value.id, name), {
-    kind: "node",
-    id: name,
-  });
-}
-
-const parseValue = (value: string) => {
-  const number = Number(value);
-  return String(number) === value.trim() ? number : value;
-};
-
-const labelError = (index: number) => {
-  const key = labelsDraft.value[index][0].trim();
-  if (key === "" || !labelsDraft.value.slice(0, index).some(([other]) => other.trim() === key)) {
-    return undefined;
-  }
-  return "Label already used.";
-};
-
-function commitLabels() {
-  if (labelsDraft.value.some((_, index) => labelError(index) !== undefined)) {
-    return;
-  }
-  const meta = Object.fromEntries(
-    labelsDraft.value
-      .filter(([key]) => key.trim() !== "")
-      .map(([key, value]) => [key.trim(), parseValue(value)]),
-  );
-  if (JSON.stringify(meta) === JSON.stringify(material.value?.meta)) {
-    return;
-  }
-  changeMaterial((design, id) => setMeta(design, id, meta));
-}
-
-function onLabelsFocusOut(event: FocusEvent) {
-  const list = event.currentTarget;
-  if (
-    list instanceof Node &&
-    event.relatedTarget instanceof Node &&
-    list.contains(event.relatedTarget)
-  ) {
-    return;
-  }
-  commitLabels();
-}
-
-const setLabel = (index: number, entry: [string, string]) => {
-  labelsDraft.value = labelsDraft.value.with(index, entry);
-};
-
-function removeLabel(index: number) {
-  labelsDraft.value = labelsDraft.value.toSpliced(index, 1);
-  commitLabels();
-}
-
-function addLabel() {
-  labelsDraft.value = [...labelsDraft.value, ["", ""]];
 }
 </script>
 
@@ -348,41 +252,20 @@ function addLabel() {
 
     <template v-else-if="material !== undefined">
       <header :class="styles.header">
-        <div :class="styles.field" @focusout="commitName">
-          <PlTextField
-            v-model="nameDraft"
-            label="Material"
-            :error="nameError"
-            @keydown.enter="commitName"
-          />
-        </div>
-        <PlBtnGhost icon="add" size="small" @click="addLabel"> Add label </PlBtnGhost>
+        <span :class="styles.kind">Sample</span>
+        <span :class="[styles.title, styles.field]">{{ labelOf(material.id) }}</span>
         <PlBtnGhost icon="add" size="small" @click="onAddStep(material.id)">Add step</PlBtnGhost>
         <PlBtnGhost size="small" @click="emit('replace', material.id)">
           Replace with sample
         </PlBtnGhost>
       </header>
-      <div :class="styles.labels" @focusout="onLabelsFocusOut">
-        <div v-for="([key, value], index) in labelsDraft" :key="index" :class="styles.label">
-          <PlTextField
-            :model-value="key"
-            label="Label"
-            :error="labelError(index)"
-            @update:model-value="(text: string) => setLabel(index, [text, value])"
-          />
-          <PlTextField
-            :model-value="value"
-            label="Value"
-            @update:model-value="(text: string) => setLabel(index, [key, text])"
-          />
-          <PlBtnGhost
-            icon="delete-bin"
-            size="small"
-            title="Remove label"
-            @click="removeLabel(index)"
-          />
-        </div>
-      </div>
+      <p v-if="material.issue !== undefined" :class="styles.issue">{{ material.issue }}</p>
+      <dl v-else :class="styles.labels">
+        <template v-for="(value, key) in material.meta" :key="key">
+          <dt>{{ key }}</dt>
+          <dd>{{ value }}</dd>
+        </template>
+      </dl>
     </template>
 
     <template v-else-if="shadowMaterial !== undefined">
@@ -456,7 +339,6 @@ function addLabel() {
 
 .title {
   flex: 1;
-  font-family: var(--font-family-monospace);
   font-weight: 600;
 }
 
@@ -488,20 +370,24 @@ function addLabel() {
 }
 
 .labels {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0;
+
+  & dt {
+    color: var(--txt-03);
+  }
+
+  & dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
 }
 
-.label {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 8px;
-
-  & :global(.pl-text-field) {
-    min-inline-size: 0;
-  }
+.issue {
+  margin: 0;
+  color: var(--txt-error);
 }
 
 .note {

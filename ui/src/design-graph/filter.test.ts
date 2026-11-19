@@ -3,7 +3,7 @@ import type { SampleFilter } from "./filter";
 import { filterOptions, matchesFilters } from "./filter";
 import type { Sample } from "./types";
 
-const samples: Sample[] = [
+const samples: Pick<Sample, "id" | "meta">[] = [
   { id: "A", meta: { target: "T1", round: 1 } },
   { id: "B", meta: { round: "1", target: "T2" } },
   { id: "C", meta: { round: 10, target: "T2" } },

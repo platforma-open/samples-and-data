@@ -4,7 +4,7 @@ import type { Sample } from "./types";
 export type SampleFilter = { column: string; cell: string };
 
 /** Each distinct label value of the samples as a filter option: columns in table order, values in natural order. */
-export function filterOptions(samples: Sample[]) {
+export function filterOptions(samples: Pick<Sample, "meta">[]) {
   const cells = samples.flatMap((sample) =>
     Object.entries(sample.meta).map(([column, value]) => ({ column, cell: String(value) })),
   );
@@ -23,7 +23,7 @@ export function filterOptions(samples: Sample[]) {
 }
 
 /** Whether a sample matches: any chosen value within a column, and every filtered column. */
-export function matchesFilters(sample: Sample, filters: SampleFilter[]): boolean {
+export function matchesFilters(sample: Pick<Sample, "meta">, filters: SampleFilter[]): boolean {
   return Map.groupBy(filters, (filter) => filter.column)
     .entries()
     .every(([column, group]) => {

@@ -33,7 +33,7 @@ export const partOptions: { label: string; value: Part }[] = [
 /** The name shown for a node: the sample id, a shadow's name, or a placeholder. */
 export function displayName(node: GraphNode) {
   if (node.sequenced) {
-    return node.id;
+    return node.name ?? node.id;
   }
   if (node.kind !== "material") {
     return node.kind === "pool" ? "Merge" : "Split";
@@ -41,8 +41,8 @@ export function displayName(node: GraphNode) {
   return node.name ?? `Shadow ${node.id.replace(/^shadow-/, "")}`;
 }
 
-/** The label line shown under a material name. */
-export const nodeLabel = (node: GraphNode) => Object.values(node.meta).join(" · ");
+/** The line shown under a material name: its label values, or why it has none. */
+export const nodeLabel = (node: GraphNode) => node.issue ?? Object.values(node.meta).join(" · ");
 
 /** Estimates a node card size from its text, so the layout needs no DOM. */
 export function estimateNodeSize(node: GraphNode) {
@@ -50,7 +50,7 @@ export function estimateNodeSize(node: GraphNode) {
     return { w: 14, h: 14 };
   }
   const text = Math.max(
-    node.id.length * NAME_CHAR_WIDTH,
+    displayName(node).length * NAME_CHAR_WIDTH,
     nodeLabel(node).length * LABEL_CHAR_WIDTH,
   );
   return { w: Math.min(260, Math.max(120, Math.ceil(text) + 24)), h: 44 };

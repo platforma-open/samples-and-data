@@ -97,7 +97,7 @@ const summary = (sample: Sample) =>
           :disabled="props.placed.has(sample.id)"
           @update:model-value="() => (selected = toggled(selected, sample.id))"
         >
-          <span :class="styles.id">{{ sample.id }}</span>
+          <span :class="styles.name">{{ sample.name }}</span>
           <span :class="styles.meta">{{ summary(sample) }}</span>
         </PlCheckbox>
         <PlRadio
@@ -108,10 +108,12 @@ const summary = (sample: Sample) =>
           :disabled="props.placed.has(sample.id)"
           @update:model-value="() => (selected = new Set([sample.id]))"
         >
-          <span :class="styles.id">{{ sample.id }}</span>
+          <span :class="styles.name">{{ sample.name }}</span>
           <span :class="styles.meta">{{ summary(sample) }}</span>
         </PlRadio>
-        <span v-if="props.placed.has(sample.id)" :class="styles.meta">In the design</span>
+        <span v-if="props.placed.has(sample.id)" :class="[styles.meta, styles.placed]">
+          In the design
+        </span>
       </div>
     </div>
     <PlBtnGroup
@@ -141,10 +143,6 @@ const summary = (sample: Sample) =>
   flex: 1;
 }
 
-.title b {
-  font-family: var(--font-family-monospace);
-}
-
 .list {
   display: flex;
   flex-direction: column;
@@ -160,13 +158,18 @@ const summary = (sample: Sample) =>
   gap: 8px;
 }
 
-.id {
-  font-family: var(--font-family-monospace);
+.name {
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .meta {
   margin-inline-start: 8px;
   font-size: 12px;
   color: var(--txt-03);
+}
+
+.placed {
+  flex-shrink: 0;
 }
 </style>

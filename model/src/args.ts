@@ -55,13 +55,37 @@ export type BlockDataV20260427 = {
   suggestedImport: boolean;
 };
 
+/** How a design material was made: its parent or parents and the step that made it. */
+export type DesignMaterialFrom = {
+  of: string | string[];
+  part: "whole" | "slice" | "remade";
+  split?: string;
+  step?: "round" | "timecourse";
+};
+
+/** One material of the experiment design. A sequenced one references a sample by its id; labels come from the metadata table. */
+export type DesignMaterial = {
+  id: string;
+  sequenced: boolean;
+  name?: string;
+  from?: DesignMaterialFrom;
+};
+
+/** The experiment design drawn on the Design page. */
+export type ExperimentDesign = {
+  materials: DesignMaterial[];
+};
+
 /**
  * V20260428 only differs from V20260427 in `DSContentMultiplexedFastq`, which
- * gains `barcodeTags` and `barcodeRules`. Top-level shape is identical;
- * dataset-level upgrade is performed in `DataModelBuilder.migrate`.
+ * gains `barcodeTags` and `barcodeRules`, and in the optional `design`, which
+ * is UI data only and never reaches the args.
  */
-export type BlockDataV20260428 = BlockDataV20260427;
+export type BlockDataV20260428 = BlockDataV20260427 & {
+  design?: ExperimentDesign;
+};
 
+/** The current version of the block data. */
 export type BlockData = BlockDataV20260428;
 
 export type BlockArgs = Pick<

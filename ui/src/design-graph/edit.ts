@@ -114,11 +114,6 @@ export function renameMaterial(design: Design, id: string, newId: string): Desig
   };
 }
 
-/** Replaces the labels of a material. */
-export function setMeta(design: Design, id: string, meta: Material["meta"]): Design {
-  return update(design, id, (material) => ({ ...material, meta }));
-}
-
 /** Sets or clears the name of a shadow material. */
 export function setName(design: Design, id: string, name?: string): Design {
   return update(design, id, ({ name: _name, ...material }) => ({
@@ -322,6 +317,7 @@ const sampleMaterial = (sample: Sample, from?: MaterialFrom): Material => ({
   id: sample.id,
   sequenced: true,
   meta: sample.meta,
+  name: sample.name,
   ...(from !== undefined && { from }),
 });
 
