@@ -6,17 +6,18 @@ import {
   PlCheckbox,
   PlDropdown,
   PlDropdownMulti,
+  PlRadio,
 } from "@milaboratories/uikit";
 import { computed, shallowRef, useCssModule, watch } from "vue";
-import type { PortSide } from "./connect";
 import { partOptions } from "./layout";
 import type { Part, Sample } from "./types";
 
 const props = defineProps<{
   samples: Sample[];
   placed: Set<string>;
-  target: string;
-  side: PortSide;
+  title: string;
+  target?: string;
+  mode: "add" | "replace";
   part: Part;
   showConnection: boolean;
 }>();
@@ -65,6 +66,13 @@ const allChosen = computed(
 const toggled = (set: Set<string>, item: string) =>
   set.has(item) ? set.difference(new Set([item])) : set.union(new Set([item]));
 
+const submitLabel = computed(() => {
+  if (props.mode === "replace") {
+    return "Replace";
+  }
+  return `Add ${chosen.value.length} ${chosen.value.length === 1 ? "sample" : "samples"}`;
+});
+
 function toggleAll() {
   const ids = new Set(selectable.value.map((sample) => sample.id));
   selected.value = allChosen.value ? selected.value.difference(ids) : selected.value.union(ids);
@@ -85,9 +93,10 @@ const summary = (sample: Sample) =>
   <section :class="styles.picker">
     <header :class="styles.header">
       <span :class="styles.title">
-        {{ props.side === "out" ? "Add children to" : "Add parents to" }}
-        <b>{{ props.target }}</b>
+        {{ props.title }}
+        <b v-if="props.target !== undefined">{{ props.target }}</b>
       </span>
+      <slot />
       <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
     </header>
     <PlDropdown v-model="column" label="Filter by" :options="columnOptions" />
@@ -100,6 +109,7 @@ const summary = (sample: Sample) =>
     />
     <div :class="styles.list">
       <PlCheckbox
+        v-if="props.mode === 'add'"
         :model-value="allChosen"
         :disabled="selectable.length === 0"
         @update:model-value="toggleAll"
@@ -108,6 +118,7 @@ const summary = (sample: Sample) =>
       </PlCheckbox>
       <div v-for="sample in shown" :key="sample.id" :class="styles.row">
         <PlCheckbox
+          v-if="props.mode === 'add'"
           :model-value="selected.has(sample.id)"
           :disabled="props.placed.has(sample.id)"
           @update:model-value="() => (selected = toggled(selected, sample.id))"
@@ -115,6 +126,17 @@ const summary = (sample: Sample) =>
           <span :class="styles.id">{{ sample.id }}</span>
           <span :class="styles.meta">{{ summary(sample) }}</span>
         </PlCheckbox>
+        <PlRadio
+          v-else
+          name="replace-sample"
+          :value="sample.id"
+          :model-value="chosen[0]?.id"
+          :disabled="props.placed.has(sample.id)"
+          @update:model-value="() => (selected = new Set([sample.id]))"
+        >
+          <span :class="styles.id">{{ sample.id }}</span>
+          <span :class="styles.meta">{{ summary(sample) }}</span>
+        </PlRadio>
         <span v-if="props.placed.has(sample.id)" :class="styles.meta">In the design</span>
       </div>
     </div>
@@ -124,9 +146,7 @@ const summary = (sample: Sample) =>
       label="Connection"
       :options="partOptions"
     />
-    <PlBtnPrimary :disabled="chosen.length === 0" @click="add">
-      Add {{ chosen.length }} {{ chosen.length === 1 ? "sample" : "samples" }}
-    </PlBtnPrimary>
+    <PlBtnPrimary :disabled="chosen.length === 0" @click="add">{{ submitLabel }}</PlBtnPrimary>
   </section>
 </template>
 
@@ -140,7 +160,11 @@ const summary = (sample: Sample) =>
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
 }
 
 .title b {

@@ -1,5 +1,6 @@
+import { junctionOf } from "./junctions";
 import { parentsOf } from "./toGraph";
-import type { Design, Material, MaterialFrom, Part, Sample, Step } from "./types";
+import type { Design, Graph, Material, MaterialFrom, Part, Sample, Step } from "./types";
 
 const update = (design: Design, id: string, change: (material: Material) => Material): Design => ({
   materials: design.materials.map((material) => (material.id === id ? change(material) : material)),
@@ -374,6 +375,93 @@ export function addParentSamples(
       ...added.map((sample) => sampleMaterial(sample)),
     ),
   };
+}
+
+/** Adds samples as starting materials. */
+export function addStartSamples(design: Design, samples: Sample[]): Design | undefined {
+  const added = unplaced(design, samples);
+  if (added.length === 0) {
+    return undefined;
+  }
+  return { materials: [...design.materials, ...added.map((sample) => sampleMaterial(sample))] };
+}
+
+/** Puts a sample in the place of material `id`; it keeps every connection. */
+export function replaceWithSample(design: Design, id: string, sample: Sample): Design | undefined {
+  if (findMaterial(design, id) === undefined || findMaterial(design, sample.id) !== undefined) {
+    return undefined;
+  }
+  return update(renameMaterial(design, id, sample.id), sample.id, (material) =>
+    sampleMaterial(sample, material.from),
+  );
+}
+
+/** Removes a material; its children take its parents instead, each keeping how it was made. */
+export function deleteMaterial(design: Design, id: string): Design {
+  const from = findMaterial(design, id)?.from;
+  const grandparents = from === undefined ? [] : parentsOf(from);
+  const rest = { materials: design.materials.filter((material) => material.id !== id) };
+  return rest.materials.reduce(
+    (state, child) => {
+      const childFrom = child.from;
+      if (childFrom === undefined || !parentsOf(childFrom).includes(id)) {
+        return state;
+      }
+      const parents = Array.from(
+        new Set(
+          parentsOf(childFrom).flatMap((parent) => (parent === id ? grandparents : [parent])),
+        ),
+      );
+      if (parents.length === 0) {
+        return {
+          ...state,
+          design: update(state.design, child.id, ({ from: _from, ...root }) => root),
+        };
+      }
+      const group = singleParent(child) === id ? JSON.stringify([childFrom.split]) : child.id;
+      const split = state.splits.get(group) ?? freeSplitOf(state.design, parents[0]);
+      const next: MaterialFrom = {
+        of: parents.length === 1 ? parents[0] : parents,
+        part: childFrom.part,
+        ...(childFrom.part === "slice" && { split }),
+        ...(childFrom.step !== undefined && { step: childFrom.step }),
+      };
+      return {
+        design: update(state.design, child.id, (material) => ({ ...material, from: next })),
+        splits:
+          childFrom.part === "slice" ? new Map([...state.splits, [group, split]]) : state.splits,
+      };
+    },
+    { design: rest, splits: new Map<string, string>() },
+  ).design;
+}
+
+/** Removes a graph node: deletes a material, keeps only the first parent of a merge, or dissolves a split into separate steps. */
+export function removeNode(design: Design, graph: Graph, id: string): Design | undefined {
+  const kind = graph.nodes.find((node) => node.id === id)?.kind;
+  if (kind === "material") {
+    return deleteMaterial(design, id);
+  }
+  if (kind === "junction") {
+    return junctionOf(graph, id)?.partitions.reduce(leaveSplit, design);
+  }
+  if (kind !== "pool") {
+    return undefined;
+  }
+  const childId = graph.edges.find((edge) => edge.from === id)?.to;
+  if (childId === undefined) {
+    return undefined;
+  }
+  const from = findMaterial(design, childId)?.from;
+  if (from === undefined) {
+    return undefined;
+  }
+  const [first] = parentsOf(from);
+  return updateFrom(design, childId, (current) => ({
+    ...current,
+    of: first,
+    ...(current.part === "slice" && { split: freeSplitOf(design, first) }),
+  }));
 }
 
 /** Adds a shadow step under each of `parentIds`. */

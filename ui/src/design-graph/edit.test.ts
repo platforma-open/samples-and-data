@@ -2,15 +2,20 @@ import { describe, expect, test } from "vitest";
 import {
   addPartition,
   addStart,
+  addStartSamples,
   addStep,
   addStepsTo,
+  connect,
+  deleteMaterial,
   insertStep,
   joinSplit,
   leaveSplit,
   makeSplit,
   mergeInto,
   moveUnder,
+  removeNode,
   renameMaterial,
+  replaceWithSample,
   setName,
   setPart,
   setPartOf,
@@ -19,6 +24,8 @@ import {
   splitLine,
 } from "./edit";
 import { fixture } from "./fixtures";
+import { withJunctions } from "./junctions";
+import { toGraph } from "./toGraph";
 
 const forkAndMerge = fixture("fork-and-merge");
 const from = (design: typeof forkAndMerge, id: string) =>
@@ -154,6 +161,64 @@ describe("edit", () => {
   test("splitLine turns a whole step into a slice", () => {
     const result = splitLine(setPart(forkAndMerge, "R1", "whole"), "R1")!;
     expect(from(result.design, "R1")).toMatchObject({ part: "slice", split: result.split });
+  });
+
+  test("deleteMaterial gives the children its parents and keeps a split together", () => {
+    const withoutR1 = deleteMaterial(forkAndMerge, "R1");
+    expect(withoutR1.materials.some((item) => item.id === "R1")).toBe(false);
+    expect(from(withoutR1, "dep")).toMatchObject({ of: "LIB", part: "slice", step: "round" });
+    expect(from(withoutR1, "str")?.split).toBe(from(withoutR1, "dep")?.split);
+    expect(from(deleteMaterial(forkAndMerge, "LIB"), "R1")).toBeUndefined();
+    expect(from(deleteMaterial(forkAndMerge, "dep"), "R3")).toMatchObject({ of: ["R1", "str"] });
+  });
+
+  test("deleteMaterial drops a duplicate parent, keeps a whole step and dissolves a merge", () => {
+    const stepped = addStep(forkAndMerge, "R1");
+    const doubled = connect(stepped.design, "dep", stepped.id, "whole")!;
+    expect(from(deleteMaterial(doubled, "dep"), stepped.id)).toEqual({ of: "R1", part: "whole" });
+    expect(from(deleteMaterial(stepped.design, "R1"), stepped.id)).toEqual({
+      of: "LIB",
+      part: "whole",
+    });
+    const merged = mergeInto(forkAndMerge, ["R1", "R3"], "whole")!;
+    const child = addStep(merged.design, merged.id);
+    expect(from(deleteMaterial(child.design, merged.id), child.id)).toEqual({
+      of: ["R1", "R3"],
+      part: "whole",
+    });
+  });
+
+  test("removeNode dissolves a split and keeps the first parent of a merge", () => {
+    const graph = withJunctions(toGraph(forkAndMerge));
+    const dissolved = removeNode(forkAndMerge, graph, "R1::split::sort-2")!;
+    expect(from(dissolved, "dep")?.split).not.toBe(from(dissolved, "str")?.split);
+    const unmerged = removeNode(forkAndMerge, graph, "R3::pool")!;
+    expect(from(unmerged, "R3")).toMatchObject({ of: "dep", part: "slice" });
+    expect(removeNode(forkAndMerge, graph, "missing")).toBeUndefined();
+  });
+
+  test("replaceWithSample keeps the connections and refuses a placed sample", () => {
+    const sample = { id: "S01", meta: { round: 2 } };
+    const replaced = replaceWithSample(forkAndMerge, "dep", sample)!;
+    expect(replaced.materials.find((item) => item.id === "S01")).toMatchObject({
+      sequenced: true,
+      meta: { round: 2 },
+      from: from(forkAndMerge, "dep"),
+    });
+    expect(from(replaced, "R3")?.of).toEqual(["S01", "str"]);
+    expect(replaceWithSample(forkAndMerge, "dep", { id: "str", meta: {} })).toBeUndefined();
+    const fromShadow = replaceWithSample(forkAndMerge, "LIB", sample)!;
+    expect(fromShadow.materials[0]).toEqual({ id: "S01", sequenced: true, meta: { round: 2 } });
+    expect(from(fromShadow, "R1")?.of).toBe("S01");
+  });
+
+  test("addStartSamples adds unplaced samples as roots", () => {
+    const added = addStartSamples(forkAndMerge, [
+      { id: "S01", meta: {} },
+      { id: "LIB", meta: {} },
+    ])!;
+    expect(added.materials.at(-1)).toEqual({ id: "S01", sequenced: true, meta: {} });
+    expect(added.materials).toHaveLength(forkAndMerge.materials.length + 1);
   });
 
   test("splitLine refuses a root and a merge", () => {

@@ -26,7 +26,12 @@ const props = defineProps<{
   graph: Graph;
   selection: NonNullable<Selection>;
 }>();
-const emit = defineEmits<{ change: [design: Design, selection?: Selection]; close: [] }>();
+const emit = defineEmits<{
+  change: [design: Design, selection?: Selection];
+  delete: [];
+  replace: [nodeId: string];
+  close: [];
+}>();
 const styles = useCssModule();
 
 const stepOptions: { label: string; value: Step | "one-off" }[] = [
@@ -267,13 +272,16 @@ function addLabel() {
 
 <template>
   <section :class="styles.panel">
-    <PlBtnGhost
-      :class="styles.closeButton"
-      icon="close"
-      size="small"
-      title="Close"
-      @click="emit('close')"
-    />
+    <div :class="styles.corner">
+      <PlBtnGhost
+        v-if="node !== undefined"
+        icon="delete-bin"
+        size="small"
+        title="Delete"
+        @click="emit('delete')"
+      />
+      <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
+    </div>
     <template v-if="child !== undefined && childFrom !== undefined">
       <header :class="styles.header">
         <span :class="styles.kind">Edge</span>
@@ -348,10 +356,11 @@ function addLabel() {
             @keydown.enter="commitName"
           />
         </div>
-        <PlBtnGhost :class="styles.pushRight" icon="add" size="small" @click="addLabel">
-          Add label
-        </PlBtnGhost>
+        <PlBtnGhost icon="add" size="small" @click="addLabel"> Add label </PlBtnGhost>
         <PlBtnGhost icon="add" size="small" @click="onAddStep(material.id)">Add step</PlBtnGhost>
+        <PlBtnGhost size="small" @click="emit('replace', material.id)">
+          Replace with sample
+        </PlBtnGhost>
       </header>
       <div :class="styles.labels" @focusout="onLabelsFocusOut">
         <div v-for="([key, value], index) in labelsDraft" :key="index" :class="styles.label">
@@ -387,13 +396,11 @@ function addLabel() {
             @keydown.enter="commitShadowName"
           />
         </div>
-        <PlBtnGhost
-          :class="styles.pushRight"
-          icon="add"
-          size="small"
-          @click="onAddStep(shadowMaterial.id)"
-        >
+        <PlBtnGhost icon="add" size="small" @click="onAddStep(shadowMaterial.id)">
           Add step
+        </PlBtnGhost>
+        <PlBtnGhost size="small" @click="emit('replace', shadowMaterial.id)">
+          Replace with sample
         </PlBtnGhost>
       </header>
     </template>
@@ -433,13 +440,14 @@ function addLabel() {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  padding-inline-end: 32px;
+  padding-inline-end: 64px;
 }
 
-.closeButton {
+.corner {
   position: absolute;
   inset-block-start: 0;
   inset-inline-end: 0;
+  display: flex;
 }
 
 .kind {
@@ -450,10 +458,6 @@ function addLabel() {
   flex: 1;
   font-family: var(--font-family-monospace);
   font-weight: 600;
-}
-
-.pushRight {
-  margin-inline-start: auto;
 }
 
 .row {
@@ -494,6 +498,10 @@ function addLabel() {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
+
+  & :global(.pl-text-field) {
+    min-inline-size: 0;
+  }
 }
 
 .note {

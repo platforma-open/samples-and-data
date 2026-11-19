@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { PlBtnGhost, PlBtnGroup } from "@milaboratories/uikit";
-import { computed, shallowRef, useCssModule } from "vue";
+import { computed, nextTick, shallowRef, useCssModule, useTemplateRef } from "vue";
 import DesignGraph from "./DesignGraph.vue";
 import SamplePicker from "./SamplePicker.vue";
 import SelectionPanel from "./SelectionPanel.vue";
@@ -10,10 +10,15 @@ import {
   addChildSamples,
   addParentSamples,
   addStart,
+  addStartSamples,
   addStepsTo,
+  deleteMaterial,
+  findMaterial,
   makeSplit,
   mergeInto,
   moveUnder,
+  removeNode,
+  replaceWithSample,
   setPartOf,
 } from "./edit";
 import { mockSamples } from "./fixtures";
@@ -28,7 +33,8 @@ const styles = useCssModule();
 const design = shallowRef(initial);
 const history = shallowRef<Design[]>([]);
 const rawSelection = shallowRef<Selection>(null);
-const picker = shallowRef<{ nodeId: string; side: PortSide }>();
+type Picker = { mode: "children" | "parents" | "replace"; nodeId: string } | { mode: "start" };
+const picker = shallowRef<Picker>();
 const lastPart = shallowRef<Part>("slice");
 const samples = mockSamples(initial);
 const SIDEBAR_WIDTH = 360;
@@ -36,11 +42,6 @@ const SIDEBAR_COVER = SIDEBAR_WIDTH + 8;
 
 const graph = computed(() => withJunctions(toGraph(design.value)));
 const placed = computed(() => new Set(design.value.materials.map((item) => item.id)));
-const pickerTypesEdge = computed(
-  () =>
-    picker.value?.side === "out" ||
-    design.value.materials.find((item) => item.id === picker.value?.nodeId)?.from === undefined,
-);
 const selection = computed((): Selection => {
   const current = rawSelection.value;
   if (current?.kind === "edge") {
@@ -60,12 +61,33 @@ const selection = computed((): Selection => {
   }
   return current;
 });
-const pickerTarget = computed(() => {
-  const node = graph.value.nodes.find((item) => item.id === picker.value?.nodeId);
-  if (node === undefined) {
+type PickerView = {
+  key: string;
+  title: string;
+  target?: string;
+  mode: "add" | "replace";
+  showConnection: boolean;
+};
+const pickerView = computed((): PickerView | undefined => {
+  const current = picker.value;
+  if (current?.mode === "start") {
+    return { key: "start", title: "Add starting samples", mode: "add", showConnection: false };
+  }
+  const node = graph.value.nodes.find((item) => item.id === current?.nodeId);
+  if (current === undefined || node === undefined) {
     return undefined;
   }
-  return displayName(node);
+  const base = { key: `${current.mode}:${current.nodeId}`, target: displayName(node) };
+  if (current.mode === "replace") {
+    return { ...base, title: "Replace", mode: "replace", showConnection: false };
+  }
+  return {
+    ...base,
+    title: current.mode === "children" ? "Add children to" : "Add parents to",
+    mode: "add",
+    showConnection:
+      current.mode === "children" || findMaterial(design.value, current.nodeId)?.from === undefined,
+  };
 });
 
 const rawMarked = shallowRef<Set<string>>(new Set());
@@ -74,7 +96,7 @@ const marked = computed(() => rawMarked.value.intersection(placed.value));
 const markedIds = computed(() => Array.from(marked.value));
 const multiSelected = computed(() => markedIds.value.length >= 2);
 const sidebarOpen = computed(
-  () => multiSelected.value || pickerTarget.value !== undefined || selection.value !== null,
+  () => multiSelected.value || pickerView.value !== undefined || selection.value !== null,
 );
 const pickingParent = computed(() => rawPickingParent.value && multiSelected.value);
 const canMakeSplit = computed(() => makeSplit(design.value, markedIds.value) !== undefined);
@@ -164,9 +186,72 @@ function undo() {
   history.value = history.value.slice(0, -1);
 }
 
-function start() {
+function addShadowStart() {
   const added = addStart(design.value);
+  picker.value = undefined;
   apply(added.design, { kind: "node", id: added.id });
+}
+
+function deleteSelected() {
+  if (multiSelected.value) {
+    const next = markedIds.value.reduce(deleteMaterial, design.value);
+    clearMarked();
+    apply(next);
+    return;
+  }
+  const current = selection.value;
+  if (current?.kind !== "node") {
+    return;
+  }
+  const next = removeNode(design.value, graph.value, current.id);
+  if (next === undefined) {
+    return;
+  }
+  picker.value = undefined;
+  apply(next, null);
+}
+
+const canvas = useTemplateRef("canvas");
+const sidebar = useTemplateRef("sidebar");
+
+function refocus() {
+  void nextTick(() => {
+    if (document.activeElement === null || document.activeElement === document.body) {
+      canvas.value?.focus({ preventScroll: true });
+    }
+  });
+}
+
+function onKeydown(event: KeyboardEvent) {
+  const target = event.target;
+  if (
+    event.defaultPrevented ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.altKey ||
+    !(target instanceof HTMLElement)
+  ) {
+    return;
+  }
+  if (event.key === "Escape") {
+    if (
+      target.isContentEditable ||
+      target.matches("textarea, input:not([type='radio'], [type='checkbox'])")
+    ) {
+      return;
+    }
+    if (pickingParent.value) {
+      rawPickingParent.value = false;
+      return;
+    }
+    clearMarked();
+    closeSidebar();
+    return;
+  }
+  if ((event.key === "Delete" || event.key === "Backspace") && !sidebar.value?.contains(target)) {
+    event.preventDefault();
+    deleteSelected();
+  }
 }
 
 function select(next: Selection) {
@@ -184,11 +269,14 @@ function closeSidebar() {
   rawSelection.value = null;
 }
 
-function openPicker(nodeId: string, side: PortSide) {
+function openPicker(next: Picker) {
   clearMarked();
-  rawSelection.value = { kind: "node", id: nodeId };
-  picker.value = { nodeId, side };
+  rawSelection.value = next.mode === "start" ? null : { kind: "node", id: next.nodeId };
+  picker.value = next;
 }
+
+const openPortPicker = (nodeId: string, side: PortSide) =>
+  openPicker({ mode: side === "out" ? "children" : "parents", nodeId });
 
 const canDrop = (source: DragSource, target: DropTarget) =>
   planDrop(design.value, graph.value, source, target, lastPart.value) !== undefined;
@@ -199,10 +287,27 @@ function drop(source: DragSource, target: DropTarget) {
     return;
   }
   if ("picker" in result) {
-    openPicker(result.picker.nodeId, result.picker.side);
+    openPortPicker(result.picker.nodeId, result.picker.side);
     return;
   }
   apply(result.design);
+}
+
+function pickedDesign(current: Picker, chosen: Sample[], part: Part) {
+  if (current.mode === "start") {
+    return addStartSamples(design.value, chosen);
+  }
+  if (current.mode === "children") {
+    return addChildSamples(design.value, current.nodeId, chosen, part);
+  }
+  if (current.mode === "parents") {
+    return addParentSamples(design.value, current.nodeId, chosen, part);
+  }
+  const [sample] = chosen;
+  if (sample === undefined) {
+    return undefined;
+  }
+  return replaceWithSample(design.value, current.nodeId, sample);
 }
 
 function addSamples(chosen: Sample[], part: Part) {
@@ -210,17 +315,22 @@ function addSamples(chosen: Sample[], part: Part) {
   if (current === undefined) {
     return;
   }
+  const next = pickedDesign(current, chosen, part);
+  if (next === undefined) {
+    return;
+  }
   lastPart.value = part;
-  const next =
-    current.side === "out"
-      ? addChildSamples(design.value, current.nodeId, chosen, part)
-      : addParentSamples(design.value, current.nodeId, chosen, part);
-  if (next !== undefined) apply(next);
+  if (current.mode !== "replace") {
+    apply(next);
+    return;
+  }
+  picker.value = undefined;
+  apply(next, { kind: "node", id: chosen[0].id });
 }
 </script>
 
 <template>
-  <div :class="styles.canvas">
+  <div ref="canvas" :class="styles.canvas" tabindex="-1" @keydown="onKeydown" @click="refocus">
     <DesignGraph
       :graph="graph"
       :selection="selection"
@@ -230,11 +340,16 @@ function addSamples(chosen: Sample[], part: Part) {
       @select="select"
       @toggle="toggle"
       @box="(nodeIds) => mark(new Set(nodeIds))"
-      @port="openPicker"
+      @port="openPortPicker"
       @drop="drop"
     >
       <template #toolbar>
-        <PlBtnGhost icon="add" size="small" title="Add a starting material" @click="start">
+        <PlBtnGhost
+          icon="add"
+          size="small"
+          title="Add a starting material"
+          @click="openPicker({ mode: 'start' })"
+        >
           Start
         </PlBtnGhost>
         <PlBtnGhost
@@ -246,15 +361,12 @@ function addSamples(chosen: Sample[], part: Part) {
         />
       </template>
     </DesignGraph>
-    <aside v-if="sidebarOpen" :class="styles.sidebar">
+    <aside v-if="sidebarOpen" ref="sidebar" :class="styles.sidebar">
       <section v-if="multiSelected" :class="styles.multi">
-        <PlBtnGhost
-          :class="styles.closeButton"
-          icon="close"
-          size="small"
-          title="Close"
-          @click="clearMarked"
-        />
+        <div :class="styles.corner">
+          <PlBtnGhost icon="delete-bin" size="small" title="Delete" @click="deleteSelected" />
+          <PlBtnGhost icon="close" size="small" title="Close" @click="clearMarked" />
+        </div>
         <header :class="styles.header">
           <span :class="styles.count">{{ markedIds.length }} selected</span>
           <PlBtnGhost icon="add" size="small" @click="addSteps">Add step to each</PlBtnGhost>
@@ -277,23 +389,30 @@ function addSamples(chosen: Sample[], part: Part) {
         />
       </section>
       <SamplePicker
-        v-else-if="picker !== undefined && pickerTarget !== undefined"
-        :key="`${picker.nodeId}:${picker.side}`"
+        v-else-if="pickerView !== undefined"
+        :key="pickerView.key"
         :samples="samples"
         :placed="placed"
-        :target="pickerTarget"
-        :side="picker.side"
+        :title="pickerView.title"
+        :target="pickerView.target"
+        :mode="pickerView.mode"
         :part="lastPart"
-        :show-connection="pickerTypesEdge"
+        :show-connection="pickerView.showConnection"
         @add="addSamples"
         @close="closeSidebar"
-      />
+      >
+        <PlBtnGhost v-if="picker?.mode === 'start'" icon="add" size="small" @click="addShadowStart">
+          Add shadow node
+        </PlBtnGhost>
+      </SamplePicker>
       <SelectionPanel
         v-else-if="selection !== null"
         :design="design"
         :graph="graph"
         :selection="selection"
         @change="apply"
+        @delete="deleteSelected"
+        @replace="(nodeId) => openPicker({ mode: 'replace', nodeId })"
         @close="rawSelection = null"
       />
     </aside>
@@ -308,6 +427,7 @@ function addSamples(chosen: Sample[], part: Part) {
   min-block-size: 320px;
   border: 1px solid var(--border-color-div-grey);
   border-radius: 6px;
+  outline: none;
   background: radial-gradient(var(--border-color-div-grey) 1px, transparent 1px) 0 0 / 16px 16px;
 }
 
@@ -318,10 +438,11 @@ function addSamples(chosen: Sample[], part: Part) {
   gap: 12px;
 }
 
-.closeButton {
+.corner {
   position: absolute;
   inset-block-start: 0;
   inset-inline-end: 0;
+  display: flex;
 }
 
 .header {
@@ -329,7 +450,7 @@ function addSamples(chosen: Sample[], part: Part) {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 16px;
-  padding-inline-end: 32px;
+  padding-inline-end: 64px;
 }
 
 .count {
