@@ -1,27 +1,36 @@
 import { edgeId } from "./toGraph";
-import type { Graph, GraphEdge, GraphNode } from "./types";
+import type { Graph, GraphEdge } from "./types";
 
 /** Id of the junction of one separation: the parent and the split name. */
 export const junctionId = (parentId: string, split: string) => `${parentId}::split::${split}`;
 
-function groupKey(edge: GraphEdge, kinds: Map<string, GraphNode["kind"]>) {
-  if (edge.part !== "slice" || edge.split === null || kinds.get(edge.from) !== "material") {
+function groupKey(edge: GraphEdge, splitters: Set<string>) {
+  if (edge.part !== "slice" || edge.split === null || !splitters.has(edge.from)) {
     return undefined;
   }
   return junctionId(edge.from, edge.split);
 }
 
-/** Adds a junction (a split shadow node) for each separation with two or more partitions. */
+/** Adds a junction for each separation with two or more partitions, except the only separation of a shadow node. */
 export function withJunctions(graph: Graph): Graph {
-  const kinds = new Map(graph.nodes.map((node) => [node.id, node.kind]));
+  const splits = Map.groupBy(
+    graph.edges.filter((edge) => edge.part === "slice" && edge.split !== null),
+    (edge) => edge.from,
+  );
+  const separations = (id: string) => new Set(splits.get(id)?.map((edge) => edge.split)).size;
+  const splitters = new Set(
+    graph.nodes
+      .filter((node) => node.kind === "material" && (node.sequenced || separations(node.id) > 1))
+      .map((node) => node.id),
+  );
   const groups = Map.groupBy(
-    graph.edges.filter((edge) => groupKey(edge, kinds) !== undefined),
-    (edge) => groupKey(edge, kinds)!,
+    graph.edges.filter((edge) => groupKey(edge, splitters) !== undefined),
+    (edge) => groupKey(edge, splitters)!,
   );
   const junctions = new Map(groups.entries().filter(([, members]) => members.length >= 2));
 
   const edges = graph.edges.flatMap((edge) => {
-    const key = groupKey(edge, kinds);
+    const key = groupKey(edge, splitters);
     if (key === undefined || !junctions.has(key)) {
       return [edge];
     }

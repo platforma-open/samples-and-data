@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { PlBtnGhost, PlBtnGroup, PlCheckbox, PlTextField } from "@milaboratories/uikit";
 import { computed, shallowRef, useCssModule, watch } from "vue";
+import { logicalEdge } from "./connect";
 import {
   addPartition,
   addStep,
@@ -14,7 +15,7 @@ import {
   siblingsOf,
   splitLine,
 } from "./edit";
-import { junctionId, junctionOf } from "./junctions";
+import { junctionOf } from "./junctions";
 import { displayName, partOptions } from "./layout";
 import { parentsOf } from "./toGraph";
 import type { Design, Graph, Material, Part, Selection, Step } from "./types";
@@ -67,8 +68,12 @@ const child = computed(() => {
   return findMaterial(props.design, edge.value.to);
 });
 const childFrom = computed(() => child.value?.from);
+const canDisconnect = computed(
+  () =>
+    props.selection.kind === "edge" && logicalEdge(props.graph, props.selection.id) !== undefined,
+);
 const canAddPartition = computed(
-  () => edge.value !== undefined && kindOf(edge.value.from) === "material",
+  () => child.value !== undefined && splitLine(props.design, child.value.id) !== undefined,
 );
 const stepValue = computed((): Step | "one-off" => childFrom.value?.step ?? "one-off");
 const siblings = computed(() =>
@@ -162,7 +167,7 @@ function onSplitLine() {
   if (result === undefined) {
     return;
   }
-  emit("change", result.design, { kind: "node", id: junctionId(result.parentId, result.split) });
+  emit("change", result.design, { kind: "node", id: result.id });
 }
 
 function onAddPartition() {
@@ -178,7 +183,7 @@ function onAddPartition() {
   <section :class="styles.panel">
     <div :class="styles.corner">
       <PlBtnGhost
-        v-if="node !== undefined"
+        v-if="node !== undefined || canDisconnect"
         icon="delete-bin"
         size="small"
         title="Delete"
@@ -305,7 +310,7 @@ function onAddPartition() {
           {{ pool.parents.map(labelOf).join(" + ") }} → {{ labelOf(pool.child ?? "") }}
         </span>
       </header>
-      <p :class="styles.note">Added where a material has several parents.</p>
+      <p :class="styles.note">Added where a sample has several parents.</p>
     </template>
   </section>
 </template>

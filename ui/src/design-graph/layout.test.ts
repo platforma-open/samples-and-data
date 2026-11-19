@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { addPartition, addStart, insertStep } from "./edit";
+import { addMergedChildren, addPartition, addStart, insertStep, mergeInto } from "./edit";
 import { designFixtures, fixture } from "./fixtures";
 import { withJunctions } from "./junctions";
 import type { Layout } from "./layout";
@@ -8,6 +8,11 @@ import { toGraph } from "./toGraph";
 
 const at = (result: Layout, id: string) => result.nodes.find((node) => node.id === id)!;
 const centerY = (result: Layout, id: string) => at(result, id).y + at(result, id).h / 2;
+const samples = ["S01", "S02"].map((id) => ({ id, name: id, meta: {} }));
+const mergeDesigns = [
+  mergeInto(fixture("fork-and-merge"), ["dep", "str"])!.design,
+  addMergedChildren(fixture("fork-and-merge"), ["dep", "str"], samples, "slice")!.design,
+];
 
 describe("layout", () => {
   test("takes columns from the graph only, not from round labels", () => {
@@ -61,7 +66,7 @@ describe("layout", () => {
       addPartition(addStart(fixture("fork-and-merge")).design, "R1", "sort-2").design,
       "R3",
     )!.design;
-    const designs = [...designFixtures.map((item) => item.design), withAdded];
+    const designs = [...designFixtures.map((item) => item.design), withAdded, ...mergeDesigns];
     for (const design of designs) {
       const { nodes } = layout(withJunctions(toGraph(design)));
       for (const [index, first] of nodes.entries()) {
@@ -91,7 +96,7 @@ describe("layout", () => {
   });
 
   test("changes rows only inside a column gap that no card overlaps", () => {
-    for (const { design } of designFixtures) {
+    for (const design of [...designFixtures.map((item) => item.design), ...mergeDesigns]) {
       const graph = withJunctions(toGraph(design));
       const result = layout(graph);
       const cards = result.nodes.filter(

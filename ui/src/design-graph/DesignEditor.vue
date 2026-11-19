@@ -5,7 +5,7 @@ import DesignGraph from "./DesignGraph.vue";
 import SamplePicker from "./SamplePicker.vue";
 import SelectionPanel from "./SelectionPanel.vue";
 import type { DragSource, DropTarget, PortSide } from "./connect";
-import { planDrop } from "./connect";
+import { logicalEdge, planDrop } from "./connect";
 import {
   addChildSamples,
   addMergedChildren,
@@ -13,6 +13,7 @@ import {
   addStart,
   addStartSamples,
   deleteMaterial,
+  disconnect,
   findMaterial,
   makeSplit,
   mergeInto,
@@ -49,9 +50,9 @@ const selection = computed((): Selection => {
     const intoMaterial = graph.value.nodes.some(
       (node) => node.id === current.to && node.kind === "material",
     );
-    const edge = graph.value.edges.find(
-      (item) => item.id === current.id || (intoMaterial && item.to === current.to),
-    );
+    const edge =
+      graph.value.edges.find((item) => item.id === current.id) ??
+      graph.value.edges.find((item) => intoMaterial && item.to === current.to);
     if (edge === undefined) {
       return null;
     }
@@ -166,7 +167,7 @@ function setMarkedPart(part: Part) {
 }
 
 function mergeMarked() {
-  const merged = mergeInto(props.design, markedIds.value, lastPart.value);
+  const merged = mergeInto(props.design, markedIds.value);
   if (merged === undefined) {
     return;
   }
@@ -206,6 +207,17 @@ function addShadowStart() {
   apply(added.design, { kind: "node", id: added.id });
 }
 
+function removed(current: NonNullable<Selection>) {
+  if (current.kind === "node") {
+    return removeNode(props.design, graph.value, current.id);
+  }
+  const ends = logicalEdge(graph.value, current.id);
+  if (ends === undefined) {
+    return undefined;
+  }
+  return disconnect(props.design, ends.parentId, ends.childId);
+}
+
 function deleteSelected() {
   if (multiSelected.value) {
     const next = markedIds.value.reduce(deleteMaterial, props.design);
@@ -214,10 +226,10 @@ function deleteSelected() {
     return;
   }
   const current = selection.value;
-  if (current?.kind !== "node") {
+  if (current === null) {
     return;
   }
-  const next = removeNode(props.design, graph.value, current.id);
+  const next = removed(current);
   if (next === undefined) {
     return;
   }

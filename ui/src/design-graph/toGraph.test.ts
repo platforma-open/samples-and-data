@@ -1,9 +1,42 @@
 import { describe, expect, test } from "vitest";
+import { addMergedChildren, mergeInto, setPart } from "./edit";
 import { designFixtures, fixture } from "./fixtures";
+import { withJunctions } from "./junctions";
 import { toGraph } from "./toGraph";
 import type { Design } from "./types";
 
 describe("toGraph", () => {
+  const forkAndMerge = fixture("fork-and-merge");
+  const samples = ["S01", "S02"].map((id) => ({ id, name: id, meta: {} }));
+  const drawn = (design: Design) => withJunctions(toGraph(design));
+
+  test("draws a merge into a shadow node as one node, with no pool", () => {
+    const merged = mergeInto(forkAndMerge, ["dep", "str"])!;
+    const graph = drawn(merged.design);
+    expect(graph.nodes).toHaveLength(drawn(forkAndMerge).nodes.length + 1);
+    const into = graph.edges.filter((edge) => edge.to === merged.id);
+    expect(into.map((edge) => [edge.from, edge.part])).toEqual([
+      ["dep", "pooled"],
+      ["str", "pooled"],
+    ]);
+  });
+
+  test("keeps the pool for a shadow node that slices its merged parents", () => {
+    const merged = mergeInto(forkAndMerge, ["dep", "str"])!;
+    const sliced = setPart(merged.design, merged.id, "slice");
+    expect(drawn(sliced).nodes.some((node) => node.id === `${merged.id}::pool`)).toBe(true);
+  });
+
+  test("draws children added to several parents as one shadow node and its children, with no junction", () => {
+    const added = addMergedChildren(forkAndMerge, ["dep", "str"], samples, "slice")!;
+    const graph = drawn(added.design);
+    expect(graph.nodes).toHaveLength(drawn(forkAndMerge).nodes.length + 3);
+    expect(graph.edges.filter((edge) => edge.from === added.id).map((edge) => edge.to)).toEqual([
+      "S01",
+      "S02",
+    ]);
+  });
+
   test("inserts a pool node and pooled edges for a material with several parents", () => {
     const graph = toGraph(fixture("fork-and-merge"));
     expect(graph.nodes.find((node) => node.id === "R3::pool")).toEqual({

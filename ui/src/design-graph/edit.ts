@@ -469,7 +469,6 @@ export function setPartOf(design: Design, ids: string[], part: Part): Design {
 export function mergeInto(
   design: Design,
   parentIds: string[],
-  part: Part,
 ): { design: Design; id: string } | undefined {
   if (
     parentIds.length < 2 ||
@@ -478,7 +477,7 @@ export function mergeInto(
     return undefined;
   }
   const id = shadowId(design);
-  const merged = shadow(id, sliceFrom(parentIds, part, freeSplitOf(design, parentIds[0])));
+  const merged = shadow(id, { of: parentIds, part: "whole" });
   return { design: { materials: [...design.materials, merged] }, id };
 }
 
@@ -489,7 +488,7 @@ export function addMergedChildren(
   samples: Sample[],
   part: Part,
 ): { design: Design; id: string } | undefined {
-  const merged = mergeInto(design, parentIds, "whole");
+  const merged = mergeInto(design, parentIds);
   if (merged === undefined) {
     return undefined;
   }

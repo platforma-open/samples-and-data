@@ -1,6 +1,6 @@
 import type { Design, Graph, GraphNode, Material, MaterialFrom } from "./types";
 
-/** Id of the pool node inserted in front of a material with several parents. */
+/** Id of the pool node inserted in front of a material with several parents, unless it is an unsequenced whole step. */
 export const poolId = (childId: string) => `${childId}::pool`;
 
 /** Id of the edge from one node to another. */
@@ -50,13 +50,12 @@ function materialToGraph(material: Material, ids: Set<string>): Graph {
   };
 
   if (parents.length === 1) {
-    const parent = parents[0];
     return {
       nodes: [node],
       edges: [
         {
-          id: edgeId(parent, material.id),
-          from: parent,
+          id: edgeId(parents[0], material.id),
+          from: parents[0],
           to: material.id,
           ...authored,
           inserted: false,
@@ -65,16 +64,22 @@ function materialToGraph(material: Material, ids: Set<string>): Graph {
     };
   }
 
+  const pooledInto = (to: string) =>
+    parents.map((parent) => ({
+      id: edgeId(parent, to),
+      from: parent,
+      to,
+      part: "pooled" as const,
+      split: null,
+      step: null,
+      inserted: true,
+    }));
+  if (!material.sequenced && material.from.part === "whole" && material.from.step === undefined) {
+    return { nodes: [node], edges: pooledInto(material.id) };
+  }
+
   const pool = poolId(material.id);
-  const pooled = parents.map((parent) => ({
-    id: edgeId(parent, pool),
-    from: parent,
-    to: pool,
-    part: "pooled" as const,
-    split: null,
-    step: null,
-    inserted: true,
-  }));
+  const pooled = pooledInto(pool);
   return {
     nodes: [node, { id: pool, kind: "pool", sequenced: false, meta: {} }],
     edges: [

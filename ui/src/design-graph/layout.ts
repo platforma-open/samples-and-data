@@ -71,13 +71,14 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
   const children = Map.groupBy(graph.edges, (edge) => edge.from);
   const isJunction = (id: string) => byId.get(id)!.kind === "junction";
   const isShadow = (id: string) => !byId.get(id)!.sequenced;
+  const isMerge = (id: string) => (parents.get(id)?.length ?? 0) > 1;
 
   const rank = stepRanks(graph, byId, parents);
   const columns = Array.from(new Set(rank.values())).sort((left, right) => left - right);
   const column = new Map(graph.nodes.map((node) => [node.id, columns.indexOf(rank.get(node.id)!)]));
 
   const slot = treeSlots(graph, parents, children);
-  centerPools(graph, parents, children, column, slot);
+  centerMerges(graph, parents, children, column, slot, isMerge);
   const minSlot = Math.min(...slot.values());
 
   const size = new Map(graph.nodes.map((node) => [node.id, options.nodeSize(node)]));
@@ -123,7 +124,7 @@ export function layout(graph: Graph, options: LayoutOptions = defaultLayoutOptio
     if (isJunction(fromId)) {
       return [gapCenter(column.get(fromId)!), columnLeft[column.get(fromId)! + 1]];
     }
-    const gap = byId.get(toId)!.kind === "pool" ? column.get(toId)! - 1 : column.get(fromId)!;
+    const gap = isMerge(toId) ? column.get(toId)! - 1 : column.get(fromId)!;
     return [gapLeft(gap), columnLeft[gap + 1]];
   };
   const edges = graph.edges.map((edge) => {
@@ -206,12 +207,13 @@ function treeSlots(
   return slot;
 }
 
-function centerPools(
+function centerMerges(
   graph: Graph,
   parents: Map<string, Graph["edges"]>,
   children: Map<string, Graph["edges"]>,
   column: Map<string, number>,
   slot: Map<string, number>,
+  isMerge: (id: string) => boolean,
 ) {
   const descendants = (id: string): Set<string> =>
     (children.get(id) ?? []).reduce(
@@ -220,11 +222,11 @@ function centerPools(
     );
   const isCard = (id: string) => graph.nodes.find((node) => node.id === id)!.kind !== "junction";
 
-  for (const pool of graph.nodes.filter((node) => node.kind === "pool")) {
-    const parentSlots = parents.get(pool.id)!.map((edge) => slot.get(edge.from)!);
+  for (const merge of graph.nodes.filter((node) => isMerge(node.id))) {
+    const parentSlots = parents.get(merge.id)!.map((edge) => slot.get(edge.from)!);
     const shift =
-      parentSlots.reduce((sum, value) => sum + value, 0) / parentSlots.length - slot.get(pool.id)!;
-    const moved = descendants(pool.id);
+      parentSlots.reduce((sum, value) => sum + value, 0) / parentSlots.length - slot.get(merge.id)!;
+    const moved = descendants(merge.id);
     const others = graph.nodes.filter((node) => !moved.has(node.id) && isCard(node.id));
     const overlaps = moved
       .values()

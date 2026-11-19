@@ -93,9 +93,9 @@ describe("edit", () => {
   });
 
   test("mergeInto adds one shadow made from all the parents", () => {
-    const { design, id } = mergeInto(forkAndMerge, ["R1", "R3"], "whole")!;
+    const { design, id } = mergeInto(forkAndMerge, ["R1", "R3"])!;
     expect(from(design, id)).toEqual({ of: ["R1", "R3"], part: "whole" });
-    expect(mergeInto(forkAndMerge, ["R1"], "whole")).toBeUndefined();
+    expect(mergeInto(forkAndMerge, ["R1"])).toBeUndefined();
   });
 
   test("makeSplit joins siblings into one split and refuses materials of different parents", () => {
@@ -198,7 +198,7 @@ describe("edit", () => {
       of: "LIB",
       part: "whole",
     });
-    const merged = mergeInto(forkAndMerge, ["R1", "R3"], "whole")!;
+    const merged = mergeInto(forkAndMerge, ["R1", "R3"])!;
     const child = addStep(merged.design, merged.id);
     expect(from(deleteMaterial(child.design, merged.id), child.id)).toEqual({
       of: ["R1", "R3"],
