@@ -33,6 +33,9 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
       datasets: sortedById(data.datasets),
       h5adFilesToPreprocess: sortedStr(data.h5adFilesToPreprocess),
       seuratFilesToPreprocess: sortedStr(data.seuratFilesToPreprocess),
+      xsvFilesToPreprocess: [...data.xsvFilesToPreprocess].sort((a, b) =>
+        a.file.localeCompare(b.file),
+      ),
       metadataUploadHandle: data.metadataUploadHandle,
     };
   })
@@ -79,7 +82,10 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
           const dataset = ctx.data.datasets.find((ds) => ds.id === datasetId);
           if (!dataset) return [datasetId as PlId, undefined];
 
-          if (dataset.content.type === "BulkCountMatrix") {
+          if (
+            dataset.content.type === "BulkCountMatrix" ||
+            dataset.content.type === "MultiSampleXsv"
+          ) {
             const result = Object.fromEntries(
               groups?.mapFields((groupId, samples) => [
                 groupId as PlId,
@@ -112,6 +118,18 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
         ?.mapFields((fileName, columnsCsv) => [
           fileName,
           columnsCsv?.getRemoteFileHandle() ?? undefined,
+        ]) ?? [],
+    );
+  })
+
+  // Header columns of each queued CSV/TSV file, keyed by its import handle (Multisample CSV/TSV)
+  .retentiveOutput("availableXsvColumns", (ctx) => {
+    return Object.fromEntries(
+      ctx.prerun
+        ?.resolve({ field: "xsvColumns", assertFieldType: "Input", allowPermanentAbsence: true })
+        ?.mapFields((fileHandle, columns) => [
+          fileHandle as ImportFileHandle,
+          columns?.getDataAsJson<string[]>(),
         ]) ?? [],
     );
   })

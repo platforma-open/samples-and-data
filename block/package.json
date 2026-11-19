@@ -1,6 +1,6 @@
 {
   "name": "@platforma-open/milaboratories.samples-and-data",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "files": [
     "dist",
     "block-pack"
@@ -52,7 +52,7 @@
       "support": "mailto:support@milaboratories.com",
       "description": "Import raw sequencing data and assign metadata to your samples.",
       "longDescription": "file:../docs/description.md",
-      "changelog": "file:./CHANGELOG.md",
+      "changelog": "file:CHANGELOG.md",
       "tags": [
         "Samples",
         "Metadata",

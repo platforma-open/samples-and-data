@@ -24,7 +24,8 @@ export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
     ds.content.type === "BulkCountMatrix" ||
     ds.content.type === "MultiSampleH5AD" ||
     ds.content.type === "MultiplexedFastq" ||
-    ds.content.type === "MultiSampleSeurat"
+    ds.content.type === "MultiSampleSeurat" ||
+    ds.content.type === "MultiSampleXsv"
   );
 }
 
@@ -91,15 +92,25 @@ export function designLabel(design: Pick<ExperimentDesign, "label">, index: numb
 
 /**
  * V20260428 only differs from V20260427 in `DSContentMultiplexedFastq`, which
- * gains `barcodeTags` and `barcodeRules`, and in the optional `designs`, which
- * are UI data only and never reach the args.
+ * gains `barcodeTags` and `barcodeRules`. Top-level shape is identical;
+ * dataset-level upgrade is performed in `DataModelBuilder.migrate`.
  */
-export type BlockDataV20260428 = BlockDataV20260427 & {
+export type BlockDataV20260428 = BlockDataV20260427;
+
+/** A CSV/TSV file whose header the prerun reads, with the separator and compression its name implies. */
+export type XsvFileToPreprocess = {
+  file: ImportFileHandle;
+  xsvType: "csv" | "tsv";
+  gzipped: boolean;
+};
+
+/** V20261116 adds the queue of CSV/TSV files whose header the prerun reads (Multisample CSV/TSV), and the optional `designs`, which are UI data only and never reach the args. */
+export type BlockDataV20261116 = BlockDataV20260428 & {
+  xsvFilesToPreprocess: XsvFileToPreprocess[];
   designs?: ExperimentDesign[];
 };
 
-/** The current version of the block data. */
-export type BlockData = BlockDataV20260428;
+export type BlockData = BlockDataV20261116;
 
 export type BlockArgs = Pick<
   BlockData,
@@ -108,5 +119,9 @@ export type BlockArgs = Pick<
 
 export type BlockPrerunArgs = Pick<
   BlockData,
-  "datasets" | "h5adFilesToPreprocess" | "seuratFilesToPreprocess" | "metadataUploadHandle"
+  | "datasets"
+  | "h5adFilesToPreprocess"
+  | "seuratFilesToPreprocess"
+  | "xsvFilesToPreprocess"
+  | "metadataUploadHandle"
 >;

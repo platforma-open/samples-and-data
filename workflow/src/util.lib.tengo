@@ -4,6 +4,7 @@ smart := import("@platforma-sdk/workflow-tengo:smart")
 consts := import("@platforma-sdk/workflow-tengo:pframes.constants")
 ll := import("@platforma-sdk/workflow-tengo:ll")
 pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+canonical := import("@platforma-sdk/workflow-tengo:canonical")
 
 RTYPE_P_COLUMN_DATA_JSON := consts.RTYPE_P_COLUMN_DATA_JSON
 
@@ -137,7 +138,74 @@ multiplexingRulesColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
 
     return {
         spec: spec,
-        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, json.encode(data))
+        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, canonical.encode(data))
+    }
+}
+
+// Cells of the group-to-sample mapping column: `[groupId, sampleId]` (JSON) → the
+// sample's name inside that group's file. Empty when no group has samples.
+sampleGroupsCells := func(dataset) {
+    cells := {}
+    if is_undefined(dataset.content.sampleGroups) {
+        return cells
+    }
+    for groupId, samples in dataset.content.sampleGroups {
+        for sampleId, sampleName in samples {
+            cells[string(json.encode([groupId, sampleId]))] = sampleName
+        }
+    }
+    return cells
+}
+
+// Spec of the group-to-sample mapping column of a grouped dataset, on
+// `[sampleGroupId, sampleId]`. A cell exists when the sample has data in that
+// group's file; its value is the sample's name inside the file, a selection key
+// (display names live in the `pl7.app/label` column on `[sampleId]`). One sample
+// may sit in several groups, so the column is not marked as a platform linker
+// (`pl7.app/isLinkerColumn`).
+sampleGroupsColumnSpec := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
+    sampleSet := {}
+    for _, samples in dataset.content.sampleGroups {
+        for sampleId, _ in samples {
+            sampleSet[sampleId] = true
+        }
+    }
+
+    return {
+        kind: "PColumn",
+        name: "pl7.app/sequencing/data/sampleGroups",
+        domain: {
+            "pl7.app/block": blockId,
+            "pl7.app/dataset": dataset.id
+        },
+        valueType: "String",
+        axesSpec: [groupIdAxis, sampleIdAxis],
+        annotations: {
+            "pl7.app/label": "Sample Groups",
+            "pl7.app/hideDataFromUi": "true",
+            "pl7.app/axisKeys/0": string(json.encode(maps.getKeys(dataset.content.data))),
+            "pl7.app/axisKeys/1": string(json.encode(maps.getKeys(sampleSet)))
+        }
+    }
+}
+
+// Data of the group-to-sample mapping column: the PColumnData/Json payload
+// `{ keyLength, data }`, canonically encoded
+sampleGroupsData := func(cells) {
+    return canonical.encode({ keyLength: 2, data: cells })
+}
+
+// The group-to-sample mapping column, spec and data. Returns `undefined` when no
+// group has samples — caller emits nothing.
+sampleGroupsColumn := func(blockId, dataset, sampleIdAxis, groupIdAxis) {
+    cells := sampleGroupsCells(dataset)
+    if len(cells) == 0 {
+        return undefined
+    }
+
+    return {
+        spec: sampleGroupsColumnSpec(blockId, dataset, sampleIdAxis, groupIdAxis),
+        data: smart.createValueResource(RTYPE_P_COLUMN_DATA_JSON, sampleGroupsData(cells))
     }
 }
 
@@ -174,6 +242,10 @@ export {
     createJsonPColumnData: createJsonPColumnData,
     datasetColumnSpecBase: datasetColumnSpecBase,
     multiplexingRulesColumn: multiplexingRulesColumn,
+    sampleGroupsCells: sampleGroupsCells,
+    sampleGroupsColumnSpec: sampleGroupsColumnSpec,
+    sampleGroupsData: sampleGroupsData,
+    sampleGroupsColumn: sampleGroupsColumn,
     getSampleColumnName: getSampleColumnName,
     createFileDataset: createFileDataset
 }

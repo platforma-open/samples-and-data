@@ -1,0 +1,30 @@
+tpl := import("@platforma-sdk/workflow-tengo:tpl")
+ll := import("@platforma-sdk/workflow-tengo:ll")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+xsvParse := import(":xsv-parse")
+
+tpl.defineOutputs("result")
+
+// mode "header": the first line of a TSV file → its column names, in file order.
+// mode "values": NDJSON rows {"value": ...} → the values, sorted; more than `maxValues`
+// values fails with a message naming the column and the file.
+tpl.body(func(inputs) {
+    content := string(inputs.content.getData())
+
+    result := undefined
+    if inputs.mode == "header" {
+        result = xsvParse.headerColumns(content)
+    } else if inputs.mode == "values" {
+        result = xsvParse.sortedValues(content)
+        if len(result) > inputs.maxValues {
+            ll.panic("Column %q in %s has more than %d distinct values. Choose the column that names the samples.",
+                inputs.sampleColumnName, inputs.fileLabel, inputs.maxValues)
+        }
+    } else {
+        ll.panic("Unknown mode %v", inputs.mode)
+    }
+
+    return {
+        result: smart.createJsonResource(result)
+    }
+})

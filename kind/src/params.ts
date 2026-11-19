@@ -98,6 +98,7 @@ const DATASET_TYPES = {
   Seurat: true,
   MultiSampleH5AD: true,
   MultiSampleSeurat: true,
+  MultiSampleXsv: true,
 } as const satisfies Record<DSType, true>;
 
 /**
