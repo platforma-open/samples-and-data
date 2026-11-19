@@ -1,9 +1,10 @@
 import { kind } from "@platforma-open/milaboratories.samples-and-data.kind";
 import type { ImportFileHandle, InferHrefType, InferOutputsType, PlId } from "@platforma-sdk/model";
 import { BlockModelV3 } from "@platforma-sdk/model";
-import { blockDataModel } from "./data_model";
 import type { BlockArgs, BlockPrerunArgs } from "./args";
+import { designLabel } from "./args";
 import { blockArgsIssues } from "./args_issues";
+import { blockDataModel } from "./data_model";
 import { deriveTemplateParams } from "./template_params";
 
 function sortedById<T extends { id: string }>(items: T[]) {
@@ -159,6 +160,18 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
         href: "/new-dataset" as const,
         appearance: "add-section",
         label: "New Dataset",
+      },
+      { type: "delimiter" as const },
+      ...(ctx.data.designs ?? []).map((design, index) => ({
+        type: "link" as const,
+        href: `/design?id=${design.id}` as const,
+        label: designLabel(design, index),
+      })),
+      {
+        type: "link" as const,
+        href: "/new-design" as const,
+        appearance: "add-section",
+        label: "New Design",
       },
     ];
   })

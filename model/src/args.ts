@@ -56,6 +56,40 @@ export type BlockDataV20260427 = {
   suggestedImport: boolean;
 };
 
+/** How a design material was made: its parent or parents and the step that made it. */
+export type DesignMaterialFrom = {
+  of: string | string[];
+  part: "whole" | "slice" | "remade";
+  split?: string;
+  step?: "round" | "timecourse";
+};
+
+/** One material of the experiment design. A sequenced one references a sample by its id; labels come from the metadata table. */
+export type DesignMaterial = {
+  id: string;
+  sequenced: boolean;
+  name?: string;
+  from?: DesignMaterialFrom;
+};
+
+/** One experiment design, drawn on its own page. An empty label shows a placeholder name. */
+export type ExperimentDesign = {
+  id: PlId;
+  label: string;
+  materials: DesignMaterial[];
+};
+
+/** The placeholder name of the design at `index` in the list. */
+export const designPlaceholder = (index: number) => `Design ${index + 1}`;
+
+/** The name a design shows: its label, or its placeholder name. */
+export function designLabel(design: Pick<ExperimentDesign, "label">, index: number) {
+  if (design.label.trim() === "") {
+    return designPlaceholder(index);
+  }
+  return design.label;
+}
+
 /**
  * V20260428 only differs from V20260427 in `DSContentMultiplexedFastq`, which
  * gains `barcodeTags` and `barcodeRules`. Top-level shape is identical;
@@ -70,9 +104,10 @@ export type XsvFileToPreprocess = {
   gzipped: boolean;
 };
 
-/** V20261116 adds the queue of CSV/TSV files whose header the prerun reads (Multisample CSV/TSV). */
+/** V20261116 adds the queue of CSV/TSV files whose header the prerun reads (Multisample CSV/TSV), and the optional `designs`, which are UI data only and never reach the args. */
 export type BlockDataV20261116 = BlockDataV20260428 & {
   xsvFilesToPreprocess: XsvFileToPreprocess[];
+  designs?: ExperimentDesign[];
 };
 
 export type BlockData = BlockDataV20261116;
