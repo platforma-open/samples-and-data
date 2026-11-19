@@ -187,7 +187,7 @@ function onPointerDown(event: PointerEvent) {
     return;
   }
   viewport.value!.setPointerCapture(event.pointerId);
-  if (event.shiftKey) {
+  if (event.shiftKey || event.metaKey || event.ctrlKey) {
     const point = toGraphPoint(event.clientX, event.clientY);
     selectionBox.value = { start: point, end: point };
     return;

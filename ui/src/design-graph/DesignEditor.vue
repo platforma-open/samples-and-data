@@ -8,10 +8,10 @@ import type { DragSource, DropTarget, PortSide } from "./connect";
 import { planDrop } from "./connect";
 import {
   addChildSamples,
+  addMergedChildren,
   addParentSamples,
   addStart,
   addStartSamples,
-  addStepsTo,
   deleteMaterial,
   findMaterial,
   makeSplit,
@@ -33,7 +33,10 @@ const styles = useCssModule();
 const design = shallowRef(initial);
 const history = shallowRef<Design[]>([]);
 const rawSelection = shallowRef<Selection>(null);
-type Picker = { mode: "children" | "parents" | "replace"; nodeId: string } | { mode: "start" };
+type Picker =
+  | { mode: "children" | "parents" | "replace"; nodeId: string }
+  | { mode: "start" }
+  | { mode: "merged-children"; parentIds: string[] };
 const picker = shallowRef<Picker>();
 const lastPart = shallowRef<Part>("slice");
 const samples = mockSamples(initial);
@@ -72,6 +75,21 @@ const pickerView = computed((): PickerView | undefined => {
   const current = picker.value;
   if (current?.mode === "start") {
     return { key: "start", title: "Add starting samples", mode: "add", showConnection: false };
+  }
+  if (current?.mode === "merged-children") {
+    const parents = current.parentIds
+      .map((id) => graph.value.nodes.find((item) => item.id === id))
+      .filter((item) => item !== undefined);
+    if (parents.length !== current.parentIds.length) {
+      return undefined;
+    }
+    return {
+      key: "merged-children",
+      title: "Add children to a merge of",
+      target: parents.map(displayName).join(", "),
+      mode: "add",
+      showConnection: true,
+    };
   }
   const node = graph.value.nodes.find((item) => item.id === current?.nodeId);
   if (current === undefined || node === undefined) {
@@ -141,9 +159,7 @@ function toggle(nodeId: string) {
   mark(base.has(nodeId) ? base.difference(new Set([nodeId])) : base.union(new Set([nodeId])));
 }
 
-function addSteps() {
-  apply(addStepsTo(design.value, markedIds.value));
-}
+const addMarkedChildren = () => openPicker({ mode: "merged-children", parentIds: markedIds.value });
 
 function setMarkedPart(part: Part) {
   lastPart.value = part;
@@ -265,13 +281,16 @@ function select(next: Selection) {
 }
 
 function closeSidebar() {
+  const current = picker.value;
+  const shown = pickerView.value !== undefined;
   picker.value = undefined;
   rawSelection.value = null;
+  if (shown && current?.mode === "merged-children") mark(new Set(current.parentIds));
 }
 
 function openPicker(next: Picker) {
   clearMarked();
-  rawSelection.value = next.mode === "start" ? null : { kind: "node", id: next.nodeId };
+  rawSelection.value = "nodeId" in next ? { kind: "node", id: next.nodeId } : null;
   picker.value = next;
 }
 
@@ -293,21 +312,39 @@ function drop(source: DragSource, target: DropTarget) {
   apply(result.design);
 }
 
-function pickedDesign(current: Picker, chosen: Sample[], part: Part) {
+function keepOpen(next?: Design) {
+  if (next === undefined) {
+    return undefined;
+  }
+  return { design: next };
+}
+
+function picked(
+  current: Picker,
+  chosen: Sample[],
+  part: Part,
+): { design: Design; id?: string } | undefined {
   if (current.mode === "start") {
-    return addStartSamples(design.value, chosen);
+    return keepOpen(addStartSamples(design.value, chosen));
   }
   if (current.mode === "children") {
-    return addChildSamples(design.value, current.nodeId, chosen, part);
+    return keepOpen(addChildSamples(design.value, current.nodeId, chosen, part));
   }
   if (current.mode === "parents") {
-    return addParentSamples(design.value, current.nodeId, chosen, part);
+    return keepOpen(addParentSamples(design.value, current.nodeId, chosen, part));
+  }
+  if (current.mode === "merged-children") {
+    return addMergedChildren(design.value, current.parentIds, chosen, part);
   }
   const [sample] = chosen;
   if (sample === undefined) {
     return undefined;
   }
-  return replaceWithSample(design.value, current.nodeId, sample);
+  const next = replaceWithSample(design.value, current.nodeId, sample);
+  if (next === undefined) {
+    return undefined;
+  }
+  return { design: next, id: sample.id };
 }
 
 function addSamples(chosen: Sample[], part: Part) {
@@ -315,17 +352,17 @@ function addSamples(chosen: Sample[], part: Part) {
   if (current === undefined) {
     return;
   }
-  const next = pickedDesign(current, chosen, part);
-  if (next === undefined) {
+  const result = picked(current, chosen, part);
+  if (result === undefined) {
     return;
   }
   lastPart.value = part;
-  if (current.mode !== "replace") {
-    apply(next);
+  if (result.id === undefined) {
+    apply(result.design);
     return;
   }
   picker.value = undefined;
-  apply(next, { kind: "node", id: chosen[0].id });
+  apply(result.design, { kind: "node", id: result.id });
 }
 </script>
 
@@ -369,7 +406,7 @@ function addSamples(chosen: Sample[], part: Part) {
         </div>
         <header :class="styles.header">
           <span :class="styles.count">{{ markedIds.length }} selected</span>
-          <PlBtnGhost icon="add" size="small" @click="addSteps">Add step to each</PlBtnGhost>
+          <PlBtnGhost icon="add" size="small" @click="addMarkedChildren">Add children</PlBtnGhost>
           <PlBtnGhost size="small" @click="mergeMarked">Merge</PlBtnGhost>
           <PlBtnGhost size="small" :disabled="!canMakeSplit" @click="makeMarkedSplit">
             Make one split

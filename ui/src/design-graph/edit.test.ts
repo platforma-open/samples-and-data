@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest";
 import {
+  addMergedChildren,
   addPartition,
   addStart,
   addStartSamples,
   addStep,
-  addStepsTo,
   connect,
   deleteMaterial,
   insertStep,
@@ -126,14 +126,27 @@ describe("edit", () => {
     expect(moveUnder(forkAndMerge, ["R3"], "R1::split::sort-2")).toBeUndefined();
   });
 
-  test("setPartOf and addStepsTo act on each material", () => {
+  test("setPartOf sets the connection type of each material", () => {
     const wholes = setPartOf(forkAndMerge, ["dep", "str"], "whole");
     expect([from(wholes, "dep")?.part, from(wholes, "str")?.part]).toEqual(["whole", "whole"]);
-    const stepped = addStepsTo(forkAndMerge, ["dep", "str"]);
-    expect(stepped.materials.slice(-2).map((item) => item.from)).toEqual([
-      { of: "dep", part: "whole" },
-      { of: "str", part: "whole" },
-    ]);
+  });
+
+  test("addMergedChildren adds one step made from all the parents, with the samples as one split", () => {
+    const samples = [
+      { id: "S01", meta: {} },
+      { id: "S02", meta: {} },
+    ];
+    const { design, id } = addMergedChildren(forkAndMerge, ["dep", "str"], samples, "slice")!;
+    expect(from(design, id)).toEqual({ of: ["dep", "str"], part: "whole" });
+    expect(from(design, "S01")).toEqual({ of: id, part: "slice", split: "split-1" });
+    expect(from(design, "S02")).toEqual(from(design, "S01"));
+    const wholes = addMergedChildren(forkAndMerge, ["dep", "str"], samples, "whole")!;
+    expect(from(wholes.design, "S01")).toEqual({ of: wholes.id, part: "whole" });
+    expect(
+      addMergedChildren(forkAndMerge, ["dep", "str"], [{ id: "LIB", meta: {} }], "whole"),
+    ).toBeUndefined();
+    expect(addMergedChildren(forkAndMerge, ["dep"], samples, "whole")).toBeUndefined();
+    expect(addMergedChildren(forkAndMerge, ["dep", "gone"], samples, "whole")).toBeUndefined();
   });
 
   test("setName sets and clears a shadow's name", () => {

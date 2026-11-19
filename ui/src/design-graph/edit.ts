@@ -464,11 +464,6 @@ export function removeNode(design: Design, graph: Graph, id: string): Design | u
   }));
 }
 
-/** Adds a shadow step under each of `parentIds`. */
-export function addStepsTo(design: Design, parentIds: string[]): Design {
-  return parentIds.reduce((current, parentId) => addStep(current, parentId).design, design);
-}
-
 /** Sets the connection type of how each of `ids` was made. */
 export function setPartOf(design: Design, ids: string[], part: Part): Design {
   return ids.reduce((current, id) => setPart(current, id, part), design);
@@ -480,12 +475,33 @@ export function mergeInto(
   parentIds: string[],
   part: Part,
 ): { design: Design; id: string } | undefined {
-  if (parentIds.length < 2) {
+  if (
+    parentIds.length < 2 ||
+    parentIds.some((parentId) => findMaterial(design, parentId) === undefined)
+  ) {
     return undefined;
   }
   const id = shadowId(design);
   const merged = shadow(id, sliceFrom(parentIds, part, freeSplitOf(design, parentIds[0])));
   return { design: { materials: [...design.materials, merged] }, id };
+}
+
+/** Adds one shadow step made from all of `parentIds`, with the samples as its children. */
+export function addMergedChildren(
+  design: Design,
+  parentIds: string[],
+  samples: Sample[],
+  part: Part,
+): { design: Design; id: string } | undefined {
+  const merged = mergeInto(design, parentIds, "whole");
+  if (merged === undefined) {
+    return undefined;
+  }
+  const withChildren = addChildSamples(merged.design, merged.id, samples, part);
+  if (withChildren === undefined) {
+    return undefined;
+  }
+  return { design: withChildren, id: merged.id };
 }
 
 /** Makes materials made from one parent the partitions of one split: the split of the first selected slice, or a new one. */
