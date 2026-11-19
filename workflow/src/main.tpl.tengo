@@ -26,6 +26,7 @@ dsH5 := import(":ds-h5")
 dsSeurat := import(":ds-seurat")
 dsMultiSampleH5ad := import(":ds-multisample-h5ad")
 dsMultiSampleSeurat := import(":ds-multisample-seurat")
+dsMultiSampleXsv := import(":ds-multisample-xsv")
 
 dsProcessors := {
 	"Fasta": dsFasta,
@@ -40,9 +41,17 @@ dsProcessors := {
 	"Seurat": dsSeurat,
 	"MultiSampleH5AD": dsMultiSampleH5ad,
 	"MultiSampleSeurat": dsMultiSampleSeurat,
+	"MultiSampleXsv": dsMultiSampleXsv,
 	"CellRangerMTX": dsCellRangerMtx,
 	"BulkCountMatrix": dsBulkCountMatrix,
 	"MultiplexedFastq": dsMultiplexedFastq
+}
+
+// Grouped dataset types that export the group-to-sample mapping column
+// (`util.sampleGroupsColumn`). MultiplexedFastq maps groups to samples through
+// its multiplexing rules instead.
+sampleGroupsColumnTypes := {
+	"MultiSampleXsv": true
 }
 
 wf.setPreRun(prerunTpl)
@@ -117,6 +126,13 @@ wf.body(func(args) {
 						spec: rules.spec,
 						data: rules.data
 					}
+				}
+			}
+
+			if sampleGroupsColumnTypes[dataset.content.type] {
+				sampleGroups := util.sampleGroupsColumn(blockId, dataset, sampleIdAxis, datasetGroupIdAxis)
+				if !is_undefined(sampleGroups) {
+					ds["dataset." + dataset.id + ".sampleGroups"] = sampleGroups
 				}
 			}
 

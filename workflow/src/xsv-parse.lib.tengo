@@ -1,0 +1,74 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+slices := import("@platforma-sdk/workflow-tengo:slices")
+text := import("text")
+json := import("json")
+
+// Fields of one TSV line as ptabler writes it: a field is quoted only when it holds
+// a tab, a quote or a newline, and a quote inside quotes is doubled
+splitTsvLine := func(line) {
+    fields := []
+    current := ""
+    inQuotes := false
+    quoteSeen := false
+    for ch in line {
+        if quoteSeen {
+            quoteSeen = false
+            if ch == '"' {
+                current += "\""
+                continue
+            }
+            inQuotes = false
+        }
+        if inQuotes {
+            if ch == '"' {
+                quoteSeen = true
+            } else {
+                current += string(ch)
+            }
+        } else if ch == '"' && current == "" {
+            inQuotes = true
+        } else if ch == '\t' {
+            fields = append(fields, current)
+            current = ""
+        } else {
+            current += string(ch)
+        }
+    }
+    return append(fields, current)
+}
+
+/**
+ * Column names of a TSV file, in file order, read from its first line.
+ *
+ * @param content - string, the file's content (only the first line is read)
+ * @return names - []string, empty for an empty file
+ */
+headerColumns := func(content) {
+    headerLine := text.trim_suffix(text.split(content, "\n")[0], "\r")
+    if headerLine == "" {
+        return []
+    }
+    return splitTsvLine(headerLine)
+}
+
+/**
+ * The values of NDJSON rows `{"value": ...}`, sorted.
+ *
+ * @param content - string, NDJSON
+ * @return values - []string
+ */
+sortedValues := func(content) {
+    result := []
+    for line in text.split(content, "\n") {
+        row := text.trim_space(line)
+        if row != "" {
+            result = append(result, string(json.decode(row).value))
+        }
+    }
+    return slices.quickSortInPlace(result)
+}
+
+export ll.toStrict({
+    headerColumns: headerColumns,
+    sortedValues: sortedValues
+})

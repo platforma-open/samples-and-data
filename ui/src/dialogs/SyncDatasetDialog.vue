@@ -14,7 +14,7 @@ import { useApp } from "../app";
 import ImportErrorDialog from "../components/ImportErrorDialog.vue";
 import { useTableImport } from "../composables/useTableImport";
 import { parseCsvNestedMapFromHandles, setEquals } from "../util";
-import { getOrCreateSample } from "./datasets";
+import { assignMultiSampleXsvSamples, getOrCreateSample, multiSampleXsvLabels } from "./datasets";
 import type { SamplesheetImportData } from "./ImportSamplesheetDialog.vue";
 import ImportSamplesheetDialog from "./ImportSamplesheetDialog.vue";
 
@@ -42,10 +42,12 @@ const multiplexedFastqDatasets = computed(
     datasets.value.filter((ds) => ds.content.type === "MultiplexedFastq") as DSMultiplexedFastq[],
 );
 
-// Datasets that support auto-extraction (BulkCountMatrix, MultiSampleH5AD, MultiSampleSeurat)
+// Datasets that support auto-extraction (BulkCountMatrix, MultiSampleH5AD, MultiSampleSeurat, MultiSampleXsv)
 const autoExtractDatasets = computed(() =>
   datasets.value.filter((ds) =>
-    ["BulkCountMatrix", "MultiSampleH5AD", "MultiSampleSeurat"].includes(ds.content.type),
+    ["BulkCountMatrix", "MultiSampleH5AD", "MultiSampleSeurat", "MultiSampleXsv"].includes(
+      ds.content.type,
+    ),
   ),
 );
 
@@ -192,8 +194,8 @@ const parsedSampleGroups = computed(() => {
     const dataset = app.model.data.datasets.find((ds) => ds.id === datasetId);
     if (!dataset) continue;
 
-    // BulkCountMatrix: data is already deserialized as Record<PlId, PlId[]>
-    if (dataset.content.type === "BulkCountMatrix") {
+    // BulkCountMatrix and MultiSampleXsv: data is already deserialized as Record<PlId, PlId[]>
+    if (dataset.content.type === "BulkCountMatrix" || dataset.content.type === "MultiSampleXsv") {
       result[datasetId as PlId] = groups as Record<PlId, PlId[]>;
     } else if (
       dataset.content.type === "MultiSampleH5AD" ||
@@ -251,21 +253,46 @@ function sampleGroupsAreSynced(dataset: GroupedDataset): boolean {
   return true;
 }
 
+/** Values found in each file of a dataset, or undefined while a file is still being read */
+function valuesPerGroup(dataset: GroupedDataset): Record<PlId, string[]> | undefined {
+  const calculatedGroups = parsedSampleGroups.value?.[dataset.id];
+  if (!calculatedGroups) return undefined;
+  const result: Record<PlId, string[]> = {};
+  for (const groupId of Object.keys(dataset.content.data) as PlId[]) {
+    const values = calculatedGroups[groupId];
+    if (!values) return undefined;
+    result[groupId] = values;
+  }
+  return result;
+}
+
 function syncGroupsToDataset(dataset: GroupedDataset): void {
   const datasetId = dataset.id;
 
   const calculatedGroups = parsedSampleGroups.value?.[datasetId];
   if (calculatedGroups) {
     // update data
-    const groupToSample = {} as Record<PlId, Record<PlId, string>>;
-    for (const [groupId, sampleNames] of Object.entries(calculatedGroups)) {
-      if (!sampleNames) return;
-      const mapping = {} as Record<PlId, string>;
-      for (const sampleName of sampleNames) {
-        const sampleId = getOrCreateSample(app, sampleName);
-        mapping[sampleId] = sampleName;
+    let groupToSample = {} as Record<PlId, Record<PlId, string>>;
+    if (dataset.content.type === "MultiSampleXsv") {
+      // A value found in several files becomes one sample per file
+      const values = valuesPerGroup(dataset);
+      if (!values) return;
+      groupToSample = assignMultiSampleXsvSamples(
+        values,
+        dataset.content.groupLabels,
+        dataset.content.sampleGroups,
+        (label) => getOrCreateSample(app, label),
+      );
+    } else {
+      for (const [groupId, sampleNames] of Object.entries(calculatedGroups)) {
+        if (!sampleNames) return;
+        const mapping = {} as Record<PlId, string>;
+        for (const sampleName of sampleNames) {
+          const sampleId = getOrCreateSample(app, sampleName);
+          mapping[sampleId] = sampleName;
+        }
+        groupToSample[groupId as PlId] = mapping;
       }
-      groupToSample[groupId as PlId] = mapping;
     }
     if (!_.isEqual(dataset.content.sampleGroups, groupToSample)) {
       dataset.content.sampleGroups = groupToSample;
@@ -273,6 +300,9 @@ function syncGroupsToDataset(dataset: GroupedDataset): void {
   }
   app.allSettled();
 }
+
+/** Error of the prerun that extracts samples, e.g. a sample column missing from a file */
+const sampleGroupsError = computed(() => app.model.outputErrors.sampleGroups?.message);
 
 const loadingDatasets = computed(() =>
   autoExtractDatasets.value.filter((ds) => !sampleGroupsAreCalculated(ds)),
@@ -282,12 +312,22 @@ const datasetsToUpdate = computed(() =>
   autoExtractDatasets.value.filter((ds) => !sampleGroupsAreSynced(ds)),
 );
 
-const nSamples = computed(() =>
-  datasetsToUpdate.value
-    .flatMap((ds) =>
-      Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).map((s) => s?.length ?? 0),
-    )
-    .reduce((a, b) => a + b, 0),
+/** Labels of the samples "Import samples" gives a dataset */
+function sampleLabels(ds: GroupedDataset): string[] {
+  if (ds.content.type === "MultiSampleXsv") {
+    const values = valuesPerGroup(ds);
+    if (!values) return [];
+    return Object.values(multiSampleXsvLabels(values, ds.content.groupLabels)).flatMap((labels) =>
+      Object.values(labels),
+    );
+  }
+  return Object.values(parsedSampleGroups.value?.[ds.id] ?? {}).flatMap((s) => s ?? []);
+}
+
+// Distinct labels: a name found in several file groups is one sample, except within a
+// Multisample CSV/TSV dataset, where it is one sample per file
+const nSamples = computed(
+  () => new Set(datasetsToUpdate.value.flatMap((ds) => sampleLabels(ds))).size,
 );
 
 async function updateSamples() {
@@ -307,8 +347,11 @@ async function updateSamples() {
     </div>
   </PlAlert>
 
-  <!-- Auto-extract datasets: show progress or import button -->
-  <div v-if="loadingDatasets.length > 0" class="progress-container">
+  <!-- Auto-extract datasets: show the extraction error, progress or import button -->
+  <PlAlert v-if="sampleGroupsError && autoExtractDatasets.length > 0" type="error">
+    Could not extract samples: {{ sampleGroupsError }}
+  </PlAlert>
+  <div v-else-if="loadingDatasets.length > 0" class="progress-container">
     <PlProgressCell stage="running" step="Extracting samples..." />
   </div>
   <PlAlert v-else-if="datasetsToUpdate.length > 0" type="success">

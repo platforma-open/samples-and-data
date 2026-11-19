@@ -1,0 +1,116 @@
+ll := import("@platforma-sdk/workflow-tengo:ll")
+render := import("@platforma-sdk/workflow-tengo:render")
+assets := import("@platforma-sdk/workflow-tengo:assets")
+pColumn := import("@platforma-sdk/workflow-tengo:pframes.pcolumn")
+pt := import("@platforma-sdk/workflow-tengo:pt")
+units := import("@platforma-sdk/workflow-tengo:units")
+parseXsvTpl := assets.importTemplate(":parse-multisample-xsv")
+
+util := import(":util")
+
+// Column names of one CSV/TSV file, in file order, as a JSON list resource.
+// Read through ptabler, which also reads gzip-compressed files.
+getColumns := func(importHandle, xsvType, gzipped, importFile) {
+    ptWf := pt.workflow()
+    // Fixed small RAM for plain files; a gzipped file keeps the size-based default
+    if !gzipped {
+        ptWf.mem(units.GiB)
+    }
+    // Header only (no rows), all as text
+    ptWf.frame(importFile(importHandle), { xsvType: xsvType, inferSchema: false, nRows: 0 }).
+        saveContent("header.tsv")
+    header := ptWf.run().getFileContent("header.tsv")
+
+    // Header line → list of column names
+    return render.create(parseXsvTpl, {
+        content: header,
+        mode: "header"
+    }).output("result")
+}
+
+// Most distinct values a sample column may have in one file: more means the wrong column
+MAX_SAMPLES := 3000
+
+// Distinct values of the sample column in each group's file, as JSON lists.
+// Values are read as text, so "01" and "1" stay two samples; empty and whitespace-only
+// values are skipped. No sample column chosen yet → no groups.
+getSamples := func(dataset, importFile) {
+    result := {}
+    sampleColumnName := dataset.content.sampleColumnName
+    if !sampleColumnName {
+        return result
+    }
+
+    for groupId, importHandle in dataset.content.data {
+        if !importHandle {
+            ll.panic("File handle not set for group %v", groupId)
+        }
+
+        // Distinct non-blank values of the column, sorted; one past the cap is kept to detect overflow
+        ptWf := pt.workflow()
+        ptWf.frame(importFile(importHandle), { xsvType: dataset.content.xsvType, inferSchema: false }).
+            select(pt.col(sampleColumnName).alias("value")).
+            filter(pt.col("value").isNotNull().and(pt.col("value").strContains("\\S"))).
+            unique().
+            sort(["value"]).
+            limit(MAX_SAMPLES + 1).
+            saveContent("values.ndjson")
+        values := ptWf.run().getFileContent("values.ndjson")
+
+        // NDJSON → sorted list of values; fails above MAX_SAMPLES, naming the column and file
+        fileLabel := dataset.content.groupLabels[groupId]
+        result[groupId] = render.create(parseXsvTpl, {
+            content: values,
+            mode: "values",
+            sampleColumnName: sampleColumnName,
+            fileLabel: is_undefined(fileLabel) ? groupId : fileLabel,
+            maxValues: MAX_SAMPLES
+        }).output("result")
+    }
+    return result
+}
+
+// Group axis annotated with the sample column's name; the annotation tells this type
+// apart from Bulk Count Matrix for consumers
+createGroupAxis := func(groupIdAxis, dataset) {
+    sampleColumnName := dataset.content.sampleColumnName
+    if !sampleColumnName {
+        ll.panic("No sample column chosen for dataset %v", dataset.id)
+    }
+    result := copy(groupIdAxis)
+    result.annotations["pl7.app/sampleColumnName"] = sampleColumnName
+    return result
+}
+
+// The dataset column: one file per group on [sampleGroupId], unchanged; the extension
+// carries the separator and compression
+createDataset := func(blockId, sampleIdAxis, groupIdAxis, dataset, importFile) {
+    extension := dataset.content.xsvType + (dataset.content.gzipped ? ".gz" : "")
+
+    spec := util.datasetColumnSpecBase(blockId, dataset, extension)
+    spec.axesSpec = [groupIdAxis]
+
+    data := pColumn.resourceMapBuilder(1)
+    for groupId, importHandle in dataset.content.data {
+        if !importHandle {
+            ll.panic("File handle not set for group %v", groupId)
+        }
+        data.add([groupId], importFile(importHandle))
+    }
+
+    result := {}
+    result["dataset." + dataset.id] = {
+        spec: spec,
+        data: data.build()
+    }
+
+    return result
+}
+
+export {
+    isGrouped: true,
+    getColumns: getColumns,
+    getSamples: getSamples,
+    createGroupAxis: createGroupAxis,
+    createDataset: createDataset
+}

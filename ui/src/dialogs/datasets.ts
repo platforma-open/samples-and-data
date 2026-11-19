@@ -44,6 +44,11 @@ export const datasetTypes: Record<
     fileType: "Xsv",
     hasTags: false,
   },
+  MultiSampleXsv: {
+    label: "Multisample CSV/TSV",
+    fileType: "Xsv",
+    hasTags: false,
+  },
   TaggedXsv: {
     label: "Tagged per sample CSV/TSV",
     fileType: "Xsv",
@@ -192,4 +197,71 @@ export function getOrCreateSample(appUt: unknown, sampleName: string): PlId {
   app.model.data.sampleIds.push(newId);
   app.model.data.sampleLabels[newId] = sampleName;
   return newId;
+}
+
+/** group id -> sample id -> the sample's value in that group's file */
+type SampleGroups = Record<PlId, Record<PlId, string>>;
+
+/**
+ * Sample labels per file (one file per group) of a Multisample CSV/TSV dataset.
+ * A value found in one file only keeps its name; a value found in several files
+ * gets the file's label added, so each file has its own sample.
+ */
+export function multiSampleXsvLabels(
+  valuesPerGroup: Record<PlId, string[]>,
+  groupLabels: Record<PlId, string>,
+): Record<PlId, Record<string, string>> {
+  // value -> number of files it is found in
+  const nGroups = new Map<string, number>();
+  for (const values of Object.values(valuesPerGroup))
+    for (const value of new Set(values)) nGroups.set(value, (nGroups.get(value) ?? 0) + 1);
+  const result: Record<PlId, Record<string, string>> = {};
+  for (const [groupId, values] of Object.entries(valuesPerGroup) as [PlId, string[]][]) {
+    const labels: Record<string, string> = {};
+    for (const value of values) {
+      labels[value] =
+        (nGroups.get(value) ?? 0) > 1 ? `${value} (${groupLabels[groupId] ?? groupId})` : value;
+    }
+    result[groupId] = labels;
+  }
+  // group id -> value -> sample label
+  return result;
+}
+
+/**
+ * Handle sample labels in new `sampleGroups` of a Multisample CSV/TSV dataset.
+ * A value that already has a sample in its file keeps it; any other value gets
+ * the sample labelled by `multiSampleXsvLabels`, created if missing.
+ *
+ * Example, nothing imported yet, group labels { g1: "pool1", g2: "pool2" }:
+ *   { g1: ["S1", "S3"], g2: ["S3"] }
+ *   -> { g1: { s1: "S1", s2: "S3" }, g2: { s3: "S3" } }
+ *   new samples s1, s2, s3 labelled "S1", "S3 (pool1)", "S3 (pool2)"
+ */
+export function assignMultiSampleXsvSamples(
+  valuesPerGroup: Record<PlId, string[]>,
+  groupLabels: Record<PlId, string>,
+  current: SampleGroups | undefined,
+  sampleForLabel: (label: string) => PlId,
+): SampleGroups {
+  const labels = multiSampleXsvLabels(valuesPerGroup, groupLabels);
+
+  const result: SampleGroups = {};
+  for (const [groupId, values] of Object.entries(valuesPerGroup) as [PlId, string[]][]) {
+    // value -> the sample it already has in this file
+    const kept = new Map(
+      Object.entries(current?.[groupId] ?? {}).map(([sampleId, value]) => [
+        value,
+        sampleId as PlId,
+      ]),
+    );
+    const mapping: Record<PlId, string> = {};
+    for (const value of values) {
+      const sampleId = kept.get(value) ?? sampleForLabel(labels[groupId][value]);
+      mapping[sampleId] = value;
+    }
+    result[groupId] = mapping;
+  }
+  // group id -> sample id -> the value as written in that group's file
+  return result;
 }

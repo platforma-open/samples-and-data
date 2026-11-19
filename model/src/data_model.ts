@@ -4,6 +4,7 @@ import type {
   BarcodeRule,
   BlockDataV20260427,
   BlockDataV20260428,
+  BlockDataV20261116,
   DSAny,
   DSContentMultiplexedFastq,
   LegacyBlockArgs,
@@ -81,6 +82,7 @@ export const blockDataModel = new DataModelBuilder({ kind })
     suggestedImport: uiState?.suggestedImport ?? false,
   }))
   .migrate<BlockDataV20260428>("V20260428", upgradeMultiplexedDatasets)
+  .migrate<BlockDataV20261116>("V20261116", (prev) => ({ ...prev, xsvFilesToPreprocess: [] }))
   // `params` carries the study setup a project template supplies, plus whatever
   // of its data came with files a new installation can resolve — see the kind's
   // contract. Optional, because a block may be created without a template, so
@@ -88,7 +90,8 @@ export const blockDataModel = new DataModelBuilder({ kind })
   //
   // `metadataUploadHandle` is absent from the contract on purpose: it is not a
   // link to the metadata table but scaffolding for one import dialog, cleared as
-  // soon as the parsed values land in `metadata`.
+  // soon as the parsed values land in `metadata`. `xsvFilesToPreprocess` is the
+  // same kind of scaffolding, for the Multisample CSV/TSV import dialog.
   .init(({ params }) => ({
     datasets: params?.datasets ?? [],
     metadata: params?.metadata ?? [],
@@ -97,6 +100,7 @@ export const blockDataModel = new DataModelBuilder({ kind })
     sampleLabels: params?.sampleLabels ?? {},
     h5adFilesToPreprocess: params?.h5adFilesToPreprocess ?? [],
     seuratFilesToPreprocess: params?.seuratFilesToPreprocess ?? [],
+    xsvFilesToPreprocess: [],
     metadataUploadHandle: undefined,
     suggestedImport: false,
   }));

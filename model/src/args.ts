@@ -24,7 +24,8 @@ export function isGroupedDataset(ds: DSAny): ds is DSGrouped {
     ds.content.type === "BulkCountMatrix" ||
     ds.content.type === "MultiSampleH5AD" ||
     ds.content.type === "MultiplexedFastq" ||
-    ds.content.type === "MultiSampleSeurat"
+    ds.content.type === "MultiSampleSeurat" ||
+    ds.content.type === "MultiSampleXsv"
   );
 }
 
@@ -62,7 +63,19 @@ export type BlockDataV20260427 = {
  */
 export type BlockDataV20260428 = BlockDataV20260427;
 
-export type BlockData = BlockDataV20260428;
+/** A CSV/TSV file whose header the prerun reads, with the separator and compression its name implies. */
+export type XsvFileToPreprocess = {
+  file: ImportFileHandle;
+  xsvType: "csv" | "tsv";
+  gzipped: boolean;
+};
+
+/** V20261116 adds the queue of CSV/TSV files whose header the prerun reads (Multisample CSV/TSV). */
+export type BlockDataV20261116 = BlockDataV20260428 & {
+  xsvFilesToPreprocess: XsvFileToPreprocess[];
+};
+
+export type BlockData = BlockDataV20261116;
 
 export type BlockArgs = Pick<
   BlockData,
@@ -71,5 +84,9 @@ export type BlockArgs = Pick<
 
 export type BlockPrerunArgs = Pick<
   BlockData,
-  "datasets" | "h5adFilesToPreprocess" | "seuratFilesToPreprocess" | "metadataUploadHandle"
+  | "datasets"
+  | "h5adFilesToPreprocess"
+  | "seuratFilesToPreprocess"
+  | "xsvFilesToPreprocess"
+  | "metadataUploadHandle"
 >;

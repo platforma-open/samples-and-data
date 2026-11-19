@@ -24,7 +24,8 @@
         "PL_RELEASE_DOCKER_PUSH_URL",
         "PL_RELEASE_DOCKER_PULL_URL",
         "PL_RELEASE_BINARY_UPLOAD_URL",
-        "PL_REGISTRY_PLATFORMA_OPEN_UPLOAD_URL"
+        "PL_REGISTRY_PLATFORMA_OPEN_UPLOAD_URL",
+        "PL_DOCKER_RELAYER"
       ],
       "passThroughEnv": ["AWS_*", "PL_AWS_*"],
       "outputs": ["./dist/**", "./block-pack/**", "./pkg-*.tgz"]

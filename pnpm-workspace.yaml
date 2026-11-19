@@ -9,20 +9,20 @@ packages:
   - workflow
 
 catalog:
-  "@platforma-sdk/block-tools": 2.19.1
-  "@platforma-sdk/block-kind": 1.1.0
-  "@platforma-sdk/model": 1.88.0
-  "@platforma-sdk/ui-vue": 1.88.3
-  "@platforma-sdk/tengo-builder": 4.1.18
-  "@platforma-sdk/workflow-tengo": 6.22.0
+  "@platforma-sdk/block-tools": 2.20.1
+  "@platforma-sdk/block-kind": 1.1.1
+  "@platforma-sdk/model": 1.90.2
+  "@platforma-sdk/ui-vue": 1.90.2
+  "@platforma-sdk/tengo-builder": 4.1.25
+  "@platforma-sdk/workflow-tengo": 6.22.3
   "@platforma-sdk/blocks-deps-updater": 2.2.0
-  "@platforma-sdk/package-builder": 3.16.3
+  "@platforma-sdk/package-builder": 3.18.0
 
   "@platforma-open/milaboratories.runenv-python-3": ^1.7.5
   "@platforma-open/milaboratories.runenv-r-samples-and-data": ^1.0.1
 
-  "@platforma-sdk/test": 1.88.6
-  "@milaboratories/helpers": 1.14.6
+  "@platforma-sdk/test": 1.90.5
+  "@milaboratories/helpers": 1.14.7
   "@milaboratories/pl-model-common": 1.48.0
 
   "vue": 3.5.44
@@ -46,8 +46,9 @@ catalog:
   "@changesets/cli": ^2.29.7
 
   "@types/node": ~20.16.15
-  "@milaboratories/ts-builder": 1.7.3
-  "@milaboratories/ts-configs": 1.4.0
+  "@milaboratories/ts-builder": 1.8.0
+  "@milaboratories/ts-configs": 1.4.1
+  cross-env: ~10.1.0
 minimumReleaseAgeExclude:
   - "@milaboratories/*"
   - "@platforma-sdk/*"
