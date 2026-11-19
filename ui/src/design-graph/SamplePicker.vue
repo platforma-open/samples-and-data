@@ -4,11 +4,12 @@ import {
   PlBtnGroup,
   PlBtnPrimary,
   PlCheckbox,
-  PlDropdown,
   PlDropdownMulti,
   PlRadio,
 } from "@milaboratories/uikit";
-import { computed, shallowRef, useCssModule, watch } from "vue";
+import { computed, shallowRef, useCssModule } from "vue";
+import type { SampleFilter } from "./filter";
+import { filterOptions, matchesFilters } from "./filter";
 import { partOptions } from "./layout";
 import type { Part, Sample } from "./types";
 
@@ -25,37 +26,12 @@ const emit = defineEmits<{ add: [samples: Sample[], part: Part]; close: [] }>();
 const styles = useCssModule();
 
 const part = shallowRef(props.part);
-const column = shallowRef("");
-const values = shallowRef<string[]>([]);
+const filters = shallowRef<SampleFilter[]>([]);
 const selected = shallowRef<Set<string>>(new Set());
 
-const columns = computed(() =>
-  Array.from(new Set(props.samples.flatMap((sample) => Object.keys(sample.meta)))),
-);
-const columnOptions = computed(() => [
-  { label: "All samples", value: "" },
-  ...columns.value.map((name) => ({ label: name, value: name })),
-]);
-const valueOptions = computed(() =>
-  Array.from(
-    new Set(
-      props.samples
-        .map((sample) => sample.meta[column.value])
-        .filter((value) => value !== undefined)
-        .map(String),
-    ),
-    (value) => ({ label: value, value }),
-  ),
-);
-watch(column, () => (values.value = []));
-
+const options = computed(() => filterOptions(props.samples));
 const shown = computed(() =>
-  props.samples.filter(
-    (sample) =>
-      column.value === "" ||
-      values.value.length === 0 ||
-      values.value.includes(String(sample.meta[column.value])),
-  ),
+  props.samples.filter((sample) => matchesFilters(sample, filters.value)),
 );
 const selectable = computed(() => shown.value.filter((sample) => !props.placed.has(sample.id)));
 const chosen = computed(() => selectable.value.filter((sample) => selected.value.has(sample.id)));
@@ -99,13 +75,11 @@ const summary = (sample: Sample) =>
       <slot />
       <PlBtnGhost icon="close" size="small" title="Close" @click="emit('close')" />
     </header>
-    <PlDropdown v-model="column" label="Filter by" :options="columnOptions" />
     <PlDropdownMulti
-      v-model="values"
-      label="Values"
-      placeholder="Any value"
-      :options="valueOptions"
-      :disabled="column === ''"
+      v-model="filters"
+      label="Filter"
+      :placeholder="filters.length === 0 ? 'All samples' : 'Search'"
+      :options="options"
     />
     <div :class="styles.list">
       <PlCheckbox

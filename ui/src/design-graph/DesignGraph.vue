@@ -59,7 +59,7 @@ const edgeTitle = (edge: GraphEdge) =>
     .map(capitalize)
     .join(" · ");
 
-const legendLines = ["slice", "whole", "remade"] as const;
+const legendLines = ["whole", "slice", "remade"] as const;
 
 function selectEdge(edge: GraphEdge) {
   if (kinds.value.get(edge.to) === "junction") {
@@ -578,7 +578,7 @@ onMounted(fit);
   stroke-width: 1.5;
 }
 
-.whole .line {
+.slice .line {
   stroke-dasharray: 6 4;
 }
 
