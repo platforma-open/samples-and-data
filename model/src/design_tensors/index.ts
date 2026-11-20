@@ -8,7 +8,6 @@ import type { ExperimentDesign } from "../args";
 import { designLabel } from "../args";
 import { derive, type Graph, type Material } from "./derive";
 import { labelTensors, type Column, type Label, type Labelled, type Table } from "./labels";
-import { renderLabels } from "./render";
 import { inferTensors, type Tensors } from "./tensors";
 
 export const TENSOR_COLUMN_NAME = "pl7.app/design/tensors";
@@ -234,11 +233,41 @@ export function designTensorCells(
   return cells;
 }
 
-/** The tensors and labels as text (tensor_derivation's format), with sample labels for sample ids. */
-export function designTensorsText(
+/** One tensor as the viewer lists it: its groups in order, named by their labels. */
+export type TensorRow = {
+  id: string;
+  type: TensorJson["type"];
+  /** The label columns the groups differ by, `Round` or `Antigen+Arm`; empty when none. */
+  by: string;
+  /** Per group (position, or panel arm): its name and the sample labels in it. */
+  groups: { name: string; samples: string[] }[];
+  /** Columns with one value across the whole tensor, `Antigen = A1`. */
+  constant: string[];
+};
+
+/** The design's tensors for the viewer, with sample labels for sample ids. */
+export function designTensorRows(
   derived: DerivedDesign,
   sampleLabels: Record<string, string>,
-): string {
-  const text = renderLabels(derived.labelled);
-  return text.replace(/[A-Z2-7]{24}/g, (id) => sampleLabels[id] ?? id);
+): TensorRow[] {
+  return Object.entries(derived.json).map(([id, tensor]) => {
+    const label = derived.labels[id]!;
+    const members =
+      tensor.type === "panel" ? tensor.arms.map((arm) => arm.positions.flat()) : tensor.positions;
+    const groups = members.map((samples, k) => {
+      const samplesShown = samples.map((sample) => sampleLabels[sample] ?? sample);
+      const name = label.axes
+        .map((axis) => axis.values[k]?.filter((cell) => cell !== "").join(" · ") ?? "")
+        .filter((value) => value !== "")
+        .join(" · ");
+      return { name: name || samplesShown.join(", ") || "(not sequenced)", samples: samplesShown };
+    });
+    return {
+      id,
+      type: tensor.type,
+      by: label.axes.map((axis) => axis.cols.join("+")).join(", "),
+      groups,
+      constant: label.constant.map(([column, value]) => `${column} = ${value}`),
+    };
+  });
 }

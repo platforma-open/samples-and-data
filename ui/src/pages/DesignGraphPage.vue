@@ -3,7 +3,7 @@ import type { ExperimentDesign } from "@platforma-open/milaboratories.samples-an
 import {
   deriveDesign,
   designPlaceholder,
-  designTensorsText,
+  designTensorRows,
 } from "@platforma-open/milaboratories.samples-and-data.model";
 import {
   PlAlert,
@@ -48,7 +48,7 @@ const tensors = computed(() => {
     const counts = (["trajectories", "partitions", "panels", "recurrences"] as const)
       .map((kind) => `${derived.tensors[kind].length} ${kind}`)
       .join(", ");
-    return { counts, text: designTensorsText(derived, app.model.data.sampleLabels) };
+    return { counts, rows: designTensorRows(derived, app.model.data.sampleLabels) };
   } catch (error) {
     return { error: (error as Error).message };
   }
@@ -133,7 +133,21 @@ async function deleteDesign() {
             <span v-if="'counts' in tensors" :class="styles.note">{{ tensors.counts }}</span>
           </header>
           <PlAlert v-if="'error' in tensors" type="warn"> No tensors: {{ tensors.error }} </PlAlert>
-          <pre v-else :class="styles.text">{{ tensors.text }}</pre>
+          <ol v-else :class="styles.list">
+            <li v-for="row in tensors.rows" :key="row.id" :class="styles.row">
+              <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
+              <span :class="styles.note">{{ row.by || "no axis" }}</span>
+              <span :class="styles.groups">
+                <template v-for="(group, k) in row.groups" :key="k">
+                  <span v-if="k > 0 && row.type === 'trajectory'" :class="styles.note">→</span>
+                  <span :class="styles.chip" :title="group.samples.join(', ')">{{
+                    group.name
+                  }}</span>
+                </template>
+              </span>
+              <span :class="styles.note">{{ row.constant.join(", ") }}</span>
+            </li>
+          </ol>
         </section>
       </div>
     </PlBlockPage>
@@ -182,14 +196,46 @@ async function deleteDesign() {
   font-size: 13px;
 }
 
-.text {
+.list {
   flex: 1;
   margin: 0;
+  padding: 4px 0;
   overflow: auto;
-  padding: 8px 12px;
+  list-style: none;
   border: 1px solid var(--border-color-div-grey);
   border-radius: 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 110px minmax(80px, 160px) 1fr minmax(0, 30%);
+  gap: 12px;
+  align-items: center;
+  padding: 4px 12px;
+}
+
+.row + .row {
+  border-block-start: 1px solid var(--border-color-div-grey);
+}
+
+.kind {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.groups {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.chip {
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: var(--bg-base-light, #f2f3f5);
   font-size: 12px;
-  line-height: 1.5;
+  white-space: nowrap;
 }
 </style>

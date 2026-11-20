@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import type { ExperimentDesign } from "../args";
 import { derive, type Material } from "./derive";
-import { deriveDesign, designTensorCells, type DesignSource } from "./index";
+import { deriveDesign, designTensorCells, designTensorRows, type DesignSource } from "./index";
 import { labelTensors } from "./labels";
 import { renderLabels, renderText } from "./render";
 import { inferTensors } from "./tensors";
@@ -86,6 +86,17 @@ describe.each(studies)("$slug", (study) => {
         ),
       );
     });
+
+    // the viewer lists every tensor, one named group per position or arm
+    const rows = designTensorRows(derived, source.sampleLabels);
+    expect(rows.map((row) => row.id)).toEqual(Object.keys(derived.json));
+    for (const row of rows) {
+      const tensor = derived.json[row.id]!;
+      expect(row.groups).toHaveLength(
+        tensor.type === "panel" ? tensor.arms.length : tensor.positions.length,
+      );
+      for (const group of row.groups) expect(group.name).not.toBe("");
+    }
 
     const cells = designTensorCells([design], source);
     expect(Object.keys(cells.tensors).sort()).toEqual(
