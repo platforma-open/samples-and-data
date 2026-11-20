@@ -84,8 +84,8 @@ wf.body(func(args) {
 		exports.add(k, v.spec, v.data)
 	}
 
-	// Experiment designs: their tensors and STEP 3 labels, derived by the model from the design graph
-	// and the metadata. One JSON value per [design, tensor]; analysis blocks match a design to an
+	// Experiment designs: their tensors, each with its STEP 3 label, derived by the model from the
+	// design graph and the metadata. One JSON value per [design, tensor]; analysis blocks match a design to an
 	// abundance by the sample axis named in pl7.app/design/sampleAxis.
 	designTensors := args.designTensors
 	if !is_undefined(designTensors) && len(designTensors.tensors) > 0 {
@@ -121,16 +121,6 @@ wf.body(func(args) {
 				}))
 			}
 		}, jsonColumn(designTensors.tensors))
-		// Labels apart from the tensors: the tensors hold nothing taken from metadata
-		if len(designTensors.labels) > 0 {
-			exports.add("designLabels", {
-				kind: "PColumn",
-				name: "pl7.app/design/labels",
-				valueType: "String",
-				axesSpec: designAxes,
-				annotations: { "pl7.app/label": "Design tensor labels" }
-			}, jsonColumn(designTensors.labels))
-		}
 	}
 
 	// Create datasets

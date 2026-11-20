@@ -143,7 +143,7 @@ export type BlockArgs = Pick<
   BlockData,
   "datasets" | "metadata" | "sampleLabelColumnLabel" | "sampleLabels"
 > & {
-  /** The designs' tensors and labels, exported as `pl7.app/design/tensors` and `pl7.app/design/labels`. */
+  /** The designs' tensors, each with its label, exported as `pl7.app/design/tensors`. */
   designTensors: DesignTensorCells;
 };
 

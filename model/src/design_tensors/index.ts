@@ -1,8 +1,7 @@
 // The design tensors Samples & Data publishes: tensor_derivation STEP 2 (structure from the design
 // graph) and STEP 3 (labels from the metadata table), as JSON in the shape analysis blocks read
-// (spec draft "Each tensor is a JSON object with a fixed shape", schemaVersion 1). The tensors hold
-// sample ids and no metadata; labels go in a column of their own, so they can change without
-// changing the tensors.
+// (spec draft "Each tensor is a JSON object with a fixed shape", schemaVersion 1). Each tensor
+// carries its label; splitting labels out to save reruns is left for later.
 import type { DSAny, MTColumn, PlId } from "@platforma-open/milaboratories.samples-and-data.kind";
 import type { ExperimentDesign } from "../args";
 import { designLabel } from "../args";
@@ -11,10 +10,15 @@ import { labelTensors, type Column, type Label, type Labelled, type Table } from
 import { inferTensors, type Tensors } from "./tensors";
 
 export const TENSOR_COLUMN_NAME = "pl7.app/design/tensors";
-export const LABELS_COLUMN_NAME = "pl7.app/design/labels";
 
 export type StepKind = "selection" | "piece" | "portion" | "timecourse";
-type Base = { schemaVersion: 1; designName: string; datasets: string[] };
+type Base = {
+  schemaVersion: 1;
+  designName: string;
+  datasets: string[];
+  /** STEP 3 label, its values in the same group order as the tensor. */
+  label: Label;
+};
 export type TensorJson =
   | (Base & {
       type: "trajectory";
@@ -31,8 +35,6 @@ export type TensorJson =
       /** Sorted by split name; `trajectories` are the ids of the trajectories through each arm. */
       arms: { split: string; positions: string[][]; trajectories: string[] }[];
     });
-/** STEP 3 label of one tensor, its values in the same group order as the tensor JSON. */
-export type LabelJson = { schemaVersion: 1 } & Label;
 
 /** The block data the derivation reads. */
 export type DesignSource = {
@@ -72,7 +74,6 @@ export type DerivedDesign = {
   tensors: Tensors;
   labelled: Labelled;
   json: Record<string, TensorJson>;
-  labels: Record<string, LabelJson>;
 };
 
 /** Derives one design's tensors and labels. Throws when the graph is not a valid design. */
@@ -95,18 +96,19 @@ export function deriveDesign(
   const labelled = labelTensors(tensors, metadataTable(source));
   const designName = designLabel(design, index);
   const names = new Map(design.materials.map((material) => [material.id, material.name]));
-  const base: Base = {
+  const labels = labelsById(labelled);
+  const base = (id: string): Base => ({
     schemaVersion: 1,
     designName,
     datasets: source.datasets.map((dataset) => dataset.id),
-  };
+    label: labels[id]!,
+  });
   return {
     designId: design.id,
     designName,
     tensors,
     labelled,
     json: toJson(graph, tensors, base, names),
-    labels: labelsToJson(labelled),
   };
 }
 
@@ -116,7 +118,7 @@ const key = (p: string[]) => JSON.stringify([...p].sort());
 function toJson(
   g: Graph,
   t: Tensors,
-  base: Base,
+  base: (id: string) => Base,
   names: Map<string, string | undefined>,
 ): Record<string, TensorJson> {
   const out: Record<string, TensorJson> = {};
@@ -125,7 +127,7 @@ function toJson(
   const partitionOf = new Map<string, string>();
   t.partitions.forEach((positions, i) => {
     const id = `partition-${i + 1}`;
-    out[id] = { ...base, type: "partition", positions };
+    out[id] = { ...base(id), type: "partition", positions };
     for (const p of positions) if (p.length) partitionOf.set(key(p), id);
   });
 
@@ -136,7 +138,7 @@ function toJson(
     const steps: StepKind[] = [];
     for (let k = 1; k < positions.length; k++)
       steps.push(stepKind(g, positions[k - 1]!, positions[k]!, pieceOf[k] !== null));
-    out[id] = { ...base, type: "trajectory", positions, pieceOf, steps };
+    out[id] = { ...base(id), type: "trajectory", positions, pieceOf, steps };
     trajectoryIds.push({ id, positions });
   });
 
@@ -151,7 +153,7 @@ function toJson(
         return { split, positions, trajectories };
       });
     out[`panel-${i + 1}`] = {
-      ...base,
+      ...base(`panel-${i + 1}`),
       type: "panel",
       anchor: { material: names.get(p.anchor) ?? p.anchor, reads: p.reads },
       arms,
@@ -159,15 +161,19 @@ function toJson(
   });
 
   t.recurrences.forEach((positions, i) => {
-    out[`recurrence-${i + 1}`] = { ...base, type: "recurrence", positions };
+    out[`recurrence-${i + 1}`] = {
+      ...base(`recurrence-${i + 1}`),
+      type: "recurrence",
+      positions,
+    };
   });
   return out;
 }
 
 /** Labels by tensor id, with the same ids and group order as toJson. */
-function labelsToJson(l: Labelled): Record<string, LabelJson> {
-  const out: Record<string, LabelJson> = {};
-  const put = (id: string, label: Label) => (out[id] = { schemaVersion: 1, ...label });
+function labelsById(l: Labelled): Record<string, Label> {
+  const out: Record<string, Label> = {};
+  const put = (id: string, label: Label) => (out[id] = label);
   l.partitions.forEach((x, i) => put(`partition-${i + 1}`, x.label));
   l.trajectories.forEach((x, i) => put(`trajectory-${i + 1}`, x.label));
   l.panels.forEach((x, i) => {
@@ -205,18 +211,17 @@ function stepKind(g: Graph, a: string[], b: string[], bIsPiece: boolean): StepKi
   return "selection";
 }
 
-/** Cells of the tensor and label columns: JSON key [designId, tensorId] -> JSON value. */
+/** Cells of the tensor column: JSON key [designId, tensorId] -> JSON value. */
 export type DesignTensorCells = {
   tensors: Record<string, string>;
-  labels: Record<string, string>;
 };
 
-/** Every design's tensors and labels as column cells. A design that cannot be derived is left out. */
+/** Every design's tensors as column cells. A design that cannot be derived is left out. */
 export function designTensorCells(
   designs: ExperimentDesign[],
   source: DesignSource,
 ): DesignTensorCells {
-  const cells: DesignTensorCells = { tensors: {}, labels: {} };
+  const cells: DesignTensorCells = { tensors: {} };
   designs.forEach((design, index) => {
     if (design.materials.length === 0) return;
     let derived: DerivedDesign;
@@ -227,8 +232,6 @@ export function designTensorCells(
     }
     for (const [tensorId, tensor] of Object.entries(derived.json))
       cells.tensors[JSON.stringify([design.id, tensorId])] = JSON.stringify(tensor);
-    for (const [tensorId, label] of Object.entries(derived.labels))
-      cells.labels[JSON.stringify([design.id, tensorId])] = JSON.stringify(label);
   });
   return cells;
 }
@@ -251,7 +254,7 @@ export function designTensorRows(
   sampleLabels: Record<string, string>,
 ): TensorRow[] {
   return Object.entries(derived.json).map(([id, tensor]) => {
-    const label = derived.labels[id]!;
+    const label = tensor.label;
     const members =
       tensor.type === "panel" ? tensor.arms.map((arm) => arm.positions.flat()) : tensor.positions;
     const groups = members.map((samples, k) => {

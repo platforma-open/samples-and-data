@@ -70,15 +70,14 @@ describe.each(studies)("$slug", (study) => {
     expect(renderLabels(derived.labelled)).toBe(renderLabels(labelTensors(tensors, table)));
 
     // one label per tensor, aligned with the tensor's groups (a panel's arms are sorted by split)
-    expect(Object.keys(derived.labels)).toEqual(Object.keys(derived.json));
-    for (const [id, tensor] of Object.entries(derived.json)) {
+    for (const tensor of Object.values(derived.json)) {
       const groups = tensor.type === "panel" ? tensor.arms.length : tensor.positions.length;
-      for (const axis of derived.labels[id]!.axes) expect(axis.values).toHaveLength(groups);
+      for (const axis of tensor.label.axes) expect(axis.values).toHaveLength(groups);
     }
     derived.labelled.panels.forEach((panel, i) => {
       const json = derived.json[`panel-${i + 1}`]!;
-      const label = derived.labels[`panel-${i + 1}`]!;
       if (json.type !== "panel") throw new Error("not a panel");
+      const label = json.label;
       const splits = Object.keys(panel.panel.arms);
       json.arms.forEach((arm, k) =>
         label.axes.forEach((axis, a) =>
