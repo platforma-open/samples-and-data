@@ -53,6 +53,24 @@ const tensors = computed(() => {
     return { error: (error as Error).message };
   }
 });
+const panel = shallowRef<HTMLElement>();
+const panelHeight = shallowRef<number>();
+/** Dragging the bar above the comparisons trades height with the graph. */
+function startResize(event: PointerEvent) {
+  const el = panel.value;
+  if (el === undefined) return;
+  const handle = event.currentTarget as HTMLElement;
+  const startY = event.clientY;
+  const start = el.offsetHeight;
+  const max = (el.parentElement?.clientHeight ?? 600) - 160;
+  handle.setPointerCapture(event.pointerId);
+  const move = (e: PointerEvent) =>
+    (panelHeight.value = Math.min(max, Math.max(120, start + startY - e.clientY)));
+  handle.addEventListener("pointermove", move);
+  handle.addEventListener("pointerup", () => handle.removeEventListener("pointermove", move), {
+    once: true,
+  });
+}
 const drawable = computed(() => {
   try {
     const design = editorDesign(current.value?.materials ?? [], samples.value);
@@ -127,12 +145,25 @@ async function deleteDesign() {
         <div :class="styles.editor">
           <DesignEditor :design="drawable.design" :samples="samples" @change="save" />
         </div>
-        <section v-if="tensors !== undefined" :class="styles.tensors">
+        <div
+          v-if="tensors !== undefined"
+          :class="styles.splitter"
+          title="Drag to resize"
+          @pointerdown="startResize"
+        />
+        <section
+          v-if="tensors !== undefined"
+          ref="panel"
+          :class="styles.tensors"
+          :style="panelHeight ? { blockSize: `${panelHeight}px`, maxBlockSize: 'none' } : undefined"
+        >
           <header :class="styles.tensorsHead">
-            Tensors
+            Comparisons
             <span v-if="'counts' in tensors" :class="styles.note">{{ tensors.counts }}</span>
           </header>
-          <PlAlert v-if="'error' in tensors" type="warn"> No tensors: {{ tensors.error }} </PlAlert>
+          <PlAlert v-if="'error' in tensors" type="warn">
+            No comparisons: {{ tensors.error }}
+          </PlAlert>
           <ol v-else :class="styles.list">
             <li v-for="row in tensors.rows" :key="row.id" :class="styles.row">
               <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
@@ -181,6 +212,18 @@ async function deleteDesign() {
   gap: 6px;
   max-block-size: 35%;
   min-block-size: 120px;
+}
+
+.splitter {
+  flex: none;
+  block-size: 8px;
+  margin-block: -8px;
+  cursor: row-resize;
+  border-radius: 4px;
+}
+
+.splitter:hover {
+  background: var(--border-color-div-grey);
 }
 
 .tensorsHead {
