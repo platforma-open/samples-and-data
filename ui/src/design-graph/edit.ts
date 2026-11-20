@@ -65,7 +65,8 @@ export function setPart(design: Design, id: string, part: Part): Design {
     of: from.of,
     part,
     ...(part === "slice" && { split: from.split ?? split }),
-    ...(from.step !== undefined && { step: from.step }),
+    // a whole edge with a step is a later state of the parent; switching to whole means a portion
+    ...(from.step !== undefined && part !== "whole" && { step: from.step }),
   }));
 }
 

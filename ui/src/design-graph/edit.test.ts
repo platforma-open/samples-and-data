@@ -33,9 +33,9 @@ const from = (design: typeof forkAndMerge, id: string) =>
   design.materials.find((item) => item.id === id)!.from;
 
 describe("edit", () => {
-  test("setPart drops the split off a slice and gives a new slice its own split", () => {
+  test("setPart drops the split and step off a whole and gives a new slice its own split", () => {
     const whole = setPart(forkAndMerge, "dep", "whole");
-    expect(from(whole, "dep")).toEqual({ of: "R1", part: "whole", step: "round" });
+    expect(from(whole, "dep")).toEqual({ of: "R1", part: "whole" });
     const slice = setPart(whole, "dep", "slice");
     expect(from(slice, "dep")?.split).not.toBe("sort-2");
     expect(from(setPart(forkAndMerge, "dep", "slice"), "dep")?.split).toBe("sort-2");
