@@ -1,0 +1,1273 @@
+[
+  {
+    "slug": "synthetic-01-panning-chain",
+    "materials": {
+      "LIB": {},
+      "R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-1"
+        }
+      },
+      "R2": {
+        "from": {
+          "of": "R1",
+          "part": "slice",
+          "split": "pan-2"
+        }
+      },
+      "R3": {
+        "from": {
+          "of": "R2",
+          "part": "slice",
+          "split": "pan-3"
+        }
+      }
+    },
+    "columns": ["round"],
+    "table": {
+      "R1": {
+        "round": "1"
+      },
+      "R2": {
+        "round": "2"
+      },
+      "R3": {
+        "round": "3"
+      }
+    },
+    "expected": "        trajectory  [(R1), (R2), (R3)]\n        partition   []\n        panel       []\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  [(R1), (R2), (R3)]\n                        axis      round: 1, 2, 3\n        partition   []\n        panel       []\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-02-two-targets-one-control",
+    "materials": {
+      "LIB": {},
+      "A_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-A-1",
+          "step": "round"
+        }
+      },
+      "A_R2": {
+        "from": {
+          "of": "A_R1",
+          "part": "slice",
+          "split": "pan-A-2",
+          "step": "round"
+        }
+      },
+      "B_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-B-1",
+          "step": "round"
+        }
+      },
+      "B_R2": {
+        "from": {
+          "of": "B_R1",
+          "part": "slice",
+          "split": "pan-B-2",
+          "step": "round"
+        }
+      },
+      "DE": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "plastic",
+          "step": "round"
+        }
+      }
+    },
+    "columns": ["target", "round"],
+    "table": {
+      "A_R1": {
+        "target": "A",
+        "round": "1"
+      },
+      "A_R2": {
+        "target": "A",
+        "round": "2"
+      },
+      "B_R1": {
+        "target": "B",
+        "round": "1"
+      },
+      "B_R2": {
+        "target": "B",
+        "round": "2"
+      },
+      "DE": {
+        "target": "Control",
+        "round": "2"
+      }
+    },
+    "expected": "        trajectory  [(A_R1), (A_R2)]\n                    [(B_R1), (B_R2)]\n        partition   []\n        panel       {anchor: LIB, reads: ()}\n                        pan-A-1: [(A_R1)]\n                        pan-B-1: [(B_R1)]\n                        plastic: [(DE)]\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  [(A_R1), (A_R2)]\n                        axis      round: 1, 2\n                        constant  target=A\n                    [(B_R1), (B_R2)]\n                        axis      round: 1, 2\n                        constant  target=B\n        partition   []\n        panel       {anchor: LIB} pan-A-1, pan-B-1, plastic\n                        axis      target: A, B, Control\n                        mixed     round: 1, 1, 2\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-03-bins-by-concentration",
+    "materials": {
+      "EXPR": {},
+      "s001": {
+        "from": {
+          "of": "EXPR",
+          "part": "whole"
+        }
+      },
+      "s010": {
+        "from": {
+          "of": "EXPR",
+          "part": "whole"
+        }
+      },
+      "s100": {
+        "from": {
+          "of": "EXPR",
+          "part": "whole"
+        }
+      },
+      "s999": {
+        "from": {
+          "of": "EXPR",
+          "part": "whole"
+        }
+      },
+      "s001_b1": {
+        "from": {
+          "of": "s001",
+          "part": "slice",
+          "split": "sort-001"
+        }
+      },
+      "s001_b2": {
+        "from": {
+          "of": "s001",
+          "part": "slice",
+          "split": "sort-001"
+        }
+      },
+      "s001_b3": {
+        "from": {
+          "of": "s001",
+          "part": "slice",
+          "split": "sort-001"
+        }
+      },
+      "s001_b4": {
+        "from": {
+          "of": "s001",
+          "part": "slice",
+          "split": "sort-001"
+        }
+      },
+      "s010_b1": {
+        "from": {
+          "of": "s010",
+          "part": "slice",
+          "split": "sort-010"
+        }
+      },
+      "s010_b2": {
+        "from": {
+          "of": "s010",
+          "part": "slice",
+          "split": "sort-010"
+        }
+      },
+      "s010_b3": {
+        "from": {
+          "of": "s010",
+          "part": "slice",
+          "split": "sort-010"
+        }
+      },
+      "s010_b4": {
+        "from": {
+          "of": "s010",
+          "part": "slice",
+          "split": "sort-010"
+        }
+      },
+      "s100_b1": {
+        "from": {
+          "of": "s100",
+          "part": "slice",
+          "split": "sort-100"
+        }
+      },
+      "s100_b2": {
+        "from": {
+          "of": "s100",
+          "part": "slice",
+          "split": "sort-100"
+        }
+      },
+      "s100_b3": {
+        "from": {
+          "of": "s100",
+          "part": "slice",
+          "split": "sort-100"
+        }
+      },
+      "s100_b4": {
+        "from": {
+          "of": "s100",
+          "part": "slice",
+          "split": "sort-100"
+        }
+      },
+      "s999_b1": {
+        "from": {
+          "of": "s999",
+          "part": "slice",
+          "split": "sort-999"
+        }
+      },
+      "s999_b2": {
+        "from": {
+          "of": "s999",
+          "part": "slice",
+          "split": "sort-999"
+        }
+      },
+      "s999_b3": {
+        "from": {
+          "of": "s999",
+          "part": "slice",
+          "split": "sort-999"
+        }
+      },
+      "s999_b4": {
+        "from": {
+          "of": "s999",
+          "part": "slice",
+          "split": "sort-999"
+        }
+      }
+    },
+    "columns": ["conc_nM", "bin"],
+    "table": {
+      "s001_b1": {
+        "conc_nM": "0.1",
+        "bin": "b1"
+      },
+      "s001_b2": {
+        "conc_nM": "0.1",
+        "bin": "b2"
+      },
+      "s001_b3": {
+        "conc_nM": "0.1",
+        "bin": "b3"
+      },
+      "s001_b4": {
+        "conc_nM": "0.1",
+        "bin": "b4"
+      },
+      "s010_b1": {
+        "conc_nM": "1",
+        "bin": "b1"
+      },
+      "s010_b2": {
+        "conc_nM": "1",
+        "bin": "b2"
+      },
+      "s010_b3": {
+        "conc_nM": "1",
+        "bin": "b3"
+      },
+      "s010_b4": {
+        "conc_nM": "1",
+        "bin": "b4"
+      },
+      "s100_b1": {
+        "conc_nM": "10",
+        "bin": "b1"
+      },
+      "s100_b2": {
+        "conc_nM": "10",
+        "bin": "b2"
+      },
+      "s100_b3": {
+        "conc_nM": "10",
+        "bin": "b3"
+      },
+      "s100_b4": {
+        "conc_nM": "10",
+        "bin": "b4"
+      },
+      "s999_b1": {
+        "conc_nM": "100",
+        "bin": "b1"
+      },
+      "s999_b2": {
+        "conc_nM": "100",
+        "bin": "b2"
+      },
+      "s999_b3": {
+        "conc_nM": "100",
+        "bin": "b3"
+      },
+      "s999_b4": {
+        "conc_nM": "100",
+        "bin": "b4"
+      }
+    },
+    "expected": "        trajectory  []\n        partition   [(s001_b1), (s001_b2), (s001_b3), (s001_b4)]\n                    [(s010_b1), (s010_b2), (s010_b3), (s010_b4)]\n                    [(s100_b1), (s100_b2), (s100_b3), (s100_b4)]\n                    [(s999_b1), (s999_b2), (s999_b3), (s999_b4)]\n        panel       {anchor: EXPR, reads: ()}\n                        s001/sort-001: [(s001_b1), (s001_b2), (s001_b3), (s001_b4)]\n                        s010/sort-010: [(s010_b1), (s010_b2), (s010_b3), (s010_b4)]\n                        s100/sort-100: [(s100_b1), (s100_b2), (s100_b3), (s100_b4)]\n                        s999/sort-999: [(s999_b1), (s999_b2), (s999_b3), (s999_b4)]\n        recurrence  []",
+    "expectedLabels": "        trajectory  []\n        partition   [(s001_b1), (s001_b2), (s001_b3), (s001_b4)]\n                        axis      bin: b1, b2, b3, b4\n                        constant  conc_nM=0.1\n                    [(s010_b1), (s010_b2), (s010_b3), (s010_b4)]\n                        axis      bin: b1, b2, b3, b4\n                        constant  conc_nM=1\n                    [(s100_b1), (s100_b2), (s100_b3), (s100_b4)]\n                        axis      bin: b1, b2, b3, b4\n                        constant  conc_nM=10\n                    [(s999_b1), (s999_b2), (s999_b3), (s999_b4)]\n                        axis      bin: b1, b2, b3, b4\n                        constant  conc_nM=100\n        panel       {anchor: EXPR} s001/sort-001, s010/sort-010, s100/sort-100, s999/sort-999\n                        axis      conc_nM: 0.1, 1, 10, 100\n                        within    bin\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-04-in-vivo-cohorts",
+    "materials": {
+      "m1": {},
+      "m2": {},
+      "m3": {},
+      "m1_bleed": {
+        "from": {
+          "of": "m1",
+          "part": "whole"
+        }
+      },
+      "m2_bleed": {
+        "from": {
+          "of": "m2",
+          "part": "whole"
+        }
+      },
+      "m3_bleed": {
+        "from": {
+          "of": "m3",
+          "part": "whole"
+        }
+      }
+    },
+    "columns": ["animal", "cohort", "day"],
+    "table": {
+      "m1_bleed": {
+        "animal": "m1",
+        "cohort": "humanized",
+        "day": "14"
+      },
+      "m2_bleed": {
+        "animal": "m2",
+        "cohort": "humanized",
+        "day": "14"
+      },
+      "m3_bleed": {
+        "animal": "m3",
+        "cohort": "wildtype",
+        "day": "14"
+      }
+    },
+    "expected": "        trajectory  []\n        partition   []\n        panel       []\n        recurrence  (m1_bleed)\n                    (m2_bleed)\n                    (m3_bleed)\n",
+    "expectedLabels": "        trajectory  []\n        partition   []\n        panel       []\n        recurrence  [(m1_bleed), (m2_bleed), (m3_bleed)]\n                        axis      animal: m1, m2, m3\n                        mixed     cohort: humanized, humanized, wildtype\n                        constant  day=14\n"
+  },
+  {
+    "slug": "synthetic-05-fork-and-merge",
+    "materials": {
+      "LIB": {},
+      "R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-1",
+          "step": "round"
+        }
+      },
+      "dep": {
+        "from": {
+          "of": "R1",
+          "part": "slice",
+          "split": "sort-2",
+          "step": "round"
+        }
+      },
+      "str": {
+        "from": {
+          "of": "R1",
+          "part": "slice",
+          "split": "sort-2",
+          "step": "round"
+        }
+      },
+      "R3": {
+        "from": {
+          "of": ["dep", "str"],
+          "part": "slice",
+          "split": "pan-3",
+          "step": "round"
+        }
+      }
+    },
+    "columns": ["round", "sort"],
+    "table": {
+      "R1": {
+        "round": "1",
+        "sort": ""
+      },
+      "dep": {
+        "round": "2",
+        "sort": "depletion"
+      },
+      "str": {
+        "round": "2",
+        "sort": "stringent"
+      },
+      "R3": {
+        "round": "3",
+        "sort": ""
+      }
+    },
+    "expected": "        trajectory  [(R1), (R3)]\n        partition   [(dep), (str)]\n        panel       []\n        recurrence  []",
+    "expectedLabels": "        trajectory  [(R1), (R3)]\n                        axis      round: 1, 3\n        partition   [(dep), (str)]\n                        axis      sort: depletion, stringent\n                        constant  round=2\n        panel       []\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-06-confounded-arms",
+    "materials": {
+      "LIB": {},
+      "V2_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-V2-1",
+          "step": "round"
+        }
+      },
+      "V2_R2": {
+        "from": {
+          "of": "V2_R1",
+          "part": "slice",
+          "split": "pan-V2-2",
+          "step": "round"
+        }
+      },
+      "V3_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-V3-1",
+          "step": "round"
+        }
+      },
+      "V3_R2": {
+        "from": {
+          "of": "V3_R1",
+          "part": "slice",
+          "split": "pan-V3-2",
+          "step": "round"
+        }
+      }
+    },
+    "columns": ["generation", "chemistry", "round"],
+    "table": {
+      "V2_R1": {
+        "generation": "V2",
+        "chemistry": "epPCR",
+        "round": "1"
+      },
+      "V2_R2": {
+        "generation": "V2",
+        "chemistry": "epPCR",
+        "round": "2"
+      },
+      "V3_R1": {
+        "generation": "V3",
+        "chemistry": "NNK",
+        "round": "1"
+      },
+      "V3_R2": {
+        "generation": "V3",
+        "chemistry": "NNK",
+        "round": "2"
+      }
+    },
+    "expected": "        trajectory  [(V2_R1), (V2_R2)]\n                    [(V3_R1), (V3_R2)]\n        partition   []\n        panel       {anchor: LIB, reads: ()}\n                        pan-V2-1: [(V2_R1)]\n                        pan-V3-1: [(V3_R1)]\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  [(V2_R1), (V2_R2)]\n                        axis      round: 1, 2\n                        constant  generation=V2, chemistry=epPCR\n                    [(V3_R1), (V3_R2)]\n                        axis      round: 1, 2\n                        constant  generation=V3, chemistry=NNK\n        partition   []\n        panel       {anchor: LIB} pan-V2-1, pan-V3-1\n                        axis      generation: V2, V3\n                        axis      chemistry: epPCR, NNK\n                        constant  round=1\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-07-arms-with-a-history",
+    "materials": {
+      "LIB": {},
+      "A_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-A-1",
+          "step": "round"
+        }
+      },
+      "A_R2": {
+        "from": {
+          "of": "A_R1",
+          "part": "slice",
+          "split": "pan-A-2",
+          "step": "round"
+        }
+      },
+      "A_R3": {
+        "from": {
+          "of": "A_R2",
+          "part": "slice",
+          "split": "pan-A-3",
+          "step": "round"
+        }
+      },
+      "A_R4": {
+        "from": {
+          "of": "A_R3",
+          "part": "slice",
+          "split": "pan-A-4",
+          "step": "round"
+        }
+      },
+      "B_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-B-1",
+          "step": "round"
+        }
+      },
+      "B_R2": {
+        "from": {
+          "of": "B_R1",
+          "part": "slice",
+          "split": "pan-B-2",
+          "step": "round"
+        }
+      },
+      "B_R3": {
+        "from": {
+          "of": "B_R2",
+          "part": "slice",
+          "split": "pan-B-3",
+          "step": "round"
+        }
+      },
+      "B_R4": {
+        "from": {
+          "of": "B_R3",
+          "part": "slice",
+          "split": "pan-B-4",
+          "step": "round"
+        }
+      },
+      "C_R1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "pan-C-1",
+          "step": "round"
+        }
+      },
+      "C_R2": {
+        "from": {
+          "of": "C_R1",
+          "part": "slice",
+          "split": "pan-C-2",
+          "step": "round"
+        }
+      },
+      "C_R3": {
+        "from": {
+          "of": "C_R2",
+          "part": "slice",
+          "split": "pan-C-3",
+          "step": "round"
+        }
+      },
+      "C_R4": {
+        "from": {
+          "of": "C_R3",
+          "part": "slice",
+          "split": "pan-C-4",
+          "step": "round"
+        }
+      },
+      "A_edge": {
+        "from": {
+          "of": "A_R4",
+          "part": "slice",
+          "split": "gate-edge"
+        }
+      },
+      "A_gen": {
+        "from": {
+          "of": "A_R4",
+          "part": "slice",
+          "split": "gate-generous"
+        }
+      }
+    },
+    "columns": ["round", "antigen", "conc_nM", "gate"],
+    "table": {
+      "LIB": {
+        "round": "0",
+        "antigen": "",
+        "conc_nM": "",
+        "gate": ""
+      },
+      "A_R1": {
+        "round": "1",
+        "antigen": "PSMA",
+        "conc_nM": "5",
+        "gate": ""
+      },
+      "A_R2": {
+        "round": "2",
+        "antigen": "PSMA",
+        "conc_nM": "5",
+        "gate": ""
+      },
+      "A_R3": {
+        "round": "3",
+        "antigen": "PSMA",
+        "conc_nM": "5",
+        "gate": ""
+      },
+      "A_R4": {
+        "round": "4",
+        "antigen": "PSMA",
+        "conc_nM": "5",
+        "gate": ""
+      },
+      "B_R1": {
+        "round": "1",
+        "antigen": "UCHT1",
+        "conc_nM": "250",
+        "gate": ""
+      },
+      "B_R2": {
+        "round": "2",
+        "antigen": "UCHT1",
+        "conc_nM": "250",
+        "gate": ""
+      },
+      "B_R3": {
+        "round": "3",
+        "antigen": "UCHT1",
+        "conc_nM": "250",
+        "gate": ""
+      },
+      "B_R4": {
+        "round": "4",
+        "antigen": "UCHT1",
+        "conc_nM": "250",
+        "gate": ""
+      },
+      "C_R1": {
+        "round": "1",
+        "antigen": "UCHT1",
+        "conc_nM": "1",
+        "gate": ""
+      },
+      "C_R2": {
+        "round": "2",
+        "antigen": "UCHT1",
+        "conc_nM": "1",
+        "gate": ""
+      },
+      "C_R3": {
+        "round": "3",
+        "antigen": "UCHT1",
+        "conc_nM": "1",
+        "gate": ""
+      },
+      "C_R4": {
+        "round": "4",
+        "antigen": "UCHT1",
+        "conc_nM": "1",
+        "gate": ""
+      },
+      "A_edge": {
+        "round": "5",
+        "antigen": "PSMA",
+        "conc_nM": "250",
+        "gate": "edge"
+      },
+      "A_gen": {
+        "round": "5",
+        "antigen": "PSMA",
+        "conc_nM": "250",
+        "gate": "generous"
+      }
+    },
+    "expected": "        trajectory  [(LIB), (A_R1), (A_R2), (A_R3), (A_R4), (A_edge)]\n                    [(LIB), (A_R1), (A_R2), (A_R3), (A_R4), (A_gen)]\n                    [(LIB), (B_R1), (B_R2), (B_R3), (B_R4)]\n                    [(LIB), (C_R1), (C_R2), (C_R3), (C_R4)]\n        partition   []\n        panel       {anchor: LIB, reads: (LIB)}\n                        pan-A-1: [(A_R1)]\n                        pan-B-1: [(B_R1)]\n                        pan-C-1: [(C_R1)]\n                    {anchor: A_R4, reads: (A_R4)}\n                        gate-edge: [(A_edge)]\n                        gate-generous: [(A_gen)]\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  [(LIB), (A_R1), (A_R2), (A_R3), (A_R4), (A_edge)]\n                        axis      round: 0, 1, 2, 3, 4, 5\n                        mixed     antigen: -, PSMA, PSMA, PSMA, PSMA, PSMA\n                        mixed     conc_nM: -, 5, 5, 5, 5, 250\n                        mixed     gate: -, -, -, -, -, edge\n                    [(LIB), (A_R1), (A_R2), (A_R3), (A_R4), (A_gen)]\n                        axis      round: 0, 1, 2, 3, 4, 5\n                        mixed     antigen: -, PSMA, PSMA, PSMA, PSMA, PSMA\n                        mixed     conc_nM: -, 5, 5, 5, 5, 250\n                        mixed     gate: -, -, -, -, -, generous\n                    [(LIB), (B_R1), (B_R2), (B_R3), (B_R4)]\n                        axis      round: 0, 1, 2, 3, 4\n                        mixed     antigen: -, UCHT1, UCHT1, UCHT1, UCHT1\n                        mixed     conc_nM: -, 250, 250, 250, 250\n                    [(LIB), (C_R1), (C_R2), (C_R3), (C_R4)]\n                        axis      round: 0, 1, 2, 3, 4\n                        mixed     antigen: -, UCHT1, UCHT1, UCHT1, UCHT1\n                        mixed     conc_nM: -, 1, 1, 1, 1\n        partition   []\n        panel       {anchor: LIB} pan-A-1, pan-B-1, pan-C-1\n                        axis      conc_nM: 5, 250, 1\n                        mixed     antigen: PSMA, UCHT1, UCHT1\n                        constant  round=1\n                    {anchor: A_R4} gate-edge, gate-generous\n                        axis      gate: edge, generous\n                        constant  round=5, antigen=PSMA, conc_nM=250\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-08-stringency-ramp",
+    "materials": {
+      "R0": {},
+      "R1": {
+        "from": {
+          "of": "R0",
+          "part": "slice",
+          "split": "pan-1"
+        }
+      },
+      "R2": {
+        "from": {
+          "of": "R1",
+          "part": "slice",
+          "split": "pan-2"
+        }
+      },
+      "R3": {
+        "from": {
+          "of": "R2",
+          "part": "slice",
+          "split": "pan-3"
+        }
+      }
+    },
+    "columns": ["round", "antigen_conc_nM"],
+    "table": {
+      "R0": {
+        "round": "input",
+        "antigen_conc_nM": ""
+      },
+      "R1": {
+        "round": "round 1",
+        "antigen_conc_nM": "100"
+      },
+      "R2": {
+        "round": "round 2",
+        "antigen_conc_nM": "10"
+      },
+      "R3": {
+        "round": "round 3",
+        "antigen_conc_nM": "1"
+      }
+    },
+    "expected": "        trajectory  [(R0), (R1), (R2), (R3)]\n        partition   []\n        panel       []\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  [(R0), (R1), (R2), (R3)]\n                        axis      round: input, round 1, round 2, round 3\n                        axis      antigen_conc_nM: -, 100, 10, 1\n        partition   []\n        panel       []\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-09-a-bin-that-held-nothing",
+    "materials": {
+      "LIB": {},
+      "c1_B1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-5"
+        }
+      },
+      "c1_B2": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-5"
+        }
+      },
+      "c1_B3": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-5"
+        }
+      },
+      "c1_B4": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-5"
+        }
+      },
+      "c2_B1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-6"
+        }
+      },
+      "c2_B2": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-6"
+        }
+      },
+      "c2_B3": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-6"
+        }
+      },
+      "c2_B4": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-6"
+        }
+      },
+      "c3_B1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-7"
+        }
+      },
+      "c3_B2": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-7"
+        }
+      },
+      "c3_B3": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-7"
+        }
+      },
+      "c3_B4": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-7"
+        }
+      },
+      "c4_B1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-8"
+        }
+      },
+      "c4_B2": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-8"
+        }
+      },
+      "c4_B3": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-8"
+        }
+      },
+      "c4_B4": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-8"
+        }
+      },
+      "c5_B1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-9"
+        }
+      },
+      "c5_B2": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-1e-9"
+        }
+      },
+      "exp_B1": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-noantigen"
+        }
+      },
+      "exp_B2": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-noantigen"
+        }
+      },
+      "exp_B3": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-noantigen"
+        }
+      },
+      "exp_B4": {
+        "from": {
+          "of": "LIB",
+          "part": "slice",
+          "split": "sort-noantigen"
+        }
+      }
+    },
+    "columns": ["antigen_conc_M", "bin"],
+    "table": {
+      "c1_B1": {
+        "antigen_conc_M": "1e-5",
+        "bin": "B1"
+      },
+      "c1_B2": {
+        "antigen_conc_M": "1e-5",
+        "bin": "B2"
+      },
+      "c1_B3": {
+        "antigen_conc_M": "1e-5",
+        "bin": "B3"
+      },
+      "c1_B4": {
+        "antigen_conc_M": "1e-5",
+        "bin": "B4"
+      },
+      "c2_B1": {
+        "antigen_conc_M": "1e-6",
+        "bin": "B1"
+      },
+      "c2_B2": {
+        "antigen_conc_M": "1e-6",
+        "bin": "B2"
+      },
+      "c2_B3": {
+        "antigen_conc_M": "1e-6",
+        "bin": "B3"
+      },
+      "c2_B4": {
+        "antigen_conc_M": "1e-6",
+        "bin": "B4"
+      },
+      "c3_B1": {
+        "antigen_conc_M": "1e-7",
+        "bin": "B1"
+      },
+      "c3_B2": {
+        "antigen_conc_M": "1e-7",
+        "bin": "B2"
+      },
+      "c3_B3": {
+        "antigen_conc_M": "1e-7",
+        "bin": "B3"
+      },
+      "c3_B4": {
+        "antigen_conc_M": "1e-7",
+        "bin": "B4"
+      },
+      "c4_B1": {
+        "antigen_conc_M": "1e-8",
+        "bin": "B1"
+      },
+      "c4_B2": {
+        "antigen_conc_M": "1e-8",
+        "bin": "B2"
+      },
+      "c4_B3": {
+        "antigen_conc_M": "1e-8",
+        "bin": "B3"
+      },
+      "c4_B4": {
+        "antigen_conc_M": "1e-8",
+        "bin": "B4"
+      },
+      "c5_B1": {
+        "antigen_conc_M": "1e-9",
+        "bin": "B1"
+      },
+      "c5_B2": {
+        "antigen_conc_M": "1e-9",
+        "bin": "B2"
+      },
+      "exp_B1": {
+        "antigen_conc_M": "0",
+        "bin": "B1"
+      },
+      "exp_B2": {
+        "antigen_conc_M": "0",
+        "bin": "B2"
+      },
+      "exp_B3": {
+        "antigen_conc_M": "0",
+        "bin": "B3"
+      },
+      "exp_B4": {
+        "antigen_conc_M": "0",
+        "bin": "B4"
+      }
+    },
+    "expected": "        trajectory  []\n        partition   [(c1_B1), (c1_B2), (c1_B3), (c1_B4)]\n                    [(c2_B1), (c2_B2), (c2_B3), (c2_B4)]\n                    [(c3_B1), (c3_B2), (c3_B3), (c3_B4)]\n                    [(c4_B1), (c4_B2), (c4_B3), (c4_B4)]\n                    [(c5_B1), (c5_B2)]\n                    [(exp_B1), (exp_B2), (exp_B3), (exp_B4)]\n        panel       {anchor: LIB, reads: ()}\n                        sort-1e-5: [(c1_B1), (c1_B2), (c1_B3), (c1_B4)]\n                        sort-1e-6: [(c2_B1), (c2_B2), (c2_B3), (c2_B4)]\n                        sort-1e-7: [(c3_B1), (c3_B2), (c3_B3), (c3_B4)]\n                        sort-1e-8: [(c4_B1), (c4_B2), (c4_B3), (c4_B4)]\n                        sort-1e-9: [(c5_B1), (c5_B2)]\n                        sort-noantigen: [(exp_B1), (exp_B2), (exp_B3), (exp_B4)]\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  []\n        partition   [(c1_B1), (c1_B2), (c1_B3), (c1_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  antigen_conc_M=1e-5\n                    [(c2_B1), (c2_B2), (c2_B3), (c2_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  antigen_conc_M=1e-6\n                    [(c3_B1), (c3_B2), (c3_B3), (c3_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  antigen_conc_M=1e-7\n                    [(c4_B1), (c4_B2), (c4_B3), (c4_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  antigen_conc_M=1e-8\n                    [(c5_B1), (c5_B2)]\n                        axis      bin: B1, B2\n                        constant  antigen_conc_M=1e-9\n                    [(exp_B1), (exp_B2), (exp_B3), (exp_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  antigen_conc_M=0\n        panel       {anchor: LIB} sort-1e-5, sort-1e-6, sort-1e-7, sort-1e-8, sort-1e-9, sort-noantigen\n                        axis      antigen_conc_M: 1e-5, 1e-6, 1e-7, 1e-8, 1e-9, 0\n                        within    bin\n        recurrence  []\n"
+  },
+  {
+    "slug": "synthetic-10-scan-then-combine",
+    "materials": {
+      "SSM_1140": {},
+      "S1_IN": {
+        "from": {
+          "of": "SSM_1140",
+          "part": "whole"
+        }
+      },
+      "S1_OUT": {
+        "from": {
+          "of": "S1_IN",
+          "part": "slice",
+          "split": "sort-10nM-top1"
+        }
+      },
+      "COMBO_1024": {
+        "from": {
+          "of": "S1_OUT",
+          "part": "remade"
+        }
+      },
+      "c1_B1": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-0"
+        }
+      },
+      "c1_B2": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-0"
+        }
+      },
+      "c1_B3": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-0"
+        }
+      },
+      "c1_B4": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-0"
+        }
+      },
+      "c2_B1": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-2p5"
+        }
+      },
+      "c2_B2": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-2p5"
+        }
+      },
+      "c2_B3": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-2p5"
+        }
+      },
+      "c2_B4": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-2p5"
+        }
+      },
+      "c3_B1": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-60"
+        }
+      },
+      "c3_B2": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-60"
+        }
+      },
+      "c3_B3": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-60"
+        }
+      },
+      "c3_B4": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-60"
+        }
+      },
+      "c4_B1": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-1500"
+        }
+      },
+      "c4_B2": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-1500"
+        }
+      },
+      "c4_B3": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-1500"
+        }
+      },
+      "c4_B4": {
+        "from": {
+          "of": "COMBO_1024",
+          "part": "slice",
+          "split": "titrate-1500"
+        }
+      }
+    },
+    "columns": ["stage", "library", "condition", "antigen_conc_nM", "bin"],
+    "table": {
+      "S1_IN": {
+        "stage": "1",
+        "library": "SSM_1140",
+        "condition": "input",
+        "antigen_conc_nM": "",
+        "bin": ""
+      },
+      "S1_OUT": {
+        "stage": "1",
+        "library": "SSM_1140",
+        "condition": "bound 10nM top1%",
+        "antigen_conc_nM": "",
+        "bin": ""
+      },
+      "c1_B1": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "0",
+        "bin": "B1"
+      },
+      "c1_B2": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "0",
+        "bin": "B2"
+      },
+      "c1_B3": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "0",
+        "bin": "B3"
+      },
+      "c1_B4": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "0",
+        "bin": "B4"
+      },
+      "c2_B1": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "2.5",
+        "bin": "B1"
+      },
+      "c2_B2": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "2.5",
+        "bin": "B2"
+      },
+      "c2_B3": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "2.5",
+        "bin": "B3"
+      },
+      "c2_B4": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "2.5",
+        "bin": "B4"
+      },
+      "c3_B1": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "60",
+        "bin": "B1"
+      },
+      "c3_B2": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "60",
+        "bin": "B2"
+      },
+      "c3_B3": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "60",
+        "bin": "B3"
+      },
+      "c3_B4": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "60",
+        "bin": "B4"
+      },
+      "c4_B1": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "1500",
+        "bin": "B1"
+      },
+      "c4_B2": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "1500",
+        "bin": "B2"
+      },
+      "c4_B3": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "1500",
+        "bin": "B3"
+      },
+      "c4_B4": {
+        "stage": "2",
+        "library": "COMBO_1024",
+        "condition": "",
+        "antigen_conc_nM": "1500",
+        "bin": "B4"
+      }
+    },
+    "expected": "        trajectory  [(S1_IN), (S1_OUT)]\n        partition   [(c1_B1), (c1_B2), (c1_B3), (c1_B4)]\n                    [(c2_B1), (c2_B2), (c2_B3), (c2_B4)]\n                    [(c3_B1), (c3_B2), (c3_B3), (c3_B4)]\n                    [(c4_B1), (c4_B2), (c4_B3), (c4_B4)]\n        panel       {anchor: COMBO_1024, reads: ()}\n                        titrate-0: [(c1_B1), (c1_B2), (c1_B3), (c1_B4)]\n                        titrate-2p5: [(c2_B1), (c2_B2), (c2_B3), (c2_B4)]\n                        titrate-60: [(c3_B1), (c3_B2), (c3_B3), (c3_B4)]\n                        titrate-1500: [(c4_B1), (c4_B2), (c4_B3), (c4_B4)]\n        recurrence  []\n",
+    "expectedLabels": "        trajectory  [(S1_IN), (S1_OUT)]\n                        axis      condition: input, bound 10nM top1%\n                        constant  stage=1, library=SSM_1140\n        partition   [(c1_B1), (c1_B2), (c1_B3), (c1_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  stage=2, library=COMBO_1024, antigen_conc_nM=0\n                    [(c2_B1), (c2_B2), (c2_B3), (c2_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  stage=2, library=COMBO_1024, antigen_conc_nM=2.5\n                    [(c3_B1), (c3_B2), (c3_B3), (c3_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  stage=2, library=COMBO_1024, antigen_conc_nM=60\n                    [(c4_B1), (c4_B2), (c4_B3), (c4_B4)]\n                        axis      bin: B1, B2, B3, B4\n                        constant  stage=2, library=COMBO_1024, antigen_conc_nM=1500\n        panel       {anchor: COMBO_1024} titrate-0, titrate-2p5, titrate-60, titrate-1500\n                        axis      antigen_conc_nM: 0, 2.5, 60, 1500\n                        within    bin\n                        constant  stage=2, library=COMBO_1024\n        recurrence  []\n"
+  }
+]

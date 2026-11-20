@@ -2,8 +2,8 @@ import { deepClone } from "@milaboratories/helpers";
 import type {
   BlockData,
   DesignMaterial,
-  MTColumn,
 } from "@platforma-open/milaboratories.samples-and-data.model";
+import { columnNames } from "@platforma-open/milaboratories.samples-and-data.model";
 import type { Design, Sample } from "./design-graph/types";
 
 /** The name and issue a design node shows when its sample is no longer in the table. */
@@ -14,17 +14,6 @@ function sampleName(label: string | undefined) {
     return "Unnamed sample";
   }
   return label;
-}
-
-/** Metadata column names as the design tools show them: trimmed, unnamed and repeated ones told apart. */
-export function columnNames(columns: MTColumn[]) {
-  const base = columns.map((column) =>
-    column.label.trim() === "" ? "Unnamed column" : column.label.trim(),
-  );
-  return base.map((name, index) => {
-    const repeat = base.slice(0, index).filter((other) => other === name).length;
-    return repeat === 0 ? name : `${name} (${repeat + 1})`;
-  });
 }
 
 /** The block's samples, in table order, with their labels and metadata keyed by column name. */

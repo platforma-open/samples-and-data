@@ -3,7 +3,7 @@
 // graph rebuild. Follows experimental-design-ui-wizard's demo (approach B): one role per column,
 // a fixed set of follow-up fields per role, parents inferred from the labels.
 import type { DesignWizardAnswers } from "@platforma-open/milaboratories.samples-and-data.model";
-import { designLabel } from "@platforma-open/milaboratories.samples-and-data.model";
+import { columnNames, designLabel } from "@platforma-open/milaboratories.samples-and-data.model";
 import {
   PlAlert,
   PlBlockPage,
@@ -24,7 +24,7 @@ import type { ColumnB, ConfigB, RoleB } from "../design-wizard/lineage";
 import { suggestB } from "../design-wizard/suggest";
 import { naturalOrder } from "../design-wizard/table";
 import { designMaterials, wizardTable } from "../design-wizard/toDesign";
-import { columnNames, editorDesign, tableSamples } from "../design_table";
+import { editorDesign, tableSamples } from "../design_table";
 
 const app = useApp();
 const styles = useCssModule();

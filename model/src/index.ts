@@ -181,5 +181,6 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from "./args";
+export * from "./design_tensors";
 export * from "./multiplexing-rules-validation";
 export * from "./template_params";

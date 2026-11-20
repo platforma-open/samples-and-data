@@ -1,6 +1,10 @@
 <script lang="ts" setup>
 import type { ExperimentDesign } from "@platforma-open/milaboratories.samples-and-data.model";
-import { designPlaceholder } from "@platforma-open/milaboratories.samples-and-data.model";
+import {
+  deriveDesign,
+  designPlaceholder,
+  designTensorsText,
+} from "@platforma-open/milaboratories.samples-and-data.model";
 import {
   PlAlert,
   PlBlockPage,
@@ -35,6 +39,20 @@ const designs = computed(() => app.model.data.designs ?? []);
 const index = computed(() => designs.value.findIndex((design) => design.id === designId.value));
 const current = computed(() => designs.value[index.value]);
 const samples = computed(() => tableSamples(app.model.data));
+
+/** The design's tensors and labels (tensor_derivation STEP 2 and 3), as Samples & Data exports them. */
+const tensors = computed(() => {
+  if (current.value === undefined || current.value.materials.length === 0) return undefined;
+  try {
+    const derived = deriveDesign(current.value, index.value, app.model.data);
+    const counts = (["trajectories", "partitions", "panels", "recurrences"] as const)
+      .map((kind) => `${derived.tensors[kind].length} ${kind}`)
+      .join(", ");
+    return { counts, text: designTensorsText(derived, app.model.data.sampleLabels) };
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+});
 const drawable = computed(() => {
   try {
     const design = editorDesign(current.value?.materials ?? [], samples.value);
@@ -106,7 +124,17 @@ async function deleteDesign() {
             Draft from metadata
           </PlBtnSecondary>
         </PlAlert>
-        <DesignEditor :design="drawable.design" :samples="samples" @change="save" />
+        <div :class="styles.editor">
+          <DesignEditor :design="drawable.design" :samples="samples" @change="save" />
+        </div>
+        <section v-if="tensors !== undefined" :class="styles.tensors">
+          <header :class="styles.tensorsHead">
+            Tensors
+            <span v-if="'counts' in tensors" :class="styles.note">{{ tensors.counts }}</span>
+          </header>
+          <PlAlert v-if="'error' in tensors" type="warn"> No tensors: {{ tensors.error }} </PlAlert>
+          <pre v-else :class="styles.text">{{ tensors.text }}</pre>
+        </section>
       </div>
     </PlBlockPage>
 
@@ -128,8 +156,40 @@ async function deleteDesign() {
   block-size: 100%;
 }
 
-.body > :last-child {
+.editor {
   flex: 1;
   min-block-size: 0;
+}
+
+.tensors {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-block-size: 35%;
+  min-block-size: 120px;
+}
+
+.tensorsHead {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-weight: 600;
+}
+
+.note {
+  font-weight: 400;
+  color: var(--txt-03);
+  font-size: 13px;
+}
+
+.text {
+  flex: 1;
+  margin: 0;
+  overflow: auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color-div-grey);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 </style>
