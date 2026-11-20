@@ -58,9 +58,6 @@ export const nodeLabel = (node: GraphNode) => node.issue ?? Object.values(node.m
 
 /** Estimates a node card size from its text, so the layout needs no DOM. */
 export function estimateNodeSize(node: GraphNode) {
-  if (node.kind === "junction") {
-    return { w: 8, h: 8 };
-  }
   if (!node.sequenced) {
     return { w: 14, h: 14 };
   }

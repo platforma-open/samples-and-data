@@ -471,7 +471,6 @@ onMounted(fit);
         :class="[
           styles.node,
           !node.sequenced && styles.shadow,
-          node.kind === 'junction' && styles.junction,
           lit && (lit.nodes.has(node.id) ? styles.lit : styles.dim),
           node.issue !== undefined && styles.issue,
           (isSelected('node', node.id) || props.marked.has(node.id)) && styles.selected,
@@ -531,7 +530,6 @@ onMounted(fit);
       <div :class="styles.box"><slot name="toolbar" /></div>
       <div :class="[styles.box, styles.legend]">
         <span><i :class="styles.swatch" />unsequenced</span>
-        <span><i :class="styles.dot" />one separation</span>
         <span v-for="part in legendLines" :key="part" :class="styles[part]">
           <svg width="24" height="6"><path :class="styles.line" d="M1,3 L24,3" /></svg>
           {{ part }}
@@ -715,18 +713,8 @@ onMounted(fit);
     }
   }
 
-  /* the point where one separation divides a material: not a material itself */
-  &.junction {
-    border: none;
-    background: var(--txt-03);
-  }
-
   &.lit {
     border-color: var(--border-color-focus);
-  }
-
-  &.junction.lit {
-    background: var(--border-color-focus);
   }
 
   &.selected,
@@ -829,13 +817,6 @@ onMounted(fit);
   block-size: 12px;
   border: 1px dashed var(--ic-02);
   border-radius: 50%;
-}
-
-.dot {
-  inline-size: 8px;
-  block-size: 8px;
-  border-radius: 50%;
-  background: var(--txt-03);
 }
 
 .percent {
