@@ -311,32 +311,17 @@ const noneMarked = new Set<string>();
             </span>
           </div>
 
-          <template
+          <PlDropdownMulti
             v-if="
               columnOf(column).role !== 'label' &&
               (columnOf(column).role !== 'source' || columnOf(column).baseline?.length)
             "
-          >
-            <PlDropdownMulti
-              :model-value="[...(columnOf(column).baseline ?? [])]"
-              :options="valueOptions(column)"
-              label="Starting material"
-              placeholder="None"
-              @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
-            />
-            <PlDropdown
-              v-if="columnOf(column).baseline?.length"
-              :model-value="columnOf(column).baselineIs ?? 'parent'"
-              :options="[
-                { value: 'parent', label: 'Sequenced directly; later samples came from it' },
-                { value: 'aliquot', label: 'A separate unselected control, sequenced alongside' },
-              ]"
-              label="The input sample is"
-              @update:model-value="
-                (value) => patch(column, { baselineIs: value as 'parent' | 'aliquot' })
-              "
-            />
-          </template>
+            :model-value="[...(columnOf(column).baseline ?? [])]"
+            :options="valueOptions(column)"
+            label="Starting material"
+            placeholder="None"
+            @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
+          />
           <PlCheckbox
             v-if="columnOf(column).role === 'treatment' || columnOf(column).role === 'condition'"
             :model-value="columnOf(column).role === 'condition'"
