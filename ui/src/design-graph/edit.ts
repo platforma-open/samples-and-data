@@ -79,15 +79,6 @@ export function setStep(design: Design, id: string, step?: Step): Design {
   }));
 }
 
-/** Moves `siblingId` into the separation that `id` came out of. */
-export function joinSplit(design: Design, id: string, siblingId: string): Design {
-  const split = findMaterial(design, id)?.from?.split;
-  if (split === undefined) {
-    return design;
-  }
-  return updateFrom(design, siblingId, (from) => ({ ...from, part: "slice", split }));
-}
-
 /** Gives `id` a separation of its own. */
 export function leaveSplit(design: Design, id: string): Design {
   const split = freshSplit(design, id);

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { joinSplit, leaveSplit } from "./edit";
+import { leaveSplit } from "./edit";
 import { fixture } from "./fixtures";
 import { junctionId, withJunctions } from "./junctions";
 import { layout } from "./layout";
@@ -49,7 +49,7 @@ describe("withJunctions", () => {
     const incoming = (design: Design) =>
       withJunctions(toGraph(design)).edges.filter((edge) => edge.to === "dep");
     expect(incoming(apart)).toHaveLength(1);
-    expect(incoming(joinSplit(apart, "dep", "str"))).toHaveLength(1);
+    expect(incoming(fixture("fork-and-merge"))).toHaveLength(1);
   });
 
   test("places a junction at the branch point, between the parent and its partitions", () => {

@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { PlBtnGhost, PlBtnGroup, PlCheckbox, PlTextField } from "@milaboratories/uikit";
+import { PlBtnGhost, PlBtnGroup, PlTextField } from "@milaboratories/uikit";
 import { computed, shallowRef, useCssModule, watch } from "vue";
 import { logicalEdge } from "./connect";
 import {
@@ -7,12 +7,9 @@ import {
   addStep,
   findMaterial,
   insertStep,
-  joinSplit,
-  leaveSplit,
   setName,
   setPart,
   setStep,
-  siblingsOf,
   splitLine,
 } from "./edit";
 import { junctionOf } from "./junctions";
@@ -68,9 +65,6 @@ const canAddPartition = computed(
   () => child.value !== undefined && splitLine(props.design, child.value.id) !== undefined,
 );
 const stepValue = computed((): Step | "one-off" => childFrom.value?.step ?? "one-off");
-const siblings = computed(() =>
-  child.value === undefined ? [] : siblingsOf(props.design, child.value.id),
-);
 
 const material = computed(() => {
   if (node.value?.kind !== "material" || !node.value.sequenced) {
@@ -197,26 +191,6 @@ function onAddPartition() {
               )
           "
         />
-        <div v-if="childFrom.part === 'slice' && siblings.length > 0" :class="styles.group">
-          <div :class="styles.groupLabel">Same split as</div>
-          <div :class="styles.checks">
-            <PlCheckbox
-              v-for="sibling in siblings"
-              :key="sibling.id"
-              :model-value="
-                sibling.from?.part === 'slice' && sibling.from.split === childFrom.split
-              "
-              @update:model-value="
-                (same: boolean) =>
-                  changeChild((design, id) =>
-                    same ? joinSplit(design, id, sibling.id) : leaveSplit(design, sibling.id),
-                  )
-              "
-            >
-              {{ labelOf(sibling.id) }}
-            </PlCheckbox>
-          </div>
-        </div>
       </div>
     </template>
 
@@ -309,22 +283,6 @@ function onAddPartition() {
   flex-wrap: wrap;
   align-items: flex-start;
   gap: 24px;
-}
-
-.group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.groupLabel {
-  font-weight: 600;
-}
-
-.checks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
 }
 
 .field {

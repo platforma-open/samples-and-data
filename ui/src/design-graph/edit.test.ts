@@ -10,7 +10,6 @@ import {
   insertParent,
   insertStep,
   joinGroups,
-  joinSplit,
   leaveSplit,
   makeSplit,
   mergeInto,
@@ -51,10 +50,9 @@ describe("edit", () => {
     expect(from(setStep(forkAndMerge, "R1", "timecourse"), "R1")?.step).toBe("timecourse");
   });
 
-  test("leaveSplit and joinSplit move a sibling out of and into a separation", () => {
+  test("leaveSplit moves a sibling out of a separation", () => {
     const apart = leaveSplit(forkAndMerge, "str");
     expect(from(apart, "str")?.split).not.toBe("sort-2");
-    expect(from(joinSplit(apart, "dep", "str"), "str")?.split).toBe("sort-2");
   });
 
   test("siblingsOf ignores children of a pool", () => {
