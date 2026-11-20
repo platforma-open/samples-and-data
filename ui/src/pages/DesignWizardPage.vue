@@ -192,6 +192,17 @@ const orderOf = (column: string) =>
     values(column).filter((value) => !columnOf(column).baseline?.includes(value)),
     orders.value[column],
   );
+/**
+ * Sets the input values. A value taken out of them comes first in the order, as it was before
+ * every step; the others keep theirs. Otherwise a value with no number (`Uns`) drops the whole
+ * order back to row order.
+ */
+function setBaseline(column: string, baseline: string[]) {
+  const freed = (columnOf(column).baseline ?? []).filter((value) => !baseline.includes(value));
+  if (freed.length > 0)
+    orders.value = { ...orders.value, [column]: [...freed, ...orderOf(column)] };
+  patch(column, { baseline: baseline.length ? baseline : undefined });
+}
 function move(column: string, from: number, to: number) {
   const order = orderOf(column);
   if (to < 0 || to >= order.length) return;
@@ -315,10 +326,7 @@ const noneMarked = new Set<string>();
               :options="valueOptions(column)"
               label="Input (before this step)"
               placeholder="None"
-              @update:model-value="
-                (baseline: string[]) =>
-                  patch(column, { baseline: baseline.length ? baseline : undefined })
-              "
+              @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
             />
             <PlDropdown
               v-if="columnOf(column).baseline?.length"
