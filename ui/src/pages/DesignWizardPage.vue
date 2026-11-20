@@ -324,7 +324,7 @@ const noneMarked = new Set<string>();
             <PlDropdownMulti
               :model-value="[...(columnOf(column).baseline ?? [])]"
               :options="valueOptions(column)"
-              label="Input (before this step)"
+              label="Starting material"
               placeholder="None"
               @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
             />
