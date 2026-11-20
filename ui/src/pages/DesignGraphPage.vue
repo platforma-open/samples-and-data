@@ -15,8 +15,9 @@ import {
   PlEditableTitle,
   PlLoaderCircular,
 } from "@platforma-sdk/ui-vue";
-import { computed, onBeforeUnmount, onMounted, shallowRef, useCssModule } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, shallowRef, useCssModule } from "vue";
 import { useApp } from "../app";
+import { comparisonSections } from "./comparisons";
 import DesignEditor from "../design-graph/DesignEditor.vue";
 import DesignWizardPage from "./DesignWizardPage.vue";
 import { withJunctions } from "../design-graph/junctions";
@@ -53,11 +54,20 @@ const tensors = computed(() => {
     return { error: (error as Error).message };
   }
 });
-/** The comparison clicked in the list; its samples and the way between them are lit in the graph. */
+const sections = computed(() => comparisonSections(tensors.value?.rows ?? []));
+/** Sections of several comparisons start collapsed to one line; these are open. */
+const openSections = reactive(new Set<string>());
+const toggleSection = (key: string) => {
+  const opening = !openSections.delete(key);
+  if (opening) openSections.add(key);
+  activeRow.value = opening ? key : undefined;
+};
+/** The comparison (or collapsed section) clicked in the list; its part of the graph is lit. */
 const activeRow = shallowRef<string>();
 const highlight = computed(() => {
-  const row = tensors.value?.rows?.find((item) => item.id === activeRow.value);
-  return row ? new Set(row.members) : undefined;
+  const section = sections.value.find((item) => item.key === activeRow.value);
+  const rows = section?.rows ?? tensors.value?.rows?.filter((item) => item.id === activeRow.value);
+  return rows?.length ? new Set(rows.flatMap((row) => row.members)) : undefined;
 });
 /** Esc, or a click anywhere but a comparison row, clears the highlight. */
 const clearOnEsc = (event: KeyboardEvent) => {
@@ -185,26 +195,71 @@ async function deleteDesign() {
             No comparisons: {{ tensors.error }}
           </PlAlert>
           <ol v-else :class="styles.list">
-            <li
-              v-for="row in tensors.rows"
-              :key="row.id"
-              :class="[styles.row, row.id === activeRow && styles.active]"
-              data-comparison
-              title="Show in the graph"
-              @click="activeRow = row.id === activeRow ? undefined : row.id"
-            >
-              <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
-              <span :class="styles.note">{{ row.by || "no axis" }}</span>
-              <span :class="styles.groups">
-                <template v-for="(group, k) in row.groups" :key="k">
-                  <span v-if="k > 0 && row.type === 'trajectory'" :class="styles.note">→</span>
-                  <span :class="styles.chip" :title="group.samples.join(', ')">{{
-                    group.name
+            <template v-for="section in sections" :key="section.key">
+              <li
+                v-if="section.rows.length > 1"
+                :class="[styles.row, section.key === activeRow && styles.active]"
+                data-comparison
+                title="Show all in the graph and list them"
+                @click="toggleSection(section.key)"
+              >
+                <span :class="styles.kind">
+                  {{ openSections.has(section.key) ? "▾" : "▸" }}
+                  {{ section.rows.length }}
+                  {{
+                    section.rows[0].type === "trajectory"
+                      ? "trajectories"
+                      : `${section.rows[0].type}s`
+                  }}
+                </span>
+                <span :class="styles.note">{{ section.rows[0].by || "no axis" }}</span>
+                <span :class="styles.groups">
+                  <template v-for="(group, k) in section.rows[0].groups" :key="k">
+                    <span v-if="k > 0 && section.rows[0].type === 'trajectory'" :class="styles.note"
+                      >→</span
+                    >
+                    <span :class="styles.chip">{{ group.name }}</span>
+                  </template>
+                </span>
+                <span :class="styles.note">
+                  {{
+                    [
+                      ...(section.factors.length ? ["one per " + section.factors.join(" · ")] : []),
+                      ...section.shared,
+                    ].join(", ")
+                  }}
+                </span>
+              </li>
+              <template v-if="section.rows.length === 1 || openSections.has(section.key)">
+                <li
+                  v-for="row in section.rows"
+                  :key="row.id"
+                  :class="[
+                    styles.row,
+                    section.rows.length > 1 && styles.child,
+                    row.id === activeRow && styles.active,
+                  ]"
+                  data-comparison
+                  title="Show in the graph"
+                  @click="activeRow = row.id === activeRow ? undefined : row.id"
+                >
+                  <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
+                  <span v-if="section.rows.length > 1">{{ row.factorValues }}</span>
+                  <span v-else :class="styles.note">{{ row.by || "no axis" }}</span>
+                  <span :class="styles.groups">
+                    <template v-for="(group, k) in row.groups" :key="k">
+                      <span v-if="k > 0 && row.type === 'trajectory'" :class="styles.note">→</span>
+                      <span :class="styles.chip" :title="group.samples.join(', ')">{{
+                        group.name
+                      }}</span>
+                    </template>
+                  </span>
+                  <span v-if="section.rows.length === 1" :class="styles.note">{{
+                    row.constant.join(", ")
                   }}</span>
-                </template>
-              </span>
-              <span :class="styles.note">{{ row.constant.join(", ") }}</span>
-            </li>
+                </li>
+              </template>
+            </template>
           </ol>
         </section>
       </div>
@@ -290,6 +345,11 @@ async function deleteDesign() {
 
 .row:hover {
   background: var(--bg-base-light, #f2f3f5);
+}
+
+.row.child {
+  padding-inline-start: 32px;
+  font-size: 13px;
 }
 
 .row.active {
