@@ -1,4 +1,5 @@
-// Copied from experimental-design-ui-wizard (src/approachB-lineage.ts at dfa0b03). Only the imports changed.
+// Copied from experimental-design-ui-wizard (src/approachB-lineage.ts at dfa0b03). Only the imports and
+// the role names in ROLE_B_TEXT changed.
 /**
  * Approach B — "what each column does to the material", no global order.
  *
@@ -41,19 +42,19 @@ export type RoleB = (typeof ROLES_B)[number];
 export const ROLE_B_TEXT: Record<RoleB, [string, string]> = {
   label: ["Info only", "Kept as information; not part of the lineage."],
   source: [
-    "Independent source",
+    "Independent sources",
     "Each value is its own donor, animal, library or biological replicate (separate growth or transfection). Nothing physical is shared.",
   ],
   copy: [
     "Technical replicates",
-    "Each value is a technical replicate: another library prep, lane, or aliquot of the same material, with nothing selected. Biological replicates (separate growth or animal) are Independent source.",
+    "Each value is a technical replicate: another library prep, lane, or aliquot of the same material, with nothing selected. Biological replicates (separate growth or animal) are Independent sources.",
   ],
   treatment: [
-    "Selection arm",
+    "Selection arms",
     "Each value took its own portion, was selected its own way, and stayed a separate arm (antigen, target).",
   ],
   condition: [
-    "Selection arm, ramped",
+    "Selection arms, ramped",
     "Values used one after another along the same arm, not side by side (a stringency ramp, alternating pH, a new elution or cell line at a late round).",
   ],
   fraction: [
@@ -65,7 +66,7 @@ export const ROLE_B_TEXT: Record<RoleB, [string, string]> = {
     "Each value follows the previous value within the same lineage.",
   ],
   generation: [
-    "New library generation",
+    "New library generations",
     "A new library was synthesised from hits of the previous one. Nothing physical carried over.",
   ],
 };

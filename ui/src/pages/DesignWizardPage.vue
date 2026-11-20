@@ -211,7 +211,6 @@ const canonical = (value: unknown): string =>
 const isSuggested = (column: string) =>
   canonical(answers.value.columns[column] ?? null) ===
   canonical(suggested.value.columns[column] ?? null);
-const changes = computed(() => columns.value.filter((column) => !isSuggested(column)).length);
 
 // ------------------------------------------------------------------ actions
 function reset() {
@@ -258,13 +257,8 @@ const noneMarked = new Set<string>();
     </PlAlert>
     <div v-else :class="styles.layout">
       <section :class="styles.columns">
-        <p :class="styles.intro">
-          Say what each column did to the material. Roles are pre-filled from column names and
-          values; {{ changes }} of {{ columns.length }} changed. Parents come from the labels: a
-          sample's parent is the closest other sample whose labels it extends.
-          <template v-if="current.materials.length > 0">
-            Creating the draft replaces the current graph of {{ name }}.
-          </template>
+        <p v-if="current.materials.length > 0" :class="styles.intro">
+          Creating the draft replaces the current graph of {{ name }}.
         </p>
         <article
           v-for="column in columns"
@@ -427,11 +421,6 @@ const noneMarked = new Set<string>();
           These answers do not make a graph: {{ built.error }}
         </PlAlert>
         <template v-else>
-          <p :class="styles.note">
-            Draft: {{ built.materials.length }} materials,
-            {{ built.materials.filter((material) => material.sequenced).length }} sequenced. Missing
-            rounds are not filled in; add them in the graph if you want them drawn.
-          </p>
           <div :class="styles.canvas">
             <DesignGraph
               :graph="built.graph"
@@ -460,7 +449,7 @@ const noneMarked = new Set<string>();
 .columns {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   overflow-y: auto;
   padding-inline-end: 4px;
 }
@@ -476,8 +465,8 @@ const noneMarked = new Set<string>();
 .card {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px;
+  gap: 24px;
+  padding: 16px;
   border: 1px solid var(--border-color-div-grey);
   border-radius: 6px;
 }
