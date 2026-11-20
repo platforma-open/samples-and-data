@@ -127,7 +127,7 @@ const SERIES_KINDS: {
 }[] = [
   {
     value: "round",
-    label: "Selection round: a selected part went on",
+    label: "Selection round, or before and after a treatment: a selected part went on",
     set: { step: "round", part: "slice", spine: false },
   },
   {
@@ -140,15 +140,11 @@ const SERIES_KINDS: {
     label: "Sampled again from the same subject or vessel, which kept going",
     set: { step: "timecourse", part: "whole", spine: true },
   },
-  {
-    value: "once",
-    label: "Only two states: before and after one treatment",
-    set: { step: "none", part: "slice", spine: false },
-  },
 ];
 function seriesKind(column: string) {
   const answer = columnOf(column);
-  const step = answer.step ?? "round";
+  // no step tag exports the same as a round, so it shows as the round answer
+  const step = answer.step === undefined || answer.step === "none" ? "round" : answer.step;
   const part = answer.part ?? "slice";
   const spine = !!answer.spine;
   return (
