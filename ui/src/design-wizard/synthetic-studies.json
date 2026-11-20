@@ -1,0 +1,3357 @@
+[
+  {
+    "slug": "synthetic-01-panning-chain",
+    "table": {
+      "slug": "synthetic-01-panning-chain",
+      "name": "Panning chain",
+      "columns": ["round"],
+      "rows": [
+        {
+          "id": "R1",
+          "meta": {
+            "round": "1"
+          }
+        },
+        {
+          "id": "R2",
+          "meta": {
+            "round": "2"
+          }
+        },
+        {
+          "id": "R3",
+          "meta": {
+            "round": "3"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "round": {
+          "role": "series"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "round": {
+          "role": "series"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~START#1": {},
+        "R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1"
+          }
+        },
+        "R2": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2"
+          }
+        },
+        "R3": {
+          "from": {
+            "of": "R2",
+            "part": "slice",
+            "split": "R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1"
+          }
+        },
+        "R2": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2"
+          }
+        },
+        "R3": {
+          "from": {
+            "of": "R2",
+            "part": "slice",
+            "split": "R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-02-two-targets-one-control",
+    "table": {
+      "slug": "synthetic-02-two-targets-one-control",
+      "name": "Two targets and one control",
+      "columns": ["target", "round"],
+      "rows": [
+        {
+          "id": "A_R1",
+          "meta": {
+            "target": "A",
+            "round": "1"
+          }
+        },
+        {
+          "id": "A_R2",
+          "meta": {
+            "target": "A",
+            "round": "2"
+          }
+        },
+        {
+          "id": "B_R1",
+          "meta": {
+            "target": "B",
+            "round": "1"
+          }
+        },
+        {
+          "id": "B_R2",
+          "meta": {
+            "target": "B",
+            "round": "2"
+          }
+        },
+        {
+          "id": "DE",
+          "meta": {
+            "target": "Control",
+            "round": "2"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "target": {
+          "role": "treatment"
+        },
+        "round": {
+          "role": "series"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "target": {
+          "role": "treatment"
+        },
+        "round": {
+          "role": "series"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~START#1": {},
+        "A_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|target=A",
+            "step": "round"
+          },
+          "meta": {
+            "target": "A",
+            "round": "1"
+          }
+        },
+        "A_R2": {
+          "from": {
+            "of": "A_R1",
+            "part": "slice",
+            "split": "A_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "target": "A",
+            "round": "2"
+          }
+        },
+        "B_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|target=B",
+            "step": "round"
+          },
+          "meta": {
+            "target": "B",
+            "round": "1"
+          }
+        },
+        "B_R2": {
+          "from": {
+            "of": "B_R1",
+            "part": "slice",
+            "split": "B_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "target": "B",
+            "round": "2"
+          }
+        },
+        "DE": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=2|target=Control",
+            "step": "round"
+          },
+          "meta": {
+            "target": "Control",
+            "round": "2"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "A_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|target=A",
+            "step": "round"
+          },
+          "meta": {
+            "target": "A",
+            "round": "1"
+          }
+        },
+        "A_R2": {
+          "from": {
+            "of": "A_R1",
+            "part": "slice",
+            "split": "A_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "target": "A",
+            "round": "2"
+          }
+        },
+        "B_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|target=B",
+            "step": "round"
+          },
+          "meta": {
+            "target": "B",
+            "round": "1"
+          }
+        },
+        "B_R2": {
+          "from": {
+            "of": "B_R1",
+            "part": "slice",
+            "split": "B_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "target": "B",
+            "round": "2"
+          }
+        },
+        "DE": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=2|target=Control",
+            "step": "round"
+          },
+          "meta": {
+            "target": "Control",
+            "round": "2"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-03-bins-by-concentration",
+    "table": {
+      "slug": "synthetic-03-bins-by-concentration",
+      "name": "Four bins at each of four concentrations",
+      "columns": ["conc_nM", "bin"],
+      "rows": [
+        {
+          "id": "s001_b1",
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b1"
+          }
+        },
+        {
+          "id": "s001_b2",
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b2"
+          }
+        },
+        {
+          "id": "s001_b3",
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b3"
+          }
+        },
+        {
+          "id": "s001_b4",
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b4"
+          }
+        },
+        {
+          "id": "s010_b1",
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b1"
+          }
+        },
+        {
+          "id": "s010_b2",
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b2"
+          }
+        },
+        {
+          "id": "s010_b3",
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b3"
+          }
+        },
+        {
+          "id": "s010_b4",
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b4"
+          }
+        },
+        {
+          "id": "s100_b1",
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b1"
+          }
+        },
+        {
+          "id": "s100_b2",
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b2"
+          }
+        },
+        {
+          "id": "s100_b3",
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b3"
+          }
+        },
+        {
+          "id": "s100_b4",
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b4"
+          }
+        },
+        {
+          "id": "s999_b1",
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b1"
+          }
+        },
+        {
+          "id": "s999_b2",
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b2"
+          }
+        },
+        {
+          "id": "s999_b3",
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b3"
+          }
+        },
+        {
+          "id": "s999_b4",
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b4"
+          }
+        }
+      ],
+      "orders": {
+        "bin": ["b1", "b2", "b3", "b4"]
+      }
+    },
+    "suggested": {
+      "columns": {
+        "conc_nM": {
+          "role": "condition"
+        },
+        "bin": {
+          "role": "fraction"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "conc_nM": {
+          "role": "treatment"
+        },
+        "bin": {
+          "role": "fraction"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~START#1": {},
+        "s001_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b1"
+          }
+        },
+        "s001_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b2"
+          }
+        },
+        "s001_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b3"
+          }
+        },
+        "s001_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b4"
+          }
+        },
+        "s010_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b1"
+          }
+        },
+        "s010_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b2"
+          }
+        },
+        "s010_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b3"
+          }
+        },
+        "s010_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b4"
+          }
+        },
+        "s100_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b1"
+          }
+        },
+        "s100_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b2"
+          }
+        },
+        "s100_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b3"
+          }
+        },
+        "s100_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b4"
+          }
+        },
+        "s999_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b1"
+          }
+        },
+        "s999_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b2"
+          }
+        },
+        "s999_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b3"
+          }
+        },
+        "s999_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b4"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "s001_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b1"
+          }
+        },
+        "s001_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b2"
+          }
+        },
+        "s001_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b3"
+          }
+        },
+        "s001_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=0.1"
+          },
+          "meta": {
+            "conc_nM": "0.1",
+            "bin": "b4"
+          }
+        },
+        "s010_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b1"
+          }
+        },
+        "s010_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b2"
+          }
+        },
+        "s010_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b3"
+          }
+        },
+        "s010_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=1"
+          },
+          "meta": {
+            "conc_nM": "1",
+            "bin": "b4"
+          }
+        },
+        "s100_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b1"
+          }
+        },
+        "s100_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b2"
+          }
+        },
+        "s100_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b3"
+          }
+        },
+        "s100_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=10"
+          },
+          "meta": {
+            "conc_nM": "10",
+            "bin": "b4"
+          }
+        },
+        "s999_b1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b1"
+          }
+        },
+        "s999_b2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b2"
+          }
+        },
+        "s999_b3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b3"
+          }
+        },
+        "s999_b4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||conc_nM=100"
+          },
+          "meta": {
+            "conc_nM": "100",
+            "bin": "b4"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-04-in-vivo-cohorts",
+    "table": {
+      "slug": "synthetic-04-in-vivo-cohorts",
+      "name": "Two cohorts of mice, one bleed each",
+      "columns": ["animal", "cohort", "day"],
+      "rows": [
+        {
+          "id": "m1_bleed",
+          "meta": {
+            "animal": "m1",
+            "cohort": "humanized",
+            "day": "14"
+          }
+        },
+        {
+          "id": "m2_bleed",
+          "meta": {
+            "animal": "m2",
+            "cohort": "humanized",
+            "day": "14"
+          }
+        },
+        {
+          "id": "m3_bleed",
+          "meta": {
+            "animal": "m3",
+            "cohort": "wildtype",
+            "day": "14"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "animal": {
+          "role": "source"
+        },
+        "cohort": {
+          "role": "treatment"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "animal": {
+          "role": "source"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~start.m1#1": {},
+        "m1_bleed": {
+          "from": {
+            "of": "~start.m1#1",
+            "part": "slice",
+            "split": "~start.m1#1||cohort=humanized"
+          },
+          "meta": {
+            "animal": "m1",
+            "cohort": "humanized",
+            "day": "14"
+          }
+        },
+        "~start.m2#2": {},
+        "m2_bleed": {
+          "from": {
+            "of": "~start.m2#2",
+            "part": "slice",
+            "split": "~start.m2#2||cohort=humanized"
+          },
+          "meta": {
+            "animal": "m2",
+            "cohort": "humanized",
+            "day": "14"
+          }
+        },
+        "~start.m3#3": {},
+        "m3_bleed": {
+          "from": {
+            "of": "~start.m3#3",
+            "part": "slice",
+            "split": "~start.m3#3||cohort=wildtype"
+          },
+          "meta": {
+            "animal": "m3",
+            "cohort": "wildtype",
+            "day": "14"
+          }
+        }
+      },
+      "answered": {
+        "m1_bleed": {
+          "meta": {
+            "animal": "m1",
+            "cohort": "humanized",
+            "day": "14"
+          }
+        },
+        "m2_bleed": {
+          "meta": {
+            "animal": "m2",
+            "cohort": "humanized",
+            "day": "14"
+          }
+        },
+        "m3_bleed": {
+          "meta": {
+            "animal": "m3",
+            "cohort": "wildtype",
+            "day": "14"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-05-fork-and-merge",
+    "table": {
+      "slug": "synthetic-05-fork-and-merge",
+      "name": "Fork into two sorts, then merge the survivors",
+      "columns": ["round", "sort"],
+      "rows": [
+        {
+          "id": "R1",
+          "meta": {
+            "round": "1"
+          }
+        },
+        {
+          "id": "dep",
+          "meta": {
+            "round": "2",
+            "sort": "depletion"
+          }
+        },
+        {
+          "id": "str",
+          "meta": {
+            "round": "2",
+            "sort": "stringent"
+          }
+        },
+        {
+          "id": "R3",
+          "meta": {
+            "round": "3"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "round": {
+          "role": "series"
+        },
+        "sort": {
+          "role": "series"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "round": {
+          "role": "series"
+        },
+        "sort": {
+          "role": "fraction"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~START#1": {},
+        "R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1"
+          }
+        },
+        "dep": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|sort=depletion|round=2",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "sort": "depletion"
+          }
+        },
+        "str": {
+          "from": {
+            "of": "dep",
+            "part": "slice",
+            "split": "dep|sort=stringent|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "sort": "stringent"
+          }
+        },
+        "R3": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1"
+          }
+        },
+        "dep": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "sort": "depletion"
+          }
+        },
+        "str": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "sort": "stringent"
+          }
+        },
+        "R3": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-06-confounded-arms",
+    "table": {
+      "slug": "synthetic-06-confounded-arms",
+      "name": "Two labels that always changed together",
+      "columns": ["generation", "chemistry", "round"],
+      "rows": [
+        {
+          "id": "V2_R1",
+          "meta": {
+            "generation": "V2",
+            "chemistry": "epPCR",
+            "round": "1"
+          }
+        },
+        {
+          "id": "V2_R2",
+          "meta": {
+            "generation": "V2",
+            "chemistry": "epPCR",
+            "round": "2"
+          }
+        },
+        {
+          "id": "V3_R1",
+          "meta": {
+            "generation": "V3",
+            "chemistry": "NNK",
+            "round": "1"
+          }
+        },
+        {
+          "id": "V3_R2",
+          "meta": {
+            "generation": "V3",
+            "chemistry": "NNK",
+            "round": "2"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "generation": {
+          "role": "generation"
+        },
+        "round": {
+          "role": "series"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "generation": {
+          "role": "treatment"
+        },
+        "chemistry": {
+          "role": "treatment"
+        },
+        "round": {
+          "role": "series"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~START#1": {},
+        "V2_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V2",
+            "chemistry": "epPCR",
+            "round": "1"
+          }
+        },
+        "V2_R2": {
+          "from": {
+            "of": "V2_R1",
+            "part": "slice",
+            "split": "V2_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V2",
+            "chemistry": "epPCR",
+            "round": "2"
+          }
+        },
+        "~generation-selected#2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "selected@~START#1"
+          }
+        },
+        "~generation=V3#3": {
+          "from": {
+            "of": "~generation-selected#2",
+            "part": "remade"
+          }
+        },
+        "V3_R1": {
+          "from": {
+            "of": "~generation=V3#3",
+            "part": "slice",
+            "split": "~generation=V3#3|round=1|",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V3",
+            "chemistry": "NNK",
+            "round": "1"
+          }
+        },
+        "V3_R2": {
+          "from": {
+            "of": "V3_R1",
+            "part": "slice",
+            "split": "V3_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V3",
+            "chemistry": "NNK",
+            "round": "2"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "V2_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|generation=V2,chemistry=epPCR",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V2",
+            "chemistry": "epPCR",
+            "round": "1"
+          }
+        },
+        "V2_R2": {
+          "from": {
+            "of": "V2_R1",
+            "part": "slice",
+            "split": "V2_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V2",
+            "chemistry": "epPCR",
+            "round": "2"
+          }
+        },
+        "V3_R1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1|round=1|generation=V3,chemistry=NNK",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V3",
+            "chemistry": "NNK",
+            "round": "1"
+          }
+        },
+        "V3_R2": {
+          "from": {
+            "of": "V3_R1",
+            "part": "slice",
+            "split": "V3_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "generation": "V3",
+            "chemistry": "NNK",
+            "round": "2"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-07-arms-with-a-history",
+    "table": {
+      "slug": "synthetic-07-arms-with-a-history",
+      "name": "The same arms, with the history that was missing",
+      "columns": ["round", "antigen", "conc_nM", "gate"],
+      "rows": [
+        {
+          "id": "LIB",
+          "meta": {
+            "round": "0"
+          }
+        },
+        {
+          "id": "A_R1",
+          "meta": {
+            "round": "1",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        {
+          "id": "A_R2",
+          "meta": {
+            "round": "2",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        {
+          "id": "A_R3",
+          "meta": {
+            "round": "3",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        {
+          "id": "A_R4",
+          "meta": {
+            "round": "4",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        {
+          "id": "B_R1",
+          "meta": {
+            "round": "1",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        {
+          "id": "B_R2",
+          "meta": {
+            "round": "2",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        {
+          "id": "B_R3",
+          "meta": {
+            "round": "3",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        {
+          "id": "B_R4",
+          "meta": {
+            "round": "4",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        {
+          "id": "C_R1",
+          "meta": {
+            "round": "1",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        {
+          "id": "C_R2",
+          "meta": {
+            "round": "2",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        {
+          "id": "C_R3",
+          "meta": {
+            "round": "3",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        {
+          "id": "C_R4",
+          "meta": {
+            "round": "4",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        {
+          "id": "A_edge",
+          "meta": {
+            "round": "5",
+            "antigen": "PSMA",
+            "conc_nM": "250",
+            "gate": "edge"
+          }
+        },
+        {
+          "id": "A_gen",
+          "meta": {
+            "round": "5",
+            "antigen": "PSMA",
+            "conc_nM": "250",
+            "gate": "generous"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "round": {
+          "role": "series",
+          "baseline": ["0"]
+        },
+        "antigen": {
+          "role": "treatment"
+        },
+        "conc_nM": {
+          "role": "condition"
+        },
+        "gate": {
+          "role": "fraction"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "round": {
+          "role": "series",
+          "baseline": ["0"]
+        },
+        "antigen": {
+          "role": "treatment"
+        },
+        "conc_nM": {
+          "role": "condition"
+        },
+        "gate": {
+          "role": "treatment"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "LIB": {
+          "meta": {
+            "round": "0"
+          }
+        },
+        "A_R1": {
+          "from": {
+            "of": "LIB",
+            "part": "slice",
+            "split": "LIB|round=1|antigen=PSMA,conc_nM=5",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "A_R2": {
+          "from": {
+            "of": "A_R1",
+            "part": "slice",
+            "split": "A_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "A_R3": {
+          "from": {
+            "of": "A_R2",
+            "part": "slice",
+            "split": "A_R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "A_R4": {
+          "from": {
+            "of": "A_R3",
+            "part": "slice",
+            "split": "A_R3|round=4|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "4",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "B_R1": {
+          "from": {
+            "of": "LIB",
+            "part": "slice",
+            "split": "LIB|round=1|antigen=UCHT1,conc_nM=250",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "B_R2": {
+          "from": {
+            "of": "B_R1",
+            "part": "slice",
+            "split": "B_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "B_R3": {
+          "from": {
+            "of": "B_R2",
+            "part": "slice",
+            "split": "B_R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "B_R4": {
+          "from": {
+            "of": "B_R3",
+            "part": "slice",
+            "split": "B_R3|round=4|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "4",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "C_R1": {
+          "from": {
+            "of": "LIB",
+            "part": "slice",
+            "split": "LIB|round=1|antigen=UCHT1,conc_nM=1",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "C_R2": {
+          "from": {
+            "of": "C_R1",
+            "part": "slice",
+            "split": "C_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "C_R3": {
+          "from": {
+            "of": "C_R2",
+            "part": "slice",
+            "split": "C_R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "C_R4": {
+          "from": {
+            "of": "C_R3",
+            "part": "slice",
+            "split": "C_R3|round=4|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "4",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "A_edge": {
+          "from": {
+            "of": "A_R4",
+            "part": "slice",
+            "split": "A_R4|round=5|conc_nM=250",
+            "step": "round"
+          },
+          "meta": {
+            "round": "5",
+            "antigen": "PSMA",
+            "conc_nM": "250",
+            "gate": "edge"
+          }
+        },
+        "A_gen": {
+          "from": {
+            "of": "A_R4",
+            "part": "slice",
+            "split": "A_R4|round=5|conc_nM=250",
+            "step": "round"
+          },
+          "meta": {
+            "round": "5",
+            "antigen": "PSMA",
+            "conc_nM": "250",
+            "gate": "generous"
+          }
+        }
+      },
+      "answered": {
+        "LIB": {
+          "meta": {
+            "round": "0"
+          }
+        },
+        "A_R1": {
+          "from": {
+            "of": "LIB",
+            "part": "slice",
+            "split": "LIB|round=1|antigen=PSMA,conc_nM=5",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "A_R2": {
+          "from": {
+            "of": "A_R1",
+            "part": "slice",
+            "split": "A_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "A_R3": {
+          "from": {
+            "of": "A_R2",
+            "part": "slice",
+            "split": "A_R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "A_R4": {
+          "from": {
+            "of": "A_R3",
+            "part": "slice",
+            "split": "A_R3|round=4|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "4",
+            "antigen": "PSMA",
+            "conc_nM": "5"
+          }
+        },
+        "B_R1": {
+          "from": {
+            "of": "LIB",
+            "part": "slice",
+            "split": "LIB|round=1|antigen=UCHT1,conc_nM=250",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "B_R2": {
+          "from": {
+            "of": "B_R1",
+            "part": "slice",
+            "split": "B_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "B_R3": {
+          "from": {
+            "of": "B_R2",
+            "part": "slice",
+            "split": "B_R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "B_R4": {
+          "from": {
+            "of": "B_R3",
+            "part": "slice",
+            "split": "B_R3|round=4|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "4",
+            "antigen": "UCHT1",
+            "conc_nM": "250"
+          }
+        },
+        "C_R1": {
+          "from": {
+            "of": "LIB",
+            "part": "slice",
+            "split": "LIB|round=1|antigen=UCHT1,conc_nM=1",
+            "step": "round"
+          },
+          "meta": {
+            "round": "1",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "C_R2": {
+          "from": {
+            "of": "C_R1",
+            "part": "slice",
+            "split": "C_R1|round=2|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "2",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "C_R3": {
+          "from": {
+            "of": "C_R2",
+            "part": "slice",
+            "split": "C_R2|round=3|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "3",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "C_R4": {
+          "from": {
+            "of": "C_R3",
+            "part": "slice",
+            "split": "C_R3|round=4|",
+            "step": "round"
+          },
+          "meta": {
+            "round": "4",
+            "antigen": "UCHT1",
+            "conc_nM": "1"
+          }
+        },
+        "A_edge": {
+          "from": {
+            "of": "A_R4",
+            "part": "slice",
+            "split": "A_R4|round=5|conc_nM=250,gate=edge",
+            "step": "round"
+          },
+          "meta": {
+            "round": "5",
+            "antigen": "PSMA",
+            "conc_nM": "250",
+            "gate": "edge"
+          }
+        },
+        "A_gen": {
+          "from": {
+            "of": "A_R4",
+            "part": "slice",
+            "split": "A_R4|round=5|conc_nM=250,gate=generous",
+            "step": "round"
+          },
+          "meta": {
+            "round": "5",
+            "antigen": "PSMA",
+            "conc_nM": "250",
+            "gate": "generous"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-08-stringency-ramp",
+    "table": {
+      "slug": "synthetic-08-stringency-ramp",
+      "name": "A ladder that is also a titration",
+      "columns": ["round", "antigen_conc_nM"],
+      "rows": [
+        {
+          "id": "R0",
+          "meta": {
+            "round": "input"
+          }
+        },
+        {
+          "id": "R1",
+          "meta": {
+            "round": "round 1",
+            "antigen_conc_nM": "100"
+          }
+        },
+        {
+          "id": "R2",
+          "meta": {
+            "round": "round 2",
+            "antigen_conc_nM": "10"
+          }
+        },
+        {
+          "id": "R3",
+          "meta": {
+            "round": "round 3",
+            "antigen_conc_nM": "1"
+          }
+        }
+      ],
+      "orders": {}
+    },
+    "suggested": {
+      "columns": {
+        "round": {
+          "role": "series",
+          "baseline": ["input"]
+        },
+        "antigen_conc_nM": {
+          "role": "condition"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "round": {
+          "role": "series",
+          "baseline": ["input"]
+        },
+        "antigen_conc_nM": {
+          "role": "condition"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "R0": {
+          "meta": {
+            "round": "input"
+          }
+        },
+        "R1": {
+          "from": {
+            "of": "R0",
+            "part": "slice",
+            "split": "R0|round=round 1|antigen_conc_nM=100",
+            "step": "round"
+          },
+          "meta": {
+            "round": "round 1",
+            "antigen_conc_nM": "100"
+          }
+        },
+        "R2": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=round 2|antigen_conc_nM=10",
+            "step": "round"
+          },
+          "meta": {
+            "round": "round 2",
+            "antigen_conc_nM": "10"
+          }
+        },
+        "R3": {
+          "from": {
+            "of": "R2",
+            "part": "slice",
+            "split": "R2|round=round 3|antigen_conc_nM=1",
+            "step": "round"
+          },
+          "meta": {
+            "round": "round 3",
+            "antigen_conc_nM": "1"
+          }
+        }
+      },
+      "answered": {
+        "R0": {
+          "meta": {
+            "round": "input"
+          }
+        },
+        "R1": {
+          "from": {
+            "of": "R0",
+            "part": "slice",
+            "split": "R0|round=round 1|antigen_conc_nM=100",
+            "step": "round"
+          },
+          "meta": {
+            "round": "round 1",
+            "antigen_conc_nM": "100"
+          }
+        },
+        "R2": {
+          "from": {
+            "of": "R1",
+            "part": "slice",
+            "split": "R1|round=round 2|antigen_conc_nM=10",
+            "step": "round"
+          },
+          "meta": {
+            "round": "round 2",
+            "antigen_conc_nM": "10"
+          }
+        },
+        "R3": {
+          "from": {
+            "of": "R2",
+            "part": "slice",
+            "split": "R2|round=round 3|antigen_conc_nM=1",
+            "step": "round"
+          },
+          "meta": {
+            "round": "round 3",
+            "antigen_conc_nM": "1"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-09-a-bin-that-held-nothing",
+    "table": {
+      "slug": "synthetic-09-a-bin-that-held-nothing",
+      "name": "A bin that held nothing, and a point off the curve",
+      "columns": ["antigen_conc_M", "bin"],
+      "rows": [
+        {
+          "id": "c1_B1",
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c1_B2",
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c1_B3",
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c1_B4",
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c2_B1",
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c2_B2",
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c2_B3",
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c2_B4",
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c3_B1",
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c3_B2",
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c3_B3",
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c3_B4",
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c4_B1",
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c4_B2",
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c4_B3",
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c4_B4",
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c5_B1",
+          "meta": {
+            "antigen_conc_M": "1e-9",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c5_B2",
+          "meta": {
+            "antigen_conc_M": "1e-9",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "exp_B1",
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "exp_B2",
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "exp_B3",
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "exp_B4",
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B4"
+          }
+        }
+      ],
+      "orders": {
+        "bin": ["B1", "B2", "B3", "B4"]
+      }
+    },
+    "suggested": {
+      "columns": {
+        "antigen_conc_M": {
+          "role": "condition",
+          "baseline": ["0"]
+        },
+        "bin": {
+          "role": "fraction"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "antigen_conc_M": {
+          "role": "treatment"
+        },
+        "bin": {
+          "role": "fraction"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~START#1": {},
+        "exp_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B1"
+          }
+        },
+        "c1_B1": {
+          "from": {
+            "of": "exp_B1",
+            "part": "slice",
+            "split": "exp_B1||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B1"
+          }
+        },
+        "exp_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B2"
+          }
+        },
+        "c1_B2": {
+          "from": {
+            "of": "exp_B2",
+            "part": "slice",
+            "split": "exp_B2||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B2"
+          }
+        },
+        "exp_B3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B3"
+          }
+        },
+        "c1_B3": {
+          "from": {
+            "of": "exp_B3",
+            "part": "slice",
+            "split": "exp_B3||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B3"
+          }
+        },
+        "exp_B4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B4"
+          }
+        },
+        "c1_B4": {
+          "from": {
+            "of": "exp_B4",
+            "part": "slice",
+            "split": "exp_B4||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B4"
+          }
+        },
+        "c2_B1": {
+          "from": {
+            "of": "exp_B1",
+            "part": "slice",
+            "split": "exp_B1||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B1"
+          }
+        },
+        "c2_B2": {
+          "from": {
+            "of": "exp_B2",
+            "part": "slice",
+            "split": "exp_B2||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B2"
+          }
+        },
+        "c2_B3": {
+          "from": {
+            "of": "exp_B3",
+            "part": "slice",
+            "split": "exp_B3||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B3"
+          }
+        },
+        "c2_B4": {
+          "from": {
+            "of": "exp_B4",
+            "part": "slice",
+            "split": "exp_B4||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B4"
+          }
+        },
+        "c3_B1": {
+          "from": {
+            "of": "exp_B1",
+            "part": "slice",
+            "split": "exp_B1||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B1"
+          }
+        },
+        "c3_B2": {
+          "from": {
+            "of": "exp_B2",
+            "part": "slice",
+            "split": "exp_B2||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B2"
+          }
+        },
+        "c3_B3": {
+          "from": {
+            "of": "exp_B3",
+            "part": "slice",
+            "split": "exp_B3||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B3"
+          }
+        },
+        "c3_B4": {
+          "from": {
+            "of": "exp_B4",
+            "part": "slice",
+            "split": "exp_B4||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B4"
+          }
+        },
+        "c4_B1": {
+          "from": {
+            "of": "exp_B1",
+            "part": "slice",
+            "split": "exp_B1||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B1"
+          }
+        },
+        "c4_B2": {
+          "from": {
+            "of": "exp_B2",
+            "part": "slice",
+            "split": "exp_B2||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B2"
+          }
+        },
+        "c4_B3": {
+          "from": {
+            "of": "exp_B3",
+            "part": "slice",
+            "split": "exp_B3||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B3"
+          }
+        },
+        "c4_B4": {
+          "from": {
+            "of": "exp_B4",
+            "part": "slice",
+            "split": "exp_B4||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B4"
+          }
+        },
+        "c5_B1": {
+          "from": {
+            "of": "exp_B1",
+            "part": "slice",
+            "split": "exp_B1||antigen_conc_M=1e-9"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-9",
+            "bin": "B1"
+          }
+        },
+        "c5_B2": {
+          "from": {
+            "of": "exp_B2",
+            "part": "slice",
+            "split": "exp_B2||antigen_conc_M=1e-9"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-9",
+            "bin": "B2"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "c1_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B1"
+          }
+        },
+        "c1_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B2"
+          }
+        },
+        "c1_B3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B3"
+          }
+        },
+        "c1_B4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-5"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-5",
+            "bin": "B4"
+          }
+        },
+        "c2_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B1"
+          }
+        },
+        "c2_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B2"
+          }
+        },
+        "c2_B3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B3"
+          }
+        },
+        "c2_B4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-6"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-6",
+            "bin": "B4"
+          }
+        },
+        "c3_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B1"
+          }
+        },
+        "c3_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B2"
+          }
+        },
+        "c3_B3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B3"
+          }
+        },
+        "c3_B4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-7"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-7",
+            "bin": "B4"
+          }
+        },
+        "c4_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B1"
+          }
+        },
+        "c4_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B2"
+          }
+        },
+        "c4_B3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B3"
+          }
+        },
+        "c4_B4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-8"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-8",
+            "bin": "B4"
+          }
+        },
+        "c5_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-9"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-9",
+            "bin": "B1"
+          }
+        },
+        "c5_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=1e-9"
+          },
+          "meta": {
+            "antigen_conc_M": "1e-9",
+            "bin": "B2"
+          }
+        },
+        "exp_B1": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=0"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B1"
+          }
+        },
+        "exp_B2": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=0"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B2"
+          }
+        },
+        "exp_B3": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=0"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B3"
+          }
+        },
+        "exp_B4": {
+          "from": {
+            "of": "~START#1",
+            "part": "slice",
+            "split": "~START#1||antigen_conc_M=0"
+          },
+          "meta": {
+            "antigen_conc_M": "0",
+            "bin": "B4"
+          }
+        }
+      }
+    }
+  },
+  {
+    "slug": "synthetic-10-scan-then-combine",
+    "table": {
+      "slug": "synthetic-10-scan-then-combine",
+      "name": "Scan, then combine",
+      "columns": ["stage", "library", "condition", "antigen_conc_nM", "bin"],
+      "rows": [
+        {
+          "id": "S1_IN",
+          "meta": {
+            "stage": "1",
+            "library": "SSM_1140",
+            "condition": "input"
+          }
+        },
+        {
+          "id": "S1_OUT",
+          "meta": {
+            "stage": "1",
+            "library": "SSM_1140",
+            "condition": "bound 10nM top1%"
+          }
+        },
+        {
+          "id": "c1_B1",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c1_B2",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c1_B3",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c1_B4",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c2_B1",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c2_B2",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c2_B3",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c2_B4",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c3_B1",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c3_B2",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c3_B3",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c3_B4",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B4"
+          }
+        },
+        {
+          "id": "c4_B1",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B1"
+          }
+        },
+        {
+          "id": "c4_B2",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B2"
+          }
+        },
+        {
+          "id": "c4_B3",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B3"
+          }
+        },
+        {
+          "id": "c4_B4",
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B4"
+          }
+        }
+      ],
+      "orders": {
+        "bin": ["B1", "B2", "B3", "B4"]
+      }
+    },
+    "suggested": {
+      "columns": {
+        "stage": {
+          "role": "series"
+        },
+        "library": {
+          "role": "source"
+        },
+        "condition": {
+          "role": "treatment",
+          "baseline": ["input"]
+        },
+        "antigen_conc_nM": {
+          "role": "condition",
+          "baseline": ["0"]
+        },
+        "bin": {
+          "role": "fraction"
+        }
+      }
+    },
+    "answered": {
+      "columns": {
+        "stage": {
+          "role": "generation",
+          "remadeFrom": "last"
+        },
+        "condition": {
+          "role": "series",
+          "baseline": ["input"],
+          "step": "none"
+        },
+        "antigen_conc_nM": {
+          "role": "treatment"
+        },
+        "bin": {
+          "role": "fraction"
+        }
+      }
+    },
+    "designs": {
+      "suggested": {
+        "~start.SSM_1140#1": {},
+        "S1_IN": {
+          "from": {
+            "of": "~start.SSM_1140#1",
+            "part": "slice",
+            "split": "~start.SSM_1140#1|stage=1|",
+            "step": "round"
+          },
+          "meta": {
+            "stage": "1",
+            "library": "SSM_1140",
+            "condition": "input"
+          }
+        },
+        "S1_OUT": {
+          "from": {
+            "of": "S1_IN",
+            "part": "slice",
+            "split": "S1_IN||condition=bound 10nM top1%"
+          },
+          "meta": {
+            "stage": "1",
+            "library": "SSM_1140",
+            "condition": "bound 10nM top1%"
+          }
+        },
+        "~start.COMBO_1024#2": {},
+        "c1_B1": {
+          "from": {
+            "of": "~start.COMBO_1024#2",
+            "part": "slice",
+            "split": "~start.COMBO_1024#2|stage=2|",
+            "step": "round"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B1"
+          }
+        },
+        "c1_B2": {
+          "from": {
+            "of": "~start.COMBO_1024#2",
+            "part": "slice",
+            "split": "~start.COMBO_1024#2|stage=2|",
+            "step": "round"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B2"
+          }
+        },
+        "c1_B3": {
+          "from": {
+            "of": "~start.COMBO_1024#2",
+            "part": "slice",
+            "split": "~start.COMBO_1024#2|stage=2|",
+            "step": "round"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B3"
+          }
+        },
+        "c1_B4": {
+          "from": {
+            "of": "~start.COMBO_1024#2",
+            "part": "slice",
+            "split": "~start.COMBO_1024#2|stage=2|",
+            "step": "round"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B4"
+          }
+        },
+        "c2_B1": {
+          "from": {
+            "of": "c1_B1",
+            "part": "slice",
+            "split": "c1_B1||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B1"
+          }
+        },
+        "c2_B2": {
+          "from": {
+            "of": "c1_B2",
+            "part": "slice",
+            "split": "c1_B2||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B2"
+          }
+        },
+        "c2_B3": {
+          "from": {
+            "of": "c1_B3",
+            "part": "slice",
+            "split": "c1_B3||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B3"
+          }
+        },
+        "c2_B4": {
+          "from": {
+            "of": "c1_B4",
+            "part": "slice",
+            "split": "c1_B4||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B4"
+          }
+        },
+        "c3_B1": {
+          "from": {
+            "of": "c1_B1",
+            "part": "slice",
+            "split": "c1_B1||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B1"
+          }
+        },
+        "c3_B2": {
+          "from": {
+            "of": "c1_B2",
+            "part": "slice",
+            "split": "c1_B2||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B2"
+          }
+        },
+        "c3_B3": {
+          "from": {
+            "of": "c1_B3",
+            "part": "slice",
+            "split": "c1_B3||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B3"
+          }
+        },
+        "c3_B4": {
+          "from": {
+            "of": "c1_B4",
+            "part": "slice",
+            "split": "c1_B4||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B4"
+          }
+        },
+        "c4_B1": {
+          "from": {
+            "of": "c1_B1",
+            "part": "slice",
+            "split": "c1_B1||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B1"
+          }
+        },
+        "c4_B2": {
+          "from": {
+            "of": "c1_B2",
+            "part": "slice",
+            "split": "c1_B2||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B2"
+          }
+        },
+        "c4_B3": {
+          "from": {
+            "of": "c1_B3",
+            "part": "slice",
+            "split": "c1_B3||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B3"
+          }
+        },
+        "c4_B4": {
+          "from": {
+            "of": "c1_B4",
+            "part": "slice",
+            "split": "c1_B4||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B4"
+          }
+        }
+      },
+      "answered": {
+        "~START#1": {},
+        "S1_IN": {
+          "from": {
+            "of": "~START#1",
+            "part": "whole"
+          },
+          "meta": {
+            "stage": "1",
+            "library": "SSM_1140",
+            "condition": "input"
+          }
+        },
+        "S1_OUT": {
+          "from": {
+            "of": "S1_IN",
+            "part": "slice",
+            "split": "S1_IN|condition=bound 10nM top1%|"
+          },
+          "meta": {
+            "stage": "1",
+            "library": "SSM_1140",
+            "condition": "bound 10nM top1%"
+          }
+        },
+        "~stage=2#2": {
+          "from": {
+            "of": "S1_OUT",
+            "part": "remade"
+          }
+        },
+        "c1_B1": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=0"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B1"
+          }
+        },
+        "c1_B2": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=0"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B2"
+          }
+        },
+        "c1_B3": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=0"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B3"
+          }
+        },
+        "c1_B4": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=0"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "0",
+            "bin": "B4"
+          }
+        },
+        "c2_B1": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B1"
+          }
+        },
+        "c2_B2": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B2"
+          }
+        },
+        "c2_B3": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B3"
+          }
+        },
+        "c2_B4": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=2.5"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "2.5",
+            "bin": "B4"
+          }
+        },
+        "c3_B1": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B1"
+          }
+        },
+        "c3_B2": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B2"
+          }
+        },
+        "c3_B3": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B3"
+          }
+        },
+        "c3_B4": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=60"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "60",
+            "bin": "B4"
+          }
+        },
+        "c4_B1": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B1"
+          }
+        },
+        "c4_B2": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B2"
+          }
+        },
+        "c4_B3": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B3"
+          }
+        },
+        "c4_B4": {
+          "from": {
+            "of": "~stage=2#2",
+            "part": "slice",
+            "split": "~stage=2#2||antigen_conc_nM=1500"
+          },
+          "meta": {
+            "stage": "2",
+            "library": "COMBO_1024",
+            "antigen_conc_nM": "1500",
+            "bin": "B4"
+          }
+        }
+      }
+    }
+  }
+]

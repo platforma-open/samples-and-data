@@ -16,7 +16,8 @@ function sampleName(label: string | undefined) {
   return label;
 }
 
-function columnNames(columns: MTColumn[]) {
+/** Metadata column names as the design tools show them: trimmed, unnamed and repeated ones told apart. */
+export function columnNames(columns: MTColumn[]) {
   const base = columns.map((column) =>
     column.label.trim() === "" ? "Unnamed column" : column.label.trim(),
   );

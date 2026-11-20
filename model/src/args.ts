@@ -72,11 +72,34 @@ export type DesignMaterial = {
   from?: DesignMaterialFrom;
 };
 
+/** The design wizard's answer for one metadata column (the wizard's `ColumnB`). */
+export type DesignWizardColumn = {
+  role: string;
+  baseline?: string[];
+  baselineIs?: "parent" | "aliquot";
+  step?: "round" | "timecourse" | "none";
+  part?: "slice" | "whole";
+  fillGaps?: boolean;
+  spine?: boolean;
+  carry?: string;
+  blankIs?: "before" | "own";
+  remadeFrom?: "last" | "virtual";
+  libraryBy?: string[];
+};
+
+/** The design wizard's answers, kept so the wizard reopens where the user left it. Column order matters. */
+export type DesignWizardAnswers = {
+  columns: Record<string, DesignWizardColumn>;
+  /** Value orders the user set for rounds and generations, by column. */
+  orders: Record<string, string[]>;
+};
+
 /** One experiment design, drawn on its own page. An empty label shows a placeholder name. */
 export type ExperimentDesign = {
   id: PlId;
   label: string;
   materials: DesignMaterial[];
+  wizard?: DesignWizardAnswers;
 };
 
 /** The placeholder name of the design at `index` in the list. */
