@@ -12,6 +12,7 @@ import {
 } from "vue";
 import type { DragSource, DropTarget, PortSide } from "./connect";
 import { logicalEdge } from "./connect";
+import { litPart } from "./highlight";
 import type { PlacedEdge, Point } from "./layout";
 import { displayName, layout, nodeLabel } from "./layout";
 import type { Graph, GraphEdge, Selection } from "./types";
@@ -23,6 +24,8 @@ const props = defineProps<{
   coveredRight: number;
   marked: Set<string>;
   targets?: Set<string>;
+  /** Materials of the comparison picked below the graph; they and the way between them stay lit. */
+  highlight?: Set<string>;
 }>();
 const emit = defineEmits<{
   select: [selection: Selection];
@@ -50,6 +53,9 @@ const curve = ({ from, to, bend: [start, end] }: PlacedEdge) => {
 const edgePaths = computed(() => new Map(placed.value.edges.map((path) => [path.id, curve(path)])));
 const kinds = computed(() => new Map(props.graph.nodes.map((node) => [node.id, node.kind])));
 
+const lit = computed(() =>
+  props.highlight?.size ? litPart(props.graph, props.highlight) : undefined,
+);
 const isSelected = (kind: "node" | "edge", id: string) =>
   props.selection?.kind === kind && props.selection.id === id;
 
@@ -442,6 +448,7 @@ onMounted(fit);
             styles.edge,
             styles[edge.part],
             isSelected('edge', edge.id) && styles.selected,
+            lit && (lit.edges.has(edge.id) ? styles.lit : styles.dim),
             isTarget('edge', edge.id) && (wire?.allowed ? styles.target : styles.refused),
           ]"
           @pointerdown.stop
@@ -465,6 +472,7 @@ onMounted(fit);
           styles.node,
           !node.sequenced && styles.shadow,
           node.kind === 'junction' && styles.junction,
+          lit && (lit.nodes.has(node.id) ? styles.lit : styles.dim),
           node.issue !== undefined && styles.issue,
           (isSelected('node', node.id) || props.marked.has(node.id)) && styles.selected,
           isTarget('node', node.id) && (wire?.allowed ? styles.target : styles.refused),
@@ -607,6 +615,15 @@ onMounted(fit);
   stroke-width: 2.5;
 }
 
+.edge.lit .line {
+  stroke: var(--border-color-focus);
+  stroke-width: 2;
+}
+
+.dim {
+  opacity: 0.3;
+}
+
 .edge.refused .line {
   stroke: var(--border-color-error);
 }
@@ -702,6 +719,14 @@ onMounted(fit);
   &.junction {
     border: none;
     background: var(--txt-03);
+  }
+
+  &.lit {
+    border-color: var(--border-color-focus);
+  }
+
+  &.junction.lit {
+    background: var(--border-color-focus);
   }
 
   &.selected,

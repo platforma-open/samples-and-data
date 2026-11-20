@@ -246,6 +246,8 @@ export type TensorRow = {
   groups: { name: string; samples: string[] }[];
   /** Columns with one value across the whole tensor, `Antigen = A1`. */
   constant: string[];
+  /** Sample ids in the tensor, a panel's anchor included, for highlighting it in the graph. */
+  members: string[];
 };
 
 /** The design's tensors for the viewer, with sample labels for sample ids. */
@@ -271,6 +273,7 @@ export function designTensorRows(
       by: label.axes.map((axis) => axis.cols.join("+")).join(", "),
       groups,
       constant: label.constant.map(([column, value]) => `${column} = ${value}`),
+      members: [...(tensor.type === "panel" ? tensor.anchor.reads : []), ...members.flat()],
     };
   });
 }

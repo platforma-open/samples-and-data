@@ -53,6 +53,12 @@ const tensors = computed(() => {
     return { error: (error as Error).message };
   }
 });
+/** The comparison clicked in the list; its samples and the way between them are lit in the graph. */
+const activeRow = shallowRef<string>();
+const highlight = computed(() => {
+  const row = tensors.value?.rows?.find((item) => item.id === activeRow.value);
+  return row ? new Set(row.members) : undefined;
+});
 const panel = shallowRef<HTMLElement>();
 const panelHeight = shallowRef<number>();
 /** Dragging the bar above the comparisons trades height with the graph. */
@@ -143,7 +149,12 @@ async function deleteDesign() {
           </PlBtnSecondary>
         </PlAlert>
         <div :class="styles.editor">
-          <DesignEditor :design="drawable.design" :samples="samples" @change="save" />
+          <DesignEditor
+            :design="drawable.design"
+            :samples="samples"
+            :highlight="highlight"
+            @change="save"
+          />
         </div>
         <div
           v-if="tensors !== undefined"
@@ -165,7 +176,13 @@ async function deleteDesign() {
             No comparisons: {{ tensors.error }}
           </PlAlert>
           <ol v-else :class="styles.list">
-            <li v-for="row in tensors.rows" :key="row.id" :class="styles.row">
+            <li
+              v-for="row in tensors.rows"
+              :key="row.id"
+              :class="[styles.row, row.id === activeRow && styles.active]"
+              title="Show in the graph"
+              @click="activeRow = row.id === activeRow ? undefined : row.id"
+            >
               <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
               <span :class="styles.note">{{ row.by || "no axis" }}</span>
               <span :class="styles.groups">
@@ -255,6 +272,18 @@ async function deleteDesign() {
   gap: 12px;
   align-items: center;
   padding: 4px 12px;
+}
+
+.row {
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--bg-base-light, #f2f3f5);
+}
+
+.row.active {
+  background: var(--border-color-focus-shadow);
 }
 
 .row + .row {

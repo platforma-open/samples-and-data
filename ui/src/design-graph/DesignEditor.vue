@@ -30,7 +30,7 @@ import { displayName, labelIn, nodeIn, partOptions } from "./layout";
 import { parentsOf, toGraph } from "./toGraph";
 import type { Design, Part, Sample, Selection } from "./types";
 
-const props = defineProps<{ design: Design; samples: Sample[] }>();
+const props = defineProps<{ design: Design; samples: Sample[]; highlight?: Set<string> }>();
 const emit = defineEmits<{ change: [design: Design] }>();
 const styles = useCssModule();
 
@@ -520,6 +520,7 @@ function addSamples(chosen: Sample[], part: Part) {
       :covered-right="sidebarOpen ? sidebarBox.covered : 0"
       :marked="marked"
       :targets="shownTargets"
+      :highlight="props.highlight"
       @select="select"
       @toggle="toggle"
       @box="(nodeIds) => mark(new Set(nodeIds))"
