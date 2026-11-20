@@ -88,9 +88,12 @@ export type DesignWizardColumn = {
   libraryBy?: string[];
 };
 
-/** The design wizard's answers, kept so the wizard reopens where the user left it. Column order matters. */
+/**
+ * The design wizard's answers, kept so the wizard reopens where the user left it. Columns are a
+ * list because their order matters (it breaks ties and sets nesting) and stored maps lose key order.
+ */
 export type DesignWizardAnswers = {
-  columns: Record<string, DesignWizardColumn>;
+  columns: { column: string; answer: DesignWizardColumn }[];
   /** Value orders the user set for rounds and generations, by column. */
   orders: Record<string, string[]>;
 };

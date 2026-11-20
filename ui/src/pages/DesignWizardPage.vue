@@ -42,9 +42,17 @@ const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const suggested = computed(() =>
   suggestB(wizardTable(name.value, columns.value, samples.value, {})),
 );
-const saved = current.value?.wizard;
+// answers saved in an older shape are dropped: the wizard starts from the suggestion again
+const saved = Array.isArray(current.value?.wizard?.columns) ? current.value.wizard : undefined;
+// stored as a list: column order matters to the wizard, and stored maps lose key order
 const answers = ref<ConfigB>(
-  saved ? { columns: clone(saved.columns) as ConfigB["columns"] } : clone(suggested.value),
+  saved
+    ? {
+        columns: Object.fromEntries(
+          saved.columns.map(({ column, answer }) => [column, clone(answer) as ColumnB]),
+        ),
+      }
+    : clone(suggested.value),
 );
 const orders = ref<Record<string, string[]>>(clone(saved?.orders ?? {}));
 const table = computed(() => wizardTable(name.value, columns.value, samples.value, orders.value));
@@ -191,9 +199,18 @@ function move(column: string, from: number, to: number) {
   orders.value = { ...orders.value, [column]: order };
 }
 
+/** JSON with sorted keys, so answers compare equal whatever order their fields were set in. */
+const canonical = (value: unknown): string =>
+  JSON.stringify(value, (_, inner: unknown) =>
+    inner !== null && typeof inner === "object" && !Array.isArray(inner)
+      ? Object.fromEntries(
+          Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)),
+        )
+      : inner,
+  );
 const isSuggested = (column: string) =>
-  JSON.stringify(answers.value.columns[column] ?? null) ===
-  JSON.stringify(suggested.value.columns[column] ?? null);
+  canonical(answers.value.columns[column] ?? null) ===
+  canonical(suggested.value.columns[column] ?? null);
 const changes = computed(() => columns.value.filter((column) => !isSuggested(column)).length);
 
 // ------------------------------------------------------------------ actions
@@ -206,7 +223,10 @@ async function createDraft() {
   if ("error" in built.value) return;
   const materials = built.value.materials;
   const wizard: DesignWizardAnswers = {
-    columns: clone(answers.value.columns) as DesignWizardAnswers["columns"],
+    columns: Object.entries(clone(answers.value.columns)).map(([column, answer]) => ({
+      column,
+      answer: answer as DesignWizardAnswers["columns"][number]["answer"],
+    })),
     orders: clone(orders.value),
   };
   await app.updateData((data) => ({
