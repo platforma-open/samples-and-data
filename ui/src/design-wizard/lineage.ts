@@ -75,12 +75,6 @@ export interface ColumnB {
   readonly role: RoleB;
   /** Values meaning "this step had not happened yet": input, presort, Uns, round 0. Read as blank. */
   readonly baseline?: readonly string[];
-  /**
-   * What a row with a baseline value is: the starting material itself (`parent`,
-   * default — the input library that every round came from), or an untreated
-   * aliquot of it sequenced alongside (`aliquot` — a pre-sort sample next to the sorts).
-   */
-  readonly baselineIs?: "parent" | "aliquot";
   // ----- series
   readonly step?: "round" | "timecourse" | "none";
   readonly part?: "slice" | "whole";
@@ -100,11 +94,6 @@ export interface ColumnB {
   // ----- fraction
   /** Which fraction went on to the next step of a series. Absent / `each` = every fraction became its own line. */
   readonly carry?: string;
-  /**
-   * What a blank cell means: the step had not happened yet (`before`, default), or
-   * a real category of its own — "no antigen" is a population too (`own`).
-   */
-  readonly blankIs?: "before" | "own";
   // ----- generation
   /** Which material the new library was designed from: the last sequenced pool, or an unsequenced selected pool. */
   readonly remadeFrom?: "last" | "virtual";
@@ -139,23 +128,12 @@ export function buildB(table: Table, cfg: ConfigB, trace?: Trace): StudySpec {
     return k && k !== "each" ? k : undefined;
   };
 
-  // ---- vectors, with baseline values read as blank
+  // ---- vectors, with baseline values and blank cells read as "not done yet"
   const vec = new Map<string, Vec>();
-  const aliquots = new Set<string>();
   for (const r of table.rows) {
     const v: Record<string, string> = {};
     for (const c of structural) {
       const x = r.meta[c];
-      if (
-        x !== undefined &&
-        cfg.columns[c]!.baseline?.includes(x) &&
-        cfg.columns[c]!.baselineIs === "aliquot"
-      )
-        aliquots.add(r.id);
-      if (x === undefined && cfg.columns[c]!.blankIs === "own") {
-        v[c] = "(blank)";
-        continue;
-      }
       if (x === undefined || cfg.columns[c]!.baseline?.includes(x)) continue;
       v[c] = x;
     }
@@ -326,9 +304,8 @@ export function buildB(table: Table, cfg: ConfigB, trace?: Trace): StudySpec {
     const nodes: { id: string; vec: Vec; members: string[] }[] = [];
     for (const members of byVec.values()) {
       nodes.push({
-        // an aliquot stands beside the material it was taken from, never above its descendants
         id:
-          members.length === 1 && !aliquots.has(members[0]!)
+          members.length === 1
             ? members[0]!
             : virtual(`copies:${members[0]}`, null, `copies-of-${members[0]}`),
         vec: v(members[0]!),

@@ -77,13 +77,11 @@ export type DesignMaterial = {
 export type DesignWizardColumn = {
   role: string;
   baseline?: string[];
-  baselineIs?: "parent" | "aliquot";
   step?: "round" | "timecourse" | "none";
   part?: "slice" | "whole";
   fillGaps?: boolean;
   spine?: boolean;
   carry?: string;
-  blankIs?: "before" | "own";
   remadeFrom?: "last" | "virtual";
   libraryBy?: string[];
 };
