@@ -50,11 +50,11 @@ export const ROLE_B_TEXT: Record<RoleB, [string, string]> = {
     "Each value is a technical replicate: another library prep, lane, or aliquot of the same material, with nothing selected. Biological replicates (separate growth or animal) are Independent sources.",
   ],
   treatment: [
-    "Selection arms",
+    "Parallel arms",
     "Each value took its own portion, was selected its own way, and stayed a separate arm (antigen, target).",
   ],
   condition: [
-    "Selection arms, ramped",
+    "Parallel arms, ramped",
     "Values used one after another along the same arm, not side by side (a stringency ramp, alternating pH, a new elution or cell line at a late round).",
   ],
   fraction: [

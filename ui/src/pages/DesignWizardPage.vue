@@ -79,7 +79,7 @@ const GLYPH: Record<RoleB, string> = {
   generation: "⟳",
 };
 
-// "condition" is not its own menu entry: it is a selection arm that can change between rounds
+// "condition" is not its own menu entry: it is a parallel arm that can change between rounds
 const roleOptions = ROLES_B.filter((role) => role !== "condition").map((role) => ({
   value: role,
   label: `${GLYPH[role]}  ${ROLE_B_TEXT[role][0]}`,
