@@ -15,7 +15,7 @@ import {
   PlEditableTitle,
   PlLoaderCircular,
 } from "@platforma-sdk/ui-vue";
-import { computed, shallowRef, useCssModule } from "vue";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useCssModule } from "vue";
 import { useApp } from "../app";
 import DesignEditor from "../design-graph/DesignEditor.vue";
 import DesignWizardPage from "./DesignWizardPage.vue";
@@ -59,6 +59,15 @@ const highlight = computed(() => {
   const row = tensors.value?.rows?.find((item) => item.id === activeRow.value);
   return row ? new Set(row.members) : undefined;
 });
+/** Esc, or a click anywhere but a comparison row, clears the highlight. */
+const clearOnEsc = (event: KeyboardEvent) => {
+  if (event.key === "Escape") activeRow.value = undefined;
+};
+onMounted(() => window.addEventListener("keydown", clearOnEsc));
+onBeforeUnmount(() => window.removeEventListener("keydown", clearOnEsc));
+const clearOnClickAway = (event: PointerEvent) => {
+  if (!(event.target as Element).closest("[data-comparison]")) activeRow.value = undefined;
+};
 const panel = shallowRef<HTMLElement>();
 const panelHeight = shallowRef<number>();
 /** Dragging the bar above the comparisons trades height with the graph. */
@@ -140,7 +149,7 @@ async function deleteDesign() {
         The saved design cannot be drawn.
         <PlBtnSecondary size="small" @click="clear">Clear design</PlBtnSecondary>
       </PlAlert>
-      <div v-else :class="styles.body">
+      <div v-else :class="styles.body" @pointerdown.capture="clearOnClickAway">
         <PlAlert v-if="current.materials.length === 0" type="info">
           Start from the metadata table: say what each column did to the material, and the wizard
           drafts the graph.
@@ -180,6 +189,7 @@ async function deleteDesign() {
               v-for="row in tensors.rows"
               :key="row.id"
               :class="[styles.row, row.id === activeRow && styles.active]"
+              data-comparison
               title="Show in the graph"
               @click="activeRow = row.id === activeRow ? undefined : row.id"
             >
