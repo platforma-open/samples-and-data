@@ -331,19 +331,16 @@ const noneMarked = new Set<string>();
           >
             Values follow one another along one arm (a ramp), not side by side
           </PlCheckbox>
-          <PlDropdown
+          <p
             v-if="
               ['copy', 'treatment', 'condition', 'fraction'].includes(columnOf(column).role) &&
-              (hasBlanks(column) || columnOf(column).blankIs)
+              hasBlanks(column)
             "
-            :model-value="columnOf(column).blankIs ?? 'before'"
-            :options="[
-              { value: 'before', label: 'Step not done (yet, or at all)' },
-              { value: 'own', label: 'A group of their own' },
-            ]"
-            label="Empty cells mean"
-            @update:model-value="(value) => patch(column, { blankIs: value as 'before' | 'own' })"
-          />
+            :class="styles.desc"
+          >
+            Empty cells are read as "this step was not done". If they are a group of their own (no
+            antigen, for example), type a value such as "none" in them.
+          </p>
           <PlDropdown
             v-if="columnOf(column).role === 'series'"
             :model-value="seriesKind(column)"
