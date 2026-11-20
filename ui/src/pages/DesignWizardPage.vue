@@ -168,6 +168,24 @@ const nesting = computed(() =>
   ),
 );
 const outerOf = (column: string) => nesting.value[nesting.value.indexOf(column) - 1] ?? "";
+/** "When were the replicates made?": before the first other split, or right after one of them. */
+function whenOptions(column: string) {
+  const others = nesting.value.filter((other) => other !== column);
+  if (others.length === 1) {
+    const [other] = others as [string];
+    return [
+      { value: "", label: `Before ${other}: each replicate went through it on its own` },
+      { value: other, label: `After ${other}: each ${other} was prepped more than once` },
+    ];
+  }
+  return [
+    { value: "", label: `First, before ${others.join(" and ")}` },
+    ...others.map((other, at) => ({
+      value: other,
+      label: at + 1 < others.length ? `After ${other}, before ${others[at + 1]}` : `After ${other}`,
+    })),
+  ];
+}
 /** Puts `column` right after `outer` ("done within each outer"), or first when `outer` is empty. */
 function nestInside(column: string, outer: string) {
   const keys = Object.keys(answers.value.columns).filter((key) => key !== column);
@@ -271,7 +289,7 @@ const noneMarked = new Set<string>();
           :class="[styles.card, columnOf(column).role === 'label' && styles.quiet]"
         >
           <header :class="styles.head">
-            <span :class="styles.glyph">{{ GLYPH[columnOf(column).role] }}</span>
+            <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
             <span :class="styles.name">{{ column }}</span>
             <span :class="isSuggested(column) ? styles.suggested : styles.changed">
               {{ isSuggested(column) ? "suggested" : "changed" }}
@@ -373,10 +391,14 @@ const noneMarked = new Set<string>();
             />
           </template>
           <PlDropdown
-            v-if="
-              (columnOf(column).role === 'copy' || columnOf(column).role === 'fraction') &&
-              nesting.length > 1
-            "
+            v-if="columnOf(column).role === 'copy' && nesting.length > 1"
+            :model-value="outerOf(column)"
+            :options="whenOptions(column)"
+            label="When were the replicates made?"
+            @update:model-value="(outer) => nestInside(column, outer ?? '')"
+          />
+          <PlDropdown
+            v-if="columnOf(column).role === 'fraction' && nesting.length > 1"
             :model-value="outerOf(column)"
             :options="[
               { value: '', label: 'Nothing: split before the others' },
