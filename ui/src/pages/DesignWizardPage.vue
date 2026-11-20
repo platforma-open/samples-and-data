@@ -115,8 +115,6 @@ const values = (column: string) => [
     table.value.rows.map((row) => row.meta[column]).filter((value) => value !== undefined),
   ),
 ];
-const hasBlanks = (column: string) =>
-  table.value.rows.some((row) => row.meta[column] === undefined);
 const valueOptions = (column: string) => values(column).map((value) => ({ value, label: value }));
 
 /** One question for rounds and time points; each answer sets step type, kept, and line together. */
@@ -331,16 +329,6 @@ const noneMarked = new Set<string>();
           >
             Values follow one another along one arm (a ramp), not side by side
           </PlCheckbox>
-          <p
-            v-if="
-              ['copy', 'treatment', 'condition', 'fraction'].includes(columnOf(column).role) &&
-              hasBlanks(column)
-            "
-            :class="styles.desc"
-          >
-            Empty cells are read as "this step was not done". If they are a group of their own (no
-            antigen, for example), type a value such as "none" in them.
-          </p>
           <PlDropdown
             v-if="columnOf(column).role === 'series'"
             :model-value="seriesKind(column)"
