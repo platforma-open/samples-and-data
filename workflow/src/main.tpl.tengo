@@ -8,6 +8,9 @@ pframes := import("@platforma-sdk/workflow-tengo:pframes")
 metadata := import(":metadata")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 util := import(":util")
+json := import("json")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+pConstants := import("@platforma-sdk/workflow-tengo:pframes.constants")
 
 prerunTpl := assets.importTemplate(":prerun")
 
@@ -79,6 +82,55 @@ wf.body(func(args) {
 	
 	for k, v in metadata.createMetadata(args, blockId, sampleIdAxis) {
 		exports.add(k, v.spec, v.data)
+	}
+
+	// Experiment designs: their tensors and STEP 3 labels, derived by the model from the design graph
+	// and the metadata. One JSON value per [design, tensor]; analysis blocks match a design to an
+	// abundance by the sample axis named in pl7.app/design/sampleAxis.
+	designTensors := args.designTensors
+	if !is_undefined(designTensors) && len(designTensors.tensors) > 0 {
+		designAxes := [
+			{
+				type: "String",
+				name: "pl7.app/design/designId",
+				domain: { "pl7.app/blockId": blockId },
+				annotations: { "pl7.app/label": "Design" }
+			},
+			{
+				type: "String",
+				name: "pl7.app/design/tensorId",
+				domain: { "pl7.app/blockId": blockId },
+				annotations: { "pl7.app/label": "Tensor" }
+			}
+		]
+		jsonColumn := func(cells) {
+			return smart.createValueResource(pConstants.RTYPE_P_COLUMN_DATA_JSON,
+				json.encode({ keyLength: 2, data: cells }))
+		}
+		exports.add("designTensors", {
+			kind: "PColumn",
+			name: "pl7.app/design/tensors",
+			valueType: "String",
+			axesSpec: designAxes,
+			annotations: {
+				"pl7.app/label": "Design tensors",
+				"pl7.app/design/sampleAxis": string(json.encode({
+					type: sampleIdAxis.type,
+					name: sampleIdAxis.name,
+					domain: sampleIdAxis.domain
+				}))
+			}
+		}, jsonColumn(designTensors.tensors))
+		// Labels apart from the tensors: the tensors hold nothing taken from metadata
+		if len(designTensors.labels) > 0 {
+			exports.add("designLabels", {
+				kind: "PColumn",
+				name: "pl7.app/design/labels",
+				valueType: "String",
+				axesSpec: designAxes,
+				annotations: { "pl7.app/label": "Design tensor labels" }
+			}, jsonColumn(designTensors.labels))
+		}
 	}
 
 	// Create datasets

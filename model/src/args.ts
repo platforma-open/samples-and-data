@@ -1,4 +1,5 @@
 import type { ImportFileHandle } from "@platforma-sdk/model";
+import type { DesignTensorCells } from "./design_tensors";
 import type {
   DSAny,
   DSGrouped,
@@ -127,7 +128,7 @@ export type XsvFileToPreprocess = {
   gzipped: boolean;
 };
 
-/** V20261116 adds the queue of CSV/TSV files whose header the prerun reads (Multisample CSV/TSV), and the optional `designs`, which are UI data only and never reach the args. */
+/** V20261116 adds the queue of CSV/TSV files whose header the prerun reads (Multisample CSV/TSV), and the optional `designs`. Designs reach the args only as their derived tensors. */
 export type BlockDataV20261116 = BlockDataV20260428 & {
   xsvFilesToPreprocess: XsvFileToPreprocess[];
   designs?: ExperimentDesign[];
@@ -138,7 +139,10 @@ export type BlockData = BlockDataV20261116;
 export type BlockArgs = Pick<
   BlockData,
   "datasets" | "metadata" | "sampleLabelColumnLabel" | "sampleLabels"
->;
+> & {
+  /** The designs' tensors and labels, exported as `pl7.app/design/tensors` and `pl7.app/design/labels`. */
+  designTensors: DesignTensorCells;
+};
 
 export type BlockPrerunArgs = Pick<
   BlockData,
