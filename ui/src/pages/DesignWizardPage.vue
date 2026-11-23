@@ -14,7 +14,7 @@ import {
   PlDropdown,
   PlDropdownMulti,
 } from "@platforma-sdk/ui-vue";
-import { computed, ref, useCssModule } from "vue";
+import { computed, ref, useCssModule, watch } from "vue";
 import { useApp } from "../app";
 import DesignGraph from "../design-graph/DesignGraph.vue";
 import { withJunctions } from "../design-graph/junctions";
@@ -37,7 +37,12 @@ const current = computed(() => designs.value[index.value]);
 const name = computed(() => (current.value ? designLabel(current.value, index.value) : ""));
 
 const samples = computed(() => designSamples(app.model.data, current.value));
-const columns = computed(() => columnNames(app.model.data.metadata));
+/** Columns with a value for at least one sample the design applies to; the others are not offered. */
+const columns = computed(() =>
+  columnNames(app.model.data.metadata).filter((column) =>
+    samples.value.some((sample) => String(sample.meta[column] ?? "").trim() !== ""),
+  ),
+);
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const suggested = computed(() =>
@@ -56,6 +61,18 @@ const answers = ref<ConfigB>(
     : clone(suggested.value),
 );
 const orders = ref<Record<string, string[]>>(clone(saved?.orders ?? {}));
+// answers for columns no longer offered (the design's datasets changed) are dropped
+watch(
+  columns,
+  (offered) => {
+    const kept = Object.entries(answers.value.columns).filter(([column]) =>
+      offered.includes(column),
+    );
+    if (kept.length < Object.keys(answers.value.columns).length)
+      answers.value = { columns: Object.fromEntries(kept) };
+  },
+  { immediate: true },
+);
 const table = computed(() => wizardTable(name.value, columns.value, samples.value, orders.value));
 
 const built = computed(() => {
@@ -274,14 +291,14 @@ const noneMarked = new Set<string>();
       <PlBtnSecondary @click="app.navigateTo(`/design?id=${designId}`)">Cancel</PlBtnSecondary>
       <PlBtnPrimary :disabled="'error' in built" @click="createDraft">Create draft</PlBtnPrimary>
     </template>
+    <DesignDatasets />
     <PlAlert v-if="current === undefined" type="error">This design no longer exists.</PlAlert>
     <PlAlert v-else-if="columns.length === 0" type="warn">
-      The metadata table has no columns. Add metadata on the main page first; the wizard builds the
-      graph from it.
+      No metadata column has a value for this design's samples. Add metadata on the main page, or
+      pick other datasets; the wizard builds the graph from it.
     </PlAlert>
     <div v-else :class="styles.layout">
       <section :class="styles.columns">
-        <DesignDatasets />
         <p v-if="current.materials.length > 0" :class="styles.intro">
           Creating the draft replaces the current graph of {{ name }}.
         </p>
