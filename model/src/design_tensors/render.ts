@@ -45,6 +45,7 @@ function labelLines(l: Label): string {
     ...(l.constant.length > 0
       ? [`constant  ${l.constant.map(([k, v]) => `${k}=${v}`).join(", ")}`]
       : []),
+    ...(l.end.length > 0 ? [`end       ${l.end.map(([k, v]) => `${k}=${v}`).join(", ")}`] : []),
   ]
     .map((s) => `\n${LABEL}${s}`)
     .join("");

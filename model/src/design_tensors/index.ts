@@ -6,7 +6,14 @@ import type { DSAny, MTColumn, PlId } from "@platforma-open/milaboratories.sampl
 import type { ExperimentDesign } from "../args";
 import { designLabel } from "../args";
 import { derive, type Graph, type Material } from "./derive";
-import { labelTensors, type Column, type Label, type Labelled, type Table } from "./labels";
+import {
+  endLabel,
+  labelTensors,
+  type Column,
+  type Label,
+  type Labelled,
+  type Table,
+} from "./labels";
 import { inferTensors, type Tensors } from "./tensors";
 
 export const TENSOR_COLUMN_NAME = "pl7.app/design/tensors";
@@ -117,10 +124,11 @@ export function deriveDesign(
   );
   const graph = derive(materials, sequenced);
   const tensors = inferTensors(graph);
-  const labelled = labelTensors(tensors, metadataTable(source));
+  const table = metadataTable(source);
+  const labelled = labelTensors(tensors, table);
   const designName = designLabel(design, index);
   const names = new Map(design.materials.map((material) => [material.id, material.name]));
-  const labels = labelsById(labelled);
+  const labels = labelsById(labelled, table);
   const base = (id: string): Base => ({
     schemaVersion: 1,
     designName,
@@ -207,11 +215,16 @@ export function oneAxis(label: Label): Label {
 }
 
 /** Labels by tensor id, with the same ids and group order as toJson. */
-function labelsById(l: Labelled): Record<string, Label> {
+function labelsById(l: Labelled, table: Table): Record<string, Label> {
   const out: Record<string, Label> = {};
   const put = (id: string, label: Label) => (out[id] = oneAxis(label));
   l.partitions.forEach((x, i) => put(`partition-${i + 1}`, x.label));
-  l.trajectories.forEach((x, i) => put(`trajectory-${i + 1}`, x.label));
+  // the end point is read again against the one axis published, so the columns dropped with the
+  // other axes still name it
+  l.trajectories.forEach((x, i) => {
+    const label = oneAxis(x.label);
+    out[`trajectory-${i + 1}`] = { ...label, end: endLabel(x.tensor, table, label) };
+  });
   l.panels.forEach((x, i) => {
     // toJson sorts arms by split name; labels follow the derivation's arm order
     const splits = Object.keys(x.panel.arms);
@@ -284,6 +297,8 @@ export type TensorRow = {
   constant: string[];
   /** Columns that change inside the tensor without telling its groups apart, `Antigen = FP8v1`. */
   varies: string[];
+  /** Trajectories only: what names the last position, `Replicate = 1`. */
+  endpoint: string[];
   /** Sample ids in the tensor, a panel's anchor included, for highlighting it in the graph. */
   members: string[];
 };
@@ -318,6 +333,7 @@ export function designTensorRows(
         ];
         return `${axis.cols.join("+")} = ${values.join(" · ")}`;
       }),
+      endpoint: label.end.map(([column, value]) => `${column} = ${value}`),
       members: [...(tensor.type === "panel" ? tensor.anchor.reads : []), ...members.flat()],
     };
   });

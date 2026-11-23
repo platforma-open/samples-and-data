@@ -16,9 +16,16 @@ export function comparisonSections(rows: TensorRow[]): ComparisonSection[] {
   const byShape = Map.groupBy(rows, (row) =>
     [row.type, row.by, ...row.groups.map((group) => group.name)].join("\u0000"),
   );
-  // Same-shaped comparisons are told apart by their constants and by the columns that vary inside
-  // them without naming their groups; a column every row agrees on names nothing, so it is left out.
-  const tags = (row: TensorRow) => [...row.constant, ...row.varies];
+  // Same-shaped comparisons are told apart by their constants, by the columns that vary inside them
+  // without naming their groups, and by what names their last position; a column every row agrees
+  // on names nothing, so it is left out.
+  // One tag per column: where a comparison ends beats the values it passed through.
+  const tags = (row: TensorRow) => {
+    const byColumn = new Map<string, string>();
+    for (const tag of [...row.constant, ...row.varies, ...row.endpoint])
+      byColumn.set(column(tag), tag);
+    return [...byColumn.values()];
+  };
   return [...byShape].map(([key, members]) => {
     const common = tags(members[0]).filter((c) => members.every((r) => tags(r).includes(c)));
     const factors = [

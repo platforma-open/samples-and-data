@@ -1,13 +1,20 @@
 import { expect, test } from "vitest";
 import { comparisonSections } from "./comparisons";
 
-const row = (id: string, names: string[], constant: string[], varies: string[] = []) => ({
+const row = (
+  id: string,
+  names: string[],
+  constant: string[],
+  varies: string[] = [],
+  endpoint: string[] = [],
+) => ({
   id,
   type: "trajectory" as const,
   by: "Round",
   groups: names.map((name) => ({ name, samples: [] })),
   constant,
   varies,
+  endpoint,
   members: [],
 });
 
@@ -34,6 +41,27 @@ test("columns that vary inside look-alike comparisons tell them apart; agreed on
   expect(sections[0].factors).toEqual(["Gate"]);
   expect(sections[0].shared).toEqual(["Chain = H"]);
   expect(sections[0].rows.map((r) => r.factorValues)).toEqual(["low", "med"]);
+});
+
+test("where a comparison ends tells it apart, and beats the values it passed through", () => {
+  const sections = comparisonSections([
+    row(
+      "trajectory-1",
+      ["R1", "R4"],
+      ["Chain = H"],
+      ["Elution = strip · basic"],
+      ["Elution = basic"],
+    ),
+    row(
+      "trajectory-2",
+      ["R1", "R4"],
+      ["Chain = H"],
+      ["Elution = strip · acid"],
+      ["Elution = acid"],
+    ),
+  ]);
+  expect(sections[0]!.factors).toEqual(["Elution"]);
+  expect(sections[0]!.rows.map((r) => r.factorValues)).toEqual(["basic", "acid"]);
 });
 
 test("a lone comparison shows no factors, however much varies inside it", () => {

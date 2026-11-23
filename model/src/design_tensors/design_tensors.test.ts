@@ -11,7 +11,7 @@ import {
   oneAxis,
   type DesignSource,
 } from "./index";
-import { labelTensors } from "./labels";
+import { endLabel, label, labelTensors, type Table } from "./labels";
 import { renderLabels, renderText } from "./render";
 import { inferTensors } from "./tensors";
 
@@ -135,15 +135,49 @@ describe("the published axis", () => {
       mixed: [],
       within: [],
       constant: [],
+      end: [],
     });
     expect(picked.axes.map((a) => a.cols)).toEqual([["ladder"]]);
   });
 
   test("keeps the earlier set on a tie, and a lone axis untouched", () => {
     const tie = [axis(["a"], [[""], ["x"]]), axis(["b"], [[""], ["y"]])];
-    const label = { axes: tie, mixed: [], within: [], constant: [] };
+    const label = { axes: tie, mixed: [], within: [], constant: [], end: [] };
     expect(oneAxis(label).axes.map((a) => a.cols)).toEqual([["a"]]);
     expect(oneAxis({ ...label, axes: [tie[1]!] }).axes).toEqual([tie[1]]);
+  });
+});
+
+describe("a trajectory named by where it ends", () => {
+  // three replicates pooled into one input, then panned on their own
+  const table: Table = new Map([
+    ["in1", { replicate: "1", round: "0", antigen: "" }],
+    ["in2", { replicate: "2", round: "0", antigen: "" }],
+    ["mid", { replicate: "1", round: "1", antigen: "RBD" }],
+    ["out", { replicate: "1", round: "4", antigen: "RBD" }],
+  ]);
+  const groups = [["in1", "in2"], ["mid"], ["out"]];
+  const labelled = label(groups, table);
+
+  test("reads the column the pooled start hides", () => {
+    expect(labelled.within).toContain("replicate");
+    expect(endLabel(groups, table, labelled)).toEqual([
+      ["replicate", "1"],
+      ["antigen", "RBD"],
+    ]);
+  });
+
+  test("leaves out what the axis and the constants already name", () => {
+    expect(labelled.axes.map((axis) => axis.cols)).toEqual([["round"]]);
+    expect(endLabel(groups, table, labelled).map(([column]) => column)).not.toContain("round");
+  });
+
+  test("only trajectories get one", () => {
+    const study = studies.find((s) => s.slug === "synthetic-03-bins-by-concentration")!;
+    const { design, source } = asBlock(study);
+    const derived = deriveDesign(design, 0, source);
+    for (const tensor of Object.values(derived.json))
+      if (tensor.type !== "trajectory") expect(tensor.label.end).toEqual([]);
   });
 });
 
