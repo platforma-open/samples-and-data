@@ -25,6 +25,7 @@ import { withJunctions } from "../design-graph/junctions";
 import { toGraph } from "../design-graph/toGraph";
 import type { Design } from "../design-graph/types";
 import { designSamples, editorDesign, storedMaterials, tableSamples } from "../design_table";
+import { countOf } from "../string_utils";
 import DesignDatasets from "./DesignDatasets.vue";
 
 const app = useApp();
@@ -54,9 +55,10 @@ const tensors = computed(() => {
     const rows = designTensorRows(derived, app.model.data.sampleLabels).filter(
       (row) => row.type === "trajectory" || row.type === "panel",
     );
-    const counts = (["trajectories", "panels"] as const)
-      .map((kind) => `${derived.tensors[kind].length} ${kind}`)
-      .join(", ");
+    const counts = [
+      countOf(derived.tensors.trajectories.length, "trajectory"),
+      countOf(derived.tensors.panels.length, "panel"),
+    ].join(", ");
     return { counts, rows };
   } catch (error) {
     return { error: (error as Error).message };
@@ -67,7 +69,7 @@ const sections = computed(() => comparisonSections(tensors.value?.rows ?? []));
 /** The one collapsed line: where a trajectory runs from and to, or how wide a panel is. */
 function summary(row: TensorRow): string {
   const count = row.groups.length;
-  if (row.type !== "trajectory") return `${count} arms`;
+  if (row.type !== "trajectory") return countOf(count, "arm");
   const ends = [row.groups[0]?.name, row.groups[count - 1]?.name].filter(Boolean).join(" → ");
   return count > 2 ? `${ends} (${count} positions)` : ends;
 }
@@ -228,11 +230,7 @@ async function deleteDesign() {
                   {{ openSections.has(section.key) ? "▾" : "▸" }}
                   {{
                     section.rows.length > 1
-                      ? `${section.rows.length} ${
-                          section.rows[0].type === "trajectory"
-                            ? "trajectories"
-                            : `${section.rows[0].type}s`
-                        }`
+                      ? countOf(section.rows.length, section.rows[0].type)
                       : section.rows[0].id.replace("-", " ")
                   }}
                 </span>
