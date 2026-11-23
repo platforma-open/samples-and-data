@@ -3,7 +3,13 @@ import { join } from "node:path";
 import { describe, expect, test } from "vitest";
 import type { ExperimentDesign } from "../args";
 import { derive, type Material } from "./derive";
-import { deriveDesign, designTensorCells, designTensorRows, type DesignSource } from "./index";
+import {
+  datasetSampleIds,
+  deriveDesign,
+  designTensorCells,
+  designTensorRows,
+  type DesignSource,
+} from "./index";
 import { labelTensors } from "./labels";
 import { renderLabels, renderText } from "./render";
 import { inferTensors } from "./tensors";
@@ -103,5 +109,50 @@ describe.each(studies)("$slug", (study) => {
         .map((id) => JSON.stringify(["D", id]))
         .sort(),
     );
+  });
+});
+
+describe("a design limited to some datasets", () => {
+  const { design, source } = asBlock(studies.find((s) => s.slug === "synthetic-01-panning-chain")!);
+  const dataset = (id: string, samples: string[]) =>
+    ({
+      id,
+      label: id,
+      content: { type: "Xsv", data: Object.fromEntries(samples.map((s) => [s, null])) },
+    }) as unknown as DesignSource["datasets"][number];
+  const grouped = {
+    id: "grouped",
+    label: "grouped",
+    content: { type: "MultiSampleXsv", data: { g: null }, sampleGroups: { g: { R2: "r2" } } },
+  } as unknown as DesignSource["datasets"][number];
+  const withData = {
+    ...source,
+    datasets: [dataset("all", ["R1", "R2", "R3"]), dataset("ends", ["R1", "R3"]), grouped],
+  };
+  const trajectory = (d: ExperimentDesign) => {
+    const t = deriveDesign(d, 0, withData).json["trajectory-1"]!;
+    if (t.type !== "trajectory") throw new Error("not a trajectory");
+    return { positions: t.positions, datasets: t.datasets };
+  };
+
+  test("treats samples outside its datasets as not sequenced", () => {
+    expect(
+      trajectory({ ...design, datasetIds: ["ends"] as ExperimentDesign["datasetIds"] }),
+    ).toEqual({
+      positions: [["R1"], ["R3"]],
+      datasets: ["ends"],
+    });
+  });
+
+  test("applies to every dataset when it picks none, or only deleted ones", () => {
+    const all = { positions: [["R1"], ["R2"], ["R3"]], datasets: ["all", "ends", "grouped"] };
+    expect(trajectory(design)).toEqual(all);
+    expect(
+      trajectory({ ...design, datasetIds: ["gone"] as ExperimentDesign["datasetIds"] }),
+    ).toEqual(all);
+  });
+
+  test("reads a grouped dataset's samples from its sample groups", () => {
+    expect(datasetSampleIds(grouped)).toEqual(["R2"]);
   });
 });

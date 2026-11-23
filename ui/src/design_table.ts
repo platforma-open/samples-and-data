@@ -2,12 +2,16 @@ import { deepClone } from "@milaboratories/helpers";
 import type {
   BlockData,
   DesignMaterial,
+  ExperimentDesign,
 } from "@platforma-open/milaboratories.samples-and-data.model";
-import { columnNames } from "@platforma-open/milaboratories.samples-and-data.model";
+import { columnNames, designScope } from "@platforma-open/milaboratories.samples-and-data.model";
 import type { Design, Sample } from "./design-graph/types";
 
 /** The name and issue a design node shows when its sample is no longer in the table. */
 export const removedSample = { name: "Removed sample", issue: "Deleted from Metadata." };
+
+/** The issue a sequenced node shows when the design's datasets do not hold its sample; it counts as unsequenced. */
+export const outsideDatasets = "Not in this design's datasets.";
 
 function sampleName(label: string | undefined) {
   if (label === undefined || label.trim() === "") {
@@ -32,8 +36,24 @@ export function tableSamples(
   }));
 }
 
-/** The stored materials of a design with each sample's label and metadata taken live from the table. */
-export function editorDesign(stored: DesignMaterial[], samples: Sample[]): Design {
+/** The table's samples that a design applies to: those its picked datasets hold. */
+export function designSamples(
+  data: Pick<BlockData, "sampleIds" | "sampleLabels" | "metadata" | "datasets">,
+  design: Pick<ExperimentDesign, "datasetIds"> | undefined,
+): Sample[] {
+  const inScope = designScope(design ?? {}, data).sampleIds;
+  return tableSamples(data).filter((sample) => inScope.has(sample.id));
+}
+
+/**
+ * The stored materials of a design with each sample's label and metadata taken live from the table.
+ * Samples missing from `inScope` (when given) are marked as outside the design's datasets.
+ */
+export function editorDesign(
+  stored: DesignMaterial[],
+  samples: Sample[],
+  inScope?: Set<string>,
+): Design {
   const byId = new Map(samples.map((sample) => [sample.id, sample]));
   return {
     materials: deepClone(stored).map((material) => {
@@ -44,7 +64,12 @@ export function editorDesign(stored: DesignMaterial[], samples: Sample[]): Desig
       if (sample === undefined) {
         return { ...material, ...removedSample, meta: {} };
       }
-      return { ...material, name: sample.name, meta: sample.meta };
+      return {
+        ...material,
+        name: sample.name,
+        meta: sample.meta,
+        ...(inScope && !inScope.has(sample.id) && { issue: outsideDatasets }),
+      };
     }),
   };
 }

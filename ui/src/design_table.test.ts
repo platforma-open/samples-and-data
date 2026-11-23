@@ -1,6 +1,13 @@
 import type { PlId } from "@platforma-open/milaboratories.samples-and-data.model";
 import { describe, expect, test } from "vitest";
-import { editorDesign, removedSample, storedMaterials, tableSamples } from "./design_table";
+import {
+  designSamples,
+  editorDesign,
+  outsideDatasets,
+  removedSample,
+  storedMaterials,
+  tableSamples,
+} from "./design_table";
 
 const first = "aaaaaaaaaaaaaaaaaaaaaaaa" as PlId;
 const second = "bbbbbbbbbbbbbbbbbbbbbbbb" as PlId;
@@ -65,6 +72,22 @@ describe("design table", () => {
       { ...stored[2], ...removedSample, meta: {} },
     ]);
     expect(editorDesign([], [])).toEqual({ materials: [] });
+  });
+
+  test("a design limited to a dataset offers its samples and flags the others", () => {
+    const dataset = {
+      id: "ds" as PlId,
+      label: "ds",
+      content: { type: "Xsv", data: { [first]: null } },
+    };
+    const data = { ...table, datasets: [dataset] } as unknown as Parameters<
+      typeof designSamples
+    >[0];
+    const inScope = designSamples(data, { datasetIds: ["ds" as PlId] });
+    expect(inScope.map((sample) => sample.id)).toEqual([first]);
+    expect(designSamples(data, undefined).map((sample) => sample.id)).toEqual([first, second]);
+    const design = editorDesign(stored, tableSamples(table), new Set([second]));
+    expect(design.materials[1]).toMatchObject({ name: "Sample 1", issue: outsideDatasets });
   });
 
   test("storedMaterials drops what comes from the table and round-trips", () => {

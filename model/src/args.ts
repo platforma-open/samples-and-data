@@ -102,6 +102,8 @@ export type ExperimentDesign = {
   label: string;
   materials: DesignMaterial[];
   wizard?: DesignWizardAnswers;
+  /** The datasets the design applies to; absent or empty means all of them. */
+  datasetIds?: PlId[];
 };
 
 /** The placeholder name of the design at `index` in the list. */

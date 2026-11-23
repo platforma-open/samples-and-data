@@ -23,7 +23,8 @@ import DesignWizardPage from "./DesignWizardPage.vue";
 import { withJunctions } from "../design-graph/junctions";
 import { toGraph } from "../design-graph/toGraph";
 import type { Design } from "../design-graph/types";
-import { editorDesign, storedMaterials, tableSamples } from "../design_table";
+import { designSamples, editorDesign, storedMaterials, tableSamples } from "../design_table";
+import DesignDatasets from "./DesignDatasets.vue";
 
 const app = useApp();
 const styles = useCssModule();
@@ -39,7 +40,8 @@ const deleting = shallowRef(false);
 const designs = computed(() => app.model.data.designs ?? []);
 const index = computed(() => designs.value.findIndex((design) => design.id === designId.value));
 const current = computed(() => designs.value[index.value]);
-const samples = computed(() => tableSamples(app.model.data));
+/** Samples the design's datasets hold: the ones offered for new nodes. */
+const samples = computed(() => designSamples(app.model.data, current.value));
 
 /** The design's tensors and labels (tensor_derivation STEP 2 and 3), as Samples & Data exports them. */
 const tensors = computed(() => {
@@ -98,7 +100,11 @@ function startResize(event: PointerEvent) {
 }
 const drawable = computed(() => {
   try {
-    const design = editorDesign(current.value?.materials ?? [], samples.value);
+    const design = editorDesign(
+      current.value?.materials ?? [],
+      tableSamples(app.model.data),
+      new Set(samples.value.map((sample) => sample.id)),
+    );
     withJunctions(toGraph(design));
     return { design };
   } catch {
@@ -160,6 +166,7 @@ async function deleteDesign() {
         <PlBtnSecondary size="small" @click="clear">Clear design</PlBtnSecondary>
       </PlAlert>
       <div v-else :class="styles.body" @pointerdown.capture="clearOnClickAway">
+        <DesignDatasets />
         <PlAlert v-if="current.materials.length === 0" type="info">
           Start from the metadata table: say what each column did to the material, and the wizard
           drafts the graph.

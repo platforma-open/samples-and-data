@@ -68,6 +68,29 @@ function metadataTable(source: DesignSource): Table {
   );
 }
 
+/** Sample ids a dataset holds data for. */
+export function datasetSampleIds(dataset: DSAny): string[] {
+  const content = dataset.content;
+  return "sampleGroups" in content && content.sampleGroups
+    ? Object.values(content.sampleGroups).flatMap((group) => Object.keys(group))
+    : Object.keys(content.data);
+}
+
+/**
+ * The datasets a design applies to and the samples they hold. A design that picks none, or only
+ * datasets since deleted, applies to all datasets and every sample.
+ */
+export function designScope(
+  design: Pick<ExperimentDesign, "datasetIds">,
+  source: Pick<DesignSource, "sampleIds" | "datasets">,
+): { datasets: DSAny[]; sampleIds: Set<string> } {
+  const picked = source.datasets.filter((dataset) => design.datasetIds?.includes(dataset.id));
+  if (picked.length === 0)
+    return { datasets: source.datasets, sampleIds: new Set(source.sampleIds) };
+  const held = new Set(picked.flatMap(datasetSampleIds));
+  return { datasets: picked, sampleIds: new Set(source.sampleIds.filter((id) => held.has(id))) };
+}
+
 export type DerivedDesign = {
   designId: string;
   designName: string;
@@ -82,7 +105,8 @@ export function deriveDesign(
   index: number,
   source: DesignSource,
 ): DerivedDesign {
-  const present = new Set<string>(source.sampleIds);
+  const scope = designScope(design, source);
+  const present = scope.sampleIds;
   const materials: Record<string, Material> = Object.fromEntries(
     design.materials.map((material) => [material.id, material.from ? { from: material.from } : {}]),
   );
@@ -100,7 +124,7 @@ export function deriveDesign(
   const base = (id: string): Base => ({
     schemaVersion: 1,
     designName,
-    datasets: source.datasets.map((dataset) => dataset.id),
+    datasets: scope.datasets.map((dataset) => dataset.id),
     label: labels[id]!,
   });
   return {

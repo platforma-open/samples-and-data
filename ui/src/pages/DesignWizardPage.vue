@@ -24,7 +24,8 @@ import type { ColumnB, ConfigB, RoleB } from "../design-wizard/lineage";
 import { suggestB } from "../design-wizard/suggest";
 import { naturalOrder } from "../design-wizard/table";
 import { designMaterials, wizardTable } from "../design-wizard/toDesign";
-import { editorDesign, tableSamples } from "../design_table";
+import { designSamples, editorDesign } from "../design_table";
+import DesignDatasets from "./DesignDatasets.vue";
 
 const app = useApp();
 const styles = useCssModule();
@@ -35,7 +36,7 @@ const index = computed(() => designs.value.findIndex((design) => design.id === d
 const current = computed(() => designs.value[index.value]);
 const name = computed(() => (current.value ? designLabel(current.value, index.value) : ""));
 
-const samples = computed(() => tableSamples(app.model.data));
+const samples = computed(() => designSamples(app.model.data, current.value));
 const columns = computed(() => columnNames(app.model.data.metadata));
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
@@ -280,6 +281,7 @@ const noneMarked = new Set<string>();
     </PlAlert>
     <div v-else :class="styles.layout">
       <section :class="styles.columns">
+        <DesignDatasets />
         <p v-if="current.materials.length > 0" :class="styles.intro">
           Creating the draft replaces the current graph of {{ name }}.
         </p>
