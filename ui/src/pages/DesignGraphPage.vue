@@ -230,16 +230,16 @@ async function deleteDesign() {
                   {{ openSections.has(section.key) ? "▾" : "▸" }}
                   {{
                     section.rows.length > 1
-                      ? countOf(section.rows.length, section.rows[0].type)
-                      : section.rows[0].id.replace("-", " ")
+                      ? countOf(section.rows.length, section.lead.type)
+                      : section.lead.id.replace("-", " ")
                   }}
                 </span>
-                <span :class="styles.note">{{ section.rows[0].by || "no axis" }}</span>
+                <span :class="styles.note">{{ section.lead.by || "no axis" }}</span>
                 <span :class="styles.summary">
                   <span v-if="section.arms.length > 0" :class="styles.chip">{{
                     section.arms.join(" · ")
                   }}</span>
-                  {{ summary(section.rows[0]) }}
+                  {{ summary(section.lead) }}
                 </span>
                 <span :class="styles.note">
                   {{

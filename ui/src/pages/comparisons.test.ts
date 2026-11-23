@@ -87,3 +87,20 @@ test("two panel arms stay two lines; the pieces of one arm collapse into it", ()
   expect(sections[0]!.factors).toEqual(["Gate"]);
   expect(sections[0]!.rows.map((r) => r.factorValues)).toEqual(["low", "high"]);
 });
+
+test("an arm's comparisons list together even when one of them got its own axis", () => {
+  // vfp1602: a ladder column filled for the high gate alone names that trajectory by itself
+  const ladder = {
+    ...row("trajectory-3", ["0-display", "3-R3"], [], [], ["Gate = high"], ["FP8v1"]),
+    by: "ladder",
+  };
+  const sections = comparisonSections([
+    row("trajectory-1", ["R1", "R3"], [], [], ["Gate = low"], ["FP8v1"]),
+    row("trajectory-2", ["R1", "R3"], [], [], ["Gate = med"], ["FP8v1"]),
+    ladder,
+  ]);
+  expect(sections).toHaveLength(1);
+  expect(sections[0]!.rows).toHaveLength(3);
+  expect(sections[0]!.lead.by).toBe("Round");
+  expect(sections[0]!.factors).toEqual(["Gate"]);
+});

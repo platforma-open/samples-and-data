@@ -9,6 +9,8 @@ export type ComparisonSection = {
   key: string;
   /** The panel arms every row of this section runs through; empty outside a panel. */
   arms: string[];
+  /** The row the collapsed line reads from: the first on the axis most of them share. */
+  lead: TensorRow;
   rows: (TensorRow & { factorValues: string })[];
   /** Columns whose value changes from row to row: the factors the section is collapsed by. */
   factors: string[];
@@ -19,19 +21,20 @@ export type ComparisonSection = {
 const column = (tag: string) => tag.slice(0, tag.indexOf(" = "));
 
 export function comparisonSections(rows: TensorRow[]): ComparisonSection[] {
+  // An arm is its own material, so the comparisons inside one arm list together, whatever axis each
+  // of them was labelled by: a column filled for one gate only (vfp1602's ladders) names that gate's
+  // trajectory and no other, and the three gates of an arm still belong on one line. An arm holding
+  // a single comparison has nothing to collapse, so those fall back to shape and the arm is read as
+  // the factor that tells them apart.
+  const armOf = (row: TensorRow) => row.armKeys.join("\u0000");
+  const perArm = new Map<string, number>();
+  for (const row of rows)
+    if (row.armKeys.length > 0) perArm.set(armOf(row), (perArm.get(armOf(row)) ?? 0) + 1);
   const byShape = Map.groupBy(rows, (row) =>
-    [row.type, row.by, ...row.groups.map((group) => group.name)].join("\u0000"),
+    (perArm.get(armOf(row)) ?? 0) > 1
+      ? ["arm", row.type, armOf(row)].join("\u0000")
+      : [row.type, row.by, ...row.groups.map((group) => group.name)].join("\u0000"),
   );
-  // An arm is its own material, so the comparisons inside one arm list together and the pieces of
-  // that arm (gates, bins) collapse into the line. Where every arm holds a single comparison there
-  // is nothing to collapse, so the arm is left to be read as the factor that tells the rows apart.
-  const byArm: [string, TensorRow[]][] = [];
-  for (const [key, members] of byShape) {
-    const arms = Map.groupBy(members, (row) => row.armKeys.join("\u0000"));
-    if ([...arms.values()].some((rows) => rows.length > 1))
-      for (const [arm, rows] of arms) byArm.push([`${key}\u0000${arm}`, rows]);
-    else byArm.push([key, members]);
-  }
   // Same-shaped comparisons are told apart by their constants, by the columns that vary inside them
   // without naming their groups, and by what names their last position; a column every row agrees
   // on names nothing, so it is left out.
@@ -42,7 +45,7 @@ export function comparisonSections(rows: TensorRow[]): ComparisonSection[] {
       byColumn.set(column(tag), tag);
     return [...byColumn.values()];
   };
-  return byArm.map(([key, members]) => {
+  return [...byShape].map(([key, members]) => {
     const common = tags(members[0]).filter((c) => members.every((r) => tags(r).includes(c)));
     const factors = [
       ...new Set(
@@ -53,8 +56,11 @@ export function comparisonSections(rows: TensorRow[]): ComparisonSection[] {
         ),
       ),
     ];
+    const onAxis = (by: string) => members.filter((r) => r.by === by).length;
+    const lead = members.reduce((a, b) => (onAxis(b.by) > onAxis(a.by) ? b : a));
     return {
       key,
+      lead,
       arms: members.every((r) => r.armKeys.join() === members[0]!.armKeys.join())
         ? members[0]!.arms
         : [],
