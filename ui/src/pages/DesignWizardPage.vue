@@ -289,7 +289,7 @@ const noneMarked = new Set<string>();
     <template v-if="current !== undefined" #append>
       <PlBtnGhost @click="reset">Reset to suggestion</PlBtnGhost>
       <PlBtnSecondary @click="app.navigateTo(`/design?id=${designId}`)">Cancel</PlBtnSecondary>
-      <PlBtnPrimary :disabled="'error' in built" @click="createDraft">Create draft</PlBtnPrimary>
+      <PlBtnPrimary :disabled="'error' in built" @click="createDraft">Create design</PlBtnPrimary>
     </template>
     <DesignDatasets />
     <PlAlert v-if="current === undefined" type="error">This design no longer exists.</PlAlert>
@@ -300,7 +300,7 @@ const noneMarked = new Set<string>();
     <div v-else :class="styles.layout">
       <section :class="styles.columns">
         <p v-if="current.materials.length > 0" :class="styles.intro">
-          Creating the draft replaces the current graph of {{ name }}.
+          Creating the design replaces the current graph of {{ name }}.
         </p>
         <article
           v-for="column in columns"
