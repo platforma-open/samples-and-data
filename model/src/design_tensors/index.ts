@@ -299,25 +299,51 @@ export type TensorRow = {
   varies: string[];
   /** Trajectories only: what names the last position, `Replicate = 1`. */
   endpoint: string[];
+  /** Trajectories only: the panel arms it runs through, named as the panel names them. */
+  arms: string[];
+  /** The same arms with their panel, since two panels can name an arm alike (VH and VL). */
+  armKeys: string[];
   /** Sample ids in the tensor, a panel's anchor included, for highlighting it in the graph. */
   members: string[];
 };
+
+/** What the label calls group `k`, from every axis it has. */
+function groupName(label: Label, k: number): string {
+  return label.axes
+    .map((axis) => axis.values[k]?.filter((cell) => cell !== "").join(" · ") ?? "")
+    .filter((value) => value !== "")
+    .join(" · ");
+}
+
+/** The arms each trajectory runs through, so comparisons of one arm list together. */
+function armsByTrajectory(
+  json: Record<string, TensorJson>,
+): Map<string, { name: string; key: string }[]> {
+  const out = new Map<string, { name: string; key: string }[]>();
+  for (const [panelId, tensor] of Object.entries(json)) {
+    if (tensor.type !== "panel") continue;
+    tensor.arms.forEach((arm, k) => {
+      const name = groupName(tensor.label, k) || arm.split;
+      const found = { name, key: `${panelId}/${arm.split}` };
+      for (const id of arm.trajectories) out.set(id, [...(out.get(id) ?? []), found]);
+    });
+  }
+  return out;
+}
 
 /** The design's tensors for the viewer, with sample labels for sample ids. */
 export function designTensorRows(
   derived: DerivedDesign,
   sampleLabels: Record<string, string>,
 ): TensorRow[] {
+  const arms = armsByTrajectory(derived.json);
   return Object.entries(derived.json).map(([id, tensor]) => {
     const label = tensor.label;
     const members =
       tensor.type === "panel" ? tensor.arms.map((arm) => arm.positions.flat()) : tensor.positions;
     const groups = members.map((samples, k) => {
       const samplesShown = samples.map((sample) => sampleLabels[sample] ?? sample);
-      const name = label.axes
-        .map((axis) => axis.values[k]?.filter((cell) => cell !== "").join(" · ") ?? "")
-        .filter((value) => value !== "")
-        .join(" · ");
+      const name = groupName(label, k);
       return { name: name || samplesShown.join(", ") || "(not sequenced)", samples: samplesShown };
     });
     return {
@@ -334,6 +360,8 @@ export function designTensorRows(
         return `${axis.cols.join("+")} = ${values.join(" · ")}`;
       }),
       endpoint: label.end.map(([column, value]) => `${column} = ${value}`),
+      arms: (arms.get(id) ?? []).map((arm) => arm.name),
+      armKeys: (arms.get(id) ?? []).map((arm) => arm.key),
       members: [...(tensor.type === "panel" ? tensor.anchor.reads : []), ...members.flat()],
     };
   });

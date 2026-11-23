@@ -181,6 +181,17 @@ describe("a trajectory named by where it ends", () => {
   });
 });
 
+test("a trajectory carries the panel arm it runs through", () => {
+  const study = studies.find((s) => s.slug === "synthetic-02-two-targets-one-control")!;
+  const { design, source } = asBlock(study);
+  const rows = designTensorRows(deriveDesign(design, 0, source), source.sampleLabels);
+  expect(rows.filter((row) => row.type === "trajectory").map((row) => row.arms)).toEqual([
+    ["A"],
+    ["B"],
+  ]);
+  expect(rows.find((row) => row.type === "panel")!.arms).toEqual([]);
+});
+
 describe("a design limited to some datasets", () => {
   const { design, source } = asBlock(studies.find((s) => s.slug === "synthetic-01-panning-chain")!);
   const dataset = (id: string, samples: string[]) =>

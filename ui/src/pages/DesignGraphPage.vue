@@ -235,7 +235,12 @@ async function deleteDesign() {
                   }}
                 </span>
                 <span :class="styles.note">{{ section.rows[0].by || "no axis" }}</span>
-                <span :class="styles.summary">{{ summary(section.rows[0]) }}</span>
+                <span :class="styles.summary">
+                  <span v-if="section.arms.length > 0" :class="styles.chip">{{
+                    section.arms.join(" · ")
+                  }}</span>
+                  {{ summary(section.rows[0]) }}
+                </span>
                 <span :class="styles.note">
                   {{
                     [

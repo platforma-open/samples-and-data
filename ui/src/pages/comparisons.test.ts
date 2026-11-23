@@ -7,6 +7,7 @@ const row = (
   constant: string[],
   varies: string[] = [],
   endpoint: string[] = [],
+  arms: string[] = [],
 ) => ({
   id,
   type: "trajectory" as const,
@@ -15,6 +16,8 @@ const row = (
   constant,
   varies,
   endpoint,
+  arms,
+  armKeys: arms,
   members: [],
 });
 
@@ -70,4 +73,17 @@ test("a lone comparison shows no factors, however much varies inside it", () => 
   ]);
   expect(section!.factors).toEqual([]);
   expect(section!.rows[0]!.factorValues).toBe("");
+});
+
+test("two panel arms stay two lines; the pieces of one arm collapse into it", () => {
+  const sections = comparisonSections([
+    row("trajectory-1", ["R1", "R3"], [], [], ["Gate = low"], ["FP8v1"]),
+    row("trajectory-2", ["R1", "R3"], [], [], ["Gate = high"], ["FP8v1"]),
+    row("trajectory-3", ["R1", "R3"], [], [], ["Gate = low"], ["FP8v2"]),
+    row("trajectory-4", ["R1", "R3"], [], [], ["Gate = high"], ["FP8v2"]),
+  ]);
+  expect(sections.map((s) => s.arms)).toEqual([["FP8v1"], ["FP8v2"]]);
+  expect(sections.map((s) => s.rows.length)).toEqual([2, 2]);
+  expect(sections[0]!.factors).toEqual(["Gate"]);
+  expect(sections[0]!.rows.map((r) => r.factorValues)).toEqual(["low", "high"]);
 });
