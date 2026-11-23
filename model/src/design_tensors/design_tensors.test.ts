@@ -8,6 +8,7 @@ import {
   deriveDesign,
   designTensorCells,
   designTensorRows,
+  oneAxis,
   type DesignSource,
 } from "./index";
 import { labelTensors } from "./labels";
@@ -86,9 +87,13 @@ describe.each(studies)("$slug", (study) => {
       const label = json.label;
       const splits = Object.keys(panel.panel.arms);
       json.arms.forEach((arm, k) =>
-        label.axes.forEach((axis, a) =>
-          expect(axis.values[k]).toEqual(panel.label.axes[a]!.values[splits.indexOf(arm.split)]),
-        ),
+        label.axes.forEach((axis) => {
+          // the published label keeps one of the axes STEP 3 found, so match it by its columns
+          const raw = panel.label.axes.find(
+            (c) => c.cols.join("\u0000") === axis.cols.join("\u0000"),
+          );
+          expect(axis.values[k]).toEqual(raw!.values[splits.indexOf(arm.split)]);
+        }),
       );
     });
 
@@ -109,6 +114,36 @@ describe.each(studies)("$slug", (study) => {
         .map((id) => JSON.stringify(["D", id]))
         .sort(),
     );
+  });
+});
+
+describe("the published axis", () => {
+  const axis = (cols: string[], values: string[][]) => ({ cols, values });
+
+  test("keeps the set of columns with the fewest blanks", () => {
+    const picked = oneAxis({
+      axes: [
+        axis(
+          ["population", "condition"],
+          [
+            ["presort", ""],
+            ["sort", "R1"],
+          ],
+        ),
+        axis(["ladder"], [["0-display"], ["1-R1"]]),
+      ],
+      mixed: [],
+      within: [],
+      constant: [],
+    });
+    expect(picked.axes.map((a) => a.cols)).toEqual([["ladder"]]);
+  });
+
+  test("keeps the earlier set on a tie, and a lone axis untouched", () => {
+    const tie = [axis(["a"], [[""], ["x"]]), axis(["b"], [[""], ["y"]])];
+    const label = { axes: tie, mixed: [], within: [], constant: [] };
+    expect(oneAxis(label).axes.map((a) => a.cols)).toEqual([["a"]]);
+    expect(oneAxis({ ...label, axes: [tie[1]!] }).axes).toEqual([tie[1]]);
   });
 });
 

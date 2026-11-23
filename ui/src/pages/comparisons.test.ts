@@ -1,12 +1,13 @@
 import { expect, test } from "vitest";
 import { comparisonSections } from "./comparisons";
 
-const row = (id: string, names: string[], constant: string[]) => ({
+const row = (id: string, names: string[], constant: string[], varies: string[] = []) => ({
   id,
   type: "trajectory" as const,
   by: "Round",
   groups: names.map((name) => ({ name, samples: [] })),
   constant,
+  varies,
   members: [],
 });
 
@@ -22,4 +23,23 @@ test("same-shaped comparisons collapse into one section, named by the columns th
   expect(sections[0].shared).toEqual(["Chain = H"]);
   expect(sections[0].rows.map((r) => r.factorValues)).toEqual(["A · 1", "B · 1", "B · 2"]);
   expect(sections[1].rows).toHaveLength(1);
+});
+
+test("columns that vary inside look-alike comparisons tell them apart; agreed ones stay hidden", () => {
+  const sections = comparisonSections([
+    row("trajectory-1", ["R1", "R2"], ["Chain = H"], ["Gate = low", "Antigen = A"]),
+    row("trajectory-2", ["R1", "R2"], ["Chain = H"], ["Gate = med", "Antigen = A"]),
+  ]);
+  expect(sections).toHaveLength(1);
+  expect(sections[0].factors).toEqual(["Gate"]);
+  expect(sections[0].shared).toEqual(["Chain = H"]);
+  expect(sections[0].rows.map((r) => r.factorValues)).toEqual(["low", "med"]);
+});
+
+test("a lone comparison shows no factors, however much varies inside it", () => {
+  const [section] = comparisonSections([
+    row("trajectory-1", ["R1"], ["Chain = H"], ["Gate = high", "Round = R1 · R2 · R3"]),
+  ]);
+  expect(section!.factors).toEqual([]);
+  expect(section!.rows[0]!.factorValues).toBe("");
 });

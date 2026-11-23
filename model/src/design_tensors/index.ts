@@ -194,10 +194,22 @@ function toJson(
   return out;
 }
 
+/**
+ * The one axis a tensor is published with. STEP 3 keeps every smallest set of columns that tells
+ * the groups apart, and a table often has several; the fewest blank cells wins, since a blank
+ * means "this step had not happened yet" and names nothing. Ties keep the earlier set.
+ */
+export function oneAxis(label: Label): Label {
+  if (label.axes.length < 2) return label;
+  const blanks = (axis: Column) =>
+    axis.values.reduce((n, cells) => n + (cells?.filter((cell) => cell === "").length ?? 0), 0);
+  return { ...label, axes: [label.axes.reduce((a, b) => (blanks(b) < blanks(a) ? b : a))] };
+}
+
 /** Labels by tensor id, with the same ids and group order as toJson. */
 function labelsById(l: Labelled): Record<string, Label> {
   const out: Record<string, Label> = {};
-  const put = (id: string, label: Label) => (out[id] = label);
+  const put = (id: string, label: Label) => (out[id] = oneAxis(label));
   l.partitions.forEach((x, i) => put(`partition-${i + 1}`, x.label));
   l.trajectories.forEach((x, i) => put(`trajectory-${i + 1}`, x.label));
   l.panels.forEach((x, i) => {
@@ -270,6 +282,8 @@ export type TensorRow = {
   groups: { name: string; samples: string[] }[];
   /** Columns with one value across the whole tensor, `Antigen = A1`. */
   constant: string[];
+  /** Columns that change inside the tensor without telling its groups apart, `Antigen = FP8v1`. */
+  varies: string[];
   /** Sample ids in the tensor, a panel's anchor included, for highlighting it in the graph. */
   members: string[];
 };
@@ -297,6 +311,13 @@ export function designTensorRows(
       by: label.axes.map((axis) => axis.cols.join("+")).join(", "),
       groups,
       constant: label.constant.map(([column, value]) => `${column} = ${value}`),
+      // what sets sibling tensors of the same shape apart, once the axis is one set of columns
+      varies: label.mixed.map((axis) => {
+        const values = [
+          ...new Set(axis.values.flatMap((cells) => cells ?? []).filter((cell) => cell !== "")),
+        ];
+        return `${axis.cols.join("+")} = ${values.join(" · ")}`;
+      }),
       members: [...(tensor.type === "panel" ? tensor.anchor.reads : []), ...members.flat()],
     };
   });
