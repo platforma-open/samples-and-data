@@ -75,7 +75,12 @@ export type BlockDataV20261116 = BlockDataV20260428 & {
   xsvFilesToPreprocess: XsvFileToPreprocess[];
 };
 
-export type BlockData = BlockDataV20261116;
+/** V20261123 adds the samplesheet upload handle, so a samplesheet can come from any storage the file dialog offers. */
+export type BlockDataV20261123 = BlockDataV20261116 & {
+  samplesheetUploadHandle?: ImportFileHandle;
+};
+
+export type BlockData = BlockDataV20261123;
 
 export type BlockArgs = Pick<
   BlockData,
@@ -89,4 +94,5 @@ export type BlockPrerunArgs = Pick<
   | "seuratFilesToPreprocess"
   | "xsvFilesToPreprocess"
   | "metadataUploadHandle"
+  | "samplesheetUploadHandle"
 >;

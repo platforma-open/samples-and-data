@@ -7,12 +7,19 @@ import type {
   WithSampleGroupsData,
 } from "@platforma-open/milaboratories.samples-and-data.model";
 import { uniquePlId } from "@platforma-sdk/model";
-import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from "@platforma-sdk/ui-vue";
+import {
+  PlAlert,
+  PlBtnPrimary,
+  PlFileDialog,
+  PlProgressCell,
+  ReactiveFileContent,
+} from "@platforma-sdk/ui-vue";
 import * as _ from "radashi";
 import { computed } from "vue";
 import { useApp } from "../app";
 import ImportErrorDialog from "../components/ImportErrorDialog.vue";
-import { useTableImport } from "../composables/useTableImport";
+import { DEFAULT_TABLE_FILE_EXTENSIONS } from "../composables/useTableImport";
+import { useUploadedTableImport } from "../composables/useUploadedTableImport";
 import { parseCsvNestedMapFromHandles, setEquals } from "../util";
 import { assignMultiSampleXsvSamples, getOrCreateSample, multiSampleXsvLabels } from "./datasets";
 import type { SamplesheetImportData } from "./ImportSamplesheetDialog.vue";
@@ -53,18 +60,19 @@ const autoExtractDatasets = computed(() =>
 
 // Samplesheet import logic
 const {
-  state: importState,
-  importTable,
-  clearImportCandidate,
+  importState,
+  fileDialogOpened,
+  openFileDialog,
+  handleFileSelected,
+  onImportClose,
   clearErrorMessage,
-} = useTableImport();
-
-async function importSamplesheet() {
-  await importTable({
-    title: "Import samplesheet",
-    buttonLabel: "Import",
-  });
-}
+} = useUploadedTableImport({
+  getHandle: () => app.model.data.samplesheetUploadHandle,
+  setHandle: (handle) => {
+    app.model.data.samplesheetUploadHandle = handle;
+  },
+  getFile: () => app.model.outputs.samplesheetFile,
+});
 
 async function handleSamplesheetImport(importData: SamplesheetImportData) {
   const args = app.model.data;
@@ -154,7 +162,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
     dataset.content.barcodeRules = updatedRules;
   }
 
-  clearImportCandidate();
+  onImportClose();
   await app.allSettled();
 }
 
@@ -343,7 +351,7 @@ async function updateSamples() {
   <PlAlert v-if="hasRowsWithoutSamples" type="success">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <span>Import samplesheet to assign samples to file groups.</span>
-      <PlBtnPrimary justifyCenter @click.stop="importSamplesheet">Import samplesheet</PlBtnPrimary>
+      <PlBtnPrimary justifyCenter @click.stop="openFileDialog">Import samplesheet</PlBtnPrimary>
     </div>
   </PlAlert>
 
@@ -369,8 +377,17 @@ async function updateSamples() {
     :import-candidate="importState.importCandidate"
     :available-group-labels="availableGroupLabels"
     :barcode-tags="barcodeTags"
-    @on-close="clearImportCandidate"
+    @on-close="onImportClose"
     @on-import="handleSamplesheetImport"
+  />
+
+  <PlFileDialog
+    v-model="fileDialogOpened"
+    :close-on-outside-click="false"
+    :multi="false"
+    :extensions="[...DEFAULT_TABLE_FILE_EXTENSIONS]"
+    title="Select samplesheet"
+    @import:files="(e) => handleFileSelected(e.files)"
   />
 
   <!-- Import error dialog -->

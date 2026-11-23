@@ -5,6 +5,7 @@ import type {
   BlockDataV20260427,
   BlockDataV20260428,
   BlockDataV20261116,
+  BlockDataV20261123,
   DSAny,
   DSContentMultiplexedFastq,
   LegacyBlockArgs,
@@ -83,6 +84,10 @@ export const blockDataModel = new DataModelBuilder({ kind })
   }))
   .migrate<BlockDataV20260428>("V20260428", upgradeMultiplexedDatasets)
   .migrate<BlockDataV20261116>("V20261116", (prev) => ({ ...prev, xsvFilesToPreprocess: [] }))
+  .migrate<BlockDataV20261123>("V20261123", (prev) => ({
+    ...prev,
+    samplesheetUploadHandle: undefined,
+  }))
   // `params` carries the study setup a project template supplies, plus whatever
   // of its data came with files a new installation can resolve — see the kind's
   // contract. Optional, because a block may be created without a template, so
@@ -90,8 +95,9 @@ export const blockDataModel = new DataModelBuilder({ kind })
   //
   // `metadataUploadHandle` is absent from the contract on purpose: it is not a
   // link to the metadata table but scaffolding for one import dialog, cleared as
-  // soon as the parsed values land in `metadata`. `xsvFilesToPreprocess` is the
-  // same kind of scaffolding, for the Multisample CSV/TSV import dialog.
+  // soon as the parsed values land in `metadata`. `xsvFilesToPreprocess` and
+  // `samplesheetUploadHandle` are the same kind of scaffolding, for the
+  // Multisample CSV/TSV and samplesheet import dialogs.
   .init(({ params }) => ({
     datasets: params?.datasets ?? [],
     metadata: params?.metadata ?? [],
@@ -102,5 +108,6 @@ export const blockDataModel = new DataModelBuilder({ kind })
     seuratFilesToPreprocess: params?.seuratFilesToPreprocess ?? [],
     xsvFilesToPreprocess: [],
     metadataUploadHandle: undefined,
+    samplesheetUploadHandle: undefined,
     suggestedImport: false,
   }));
