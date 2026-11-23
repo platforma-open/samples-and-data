@@ -4,6 +4,7 @@ import {
   deriveDesign,
   designPlaceholder,
   designTensorRows,
+  type TensorRow,
 } from "@platforma-open/milaboratories.samples-and-data.model";
 import {
   PlAlert,
@@ -48,16 +49,30 @@ const tensors = computed(() => {
   if (current.value === undefined || current.value.materials.length === 0) return undefined;
   try {
     const derived = deriveDesign(current.value, index.value, app.model.data);
-    const counts = (["trajectories", "partitions", "panels", "recurrences"] as const)
+    // Partitions and recurrences are still derived and exported; downstream blocks cannot compare
+    // along them, so the list leaves them out.
+    const rows = designTensorRows(derived, app.model.data.sampleLabels).filter(
+      (row) => row.type === "trajectory" || row.type === "panel",
+    );
+    const counts = (["trajectories", "panels"] as const)
       .map((kind) => `${derived.tensors[kind].length} ${kind}`)
       .join(", ");
-    return { counts, rows: designTensorRows(derived, app.model.data.sampleLabels) };
+    return { counts, rows };
   } catch (error) {
     return { error: (error as Error).message };
   }
 });
 const sections = computed(() => comparisonSections(tensors.value?.rows ?? []));
-/** Sections of several comparisons start collapsed to one line; these are open. */
+
+/** The one collapsed line: where a trajectory runs from and to, or how wide a panel is. */
+function summary(row: TensorRow): string {
+  const count = row.groups.length;
+  if (row.type !== "trajectory") return `${count} arms`;
+  const ends = [row.groups[0]?.name, row.groups[count - 1]?.name].filter(Boolean).join(" → ");
+  return count > 2 ? `${ends} (${count} positions)` : ends;
+}
+
+/** Every comparison is one line; its values appear when the line is opened. */
 const openSections = reactive(new Set<string>());
 const toggleSection = (key: string) => {
   const opening = !openSections.delete(key);
@@ -204,30 +219,25 @@ async function deleteDesign() {
           <ol v-else :class="styles.list">
             <template v-for="section in sections" :key="section.key">
               <li
-                v-if="section.rows.length > 1"
                 :class="[styles.row, section.key === activeRow && styles.active]"
                 data-comparison
-                title="Show all in the graph and list them"
+                :title="openSections.has(section.key) ? 'Hide the values' : 'Show the values'"
                 @click="toggleSection(section.key)"
               >
                 <span :class="styles.kind">
                   {{ openSections.has(section.key) ? "▾" : "▸" }}
-                  {{ section.rows.length }}
                   {{
-                    section.rows[0].type === "trajectory"
-                      ? "trajectories"
-                      : `${section.rows[0].type}s`
+                    section.rows.length > 1
+                      ? `${section.rows.length} ${
+                          section.rows[0].type === "trajectory"
+                            ? "trajectories"
+                            : `${section.rows[0].type}s`
+                        }`
+                      : section.rows[0].id.replace("-", " ")
                   }}
                 </span>
                 <span :class="styles.note">{{ section.rows[0].by || "no axis" }}</span>
-                <span :class="styles.groups">
-                  <template v-for="(group, k) in section.rows[0].groups" :key="k">
-                    <span v-if="k > 0 && section.rows[0].type === 'trajectory'" :class="styles.note"
-                      >→</span
-                    >
-                    <span :class="styles.chip">{{ group.name }}</span>
-                  </template>
-                </span>
+                <span :class="styles.summary">{{ summary(section.rows[0]) }}</span>
                 <span :class="styles.note">
                   {{
                     [
@@ -237,22 +247,17 @@ async function deleteDesign() {
                   }}
                 </span>
               </li>
-              <template v-if="section.rows.length === 1 || openSections.has(section.key)">
+              <template v-if="openSections.has(section.key)">
                 <li
                   v-for="row in section.rows"
                   :key="row.id"
-                  :class="[
-                    styles.row,
-                    section.rows.length > 1 && styles.child,
-                    row.id === activeRow && styles.active,
-                  ]"
+                  :class="[styles.row, styles.child, row.id === activeRow && styles.active]"
                   data-comparison
                   title="Show in the graph"
                   @click="activeRow = row.id === activeRow ? undefined : row.id"
                 >
                   <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
-                  <span v-if="section.rows.length > 1">{{ row.factorValues }}</span>
-                  <span v-else :class="styles.note">{{ row.by || "no axis" }}</span>
+                  <span :class="styles.note">{{ row.factorValues }}</span>
                   <span :class="styles.groups">
                     <template v-for="(group, k) in row.groups" :key="k">
                       <span v-if="k > 0 && row.type === 'trajectory'" :class="styles.note">→</span>
@@ -261,9 +266,6 @@ async function deleteDesign() {
                       }}</span>
                     </template>
                   </span>
-                  <span v-if="section.rows.length === 1" :class="styles.note">{{
-                    row.constant.join(", ")
-                  }}</span>
                 </li>
               </template>
             </template>
@@ -346,6 +348,17 @@ async function deleteDesign() {
   padding: 4px 12px;
 }
 
+/* a collapsed comparison stays on one line however long its labels are */
+.row > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.summary {
+  font-size: 13px;
+}
+
 .row {
   cursor: pointer;
 }
@@ -373,11 +386,14 @@ async function deleteDesign() {
   text-transform: capitalize;
 }
 
+/* the opened values are the one place labels may wrap */
 .groups {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 4px;
+  overflow: visible;
+  white-space: normal;
 }
 
 .chip {
