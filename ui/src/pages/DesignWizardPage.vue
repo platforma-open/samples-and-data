@@ -11,6 +11,7 @@ import {
   PlBtnPrimary,
   PlBtnSecondary,
   PlCheckbox,
+  PlDialogModal,
   PlDropdown,
   PlDropdownMulti,
 } from "@platforma-sdk/ui-vue";
@@ -106,6 +107,20 @@ const roleOptions = ROLES_B.filter((role) => role !== "condition").map((role) =>
 const columnOf = (column: string): ColumnB => answers.value.columns[column] ?? { role: "label" };
 const menuRole = (column: string) =>
   columnOf(column).role === "condition" ? "treatment" : columnOf(column).role;
+
+// Columns that shape the lineage come first; info-only ones sit in a group of their own at the
+// end, so scanning the top of the list only passes answers that matter.
+const info = computed(() => columns.value.filter((column) => columnOf(column).role === "label"));
+const ordered = computed(() => [
+  ...columns.value.filter((column) => columnOf(column).role !== "label"),
+  ...info.value,
+]);
+const helpOpen = ref(false);
+/** Whether a role brings follow-up questions: with none, the card shows no divider under its role. */
+const hasDetails = (column: string) => {
+  const { role, baseline } = columnOf(column);
+  return role !== "label" && (role !== "source" || !!baseline?.length);
+};
 
 /** Sets a column's answer, keeping its place in the listing (which breaks ties: outer first). */
 function setColumn(column: string, next: ColumnB | null) {
@@ -287,6 +302,7 @@ const noneMarked = new Set<string>();
   <PlBlockPage>
     <template #title>Draft from metadata</template>
     <template v-if="current !== undefined" #append>
+      <PlBtnGhost round icon="help-outline" title="What the roles mean" @click="helpOpen = true" />
       <PlBtnGhost @click="reset">Reset to suggestion</PlBtnGhost>
       <PlBtnSecondary @click="app.navigateTo(`/design?id=${designId}`)">Cancel</PlBtnSecondary>
       <PlBtnPrimary :disabled="'error' in built" @click="createDraft">Create design</PlBtnPrimary>
@@ -302,133 +318,130 @@ const noneMarked = new Set<string>();
         <p v-if="current.materials.length > 0" :class="styles.intro">
           Creating the design replaces the current graph of {{ name }}.
         </p>
-        <article
-          v-for="column in columns"
-          :key="column"
-          :class="[styles.card, columnOf(column).role === 'label' && styles.quiet]"
-        >
-          <header :class="styles.head">
-            <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
-            <span :class="styles.name">{{ column }}</span>
-            <span :class="isSuggested(column) ? styles.suggested : styles.changed">
-              {{ isSuggested(column) ? "suggested" : "changed" }}
-            </span>
-          </header>
-          <PlDropdown
-            :model-value="menuRole(column)"
-            :options="roleOptions"
-            label="Role"
-            @update:model-value="(role) => role && setRole(column, role as RoleB)"
-          />
-          <p :class="styles.desc">{{ ROLE_B_TEXT[columnOf(column).role][1] }}</p>
-
-          <div
-            v-if="columnOf(column).role === 'series' || columnOf(column).role === 'generation'"
-            :class="styles.values"
-          >
-            <span :class="styles.note">Order:</span>
-            <span v-for="(value, at) in orderOf(column)" :key="value" :class="styles.chip">
-              <button :class="styles.arrow" title="Earlier" @click="move(column, at, at - 1)">
-                ‹
-              </button>
-              {{ value }}
-              <button :class="styles.arrow" title="Later" @click="move(column, at, at + 1)">
-                ›
-              </button>
-            </span>
-          </div>
-          <div v-else :class="styles.values">
-            <span v-for="value in values(column).slice(0, 8)" :key="value" :class="styles.chip">
-              {{ value }}
-            </span>
-            <span v-if="values(column).length > 8" :class="styles.chip">
-              +{{ values(column).length - 8 }}
-            </span>
-          </div>
-
-          <PlDropdownMulti
-            v-if="
-              columnOf(column).role !== 'label' &&
-              (columnOf(column).role !== 'source' || columnOf(column).baseline?.length)
-            "
-            :model-value="[...(columnOf(column).baseline ?? [])]"
-            :options="valueOptions(column)"
-            label="Starting material"
-            placeholder="None"
-            @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
-          />
-          <PlCheckbox
-            v-if="columnOf(column).role === 'treatment' || columnOf(column).role === 'condition'"
-            :model-value="columnOf(column).role === 'condition'"
-            @update:model-value="
-              (ramp: boolean) => patch(column, { role: ramp ? 'condition' : 'treatment' })
-            "
-          >
-            Values follow one another along one arm (a ramp), not side by side
-          </PlCheckbox>
-          <PlDropdown
-            v-if="columnOf(column).role === 'series'"
-            :model-value="seriesKind(column)"
-            :options="seriesOptions(column)"
-            label="Each value vs the one before"
-            @update:model-value="(kind) => setSeriesKind(column, kind ?? '')"
-          />
-          <PlDropdown
-            v-if="columnOf(column).role === 'fraction'"
-            :model-value="columnOf(column).carry ?? 'each'"
-            :options="[
-              { value: 'each', label: 'Each gate on its own (or none went on)' },
-              ...valueOptions(column),
-            ]"
-            label="Taken into the next round"
-            @update:model-value="
-              (carry) => patch(column, { carry: !carry || carry === 'each' ? undefined : carry })
-            "
-          />
-          <template v-if="columnOf(column).role === 'generation'">
+        <template v-for="column in ordered" :key="column">
+          <h3 v-if="column === info[0]" :class="styles.group">Not part of the lineage</h3>
+          <article :class="[styles.card, columnOf(column).role === 'label' && styles.quiet]">
+            <header :class="styles.head">
+              <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
+              <span :class="styles.name">{{ column }}</span>
+              <span v-if="!isSuggested(column)" :class="styles.changed">changed</span>
+            </header>
             <PlDropdown
-              :model-value="columnOf(column).libraryBy?.[0] ?? ''"
-              :options="[
-                { value: '', label: 'None' },
-                ...columns
-                  .filter((other) => other !== column)
-                  .map((other) => ({ value: other, label: other })),
-              ]"
-              label="One new library per value of"
-              @update:model-value="(by) => patch(column, { libraryBy: by ? [by] : undefined })"
+              :model-value="menuRole(column)"
+              :options="roleOptions"
+              label="Role"
+              @update:model-value="(role) => role && setRole(column, role as RoleB)"
             />
-            <PlDropdown
-              :model-value="columnOf(column).remadeFrom ?? 'virtual'"
-              :options="[
-                { value: 'virtual', label: 'Hits from an unsequenced final output' },
-                { value: 'last', label: 'Hits from the last sequenced samples' },
-              ]"
-              label="New library designed from"
-              @update:model-value="
-                (value) => patch(column, { remadeFrom: value as 'last' | 'virtual' })
-              "
-            />
-          </template>
-          <PlDropdown
-            v-if="columnOf(column).role === 'copy' && nesting.length > 1"
-            :model-value="outerOf(column)"
-            :options="whenOptions(column)"
-            label="When were the replicates made?"
-            @update:model-value="(outer) => nestInside(column, outer ?? '')"
-          />
-          <PlDropdown
-            v-if="columnOf(column).role === 'fraction' && nesting.length > 1"
-            :model-value="outerOf(column)"
-            :options="[
-              { value: '', label: 'Nothing: split before the others' },
-              ...nesting
-                .filter((other) => other !== column)
-                .map((other) => ({ value: other, label: other })),
-            ]"
-            label="Split separately for each value of"
-            @update:model-value="(outer) => nestInside(column, outer ?? '')"
-          />
-        </article>
+
+            <div
+              v-if="columnOf(column).role === 'series' || columnOf(column).role === 'generation'"
+              :class="styles.values"
+            >
+              <span :class="styles.note">Order:</span>
+              <span v-for="(value, at) in orderOf(column)" :key="value" :class="styles.chip">
+                <button :class="styles.arrow" title="Earlier" @click="move(column, at, at - 1)">
+                  ‹
+                </button>
+                {{ value }}
+                <button :class="styles.arrow" title="Later" @click="move(column, at, at + 1)">
+                  ›
+                </button>
+              </span>
+            </div>
+            <div v-else :class="styles.values">
+              <span v-for="value in values(column).slice(0, 8)" :key="value" :class="styles.chip">
+                {{ value }}
+              </span>
+              <span v-if="values(column).length > 8" :class="styles.chip">
+                +{{ values(column).length - 8 }}
+              </span>
+            </div>
+
+            <div v-if="hasDetails(column)" :class="styles.details">
+              <PlDropdownMulti
+                :model-value="[...(columnOf(column).baseline ?? [])]"
+                :options="valueOptions(column)"
+                label="Starting material"
+                placeholder="None"
+                @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
+              />
+              <PlCheckbox
+                v-if="
+                  columnOf(column).role === 'treatment' || columnOf(column).role === 'condition'
+                "
+                :model-value="columnOf(column).role === 'condition'"
+                @update:model-value="
+                  (ramp: boolean) => patch(column, { role: ramp ? 'condition' : 'treatment' })
+                "
+              >
+                Values follow one another along one arm (a ramp), not side by side
+              </PlCheckbox>
+              <PlDropdown
+                v-if="columnOf(column).role === 'series'"
+                :model-value="seriesKind(column)"
+                :options="seriesOptions(column)"
+                label="Each value vs the one before"
+                @update:model-value="(kind) => setSeriesKind(column, kind ?? '')"
+              />
+              <PlDropdown
+                v-if="columnOf(column).role === 'fraction'"
+                :model-value="columnOf(column).carry ?? 'each'"
+                :options="[
+                  { value: 'each', label: 'Each gate on its own (or none went on)' },
+                  ...valueOptions(column),
+                ]"
+                label="Taken into the next round"
+                @update:model-value="
+                  (carry) =>
+                    patch(column, { carry: !carry || carry === 'each' ? undefined : carry })
+                "
+              />
+              <template v-if="columnOf(column).role === 'generation'">
+                <PlDropdown
+                  :model-value="columnOf(column).libraryBy?.[0] ?? ''"
+                  :options="[
+                    { value: '', label: 'None' },
+                    ...columns
+                      .filter((other) => other !== column)
+                      .map((other) => ({ value: other, label: other })),
+                  ]"
+                  label="One new library per value of"
+                  @update:model-value="(by) => patch(column, { libraryBy: by ? [by] : undefined })"
+                />
+                <PlDropdown
+                  :model-value="columnOf(column).remadeFrom ?? 'virtual'"
+                  :options="[
+                    { value: 'virtual', label: 'Hits from an unsequenced final output' },
+                    { value: 'last', label: 'Hits from the last sequenced samples' },
+                  ]"
+                  label="New library designed from"
+                  @update:model-value="
+                    (value) => patch(column, { remadeFrom: value as 'last' | 'virtual' })
+                  "
+                />
+              </template>
+              <PlDropdown
+                v-if="columnOf(column).role === 'copy' && nesting.length > 1"
+                :model-value="outerOf(column)"
+                :options="whenOptions(column)"
+                label="When were the replicates made?"
+                @update:model-value="(outer) => nestInside(column, outer ?? '')"
+              />
+              <PlDropdown
+                v-if="columnOf(column).role === 'fraction' && nesting.length > 1"
+                :model-value="outerOf(column)"
+                :options="[
+                  { value: '', label: 'Nothing: split before the others' },
+                  ...nesting
+                    .filter((other) => other !== column)
+                    .map((other) => ({ value: other, label: other })),
+                ]"
+                label="Split separately for each value of"
+                @update:model-value="(outer) => nestInside(column, outer ?? '')"
+              />
+            </div>
+          </article>
+        </template>
       </section>
 
       <section :class="styles.preview">
@@ -449,6 +462,26 @@ const noneMarked = new Set<string>();
         </template>
       </section>
     </div>
+    <PlDialogModal v-model="helpOpen" closable width="560px">
+      <template #title>What the roles mean</template>
+      <p :class="styles.desc">
+        Each column says what its values did to the material. The draft graph rebuilds as you
+        answer, so a wrong role shows up as a wrong graph.
+      </p>
+      <dl :class="styles.help">
+        <template v-for="role in ROLES_B" :key="role">
+          <dt :class="styles.helpName">
+            <span :class="styles.glyph">{{ GLYPH[role] }}</span
+            >{{ ROLE_B_TEXT[role][0] }}
+          </dt>
+          <dd :class="styles.desc">{{ ROLE_B_TEXT[role][1] }}</dd>
+        </template>
+      </dl>
+      <p :class="styles.desc">
+        <b>Starting material</b> marks the values that mean the step had not happened yet: input,
+        presort, round 0. They are read as blank, so nothing is counted as a step of its own.
+      </p>
+    </PlDialogModal>
   </PlBlockPage>
 </template>
 
@@ -477,45 +510,84 @@ const noneMarked = new Set<string>();
   font-size: 13px;
 }
 
+/* A group heading, so info-only columns read as one block and not as more answers to give. */
+.group {
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--txt-03);
+}
+
 .card {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 16px;
+  gap: 12px;
+  padding: 12px 16px 16px;
   border: 1px solid var(--border-color-div-grey);
   border-radius: 6px;
 }
 
+/* Columns outside the lineage carry no answer, so they recede instead of asking to be read. */
 .quiet {
-  opacity: 0.75;
+  gap: 8px;
+  border-color: transparent;
+  background: var(--bg-base-light, #f7f8fa);
+}
+
+.quiet .name {
+  font-weight: 500;
+  color: var(--txt-03);
 }
 
 .head {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-block-size: 24px;
 }
 
 .glyph {
   inline-size: 16px;
   text-align: center;
+  color: var(--txt-03);
 }
 
 .name {
   flex: 1;
+  font-size: 15px;
   font-weight: 600;
 }
 
-.suggested,
-.changed {
-  font-size: 11px;
-  padding: 1px 6px;
-  border-radius: 8px;
+/* The follow-up questions a role brings: one block, held apart from the column's own line. */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--border-color-div-grey);
 }
 
-.suggested {
-  color: var(--txt-03);
-  border: 1px solid var(--border-color-div-grey);
+.help {
+  display: grid;
+  gap: 4px 0;
+  margin: 16px 0;
+}
+
+.helpName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.helpName:not(:first-child) {
+  margin-block-start: 12px;
+}
+
+.help dd {
+  margin: 0;
 }
 
 .changed {
