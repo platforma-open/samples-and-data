@@ -131,6 +131,7 @@ const hasBaseline = (column: string) => {
 const hasDetails = (column: string) => {
   const role = columnOf(column).role;
   if (role === "copy") return nesting.value.length > 1;
+  if (role === "generation") return false;
   return hasBaseline(column) || (role !== "label" && role !== "source");
 };
 
@@ -410,30 +411,6 @@ const noneMarked = new Set<string>();
                     patch(column, { carry: !carry || carry === 'each' ? undefined : carry })
                 "
               />
-              <template v-if="columnOf(column).role === 'generation'">
-                <PlDropdown
-                  :model-value="columnOf(column).libraryBy?.[0] ?? ''"
-                  :options="[
-                    { value: '', label: 'None' },
-                    ...columns
-                      .filter((other) => other !== column)
-                      .map((other) => ({ value: other, label: other })),
-                  ]"
-                  label="One new library per value of"
-                  @update:model-value="(by) => patch(column, { libraryBy: by ? [by] : undefined })"
-                />
-                <PlDropdown
-                  :model-value="columnOf(column).remadeFrom ?? 'virtual'"
-                  :options="[
-                    { value: 'virtual', label: 'Hits from an unsequenced final output' },
-                    { value: 'last', label: 'Hits from the last sequenced samples' },
-                  ]"
-                  label="New library designed from"
-                  @update:model-value="
-                    (value) => patch(column, { remadeFrom: value as 'last' | 'virtual' })
-                  "
-                />
-              </template>
               <PlDropdown
                 v-if="columnOf(column).role === 'copy' && nesting.length > 1"
                 :model-value="outerOf(column)"
