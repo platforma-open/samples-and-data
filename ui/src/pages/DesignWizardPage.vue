@@ -300,20 +300,23 @@ const noneMarked = new Set<string>();
         </p>
         <template v-if="nesting.length > 1">
           <h3 :class="styles.group">Split order, outer first</h3>
-          <PlElementList
-            :items="nesting"
-            :get-item-key="keyOf"
-            disable-removing
-            disable-expanding
-            disable-toggling
-            disable-pinning
-            @update:items="setNesting"
-          >
-            <template #item-title="{ item: column }">
-              <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
-              <span :class="styles.name">{{ column }}</span>
-            </template>
-          </PlElementList>
+          <div :class="styles.strip">
+            <PlElementList
+              :items="nesting"
+              :get-item-key="keyOf"
+              :item-class="styles.inline"
+              disable-removing
+              disable-expanding
+              disable-toggling
+              disable-pinning
+              @update:items="setNesting"
+            >
+              <template #item-title="{ item: column }">
+                <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
+                <span :class="styles.name">{{ column }}</span>
+              </template>
+            </PlElementList>
+          </div>
           <h3 :class="styles.group">Columns</h3>
         </template>
         <PlElementList
@@ -344,19 +347,22 @@ const noneMarked = new Set<string>();
               :class="styles.order"
             >
               <span :class="styles.note">Order, earliest first</span>
-              <PlElementList
-                :items="orderOf(column)"
-                :get-item-key="keyOf"
-                disable-removing
-                disable-expanding
-                disable-toggling
-                disable-pinning
-                @update:items="(order: string[]) => setOrder(column, order)"
-              >
-                <template #item-title="{ item: value }">
-                  <span :class="styles.name">{{ value }}</span>
-                </template>
-              </PlElementList>
+              <div :class="styles.strip">
+                <PlElementList
+                  :items="orderOf(column)"
+                  :get-item-key="keyOf"
+                  :item-class="styles.inline"
+                  disable-removing
+                  disable-expanding
+                  disable-toggling
+                  disable-pinning
+                  @update:items="(order: string[]) => setOrder(column, order)"
+                >
+                  <template #item-title="{ item: value }">
+                    <span :class="styles.name">{{ value }}</span>
+                  </template>
+                </PlElementList>
+              </div>
             </div>
             <div v-else :class="styles.values">
               <span v-for="value in values(column).slice(0, 8)" :key="value" :class="styles.chip">
@@ -547,6 +553,20 @@ const noneMarked = new Set<string>();
 .quiet .name {
   font-weight: 500;
   color: var(--txt-03);
+}
+
+/* The list stacks full-width rows; an order of a few short values reads better as one wrapping
+   row of them. The two divs are the list's own root and track, the item class doubled to outrank
+   the width it sets on itself. */
+.strip > div,
+.strip > div > div {
+  flex-direction: row;
+  flex-wrap: wrap;
+  min-inline-size: 0;
+}
+
+.inline.inline {
+  inline-size: auto;
 }
 
 .order {
