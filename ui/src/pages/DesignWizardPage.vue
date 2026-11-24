@@ -164,47 +164,34 @@ const values = (column: string) => [
 ];
 const valueOptions = (column: string) => values(column).map((value) => ({ value, label: value }));
 
-/** One question for rounds and time points; each answer sets step type, kept, and line together. */
-const SERIES_KINDS: {
-  value: string;
-  label: string;
-  set: Pick<ColumnB, "step" | "part" | "spine">;
-}[] = [
+/**
+ * One question for rounds and time points: did a selected part go on, or was the same material
+ * sampled again. Whether the step reads as a round or a time point is taken from the suggestion,
+ * since on every series column in the corpus it labels the edge without changing a tensor.
+ */
+const SERIES_KINDS: { value: string; label: string; set: Pick<ColumnB, "part" | "spine"> }[] = [
   {
-    value: "round",
-    label: "Selection round, or before and after a treatment: a selected part went on",
-    set: { step: "round", part: "slice", spine: false },
-  },
-  {
-    value: "grown",
-    label: "Only part goes on over time (screen days, passages, crossing a barrier)",
-    set: { step: "timecourse", part: "slice", spine: false },
+    value: "selected",
+    label: "A selected part went on (a selection round, a screen day, a passage, a barrier)",
+    set: { part: "slice", spine: false },
   },
   {
     value: "collected",
     label: "Sampled again from the same subject or vessel, which kept going",
-    set: { step: "timecourse", part: "whole", spine: true },
+    set: { part: "whole", spine: true },
   },
 ];
-function seriesKind(column: string) {
+const seriesKind = (column: string) => {
   const answer = columnOf(column);
-  // no step tag exports the same as a round, so it shows as the round answer
-  const step = answer.step === undefined || answer.step === "none" ? "round" : answer.step;
-  const part = answer.part ?? "slice";
-  const spine = !!answer.spine;
-  return (
-    SERIES_KINDS.find(
-      (kind) => kind.set.step === step && kind.set.part === part && !!kind.set.spine === spine,
-    )?.value ?? "other"
-  );
-}
-const seriesOptions = (column: string) => [
-  ...SERIES_KINDS.map(({ value, label }) => ({ value, label })),
-  ...(seriesKind(column) === "other" ? [{ value: "other", label: "(another combination)" }] : []),
-];
+  return answer.part === "whole" && answer.spine ? "collected" : "selected";
+};
+const seriesOptions = () => SERIES_KINDS.map(({ value, label }) => ({ value, label }));
 const setSeriesKind = (column: string, value: string) => {
   const kind = SERIES_KINDS.find((item) => item.value === value);
-  if (kind) patch(column, kind.set);
+  if (!kind) return;
+  // the suggestion reads a day or a week as a time course and everything else as a round
+  const step = value === "collected" ? "timecourse" : suggested.value.columns[column]?.step;
+  patch(column, { ...kind.set, step: step ?? "round" });
 };
 
 /** Roles whose listing order decides nesting within one step: earlier is outer. */
@@ -394,7 +381,7 @@ const noneMarked = new Set<string>();
               <PlDropdown
                 v-if="columnOf(column).role === 'series'"
                 :model-value="seriesKind(column)"
-                :options="seriesOptions(column)"
+                :options="seriesOptions()"
                 label="Each value vs the one before"
                 @update:model-value="(kind) => setSeriesKind(column, kind ?? '')"
               />
