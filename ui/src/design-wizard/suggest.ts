@@ -35,8 +35,13 @@ const words = (c: string): string[] =>
     .split(/[_\s-]+/)
     .filter(Boolean);
 
+/**
+ * Values meaning "this step had not happened yet". The field's own words come first (`input`,
+ * `unsorted`, `bulk`, `presort`), then the ways a table writes round or day zero. A control arm
+ * (`mock`, `untreated`) is deliberately absent: it was run beside the others, not before them.
+ */
 const BASELINE =
-  /^(input|pre-?sort|presort|uns.*|unselected|unsorted|naive|ref|reference|baseline|nt|none|0|pan0|r0|round ?0|lib.*|plasmid|start|pre)$/i;
+  /^(input|in-?put|bulk|stock|parental|parent|initial|start(ing)?|naive|unpanned|uns.*|ref|reference|base(line)?|nt|none|lib.*|plasmid|pre-? ?(sort|select(ion|ed)?|enrich(ed|ment)?|immune|bleed|treat(ed|ment)?|dose|pan(ning)?|vacc?(ination)?)?|0|[dgprt]0|(day|round|pan|passage|time|timepoint|generation|gen) ?0)$/i;
 
 export function distinctValues(table: Table, c: string): string[] {
   return [...new Set(table.rows.map((r) => r.meta[c]).filter((v): v is string => v !== undefined))];

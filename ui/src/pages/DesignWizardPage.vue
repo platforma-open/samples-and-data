@@ -375,7 +375,7 @@ const noneMarked = new Set<string>();
                 v-if="hasBaseline(column)"
                 :model-value="[...(columnOf(column).baseline ?? [])]"
                 :options="valueOptions(column)"
-                label="Starting material"
+                label="Input / baseline"
                 placeholder="None"
                 @update:model-value="(baseline: string[]) => setBaseline(column, baseline)"
               />
@@ -492,8 +492,9 @@ const noneMarked = new Set<string>();
         </template>
       </dl>
       <p :class="styles.desc">
-        <b>Starting material</b> marks the values that mean the step had not happened yet: input,
-        presort, round 0. They are read as blank, so nothing is counted as a step of its own.
+        <b>Input / baseline</b> marks the values that mean the step had not happened yet: the input
+        library, the unsorted population, round 0, day 0. Those samples are read as the material the
+        others were made from, not as a step, an arm or a gate of their own.
       </p>
     </PlDialogModal>
   </PlBlockPage>
