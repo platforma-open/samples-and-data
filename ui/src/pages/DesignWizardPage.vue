@@ -130,7 +130,7 @@ const hasBaseline = (column: string) => {
 /** Whether a role brings follow-up questions: with none, the card shows no divider under its role. */
 const hasDetails = (column: string) => {
   const role = columnOf(column).role;
-  if (role === "copy") return nesting.value.length > 1;
+  if (role === "copy") return false;
   if (role === "generation") return false;
   return hasBaseline(column) || (role !== "label" && role !== "source");
 };
@@ -201,35 +201,27 @@ const nesting = computed(() =>
     NESTS.includes(answers.value.columns[key]!.role),
   ),
 );
-const outerOf = (column: string) => nesting.value[nesting.value.indexOf(column) - 1] ?? "";
-/** "When were the replicates made?": before the first other split, or right after one of them. */
-function whenOptions(column: string) {
-  const others = nesting.value.filter((other) => other !== column);
-  if (others.length === 1) {
-    const [other] = others as [string];
-    return [
-      { value: "", label: `Before ${other}: each replicate went through it on its own` },
-      { value: other, label: `After ${other}: each ${other} was prepped more than once` },
-    ];
-  }
-  return [
-    { value: "", label: `First, before ${others.join(" and ")}` },
-    ...others.map((other, at) => ({
-      value: other,
-      label: at + 1 < others.length ? `After ${other}, before ${others[at + 1]}` : `After ${other}`,
-    })),
-  ];
-}
-/** Puts `column` right after `outer` ("done within each outer"), or first when `outer` is empty. */
-function nestInside(column: string, outer: string) {
-  const keys = Object.keys(answers.value.columns).filter((key) => key !== column);
-  const first = keys.findIndex((key) => NESTS.includes(answers.value.columns[key]!.role));
-  const at = outer ? keys.indexOf(outer) + 1 : first < 0 ? keys.length : first;
-  keys.splice(at, 0, column);
+/** Moves one split a place out or in, keeping every other column where it is. */
+function moveNest(at: number, to: number) {
+  const order = [...nesting.value];
+  if (to < 0 || to >= order.length) return;
+  order.splice(to, 0, order.splice(at, 1)[0]!);
+  let next = 0;
+  const keys = Object.keys(answers.value.columns).map((key) =>
+    NESTS.includes(answers.value.columns[key]!.role) ? order[next++]! : key,
+  );
   answers.value = {
     columns: Object.fromEntries(keys.map((key) => [key, answers.value.columns[key]!])),
   };
 }
+/** The split order as a sentence, so "outermost first" needs no explaining. */
+const nestingNote = computed(() => {
+  const note = nesting.value
+    .slice(1)
+    .map((inner, at) => `each ${nesting.value[at]} was split by ${inner}`)
+    .join(", ");
+  return note === "" ? "" : `${note[0]!.toUpperCase()}${note.slice(1)}.`;
+});
 
 // rounds and generations in order; the user moves values into place. Input values are left out,
 // as the wizard reads them as "before this step".
@@ -319,6 +311,26 @@ const noneMarked = new Set<string>();
         <p v-if="current.materials.length > 0" :class="styles.intro">
           Creating the design replaces the current graph of {{ name }}.
         </p>
+        <article v-if="nesting.length > 1" :class="styles.card">
+          <header :class="styles.head">
+            <span :class="styles.name">Splits, outermost first</span>
+          </header>
+          <div :class="styles.values">
+            <template v-for="(column, at) in nesting" :key="column">
+              <span v-if="at > 0" :class="styles.note">→</span>
+              <span :class="styles.chip">
+                <button :class="styles.arrow" title="Further out" @click="moveNest(at, at - 1)">
+                  ‹
+                </button>
+                {{ column }}
+                <button :class="styles.arrow" title="Further in" @click="moveNest(at, at + 1)">
+                  ›
+                </button>
+              </span>
+            </template>
+          </div>
+          <p :class="styles.desc">{{ nestingNote }}</p>
+        </article>
         <template v-for="column in ordered" :key="column">
           <h3 v-if="column === info[0]" :class="styles.group">Not used to build the graph</h3>
           <article :class="[styles.card, columnOf(column).role === 'label' && styles.quiet]">
@@ -397,25 +409,6 @@ const noneMarked = new Set<string>();
                   (carry) =>
                     patch(column, { carry: !carry || carry === 'each' ? undefined : carry })
                 "
-              />
-              <PlDropdown
-                v-if="columnOf(column).role === 'copy' && nesting.length > 1"
-                :model-value="outerOf(column)"
-                :options="whenOptions(column)"
-                label="When were the replicates made?"
-                @update:model-value="(outer) => nestInside(column, outer ?? '')"
-              />
-              <PlDropdown
-                v-if="columnOf(column).role === 'fraction' && nesting.length > 1"
-                :model-value="outerOf(column)"
-                :options="[
-                  { value: '', label: 'Nothing: split before the others' },
-                  ...nesting
-                    .filter((other) => other !== column)
-                    .map((other) => ({ value: other, label: other })),
-                ]"
-                label="Split separately for each value of"
-                @update:model-value="(outer) => nestInside(column, outer ?? '')"
               />
             </div>
           </article>
