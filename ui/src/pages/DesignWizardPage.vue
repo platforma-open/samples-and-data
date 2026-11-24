@@ -216,6 +216,17 @@ function moveNest(at: number, to: number) {
   };
 }
 
+/**
+ * Chip strips reorder by dragging. One handler serves both strips: the key tells a drag inside
+ * the split order from one inside a column's values, so a chip never lands in the other strip.
+ */
+const dragging = ref<{ key: string; at: number } | null>(null);
+function dropAt(key: string, at: number, move: (from: number, to: number) => void) {
+  const from = dragging.value;
+  dragging.value = null;
+  if (from?.key === key && from.at !== at) move(from.at, at);
+}
+
 // rounds and generations in order; the user moves values into place. Input values are left out,
 // as the wizard reads them as "before this step".
 const orderOf = (column: string) =>
@@ -312,7 +323,19 @@ const noneMarked = new Set<string>();
             <span :class="styles.note">outer</span>
             <template v-for="(column, at) in nesting" :key="column">
               <span v-if="at > 0" :class="styles.note">→</span>
-              <span :class="styles.chip">
+              <span
+                :class="[
+                  styles.chip,
+                  styles.drag,
+                  dragging?.key === '#nest' && dragging.at === at && styles.held,
+                ]"
+                draggable="true"
+                title="Drag to reorder"
+                @dragstart="dragging = { key: '#nest', at }"
+                @dragend="dragging = null"
+                @dragover.prevent
+                @drop.prevent="dropAt('#nest', at, moveNest)"
+              >
                 <button :class="styles.arrow" title="Further out" @click="moveNest(at, at - 1)">
                   ‹
                 </button>
@@ -353,7 +376,21 @@ const noneMarked = new Set<string>();
               :class="styles.values"
             >
               <span :class="styles.note">Order:</span>
-              <span v-for="(value, at) in orderOf(column)" :key="value" :class="styles.chip">
+              <span
+                v-for="(value, at) in orderOf(column)"
+                :key="value"
+                :class="[
+                  styles.chip,
+                  styles.drag,
+                  dragging?.key === column && dragging.at === at && styles.held,
+                ]"
+                draggable="true"
+                title="Drag to reorder"
+                @dragstart="dragging = { key: column, at }"
+                @dragend="dragging = null"
+                @dragover.prevent
+                @drop.prevent="dropAt(column, at, (from, to) => move(column, from, to))"
+              >
                 <button :class="styles.arrow" title="Earlier" @click="move(column, at, at - 1)">
                   ‹
                 </button>
@@ -552,6 +589,18 @@ const noneMarked = new Set<string>();
 .quiet .name {
   font-weight: 500;
   color: var(--txt-03);
+}
+
+.drag {
+  cursor: grab;
+}
+
+.drag:active {
+  cursor: grabbing;
+}
+
+.held {
+  opacity: 0.4;
 }
 
 .head {
