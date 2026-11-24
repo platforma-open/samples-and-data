@@ -545,6 +545,13 @@ const noneMarked = new Set<string>();
   --background: var(--bg-base-light, #f7f8fa);
 }
 
+/* and nothing here answers to a click, so the list's hover highlight is turned off. The class is
+   doubled to outrank the list's own :hover rule whatever order the stylesheets load in. */
+.quiet.quiet:hover {
+  --head-background: unset;
+  --border-color: var(--color-div-grey, var(--border-color-div-grey));
+}
+
 .quiet .name {
   font-weight: 500;
   color: var(--txt-03);
