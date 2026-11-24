@@ -540,14 +540,11 @@ const noneMarked = new Set<string>();
   border-radius: 6px;
 }
 
-/* Columns outside the lineage carry no answer, so they sit back on the page instead of on it. */
-.quiet {
+/* Columns outside the lineage carry no answer, so they sit back on the page instead of on it, and
+   nothing here answers to a click, so the list's highlight is off at rest and on hover alike. The
+   class is tripled to outrank the list's own .root.opened rule whatever order the sheets load in. */
+.quiet.quiet.quiet {
   --background: var(--bg-base-light, #f7f8fa);
-}
-
-/* and nothing here answers to a click, so the list's hover highlight is turned off. The class is
-   doubled to outrank the list's own :hover rule whatever order the stylesheets load in. */
-.quiet.quiet:hover {
   --head-background: unset;
   --border-color: var(--color-div-grey, var(--border-color-div-grey));
 }
