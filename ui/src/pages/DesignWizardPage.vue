@@ -94,7 +94,7 @@ const GLYPH: Record<RoleB, string> = {
   copy: "⧉",
   treatment: "⑂",
   condition: "⚙",
-  fraction: "◔",
+  fraction: "⊞",
   series: "→",
   generation: "⟳",
 };
