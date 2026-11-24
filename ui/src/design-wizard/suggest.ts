@@ -67,7 +67,8 @@ export function suggestB(table: Table): ConfigB {
     const base = baselineCandidates(table, c);
     const col: ColumnB = {
       role,
-      ...(base.length && role !== "source" ? { baseline: base } : {}),
+      // a replicate column takes no baseline: a replicate is never the material its peers came from
+      ...(base.length && role !== "source" && role !== "copy" ? { baseline: base } : {}),
       ...(role === "series"
         ? /day|time|week|visit|hour/i.test(c)
           ? { step: "timecourse" as const }

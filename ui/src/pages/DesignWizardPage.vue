@@ -116,10 +116,21 @@ const ordered = computed(() => [
   ...info.value,
 ]);
 const helpOpen = ref(false);
+/**
+ * Which roles ask what the material was before the step. Technical replicates do not: a replicate
+ * is never the material its peers were made from, so the answer can only invent a line that was
+ * not run. No study in the corpus has such a value on a replicate column.
+ */
+const hasBaseline = (column: string) => {
+  const { role, baseline } = columnOf(column);
+  if (role === "label" || role === "copy") return false;
+  return role !== "source" || !!baseline?.length;
+};
 /** Whether a role brings follow-up questions: with none, the card shows no divider under its role. */
 const hasDetails = (column: string) => {
-  const { role, baseline } = columnOf(column);
-  return role !== "label" && (role !== "source" || !!baseline?.length);
+  const role = columnOf(column).role;
+  if (role === "copy") return nesting.value.length > 1;
+  return hasBaseline(column) || (role !== "label" && role !== "source");
 };
 
 /** Sets a column's answer, keeping its place in the listing (which breaks ties: outer first). */
@@ -139,7 +150,8 @@ const patch = (column: string, change: Partial<ColumnB>) =>
   setColumn(column, { ...columnOf(column), ...change });
 
 function setRole(column: string, role: RoleB) {
-  const baseline = columnOf(column).baseline;
+  // a replicate never asks for one, so it does not carry a hidden answer over from another role
+  const baseline = role === "copy" ? undefined : columnOf(column).baseline;
   setColumn(column, { role, ...(baseline && { baseline }) });
 }
 
@@ -359,6 +371,7 @@ const noneMarked = new Set<string>();
 
             <div v-if="hasDetails(column)" :class="styles.details">
               <PlDropdownMulti
+                v-if="hasBaseline(column)"
                 :model-value="[...(columnOf(column).baseline ?? [])]"
                 :options="valueOptions(column)"
                 label="Starting material"
