@@ -12,20 +12,26 @@ import { ordinalOf, type Table } from "./table";
 
 /** Matched against each word of the column name (split on _, -, space and camelCase). */
 const NAME: [RegExp, RoleB][] = [
-  [/^(generation|gen)$/i, "generation"],
+  [/^(generation|gen)s?$/i, "generation"],
   [
-    /^(round|rounds|pan|panning|passage|selection|cycle|sort|stage|day|days|time|timepoint|tc|week|visit|step|hour|hr)$/i,
+    /^(round|pan|panning|biopan|passage|cycle|stage|day|time|timepoint|week|month|visit|hour|hr)s?$/i,
     "series",
   ],
-  [/^(bin|bins|gate|population|fraction|organ|tissue|subset|compartment)$/i, "fraction"],
-  [/^(rep|replicate|lane|capture|well|aliquot|hashtag|batch|cells|cell)$/i, "copy"],
+  [/^(bin|gate|quadrant|fraction|population|organ|tissue|subset|compartment)s?$/i, "fraction"],
   [
-    /^(animal|donor|subject|individual|mouse|patient|pool|library|chain|background|source)$/i,
+    /^(rep|replicate|duplicate|lane|capture|well|plate|aliquot|hashtag|hto|cmo|batch|cell)e?s?$/i,
+    "copy",
+  ],
+  [
+    /^(animal|donor|subject|individual|participant|patient|mouse|mice|rat|rabbit|llama|alpaca|macaque|strain|host|species|pool|librar(y|ies)|chain|background|source)s?$/i,
     "source",
   ],
-  [/^(conc|concentration|ph|elution|temperature|stringency|moi|dose|nm|um)$/i, "condition"],
   [
-    /^(antigen|target|selector|assay|arm|condition|reagent|method|immunogen|infection|cohort)$/i,
+    /^(conc|concentration|ph|elution|temp|temperature|stringency|moi|dose|salt|wash)s?$/i,
+    "condition",
+  ],
+  [
+    /^(antigen|target|selector|bait|ligand|assay|arm|condition|reagent|method|selection|immunogen|infection|vaccine|drug|compound|treatment|stimulus|perturbation|cohort)s?$/i,
     "treatment",
   ],
 ];
@@ -36,12 +42,23 @@ const words = (c: string): string[] =>
     .filter(Boolean);
 
 /**
- * Values meaning "this step had not happened yet". The field's own words come first (`input`,
- * `unsorted`, `bulk`, `presort`), then the ways a table writes round or day zero. A control arm
- * (`mock`, `untreated`) is deliberately absent: it was run beside the others, not before them.
+ * Values meaning "this step had not happened yet", and the usual suffixes (`input library`,
+ * `day 0`). The field's own words come first, then the ways a table writes round or day zero. A
+ * control arm (`mock`, `untreated`, `none`, `unstimulated`) is deliberately absent: it was run
+ * beside the others, not before them. `nt` stays because a FACS study uses it for the untouched
+ * population, though it can also read as non-targeting.
  */
-const BASELINE =
-  /^(input|in-?put|bulk|stock|parental|parent|initial|start(ing)?|naive|unpanned|uns.*|ref|reference|base(line)?|nt|none|lib.*|plasmid|pre-? ?(sort|select(ion|ed)?|enrich(ed|ment)?|immune|bleed|treat(ed|ment)?|dose|pan(ning)?|vacc?(ination)?)?|0|[dgprt]0|(day|round|pan|passage|time|timepoint|generation|gen) ?0)$/i;
+const BASELINE = new RegExp(
+  "^(" +
+    "input|in-put|bulk|stock|parental|parent|initial|start(ing)?|naive|unpanned|unsorted|" +
+    "unselected|reference|ref|baseline|nt|librar(y|ies)|lib|plasmid|" +
+    "pre-?[ _]?(sort|select(ion|ed)?|enrich(ed|ment)?|immune|bleed|treat(ed|ment)?|dose|" +
+    "pan(ning)?|vacc?(ination)?)?" +
+    ")([ _-]?(librar(y|ies)|pool|material|sample))?$" +
+    "|^(0|[dgprtw]0|(day|round|pan|passage|cycle|time|timepoint|week|month|hour|visit|" +
+    "generation|gen)[ _-]?0)$",
+  "i",
+);
 
 export function distinctValues(table: Table, c: string): string[] {
   return [...new Set(table.rows.map((r) => r.meta[c]).filter((v): v is string => v !== undefined))];
