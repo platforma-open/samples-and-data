@@ -569,6 +569,17 @@ const noneMarked = new Set<string>();
   inline-size: auto;
 }
 
+/* A value in an order is not a thing to click, so it takes no highlight; the focus border is kept
+   for the one being dragged, which is the only state worth showing. */
+.inline.inline.inline {
+  --head-background: unset;
+  --border-color: var(--color-div-grey, var(--border-color-div-grey));
+}
+
+.inline.inline.inline:global(.sortable-chosen) {
+  --border-color: var(--border-color-focus);
+}
+
 .order {
   display: flex;
   flex-direction: column;
