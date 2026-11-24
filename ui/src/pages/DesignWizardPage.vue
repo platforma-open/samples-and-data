@@ -202,11 +202,8 @@ const nesting = computed(() =>
     NESTS.includes(answers.value.columns[key]!.role),
   ),
 );
-/** Moves one split a place out or in, keeping every other column where it is. */
-function moveNest(at: number, to: number) {
-  const order = [...nesting.value];
-  if (to < 0 || to >= order.length) return;
-  order.splice(to, 0, order.splice(at, 1)[0]!);
+/** Puts the splits in a new order, keeping every other column where it is. */
+function setNesting(order: string[]) {
   let next = 0;
   const keys = Object.keys(answers.value.columns).map((key) =>
     NESTS.includes(answers.value.columns[key]!.role) ? order[next++]! : key,
@@ -214,17 +211,6 @@ function moveNest(at: number, to: number) {
   answers.value = {
     columns: Object.fromEntries(keys.map((key) => [key, answers.value.columns[key]!])),
   };
-}
-
-/**
- * Chip strips reorder by dragging. One handler serves both strips: the key tells a drag inside
- * the split order from one inside a column's values, so a chip never lands in the other strip.
- */
-const dragging = ref<{ key: string; at: number } | null>(null);
-function dropAt(key: string, at: number, move: (from: number, to: number) => void) {
-  const from = dragging.value;
-  dragging.value = null;
-  if (from?.key === key && from.at !== at) move(from.at, at);
 }
 
 // rounds and generations in order; the user moves values into place. Input values are left out,
@@ -245,10 +231,7 @@ function setBaseline(column: string, baseline: string[]) {
     orders.value = { ...orders.value, [column]: [...freed, ...orderOf(column)] };
   patch(column, { baseline: baseline.length ? baseline : undefined });
 }
-function move(column: string, from: number, to: number) {
-  const order = orderOf(column);
-  if (to < 0 || to >= order.length) return;
-  order.splice(to, 0, order.splice(from, 1)[0]!);
+function setOrder(column: string, order: string[]) {
   orders.value = { ...orders.value, [column]: order };
 }
 
@@ -315,39 +298,24 @@ const noneMarked = new Set<string>();
         <p v-if="current.materials.length > 0" :class="styles.intro">
           Creating the design replaces the current graph of {{ name }}.
         </p>
-        <article v-if="nesting.length > 1" :class="styles.card">
-          <header :class="styles.head">
-            <span :class="styles.name">Split order</span>
-          </header>
-          <div :class="styles.values">
-            <span :class="styles.note">outer</span>
-            <template v-for="(column, at) in nesting" :key="column">
-              <span v-if="at > 0" :class="styles.note">→</span>
-              <span
-                :class="[
-                  styles.chip,
-                  styles.drag,
-                  dragging?.key === '#nest' && dragging.at === at && styles.held,
-                ]"
-                draggable="true"
-                title="Drag to reorder"
-                @dragstart="dragging = { key: '#nest', at }"
-                @dragend="dragging = null"
-                @dragover.prevent
-                @drop.prevent="dropAt('#nest', at, moveNest)"
-              >
-                <button :class="styles.arrow" title="Further out" @click="moveNest(at, at - 1)">
-                  ‹
-                </button>
-                {{ column }}
-                <button :class="styles.arrow" title="Further in" @click="moveNest(at, at + 1)">
-                  ›
-                </button>
-              </span>
+        <template v-if="nesting.length > 1">
+          <h3 :class="styles.group">Split order, outer first</h3>
+          <PlElementList
+            :items="nesting"
+            :get-item-key="keyOf"
+            disable-removing
+            disable-expanding
+            disable-toggling
+            disable-pinning
+            @update:items="setNesting"
+          >
+            <template #item-title="{ item: column }">
+              <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
+              <span :class="styles.name">{{ column }}</span>
             </template>
-            <span :class="styles.note">inner</span>
-          </div>
-        </article>
+          </PlElementList>
+          <h3 :class="styles.group">Columns</h3>
+        </template>
         <PlElementList
           :items="lineage"
           :get-item-key="keyOf"
@@ -373,32 +341,22 @@ const noneMarked = new Set<string>();
 
             <div
               v-if="columnOf(column).role === 'series' || columnOf(column).role === 'generation'"
-              :class="styles.values"
+              :class="styles.order"
             >
-              <span :class="styles.note">Order:</span>
-              <span
-                v-for="(value, at) in orderOf(column)"
-                :key="value"
-                :class="[
-                  styles.chip,
-                  styles.drag,
-                  dragging?.key === column && dragging.at === at && styles.held,
-                ]"
-                draggable="true"
-                title="Drag to reorder"
-                @dragstart="dragging = { key: column, at }"
-                @dragend="dragging = null"
-                @dragover.prevent
-                @drop.prevent="dropAt(column, at, (from, to) => move(column, from, to))"
+              <span :class="styles.note">Order, earliest first</span>
+              <PlElementList
+                :items="orderOf(column)"
+                :get-item-key="keyOf"
+                disable-removing
+                disable-expanding
+                disable-toggling
+                disable-pinning
+                @update:items="(order: string[]) => setOrder(column, order)"
               >
-                <button :class="styles.arrow" title="Earlier" @click="move(column, at, at - 1)">
-                  ‹
-                </button>
-                {{ value }}
-                <button :class="styles.arrow" title="Later" @click="move(column, at, at + 1)">
-                  ›
-                </button>
-              </span>
+                <template #item-title="{ item: value }">
+                  <span :class="styles.name">{{ value }}</span>
+                </template>
+              </PlElementList>
             </div>
             <div v-else :class="styles.values">
               <span v-for="value in values(column).slice(0, 8)" :key="value" :class="styles.chip">
@@ -591,16 +549,10 @@ const noneMarked = new Set<string>();
   color: var(--txt-03);
 }
 
-.drag {
-  cursor: grab;
-}
-
-.drag:active {
-  cursor: grabbing;
-}
-
-.held {
-  opacity: 0.4;
+.order {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .head {
@@ -672,14 +624,6 @@ const noneMarked = new Set<string>();
   border-radius: 10px;
   background: var(--bg-base-light, #f2f3f5);
   font-size: 12px;
-}
-
-.arrow {
-  border: none;
-  background: none;
-  cursor: pointer;
-  padding: 0 2px;
-  color: var(--txt-03);
 }
 
 .preview {
