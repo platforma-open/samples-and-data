@@ -462,7 +462,7 @@ const noneMarked = new Set<string>();
 .columns {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
   overflow-y: auto;
   padding-inline-end: 4px;
 }
@@ -485,20 +485,24 @@ const noneMarked = new Set<string>();
   color: var(--txt-03);
 }
 
+/* One card is one column's answer: its own surface, lifted off the page, with more space
+   between cards than inside one. */
 .card {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 12px 16px 16px;
-  border: 1px solid var(--border-color-div-grey);
-  border-radius: 6px;
+  padding: 14px 16px 16px;
+  background: var(--bg-elevated-01, #fff);
+  border: 1px solid var(--border-color-default, #d5d8df);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(18 22 31 / 8%);
 }
 
-/* Columns outside the lineage carry no answer, so they recede instead of asking to be read. */
+/* Columns outside the lineage carry no answer, so they sit back on the page instead of on it. */
 .quiet {
   gap: 8px;
-  border-color: transparent;
   background: var(--bg-base-light, #f7f8fa);
+  box-shadow: none;
 }
 
 .quiet .name {
