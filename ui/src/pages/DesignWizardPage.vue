@@ -214,14 +214,6 @@ function moveNest(at: number, to: number) {
     columns: Object.fromEntries(keys.map((key) => [key, answers.value.columns[key]!])),
   };
 }
-/** The split order as a sentence, so "outermost first" needs no explaining. */
-const nestingNote = computed(() => {
-  const note = nesting.value
-    .slice(1)
-    .map((inner, at) => `each ${nesting.value[at]} was split by ${inner}`)
-    .join(", ");
-  return note === "" ? "" : `${note[0]!.toUpperCase()}${note.slice(1)}.`;
-});
 
 // rounds and generations in order; the user moves values into place. Input values are left out,
 // as the wizard reads them as "before this step".
@@ -313,9 +305,10 @@ const noneMarked = new Set<string>();
         </p>
         <article v-if="nesting.length > 1" :class="styles.card">
           <header :class="styles.head">
-            <span :class="styles.name">Splits, outermost first</span>
+            <span :class="styles.name">Split order</span>
           </header>
           <div :class="styles.values">
+            <span :class="styles.note">outer</span>
             <template v-for="(column, at) in nesting" :key="column">
               <span v-if="at > 0" :class="styles.note">→</span>
               <span :class="styles.chip">
@@ -328,8 +321,8 @@ const noneMarked = new Set<string>();
                 </button>
               </span>
             </template>
+            <span :class="styles.note">inner</span>
           </div>
-          <p :class="styles.desc">{{ nestingNote }}</p>
         </article>
         <template v-for="column in ordered" :key="column">
           <h3 v-if="column === info[0]" :class="styles.group">Not used to build the graph</h3>
