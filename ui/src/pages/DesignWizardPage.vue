@@ -14,6 +14,7 @@ import {
   PlDialogModal,
   PlDropdown,
   PlDropdownMulti,
+  PlElementList,
 } from "@platforma-sdk/ui-vue";
 import { computed, ref, useCssModule, watch } from "vue";
 import { useApp } from "../app";
@@ -111,10 +112,10 @@ const menuRole = (column: string) =>
 // Columns that shape the lineage come first; info-only ones sit in a group of their own at the
 // end, so scanning the top of the list only passes answers that matter.
 const info = computed(() => columns.value.filter((column) => columnOf(column).role === "label"));
-const ordered = computed(() => [
-  ...columns.value.filter((column) => columnOf(column).role !== "label"),
-  ...info.value,
-]);
+const lineage = computed(() => columns.value.filter((column) => columnOf(column).role !== "label"));
+const keyOf = (column: string) => column;
+// the list renders an item's content only while it reads as expanded, and these never collapse
+const alwaysOpen = () => true;
 const helpOpen = ref(false);
 /**
  * Which roles ask what the material was before the step. Replicates and library generations do
@@ -324,14 +325,22 @@ const noneMarked = new Set<string>();
             <span :class="styles.note">inner</span>
           </div>
         </article>
-        <template v-for="column in ordered" :key="column">
-          <h3 v-if="column === info[0]" :class="styles.group">Not used to build the graph</h3>
-          <article :class="[styles.card, columnOf(column).role === 'label' && styles.quiet]">
-            <header :class="styles.head">
-              <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
-              <span :class="styles.name">{{ column }}</span>
-              <span v-if="!isSuggested(column)" :class="styles.changed">changed</span>
-            </header>
+        <PlElementList
+          :items="lineage"
+          :get-item-key="keyOf"
+          :is-expanded="alwaysOpen"
+          disable-dragging
+          disable-removing
+          disable-expanding
+          disable-toggling
+          disable-pinning
+        >
+          <template #item-title="{ item: column }">
+            <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>
+            <span :class="styles.name">{{ column }}</span>
+            <span v-if="!isSuggested(column)" :class="styles.changed">changed</span>
+          </template>
+          <template #item-content="{ item: column }">
             <PlDropdown
               :model-value="menuRole(column)"
               :options="roleOptions"
@@ -404,8 +413,43 @@ const noneMarked = new Set<string>();
                 "
               />
             </div>
-          </article>
-        </template>
+          </template>
+        </PlElementList>
+
+        <h3 v-if="info.length > 0" :class="styles.group">Not used to build the graph</h3>
+        <PlElementList
+          v-if="info.length > 0"
+          :items="info"
+          :get-item-key="keyOf"
+          :is-expanded="alwaysOpen"
+          :item-class="styles.quiet"
+          disable-dragging
+          disable-removing
+          disable-expanding
+          disable-toggling
+          disable-pinning
+        >
+          <template #item-title="{ item: column }">
+            <span :class="styles.glyph">{{ GLYPH.label }}</span>
+            <span :class="styles.name">{{ column }}</span>
+          </template>
+          <template #item-content="{ item: column }">
+            <PlDropdown
+              :model-value="menuRole(column)"
+              :options="roleOptions"
+              label="Role"
+              @update:model-value="(role) => role && setRole(column, role as RoleB)"
+            />
+            <div :class="styles.values">
+              <span v-for="value in values(column).slice(0, 8)" :key="value" :class="styles.chip">
+                {{ value }}
+              </span>
+              <span v-if="values(column).length > 8" :class="styles.chip">
+                +{{ values(column).length - 8 }}
+              </span>
+            </div>
+          </template>
+        </PlElementList>
       </section>
 
       <section :class="styles.preview">
@@ -485,24 +529,20 @@ const noneMarked = new Set<string>();
   color: var(--txt-03);
 }
 
-/* One card is one column's answer: its own surface, lifted off the page, with more space
-   between cards than inside one. */
+/* The split strip is the one card not in an element list, so it carries that list's surface. */
 .card {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 14px 16px 16px;
-  background: var(--bg-elevated-01, #fff);
-  border: 1px solid var(--border-color-default, #d5d8df);
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgb(18 22 31 / 8%);
+  background: #fffc;
+  border: 1px solid var(--color-div-grey, var(--border-color-div-grey));
+  border-radius: 6px;
 }
 
 /* Columns outside the lineage carry no answer, so they sit back on the page instead of on it. */
 .quiet {
-  gap: 8px;
-  background: var(--bg-base-light, #f7f8fa);
-  box-shadow: none;
+  --background: var(--bg-base-light, #f7f8fa);
 }
 
 .quiet .name {
