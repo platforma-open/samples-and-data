@@ -319,7 +319,7 @@ const noneMarked = new Set<string>();
           Creating the design replaces the current graph of {{ name }}.
         </p>
         <template v-for="column in ordered" :key="column">
-          <h3 v-if="column === info[0]" :class="styles.group">Not part of the lineage</h3>
+          <h3 v-if="column === info[0]" :class="styles.group">Not used to build the graph</h3>
           <article :class="[styles.card, columnOf(column).role === 'label' && styles.quiet]">
             <header :class="styles.head">
               <span :class="styles.glyph">{{ GLYPH[menuRole(column)] }}</span>

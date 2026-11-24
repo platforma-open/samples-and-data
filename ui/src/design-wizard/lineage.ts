@@ -40,7 +40,7 @@ export type RoleB = (typeof ROLES_B)[number];
 
 /** What the user reads in the role picker. */
 export const ROLE_B_TEXT: Record<RoleB, [string, string]> = {
-  label: ["Info only", "Kept as information; not part of the lineage."],
+  label: ["Info only", "Kept as information. It does not change how the samples connect."],
   source: [
     "Independent sources",
     "Each value is its own donor, animal, library or biological replicate (separate growth or transfection). Nothing physical is shared.",
@@ -63,7 +63,7 @@ export const ROLE_B_TEXT: Record<RoleB, [string, string]> = {
   ],
   series: [
     "Rounds or time points",
-    "Each value follows the previous value within the same lineage.",
+    "Each value follows the one before it, in the same line of samples.",
   ],
   generation: [
     "New library generations",
