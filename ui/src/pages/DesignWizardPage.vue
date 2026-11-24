@@ -117,13 +117,14 @@ const ordered = computed(() => [
 ]);
 const helpOpen = ref(false);
 /**
- * Which roles ask what the material was before the step. Technical replicates do not: a replicate
- * is never the material its peers were made from, so the answer can only invent a line that was
- * not run. No study in the corpus has such a value on a replicate column.
+ * Which roles ask what the material was before the step. Replicates and library generations do
+ * not: a replicate is never the material its peers were made from, and a generation value is
+ * always a library that was built, so the answer can only invent a line that was not run. No
+ * study in the corpus carries such a value on either.
  */
 const hasBaseline = (column: string) => {
   const { role, baseline } = columnOf(column);
-  if (role === "label" || role === "copy") return false;
+  if (role === "label" || role === "copy" || role === "generation") return false;
   return role !== "source" || !!baseline?.length;
 };
 /** Whether a role brings follow-up questions: with none, the card shows no divider under its role. */
@@ -150,8 +151,8 @@ const patch = (column: string, change: Partial<ColumnB>) =>
   setColumn(column, { ...columnOf(column), ...change });
 
 function setRole(column: string, role: RoleB) {
-  // a replicate never asks for one, so it does not carry a hidden answer over from another role
-  const baseline = role === "copy" ? undefined : columnOf(column).baseline;
+  // the roles that never ask for one do not carry a hidden answer over from another role
+  const baseline = role === "copy" || role === "generation" ? undefined : columnOf(column).baseline;
   setColumn(column, { role, ...(baseline && { baseline }) });
 }
 
