@@ -148,6 +148,36 @@ describe("the published axis", () => {
   });
 });
 
+describe("an axis the table mostly leaves blank", () => {
+  // vfp1602's ladder column: four samples of its table carry a value, exactly one gate's lineage
+  const table: Table = new Map([
+    ["presort", { population: "presort", round: "", ladder: "" }],
+    ["display", { population: "display-positive", round: "", ladder: "0-display" }],
+    ["r1", { population: "antigen-sort", round: "R1", ladder: "1-R1" }],
+    ["r2", { population: "antigen-sort", round: "R2", ladder: "2-R2" }],
+    ["r3", { population: "antigen-sort", round: "R3", ladder: "3-R3" }],
+    ["r1-low", { population: "antigen-sort", round: "R1", ladder: "" }],
+    ["r2-low", { population: "antigen-sort", round: "R2", ladder: "" }],
+    ["r3-low", { population: "antigen-sort", round: "R3", ladder: "" }],
+    ["r1-med", { population: "antigen-sort", round: "R1", ladder: "" }],
+    ["r2-med", { population: "antigen-sort", round: "R2", ladder: "" }],
+    ["r3-med", { population: "antigen-sort", round: "R3", ladder: "" }],
+  ]);
+  const groups = [["presort"], ["display"], ["r1"], ["r2"], ["r3"]];
+
+  test("loses to the columns the whole design shares", () => {
+    // the ladder alone names every position, which is why it used to win on being one column
+    expect(label(groups, table).axes.map((axis) => axis.cols)).toEqual([["population", "round"]]);
+  });
+
+  test("still names positions where nothing denser can", () => {
+    const only: Table = new Map(
+      [...table].slice(0, 5).map(([id, row]) => [id, { ladder: row.ladder! }]),
+    );
+    expect(label(groups, only).axes.map((axis) => axis.cols)).toEqual([["ladder"]]);
+  });
+});
+
 describe("a trajectory named by where it ends", () => {
   // three replicates pooled into one input, then panned on their own
   const table: Table = new Map([

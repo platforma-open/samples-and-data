@@ -60,14 +60,28 @@ export function label(groups: string[][], table: Table): Label {
     cols: S.map((c) => c.col),
     values: groups.map((g, i) => (g.length > 0 ? S.map((c) => c.values[i]!) : null)),
   });
-  for (let k = 1; k <= candidates.length && out.axes.length === 0; k++) {
-    for (const S of subsets(candidates, k)) {
-      const keys = asColumn(S)
-        .values.filter((v) => v !== null)
-        .map((v) => v.join("\t"));
-      if (new Set(keys).size === live.length) out.axes.push(asColumn(S));
+  const search = (pool: typeof candidates) => {
+    for (let k = 1; k <= pool.length && out.axes.length === 0; k++) {
+      for (const S of subsets(pool, k)) {
+        const keys = asColumn(S)
+          .values.filter((v) => v !== null)
+          .map((v) => v.join("\t"));
+        if (new Set(keys).size === live.length) out.axes.push(asColumn(S));
+      }
     }
-  }
+  };
+  /**
+   * A column most of the table leaves blank is an annotation of a few samples, not a factor of the
+   * design, and it wins the search by being one column where a real factor takes two: vfp1602's
+   * `ladder_fp8v1` marks 4 samples of 20, exactly one gate's lineage, and named that trajectory's
+   * positions `0-display, 1-R1, 2-R2` where every sibling read `round + population`. Such a column
+   * names positions only where nothing denser can.
+   */
+  const blank = (col: string) =>
+    [...table.values()].filter((row) => (row[col] ?? "") === "").length;
+  const dense = candidates.filter((c) => blank(c.col) * 2 <= table.size);
+  search(dense);
+  if (out.axes.length === 0 && dense.length < candidates.length) search(candidates);
   const used = new Set(out.axes.flatMap((a) => a.cols));
   out.mixed = candidates.filter((c) => !used.has(c.col)).map((c) => asColumn([c]));
   return out;
