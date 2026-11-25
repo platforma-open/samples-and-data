@@ -10,7 +10,7 @@ assets := import("@platforma-sdk/workflow-tengo:assets")
 util := import(":util")
 json := import("json")
 smart := import("@platforma-sdk/workflow-tengo:smart")
-pConstants := import("@platforma-sdk/workflow-tengo:pframes.constants")
+constants := import("@platforma-sdk/workflow-tengo:constants")
 
 prerunTpl := assets.importTemplate(":prerun")
 
@@ -87,40 +87,27 @@ wf.body(func(args) {
 	// Experiment designs: their tensors, each with its STEP 3 label, derived by the model from the
 	// design graph and the metadata. One JSON value per [design, tensor]; analysis blocks match a design to an
 	// abundance by the sample axis named in pl7.app/design/sampleAxis.
-	designTensors := args.designTensors
-	if !is_undefined(designTensors) && len(designTensors.tensors) > 0 {
-		designAxes := [
-			{
-				type: "String",
-				name: "pl7.app/design/designId",
-				domain: { "pl7.app/blockId": blockId },
-				annotations: { "pl7.app/label": "Design" }
+	designExports := {}
+	for d in args.designObjects {
+		designExports["design." + d.id] = {
+			spec: {
+				kind: "ExperimentDesign",
+				name: "pl7.app/design",
+				domain: { "pl7.app/blockId": blockId, "pl7.app/design/designId": d.id },
+				annotations: {
+					"pl7.app/label": d.label,
+					// the axis the sample ids in `positions` belong to, so a block can find the
+					// abundance that covers this design
+					"pl7.app/design/sampleAxis": string(json.encode({
+						type: sampleIdAxis.type,
+						name: sampleIdAxis.name,
+						domain: sampleIdAxis.domain
+					})),
+					"pl7.app/design/samples": string(json.encode(d.samples))
+				}
 			},
-			{
-				type: "String",
-				name: "pl7.app/design/tensorId",
-				domain: { "pl7.app/blockId": blockId },
-				annotations: { "pl7.app/label": "Tensor" }
-			}
-		]
-		jsonColumn := func(cells) {
-			return smart.createValueResource(pConstants.RTYPE_P_COLUMN_DATA_JSON,
-				json.encode({ keyLength: 2, data: cells }))
+			data: smart.createValueResource(constants.RTYPE_JSON, json.encode(d.data))
 		}
-		exports.add("designTensors", {
-			kind: "PColumn",
-			name: "pl7.app/design/tensors",
-			valueType: "String",
-			axesSpec: designAxes,
-			annotations: {
-				"pl7.app/label": "Design tensors",
-				"pl7.app/design/sampleAxis": string(json.encode({
-					type: sampleIdAxis.type,
-					name: sampleIdAxis.name,
-					domain: sampleIdAxis.domain
-				}))
-			}
-		}, jsonColumn(designTensors.tensors))
 	}
 
 	// Create datasets
@@ -221,8 +208,8 @@ wf.body(func(args) {
 				return im.file
 			})
 		},
-		exports: {
+		exports: maps.merge({
 			pf: exports.build()
-		}
+		}, designExports)
 	}
 })

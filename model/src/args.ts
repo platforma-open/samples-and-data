@@ -1,5 +1,5 @@
 import type { ImportFileHandle } from "@platforma-sdk/model";
-import type { DesignTensorCells } from "./design_tensors";
+import type { DesignObject } from "./design_tensors";
 import type {
   DSAny,
   DSGrouped,
@@ -143,8 +143,8 @@ export type BlockArgs = Pick<
   BlockData,
   "datasets" | "metadata" | "sampleLabelColumnLabel" | "sampleLabels"
 > & {
-  /** The designs' tensors, each with its label, exported as `pl7.app/design/tensors`. */
-  designTensors: DesignTensorCells;
+  /** One object per design, each exported into the result pool as `pl7.app/design`. */
+  designObjects: DesignObject[];
 };
 
 export type BlockPrerunArgs = Pick<

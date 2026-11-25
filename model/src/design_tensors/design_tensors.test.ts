@@ -6,7 +6,7 @@ import { derive, type Material } from "./derive";
 import {
   datasetSampleIds,
   deriveDesign,
-  designTensorCells,
+  designObjects,
   designTensorRows,
   oneAxis,
   type DesignSource,
@@ -81,8 +81,12 @@ describe.each(studies)("$slug", (study) => {
       const groups = tensor.type === "panel" ? tensor.arms.length : tensor.positions.length;
       for (const axis of tensor.label.axes) expect(axis.values).toHaveLength(groups);
     }
+    // ids come from the materials now, so find the panels by type and keep derivation order
+    const panelIds = Object.entries(derived.json)
+      .filter(([, t]) => t.type === "panel")
+      .map(([id]) => id);
     derived.labelled.panels.forEach((panel, i) => {
-      const json = derived.json[`panel-${i + 1}`]!;
+      const json = derived.json[panelIds[i]!]!;
       if (json.type !== "panel") throw new Error("not a panel");
       const label = json.label;
       const splits = Object.keys(panel.panel.arms);
@@ -108,12 +112,28 @@ describe.each(studies)("$slug", (study) => {
       for (const group of row.groups) expect(group.name).not.toBe("");
     }
 
-    const cells = designTensorCells([design], source);
-    expect(Object.keys(cells.tensors).sort()).toEqual(
+    // the published object holds every tensor, filed by type, and a label under the same id
+    const [object] = designObjects([design], source);
+    const data = object!.data;
+    const filed = [
+      ...Object.keys(data.trajectories),
+      ...Object.keys(data.partitions),
+      ...Object.keys(data.panels),
+      ...(data.recurrence ? ["recurrence"] : []),
+    ];
+    expect(filed.sort()).toEqual(
       Object.keys(derived.json)
-        .map((id) => JSON.stringify(["D", id]))
+        .map((id) => (derived.json[id]!.type === "recurrence" ? "recurrence" : id))
         .sort(),
     );
+    for (const id of Object.keys(data.trajectories))
+      expect(data.labels.trajectories[id]).toBeDefined();
+    for (const id of Object.keys(data.panels)) expect(data.labels.panels[id]).toBeDefined();
+    // a panel's anchor is the material id, not its name: names live in `labels`
+    for (const panel of Object.values(data.panels))
+      expect(data.labels.materials[panel.anchor.material] ?? panel.anchor.material).toBeTruthy();
+    // every sample the design names is listed once, sorted
+    expect(object!.samples).toEqual([...new Set(object!.samples)].sort());
   });
 });
 
@@ -240,7 +260,9 @@ describe("a design limited to some datasets", () => {
     datasets: [dataset("all", ["R1", "R2", "R3"]), dataset("ends", ["R1", "R3"]), grouped],
   };
   const trajectory = (d: ExperimentDesign) => {
-    const t = deriveDesign(d, 0, withData).json["trajectory-1"]!;
+    const t = Object.values(deriveDesign(d, 0, withData).json).find(
+      (x) => x.type === "trajectory",
+    )!;
     if (t.type !== "trajectory") throw new Error("not a trajectory");
     return { positions: t.positions, datasets: t.datasets };
   };

@@ -5,7 +5,7 @@ import type { BlockArgs, BlockPrerunArgs } from "./args";
 import { designLabel } from "./args";
 import { blockArgsIssues } from "./args_issues";
 import { blockDataModel } from "./data_model";
-import { designTensorCells } from "./design_tensors";
+import { designObjects } from "./design_tensors";
 import { deriveTemplateParams } from "./template_params";
 
 function sortedById<T extends { id: string }>(items: T[]) {
@@ -24,7 +24,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
       metadata: sortedById(data.metadata),
       sampleLabelColumnLabel: data.sampleLabelColumnLabel,
       sampleLabels: data.sampleLabels,
-      designTensors: designTensorCells(data.designs ?? [], data),
+      designObjects: designObjects(data.designs ?? [], data),
     };
   })
 
