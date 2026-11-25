@@ -107,6 +107,51 @@ export function endLabel(groups: string[][], table: Table, l: Label): [string, s
   return out;
 }
 
+/**
+ * Every sample an arm holds, from the position it starts at to the ends of the lines running
+ * through it.
+ *
+ * Labelling an arm by its first position alone names it by the step it begins at, which is how an
+ * arm of a panning design came to be called "R1": the round column does tell the first positions
+ * apart, but it goes on changing inside the arm, so the name says where the arm started rather than
+ * what it is. A column that names an arm has to hold still along the whole of it, and `label` already
+ * drops a column that varies inside a group, so showing it the whole arm is the entire fix.
+ *
+ * The trunk before the fork is left out on purpose: every arm shares it, so including it would make
+ * the arms disagree on a column they actually agree on.
+ */
+function armSamples(panel: Panel, trajectories: Position[][]): string[][] {
+  const key = (p: Position) => JSON.stringify([...p].sort());
+  return Object.values(panel.arms).map((arm) => {
+    const starts = new Set(arm.map(key));
+    const out = new Set(arm.flat());
+    for (const trajectory of trajectories) {
+      const from = trajectory.findIndex((p) => starts.has(key(p)));
+      if (from < 0) continue;
+      for (const position of trajectory.slice(from)) for (const sample of position) out.add(sample);
+    }
+    return [...out];
+  });
+}
+
+/**
+ * A panel's label, preferring a column that holds still along each arm.
+ *
+ * Seeing the whole arm is a preference and not a rule, because a column can name the arms well at
+ * the point they part and still change later: synthetic-07's three arms are 5, 250 and 1 nM, which
+ * is what they are, and the concentration changes again only at arm A's final gate. Demanding
+ * constancy there would leave those arms with no name at all. So the whole arm is tried first, and
+ * where it names nothing the first positions are used as before.
+ */
+function panelLabel(panel: Panel, trajectories: Position[][], table: Table): Label {
+  const whole = label(armSamples(panel, trajectories), table);
+  if (whole.axes.length > 0) return whole;
+  return label(
+    Object.values(panel.arms).map((a) => a.flat()),
+    table,
+  );
+}
+
 export function labelTensors(t: Tensors, table: Table): Labelled {
   const lab = (tensor: Position[]) => ({ tensor, label: label(tensor, table) });
   // only a trajectory is ordered, so only a trajectory has an end
@@ -117,13 +162,7 @@ export function labelTensors(t: Tensors, table: Table): Labelled {
   return {
     trajectories: t.trajectories.map(walked),
     partitions: t.partitions.map(lab),
-    panels: t.panels.map((panel) => ({
-      panel,
-      label: label(
-        Object.values(panel.arms).map((a) => a.flat()),
-        table,
-      ),
-    })),
+    panels: t.panels.map((panel) => ({ panel, label: panelLabel(panel, t.trajectories, table) })),
     recurrences: t.recurrences.map(lab),
   };
 }

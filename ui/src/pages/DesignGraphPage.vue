@@ -228,10 +228,13 @@ async function deleteDesign() {
               >
                 <span :class="styles.kind">
                   {{ openSections.has(section.key) ? "▾" : "▸" }}
+                  <!-- the kind, never the id: an id is built from the materials and reads as a
+                       sample id, which names nothing to a reader. The columns beside this one say
+                       which comparison it is. -->
                   {{
                     section.rows.length > 1
                       ? countOf(section.rows.length, section.lead.type)
-                      : section.lead.id.replace("-", " ")
+                      : section.lead.type
                   }}
                 </span>
                 <span :class="styles.note">{{ section.lead.by || "no axis" }}</span>
@@ -259,7 +262,7 @@ async function deleteDesign() {
                   title="Show in the graph"
                   @click="activeRow = row.id === activeRow ? undefined : row.id"
                 >
-                  <span :class="styles.kind">{{ row.id.replace("-", " ") }}</span>
+                  <span :class="styles.kind">{{ row.type }}</span>
                   <span :class="styles.note">{{ row.factorValues }}</span>
                   <span :class="styles.groups">
                     <template v-for="(group, k) in row.groups" :key="k">

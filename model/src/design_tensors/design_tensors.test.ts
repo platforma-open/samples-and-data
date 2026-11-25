@@ -288,3 +288,42 @@ describe("a design limited to some datasets", () => {
     expect(datasetSampleIds(grouped)).toEqual(["R2"]);
   });
 });
+
+describe("naming a panel's arms", () => {
+  // Two arms off one library. `round` tells their first positions apart but goes on changing
+  // inside each arm; `path` holds still along each. This is the alpaca shape, where the arms came
+  // out called R1 and R2, which are rounds rather than what the arms are.
+  const tensors = {
+    trajectories: [
+      [["LIB"], ["T_R1"], ["T_R2"]],
+      [["LIB"], ["C_R2"]],
+    ],
+    partitions: [],
+    panels: [{ anchor: "LIB", reads: ["LIB"], arms: { "arm-t": [["T_R1"]], "arm-c": [["C_R2"]] } }],
+    recurrences: [],
+  };
+  const table = new Map(
+    Object.entries({
+      LIB: { round: "Library", path: "Target" },
+      T_R1: { round: "R1", path: "Target" },
+      T_R2: { round: "R2", path: "Target" },
+      C_R2: { round: "R2", path: "Control" },
+    }),
+  );
+
+  test("prefers a column that holds still along the arm", () => {
+    const [panel] = labelTensors(tensors, table).panels;
+    expect(panel!.label.axes.map((a) => a.cols)).toEqual([["path"]]);
+    expect(panel!.label.axes[0]!.values).toEqual([["Target"], ["Control"]]);
+    // the round changes inside the target arm, so it names nothing here
+    expect(panel!.label.within).toContain("round");
+  });
+
+  test("falls back to the first positions when no column holds still", () => {
+    // drop `path`, leaving only the column that varies inside the arm
+    const rounds = new Map([...table].map(([id, row]) => [id, { round: row.round }]));
+    const [panel] = labelTensors(tensors, rounds).panels;
+    expect(panel!.label.axes.map((a) => a.cols)).toEqual([["round"]]);
+    expect(panel!.label.axes[0]!.values).toEqual([["R1"], ["R2"]]);
+  });
+});

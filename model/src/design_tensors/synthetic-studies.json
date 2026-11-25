@@ -109,7 +109,7 @@
       }
     },
     "expected": "        trajectory  [(A_R1), (A_R2)]\n                    [(B_R1), (B_R2)]\n        partition   []\n        panel       {anchor: LIB, reads: ()}\n                        pan-A-1: [(A_R1)]\n                        pan-B-1: [(B_R1)]\n                        plastic: [(DE)]\n        recurrence  []\n",
-    "expectedLabels": "        trajectory  [(A_R1), (A_R2)]\n                        axis      round: 1, 2\n                        constant  target=A\n                    [(B_R1), (B_R2)]\n                        axis      round: 1, 2\n                        constant  target=B\n        partition   []\n        panel       {anchor: LIB} pan-A-1, pan-B-1, plastic\n                        axis      target: A, B, Control\n                        mixed     round: 1, 1, 2\n        recurrence  []\n"
+    "expectedLabels": "        trajectory  [(A_R1), (A_R2)]\n                        axis      round: 1, 2\n                        constant  target=A\n                    [(B_R1), (B_R2)]\n                        axis      round: 1, 2\n                        constant  target=B\n        partition   []\n        panel       {anchor: LIB} pan-A-1, pan-B-1, plastic\n                        axis      target: A, B, Control\n                        within    round\n        recurrence  []\n"
   },
   {
     "slug": "synthetic-03-bins-by-concentration",
@@ -488,7 +488,7 @@
       }
     },
     "expected": "        trajectory  [(V2_R1), (V2_R2)]\n                    [(V3_R1), (V3_R2)]\n        partition   []\n        panel       {anchor: LIB, reads: ()}\n                        pan-V2-1: [(V2_R1)]\n                        pan-V3-1: [(V3_R1)]\n        recurrence  []\n",
-    "expectedLabels": "        trajectory  [(V2_R1), (V2_R2)]\n                        axis      round: 1, 2\n                        constant  generation=V2, chemistry=epPCR\n                    [(V3_R1), (V3_R2)]\n                        axis      round: 1, 2\n                        constant  generation=V3, chemistry=NNK\n        partition   []\n        panel       {anchor: LIB} pan-V2-1, pan-V3-1\n                        axis      generation: V2, V3\n                        axis      chemistry: epPCR, NNK\n                        constant  round=1\n        recurrence  []\n"
+    "expectedLabels": "        trajectory  [(V2_R1), (V2_R2)]\n                        axis      round: 1, 2\n                        constant  generation=V2, chemistry=epPCR\n                    [(V3_R1), (V3_R2)]\n                        axis      round: 1, 2\n                        constant  generation=V3, chemistry=NNK\n        partition   []\n        panel       {anchor: LIB} pan-V2-1, pan-V3-1\n                        axis      generation: V2, V3\n                        axis      chemistry: epPCR, NNK\n                        within    round\n        recurrence  []\n"
   },
   {
     "slug": "synthetic-07-arms-with-a-history",
