@@ -48,6 +48,7 @@ catalog:
   "@types/node": ~20.16.15
   "@milaboratories/ts-builder": 1.8.0
   "@milaboratories/ts-configs": 1.4.1
+  "@milaboratories/uikit": 2.17.10
   cross-env: ~10.1.0
 minimumReleaseAgeExclude:
   - "@milaboratories/*"

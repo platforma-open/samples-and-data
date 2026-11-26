@@ -8,6 +8,9 @@ pframes := import("@platforma-sdk/workflow-tengo:pframes")
 metadata := import(":metadata")
 assets := import("@platforma-sdk/workflow-tengo:assets")
 util := import(":util")
+json := import("json")
+smart := import("@platforma-sdk/workflow-tengo:smart")
+constants := import("@platforma-sdk/workflow-tengo:constants")
 
 prerunTpl := assets.importTemplate(":prerun")
 
@@ -79,6 +82,36 @@ wf.body(func(args) {
 	
 	for k, v in metadata.createMetadata(args, blockId, sampleIdAxis) {
 		exports.add(k, v.spec, v.data)
+	}
+
+	// Experiment designs: one JSON value per design, holding its tensors and their STEP 3 labels,
+	// derived by the model from the design graph and the metadata. Analysis blocks match a design
+	// to an abundance by the sample axis named in pl7.app/design/sampleAxis.
+	designExports := {}
+	for d in args.designObjects {
+		designExports["design." + d.id] = {
+			spec: {
+				kind: "ExperimentDesign",
+				name: "pl7.app/design",
+				domain: { "pl7.app/blockId": blockId, "pl7.app/design/designId": d.id },
+				// A design has no axes, but the pool is walked as if everything in it were a
+				// PColumn: SDK helpers read axesSpec[1] off every spec they find, and an absent
+				// list throws before they ever look at the kind.
+				axesSpec: [],
+				annotations: {
+					"pl7.app/label": d.label,
+					// the axis the sample ids in `positions` belong to, so a block can find the
+					// abundance that covers this design
+					"pl7.app/design/sampleAxis": string(json.encode({
+						type: sampleIdAxis.type,
+						name: sampleIdAxis.name,
+						domain: sampleIdAxis.domain
+					})),
+					"pl7.app/design/samples": string(json.encode(d.samples))
+				}
+			},
+			data: smart.createValueResource(constants.RTYPE_JSON, json.encode(d.data))
+		}
 	}
 
 	// Create datasets
@@ -179,8 +212,8 @@ wf.body(func(args) {
 				return im.file
 			})
 		},
-		exports: {
+		exports: maps.merge({
 			pf: exports.build()
-		}
+		}, designExports)
 	}
 })

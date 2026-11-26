@@ -1,9 +1,11 @@
 import { kind } from "@platforma-open/milaboratories.samples-and-data.kind";
 import type { ImportFileHandle, InferHrefType, InferOutputsType, PlId } from "@platforma-sdk/model";
 import { BlockModelV3 } from "@platforma-sdk/model";
-import { blockDataModel } from "./data_model";
 import type { BlockArgs, BlockPrerunArgs } from "./args";
+import { designLabel } from "./args";
 import { blockArgsIssues } from "./args_issues";
+import { blockDataModel } from "./data_model";
+import { designObjects } from "./design_tensors";
 import { deriveTemplateParams } from "./template_params";
 
 function sortedById<T extends { id: string }>(items: T[]) {
@@ -22,6 +24,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
       metadata: sortedById(data.metadata),
       sampleLabelColumnLabel: data.sampleLabelColumnLabel,
       sampleLabels: data.sampleLabels,
+      designObjects: designObjects(data.designs ?? [], data),
     };
   })
 
@@ -160,6 +163,18 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
         appearance: "add-section",
         label: "New Dataset",
       },
+      { type: "delimiter" as const },
+      ...(ctx.data.designs ?? []).map((design, index) => ({
+        type: "link" as const,
+        href: `/design?id=${design.id}` as const,
+        label: designLabel(design, index),
+      })),
+      {
+        type: "link" as const,
+        href: "/new-design" as const,
+        appearance: "add-section",
+        label: "New Design",
+      },
     ];
   })
 
@@ -168,5 +183,6 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
 export type BlockOutputs = InferOutputsType<typeof platforma>;
 export type Href = InferHrefType<typeof platforma>;
 export * from "./args";
+export * from "./design_tensors";
 export * from "./multiplexing-rules-validation";
 export * from "./template_params";
