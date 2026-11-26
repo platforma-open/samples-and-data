@@ -22,8 +22,8 @@ const column = (tag: string) => tag.slice(0, tag.indexOf(" = "));
 
 export function comparisonSections(rows: TensorRow[]): ComparisonSection[] {
   // An arm is its own material, so the comparisons inside one arm list together, whatever axis each
-  // of them was labelled by: a column filled for one gate only (vfp1602's ladders) names that gate's
-  // trajectory and no other, and the three gates of an arm still belong on one line. An arm holding
+  // of them was labelled by: a column filled for one gate only names that gate's trajectory and no
+  // other, and the gates of an arm still belong on one line. An arm holding
   // a single comparison has nothing to collapse, so those fall back to shape and the arm is read as
   // the factor that tells them apart.
   const armOf = (row: TensorRow) => row.armKeys.join("\u0000");

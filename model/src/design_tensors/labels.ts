@@ -72,10 +72,10 @@ export function label(groups: string[][], table: Table): Label {
   };
   /**
    * A column most of the table leaves blank is an annotation of a few samples, not a factor of the
-   * design, and it wins the search by being one column where a real factor takes two: vfp1602's
-   * `ladder_fp8v1` marks 4 samples of 20, exactly one gate's lineage, and named that trajectory's
-   * positions `0-display, 1-R1, 2-R2` where every sibling read `round + population`. Such a column
-   * names positions only where nothing denser can.
+   * design, and it wins the search by being one column where a real factor takes two: a lineage
+   * marker filled for a fifth of the table, covering exactly one line, named that line's positions
+   * by itself where every sibling read round and population. Such a column names positions only
+   * where nothing denser can.
    */
   const blank = (col: string) =>
     [...table.values()].filter((row) => (row[col] ?? "") === "").length;
