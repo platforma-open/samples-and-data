@@ -84,9 +84,9 @@ wf.body(func(args) {
 		exports.add(k, v.spec, v.data)
 	}
 
-	// Experiment designs: their tensors, each with its STEP 3 label, derived by the model from the
-	// design graph and the metadata. One JSON value per [design, tensor]; analysis blocks match a design to an
-	// abundance by the sample axis named in pl7.app/design/sampleAxis.
+	// Experiment designs: one JSON value per design, holding its tensors and their STEP 3 labels,
+	// derived by the model from the design graph and the metadata. Analysis blocks match a design
+	// to an abundance by the sample axis named in pl7.app/design/sampleAxis.
 	designExports := {}
 	for d in args.designObjects {
 		designExports["design." + d.id] = {
@@ -94,6 +94,10 @@ wf.body(func(args) {
 				kind: "ExperimentDesign",
 				name: "pl7.app/design",
 				domain: { "pl7.app/blockId": blockId, "pl7.app/design/designId": d.id },
+				// A design has no axes, but the pool is walked as if everything in it were a
+				// PColumn: SDK helpers read axesSpec[1] off every spec they find, and an absent
+				// list throws before they ever look at the kind.
+				axesSpec: [],
 				annotations: {
 					"pl7.app/label": d.label,
 					// the axis the sample ids in `positions` belong to, so a block can find the
