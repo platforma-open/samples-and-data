@@ -276,12 +276,18 @@ describe("a design limited to some datasets", () => {
     });
   });
 
-  test("applies to every dataset when it picks none, or only deleted ones", () => {
-    const all = { positions: [["R1"], ["R2"], ["R3"]], datasets: ["all", "ends", "grouped"] };
-    expect(trajectory(design)).toEqual(all);
+  test("falls back to the first dataset when it picks none, or only deleted ones", () => {
+    const first = { positions: [["R1"], ["R2"], ["R3"]], datasets: ["all"] };
+    expect(trajectory(design)).toEqual(first);
     expect(
       trajectory({ ...design, datasetIds: ["gone"] as ExperimentDesign["datasetIds"] }),
-    ).toEqual(all);
+    ).toEqual(first);
+  });
+
+  test("takes one dataset even where several are picked", () => {
+    expect(
+      trajectory({ ...design, datasetIds: ["ends", "grouped"] as ExperimentDesign["datasetIds"] }),
+    ).toEqual({ positions: [["R1"], ["R3"]], datasets: ["ends"] });
   });
 
   test("reads a grouped dataset's samples from its sample groups", () => {

@@ -121,18 +121,23 @@ export function datasetSampleIds(dataset: DSAny): string[] {
 }
 
 /**
- * The datasets a design applies to and the samples they hold. A design that picks none, or only
- * datasets since deleted, applies to all datasets and every sample.
+ * The dataset a design applies to and the samples it holds. One dataset, always: the one the
+ * design picks, else the first. Each dataset is clonotyped on its own, so a design reaching across
+ * two of them names positions that no analysis block can bring into one table, and the design is
+ * simply not offered there. Scoping it here is what keeps that from being possible to build.
+ *
+ * A block with no datasets at all is the one exception: every sample stays in scope, so a design
+ * drawn before any data arrives still reads.
  */
 export function designScope(
   design: Pick<ExperimentDesign, "datasetIds">,
   source: Pick<DesignSource, "sampleIds" | "datasets">,
 ): { datasets: DSAny[]; sampleIds: Set<string> } {
+  if (source.datasets.length === 0) return { datasets: [], sampleIds: new Set(source.sampleIds) };
   const picked = source.datasets.filter((dataset) => design.datasetIds?.includes(dataset.id));
-  if (picked.length === 0)
-    return { datasets: source.datasets, sampleIds: new Set(source.sampleIds) };
-  const held = new Set(picked.flatMap(datasetSampleIds));
-  return { datasets: picked, sampleIds: new Set(source.sampleIds.filter((id) => held.has(id))) };
+  const scope = (picked.length > 0 ? picked : source.datasets).slice(0, 1);
+  const held = new Set(scope.flatMap(datasetSampleIds));
+  return { datasets: scope, sampleIds: new Set(source.sampleIds.filter((id) => held.has(id))) };
 }
 
 export type DerivedDesign = {
