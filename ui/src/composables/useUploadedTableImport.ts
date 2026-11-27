@@ -60,15 +60,18 @@ export function useUploadedTableImport(source: UploadedTableSource) {
     }
   }
 
+  // Watches the exported file's handle, not only `fileTooBig`: two oversized
+  // files in a row leave `fileTooBig` true and `fileBytes` undefined, so only
+  // the handle changes when the second one arrives.
   watch(
-    [fileTooBig, fileBytes],
-    ([tooBig, bytes]) => {
+    [() => source.getFile()?.handle, fileBytes],
+    ([, bytes]) => {
       const handle = source.getHandle();
       if (handle === undefined) return;
       if (importState.importCandidate !== undefined) return;
 
       // The byte-length check backs up the exported size.
-      if (tooBig || (bytes !== undefined && bytes.length > DEFAULT_MAX_FILE_SIZE)) {
+      if (fileTooBig.value || (bytes !== undefined && bytes.length > DEFAULT_MAX_FILE_SIZE)) {
         importState.errorMessage = { title: "File is too big" };
         source.setHandle(undefined);
         return;
