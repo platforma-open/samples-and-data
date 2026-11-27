@@ -36,7 +36,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
         a.file.localeCompare(b.file),
       ),
       metadataUploadHandle: data.metadataUploadHandle,
-      samplesheetUploadHandle: data.samplesheetUploadHandle,
+      samplesheetUploadHandle: data.samplesheetUpload?.handle,
     };
   })
 

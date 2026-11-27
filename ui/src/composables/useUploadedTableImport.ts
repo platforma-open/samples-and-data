@@ -26,9 +26,15 @@ export function useUploadedTableImport(source: UploadedTableSource) {
 
   const fileDialogOpened = ref(false);
 
+  const fileTooBig = computed(() => {
+    const file = source.getFile();
+    return file !== undefined && file.size > DEFAULT_MAX_FILE_SIZE;
+  });
+
+  // Content is requested only for a file within the size limit.
   const fileBytes = computed(() => {
     const file = source.getFile();
-    if (!file) return undefined;
+    if (!file || fileTooBig.value) return undefined;
     return reactiveFileContent.getContentBytes(file.handle).value;
   });
 
@@ -55,18 +61,19 @@ export function useUploadedTableImport(source: UploadedTableSource) {
   }
 
   watch(
-    fileBytes,
-    (bytes) => {
-      if (bytes === undefined) return;
+    [fileTooBig, fileBytes],
+    ([tooBig, bytes]) => {
       const handle = source.getHandle();
       if (handle === undefined) return;
       if (importState.importCandidate !== undefined) return;
 
-      if (bytes.length > DEFAULT_MAX_FILE_SIZE) {
+      // The byte-length check backs up the exported size.
+      if (tooBig || (bytes !== undefined && bytes.length > DEFAULT_MAX_FILE_SIZE)) {
         importState.errorMessage = { title: "File is too big" };
         source.setHandle(undefined);
         return;
       }
+      if (bytes === undefined) return;
       if (!processTableBytes(bytes, getFileNameFromHandle(handle))) {
         source.setHandle(undefined);
       }

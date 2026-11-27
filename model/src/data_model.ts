@@ -86,7 +86,7 @@ export const blockDataModel = new DataModelBuilder({ kind })
   .migrate<BlockDataV20261116>("V20261116", (prev) => ({ ...prev, xsvFilesToPreprocess: [] }))
   .migrate<BlockDataV20261123>("V20261123", (prev) => ({
     ...prev,
-    samplesheetUploadHandle: undefined,
+    samplesheetUpload: undefined,
   }))
   // `params` carries the study setup a project template supplies, plus whatever
   // of its data came with files a new installation can resolve — see the kind's
@@ -96,7 +96,7 @@ export const blockDataModel = new DataModelBuilder({ kind })
   // `metadataUploadHandle` is absent from the contract on purpose: it is not a
   // link to the metadata table but scaffolding for one import dialog, cleared as
   // soon as the parsed values land in `metadata`. `xsvFilesToPreprocess` and
-  // `samplesheetUploadHandle` are the same kind of scaffolding, for the
+  // `samplesheetUpload` are the same kind of scaffolding, for the
   // Multisample CSV/TSV and samplesheet import dialogs.
   .init(({ params }) => ({
     datasets: params?.datasets ?? [],
@@ -108,6 +108,6 @@ export const blockDataModel = new DataModelBuilder({ kind })
     seuratFilesToPreprocess: params?.seuratFilesToPreprocess ?? [],
     xsvFilesToPreprocess: [],
     metadataUploadHandle: undefined,
-    samplesheetUploadHandle: undefined,
+    samplesheetUpload: undefined,
     suggestedImport: false,
   }));

@@ -58,7 +58,9 @@ const autoExtractDatasets = computed(() =>
   ),
 );
 
-// Samplesheet import logic
+// Samplesheet import logic. The upload is tagged with this dialog's datasets:
+// every dataset page mounts its own dialog, and a sheet still loading must not
+// open in the dialog of another page.
 const {
   importState,
   fileDialogOpened,
@@ -67,9 +69,14 @@ const {
   onImportClose,
   clearErrorMessage,
 } = useUploadedTableImport({
-  getHandle: () => app.model.data.samplesheetUploadHandle,
+  getHandle: () => {
+    const upload = app.model.data.samplesheetUpload;
+    if (upload === undefined || !setEquals(upload.datasetIds, props.datasetIds)) return undefined;
+    return upload.handle;
+  },
   setHandle: (handle) => {
-    app.model.data.samplesheetUploadHandle = handle;
+    app.model.data.samplesheetUpload =
+      handle === undefined ? undefined : { handle, datasetIds: [...props.datasetIds] };
   },
   getFile: () => app.model.outputs.samplesheetFile,
 });
