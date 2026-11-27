@@ -95,8 +95,22 @@ export function useUploadedTableImport(source: UploadedTableSource) {
     source.setHandle(undefined);
   }
 
+  // A file is picked and the prerun has not yet delivered it.
+  const importPending = computed(
+    () =>
+      source.getHandle() !== undefined &&
+      importState.importCandidate === undefined &&
+      importState.errorMessage === undefined,
+  );
+
+  function cancelPendingImport() {
+    source.setHandle(undefined);
+  }
+
   return {
     importState,
+    importPending,
+    cancelPendingImport,
     fileDialogOpened,
     openFileDialog,
     handleFileSelected,

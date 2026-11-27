@@ -58,6 +58,8 @@ const datasetsWithAutoExtraction = computed(() =>
 
 const {
   importState,
+  importPending,
+  cancelPendingImport,
   fileDialogOpened,
   openFileDialog,
   handleFileSelected,
@@ -431,16 +433,12 @@ const gridOptions = computed<GridOptions<MetadataRow>>(() => ({
 
   <!-- Loading modal: remote file selected, waiting for backend to make it available -->
   <PlDialogModal
-    :model-value="
-      app.model.data.metadataUploadHandle !== undefined &&
-      importState.importCandidate === undefined &&
-      importState.errorMessage === undefined
-    "
+    :model-value="importPending"
     :close-on-outside-click="false"
     closable
     @update:model-value="
       (v) => {
-        if (!v) app.model.data.metadataUploadHandle = undefined;
+        if (!v) cancelPendingImport();
       }
     "
   >

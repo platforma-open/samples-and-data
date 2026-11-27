@@ -10,6 +10,7 @@ import { uniquePlId } from "@platforma-sdk/model";
 import {
   PlAlert,
   PlBtnPrimary,
+  PlDialogModal,
   PlFileDialog,
   PlProgressCell,
   ReactiveFileContent,
@@ -63,6 +64,8 @@ const autoExtractDatasets = computed(() =>
 // open in the dialog of another page.
 const {
   importState,
+  importPending,
+  cancelPendingImport,
   fileDialogOpened,
   openFileDialog,
   handleFileSelected,
@@ -396,6 +399,21 @@ async function updateSamples() {
     title="Select samplesheet"
     @import:files="(e) => handleFileSelected(e.files)"
   />
+
+  <!-- Loading modal: samplesheet selected, waiting for backend to make it available -->
+  <PlDialogModal
+    :model-value="importPending"
+    :close-on-outside-click="false"
+    closable
+    @update:model-value="
+      (v) => {
+        if (!v) cancelPendingImport();
+      }
+    "
+  >
+    <template #title>Importing samplesheet...</template>
+    <PlProgressCell stage="running" step="Downloading file..." />
+  </PlDialogModal>
 
   <!-- Import error dialog -->
   <ImportErrorDialog :error-message="importState.errorMessage" @close="clearErrorMessage" />
