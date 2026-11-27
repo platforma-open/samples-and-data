@@ -46,7 +46,11 @@ async function deleteTheDataset() {
   const index = app.model.data.datasets.findIndex((ds) => ds.id === datasetId);
   if (index === -1) throw new Error("Dataset not found");
 
-  app.model.data.datasets.splice(index, 1);
+  const [deleted] = app.model.data.datasets.splice(index, 1);
+  // A samplesheet picked for this dataset and not yet imported has no dialog left to clear it.
+  if (app.model.data.samplesheetUpload?.datasetIds.includes(deleted.id)) {
+    app.model.data.samplesheetUpload = undefined;
+  }
   await app.allSettled();
   await app.navigateTo("/");
 }

@@ -36,6 +36,7 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
         a.file.localeCompare(b.file),
       ),
       metadataUploadHandle: data.metadataUploadHandle,
+      samplesheetUploadHandle: data.samplesheetUpload?.handle,
     };
   })
 
@@ -135,6 +136,12 @@ export const platforma = BlockModelV3.create({ dataModel: blockDataModel, kind }
 
   .retentiveOutput("metadataFile", (ctx) =>
     ctx.prerun?.traverse({ field: "metadataFile" })?.getFileHandle(),
+  )
+
+  // Not retentive: the value must pass through undefined between imports, or
+  // picking the same samplesheet again would not re-open the import dialog.
+  .output("samplesheetFile", (ctx) =>
+    ctx.prerun?.traverse({ field: "samplesheetFile" })?.getFileHandle(),
   )
 
   .title(() => "Samples & Data")

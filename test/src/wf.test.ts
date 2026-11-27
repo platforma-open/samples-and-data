@@ -18,6 +18,7 @@ blockTest("empty inputs", { timeout: 30000 }, async ({ rawPrj: project, helpers,
     availableColumns: { ok: true, stable: true, value: {} },
     availableXsvColumns: { ok: true, stable: true, value: {} },
     metadataFile: { ok: true, stable: true, value: undefined },
+    samplesheetFile: { ok: true, stable: true, value: undefined },
   });
 });
 

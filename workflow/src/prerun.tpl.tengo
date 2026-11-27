@@ -83,6 +83,11 @@ wf.body(func(args) {
         metadataFile = importFile(args.metadataUploadHandle)
 	}
 
+    samplesheetFile := undefined
+    if !is_undefined(args.samplesheetUploadHandle) {
+        samplesheetFile = importFile(args.samplesheetUploadHandle)
+    }
+
 	outputs := {
         fileImports: maps.mapValues(fileImports, func(im) {
 			return im.handle
@@ -94,6 +99,10 @@ wf.body(func(args) {
 
     if !is_undefined(metadataFile) {
         outputs.metadataFile = file.exportFile(metadataFile)
+    }
+
+    if !is_undefined(samplesheetFile) {
+        outputs.samplesheetFile = file.exportFile(samplesheetFile)
     }
 
 	return {

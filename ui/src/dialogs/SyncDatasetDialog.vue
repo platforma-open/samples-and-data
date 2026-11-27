@@ -7,12 +7,20 @@ import type {
   WithSampleGroupsData,
 } from "@platforma-open/milaboratories.samples-and-data.model";
 import { uniquePlId } from "@platforma-sdk/model";
-import { PlAlert, PlBtnPrimary, PlProgressCell, ReactiveFileContent } from "@platforma-sdk/ui-vue";
+import {
+  PlAlert,
+  PlBtnPrimary,
+  PlDialogModal,
+  PlFileDialog,
+  PlProgressCell,
+  ReactiveFileContent,
+} from "@platforma-sdk/ui-vue";
 import * as _ from "radashi";
 import { computed } from "vue";
 import { useApp } from "../app";
 import ImportErrorDialog from "../components/ImportErrorDialog.vue";
-import { useTableImport } from "../composables/useTableImport";
+import { DEFAULT_TABLE_FILE_EXTENSIONS } from "../composables/useTableImport";
+import { useUploadedTableImport } from "../composables/useUploadedTableImport";
 import { parseCsvNestedMapFromHandles, setEquals } from "../util";
 import { assignMultiSampleXsvSamples, getOrCreateSample, multiSampleXsvLabels } from "./datasets";
 import type { SamplesheetImportData } from "./ImportSamplesheetDialog.vue";
@@ -51,20 +59,30 @@ const autoExtractDatasets = computed(() =>
   ),
 );
 
-// Samplesheet import logic
+// Samplesheet import logic. The upload is tagged with this dialog's datasets:
+// every dataset page mounts its own dialog, and a sheet still loading must not
+// open in the dialog of another page.
 const {
-  state: importState,
-  importTable,
-  clearImportCandidate,
+  importState,
+  importPending,
+  cancelPendingImport,
+  fileDialogOpened,
+  openFileDialog,
+  handleFileSelected,
+  onImportClose,
   clearErrorMessage,
-} = useTableImport();
-
-async function importSamplesheet() {
-  await importTable({
-    title: "Import samplesheet",
-    buttonLabel: "Import",
-  });
-}
+} = useUploadedTableImport({
+  getHandle: () => {
+    const upload = app.model.data.samplesheetUpload;
+    if (upload === undefined || !setEquals(upload.datasetIds, props.datasetIds)) return undefined;
+    return upload.handle;
+  },
+  setHandle: (handle) => {
+    app.model.data.samplesheetUpload =
+      handle === undefined ? undefined : { handle, datasetIds: [...props.datasetIds] };
+  },
+  getFile: () => app.model.outputs.samplesheetFile,
+});
 
 async function handleSamplesheetImport(importData: SamplesheetImportData) {
   const args = app.model.data;
@@ -154,7 +172,7 @@ async function handleSamplesheetImport(importData: SamplesheetImportData) {
     dataset.content.barcodeRules = updatedRules;
   }
 
-  clearImportCandidate();
+  onImportClose();
   await app.allSettled();
 }
 
@@ -343,7 +361,7 @@ async function updateSamples() {
   <PlAlert v-if="hasRowsWithoutSamples" type="success">
     <div style="display: flex; align-items: center; justify-content: space-between">
       <span>Import samplesheet to assign samples to file groups.</span>
-      <PlBtnPrimary justifyCenter @click.stop="importSamplesheet">Import samplesheet</PlBtnPrimary>
+      <PlBtnPrimary justifyCenter @click.stop="openFileDialog">Import samplesheet</PlBtnPrimary>
     </div>
   </PlAlert>
 
@@ -369,9 +387,33 @@ async function updateSamples() {
     :import-candidate="importState.importCandidate"
     :available-group-labels="availableGroupLabels"
     :barcode-tags="barcodeTags"
-    @on-close="clearImportCandidate"
+    @on-close="onImportClose"
     @on-import="handleSamplesheetImport"
   />
+
+  <PlFileDialog
+    v-model="fileDialogOpened"
+    :close-on-outside-click="false"
+    :multi="false"
+    :extensions="[...DEFAULT_TABLE_FILE_EXTENSIONS]"
+    title="Select samplesheet"
+    @import:files="(e) => handleFileSelected(e.files)"
+  />
+
+  <!-- Loading modal: samplesheet selected, waiting for backend to make it available -->
+  <PlDialogModal
+    :model-value="importPending"
+    :close-on-outside-click="false"
+    closable
+    @update:model-value="
+      (v) => {
+        if (!v) cancelPendingImport();
+      }
+    "
+  >
+    <template #title>Importing samplesheet...</template>
+    <PlProgressCell stage="running" step="Downloading file..." />
+  </PlDialogModal>
 
   <!-- Import error dialog -->
   <ImportErrorDialog :error-message="importState.errorMessage" @close="clearErrorMessage" />
